@@ -1,3 +1,6 @@
+---
+title: single5240 | 笔记与教程
+---
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -631,10 +634,11 @@
           <p>这里先放文章列表框架。后续每篇文章可以单独做成一个 HTML 页面，或者从 Markdown 笔记转换后发布。</p>
         </div>
 
+        {% assign articles = site.pages | where: "layout", "article" | sort: "date" | reverse %}
         <div class="article-layout">
           <aside class="category-panel" aria-label="文章分类">
             <h3>分类</h3>
-            <a class="category" href="#articles">全部 <span>3</span></a>
+            <a class="category" href="#articles">全部 <span>{{ articles.size }}</span></a>
             <a class="category" href="#articles">嵌入式 <span>待补充</span></a>
             <a class="category" href="#articles">C/C++ <span>待补充</span></a>
             <a class="category" href="#articles">Qt 工具 <span>待补充</span></a>
@@ -642,6 +646,27 @@
           </aside>
 
           <div class="article-list">
+            {% for article in articles %}
+            <article class="article-card">
+              <div>
+                <div class="article-meta">
+                  {% if article.category %}
+                  <span class="tag">{{ article.category }}</span>
+                  {% endif %}
+                  {% for tag in article.tags limit: 2 %}
+                  <span class="tag">{{ tag }}</span>
+                  {% endfor %}
+                </div>
+                <h3>{{ article.title }}</h3>
+                <p>{{ article.description }}</p>
+                <a class="article-link" href="{{ article.url | relative_url }}">阅读全文</a>
+              </div>
+              <time class="article-date">
+                {% if article.date %}{{ article.date | date: "%Y-%m" }}{% else %}待发布{% endif %}
+              </time>
+            </article>
+            {% endfor %}
+            {% if articles.size == 0 %}
             <article class="article-card">
               <div>
                 <div class="article-meta">
@@ -680,6 +705,7 @@
               </div>
               <time class="article-date">待整理</time>
             </article>
+            {% endif %}
           </div>
         </div>
       </div>
