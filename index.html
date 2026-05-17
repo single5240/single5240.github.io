@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="single5240 的个人主页，记录学习、工程项目和开发实践。">
-  <title>single5240 | 个人主页</title>
+  <meta name="description" content="single5240 的个人知识主页，整理笔记、教程和工程学习文章。">
+  <title>single5240 | 笔记与教程</title>
   <style>
     :root {
       color-scheme: light;
@@ -17,6 +17,7 @@
       --accent-dark: #09686a;
       --warm: #d9822b;
       --soft: #e8f2ef;
+      --deep: #17232a;
       --shadow: 0 18px 50px rgba(22, 35, 42, 0.12);
       font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
     }
@@ -65,7 +66,6 @@
       align-items: center;
       gap: 10px;
       font-weight: 800;
-      letter-spacing: 0;
     }
 
     .brand-mark {
@@ -141,9 +141,8 @@
     h1 {
       max-width: 760px;
       margin-bottom: 20px;
-      font-size: clamp(42px, 7vw, 86px);
-      line-height: 0.95;
-      letter-spacing: 0;
+      font-size: clamp(42px, 7vw, 82px);
+      line-height: 0.98;
     }
 
     .hero-text {
@@ -171,6 +170,7 @@
       color: var(--ink);
       font-weight: 800;
       box-shadow: 0 8px 18px rgba(22, 35, 42, 0.07);
+      transition: transform 160ms ease;
     }
 
     .button.primary {
@@ -183,23 +183,39 @@
       transform: translateY(-1px);
     }
 
-    .portrait-panel {
-      position: relative;
+    .feature-panel {
       display: grid;
       gap: 18px;
-      padding: 18px;
+      padding: 20px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow);
     }
 
-    .portrait {
-      width: 100%;
-      aspect-ratio: 1 / 1;
+    .feature-title {
+      padding: 22px;
       border-radius: 8px;
-      object-fit: cover;
-      background: var(--soft);
+      background: var(--deep);
+      color: #fff;
+    }
+
+    .feature-title strong {
+      display: block;
+      margin-bottom: 10px;
+      color: #f0b15f;
+      font-size: 14px;
+    }
+
+    .feature-title h2 {
+      margin-bottom: 10px;
+      font-size: 30px;
+      line-height: 1.15;
+    }
+
+    .feature-title p {
+      margin-bottom: 0;
+      color: #cbd7dd;
     }
 
     .quick-facts {
@@ -255,11 +271,10 @@
       margin-bottom: 0;
       font-size: clamp(28px, 4vw, 46px);
       line-height: 1.08;
-      letter-spacing: 0;
     }
 
     .section-head p {
-      max-width: 520px;
+      max-width: 560px;
       margin-bottom: 0;
       color: var(--muted);
     }
@@ -271,23 +286,29 @@
     }
 
     .about-copy,
-    .skill-list {
-      padding: 24px;
+    .topic-list,
+    .article-card,
+    .workflow-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
+    }
+
+    .about-copy,
+    .topic-list {
+      padding: 24px;
     }
 
     .about-copy p:last-child {
       margin-bottom: 0;
     }
 
-    .skill-list {
+    .topic-list {
       display: grid;
       gap: 12px;
     }
 
-    .skill-row {
+    .topic-row {
       display: grid;
       grid-template-columns: 140px 1fr;
       gap: 14px;
@@ -296,57 +317,94 @@
       border-bottom: 1px solid var(--line);
     }
 
-    .skill-row:last-child {
+    .topic-row:last-child {
       padding-bottom: 0;
       border-bottom: 0;
     }
 
-    .skill-row strong {
+    .topic-row strong {
       color: var(--accent-dark);
     }
 
-    .skill-row span {
+    .topic-row span {
       color: var(--muted);
     }
 
-    .project-grid {
+    .article-layout {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
     }
 
-    .project-card {
-      display: flex;
-      min-height: 250px;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 22px;
+    .category-panel {
+      position: sticky;
+      top: 92px;
+      display: grid;
+      gap: 10px;
+      padding: 18px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
+    }
+
+    .category-panel h3 {
+      margin-bottom: 4px;
+      font-size: 18px;
+    }
+
+    .category {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f5f8f6;
+      color: #41505a;
+      font-weight: 750;
+    }
+
+    .category span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .article-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .article-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      padding: 22px;
       transition: transform 160ms ease, box-shadow 160ms ease;
     }
 
-    .project-card:hover {
-      transform: translateY(-3px);
+    .article-card:hover {
+      transform: translateY(-2px);
       box-shadow: var(--shadow);
     }
 
-    .project-card h3 {
-      margin-bottom: 10px;
-      font-size: 22px;
-      line-height: 1.2;
+    .article-card h3 {
+      margin-bottom: 8px;
+      font-size: 23px;
+      line-height: 1.25;
     }
 
-    .project-card p {
+    .article-card p {
+      margin-bottom: 0;
       color: var(--muted);
     }
 
-    .tags {
+    .article-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-top: 18px;
+      margin-bottom: 12px;
     }
 
     .tag {
@@ -358,40 +416,49 @@
       font-weight: 750;
     }
 
-    .project-link {
-      margin-top: 22px;
+    .article-date {
+      min-width: 88px;
+      color: var(--accent-dark);
+      font-size: 14px;
+      font-weight: 850;
+      text-align: right;
+    }
+
+    .article-link {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 16px;
       color: var(--accent-dark);
       font-weight: 850;
     }
 
-    .timeline {
+    .workflow-grid {
       display: grid;
-      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
     }
 
-    .timeline-item {
+    .workflow-card {
+      padding: 22px;
+    }
+
+    .workflow-card strong {
       display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 18px;
-      padding: 18px 0;
-      border-bottom: 1px solid rgba(99, 112, 122, 0.25);
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
     }
 
-    .timeline-item:last-child {
-      border-bottom: 0;
+    .workflow-card h3 {
+      margin-bottom: 8px;
+      font-size: 20px;
     }
 
-    .timeline-item time {
-      color: var(--accent-dark);
-      font-weight: 850;
-    }
-
-    .timeline-item h3 {
-      margin-bottom: 6px;
-      font-size: 19px;
-    }
-
-    .timeline-item p {
+    .workflow-card p {
       margin-bottom: 0;
       color: var(--muted);
     }
@@ -403,7 +470,7 @@
       gap: 24px;
       padding: 32px;
       border-radius: 8px;
-      background: #17232a;
+      background: var(--deep);
       color: #fff;
     }
 
@@ -449,6 +516,7 @@
 
       .hero,
       .about-grid,
+      .article-layout,
       .contact {
         grid-template-columns: 1fr;
       }
@@ -459,8 +527,12 @@
         padding-top: 44px;
       }
 
-      .project-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .category-panel {
+        position: static;
+      }
+
+      .workflow-grid {
+        grid-template-columns: 1fr;
       }
 
       .section-head {
@@ -475,18 +547,17 @@
 
     @media (max-width: 620px) {
       .quick-facts,
-      .project-grid,
-      .skill-row,
-      .timeline-item {
+      .topic-row,
+      .article-card {
         grid-template-columns: 1fr;
+      }
+
+      .article-date {
+        text-align: left;
       }
 
       .section {
         padding: 64px 0;
-      }
-
-      .project-card {
-        min-height: 220px;
       }
 
       .contact {
@@ -503,9 +574,9 @@
         <span>single5240</span>
       </a>
       <div class="nav-links">
+        <a href="#articles">文章</a>
         <a href="#about">关于</a>
-        <a href="#projects">项目</a>
-        <a href="#notes">笔记</a>
+        <a href="#workflow">整理方式</a>
         <a href="#contact">联系</a>
         <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
       </div>
@@ -515,197 +586,174 @@
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
       <div>
-        <p class="eyebrow">个人主页</p>
-        <h1 id="hero-title">你好，我是 single5240。</h1>
+        <p class="eyebrow">笔记与教程</p>
+        <h1 id="hero-title">把学习过程整理成文章。</h1>
         <p class="hero-text">
-          我关注嵌入式、Qt、C/C++ 和工程实践。这里用来整理学习记录、展示项目，也记录从想法到作品的过程。
+          这里会作为我的知识主页，重点发布学习笔记、教程、工程调试记录和问题复盘。项目展示先收起来，页面主轴改成文章。
         </p>
         <div class="hero-actions">
-          <a class="button primary" href="#projects">查看项目</a>
-          <a class="button" href="mailto:jwslove40@163.com">发送邮件</a>
+          <a class="button primary" href="#articles">查看文章</a>
+          <a class="button" href="#workflow">了解整理方式</a>
         </div>
       </div>
 
-      <aside class="portrait-panel" aria-label="个人信息概览">
-        <img class="portrait" src="https://github.com/single5240.png" alt="single5240 的 GitHub 头像">
+      <aside class="feature-panel" aria-label="文章主页概览">
+        <div class="feature-title">
+          <strong>Knowledge Base</strong>
+          <h2>从笔记到教程，再到可复用的知识库。</h2>
+          <p>先搭好文章入口，后续可以把 Markdown、教程、图片和代码示例逐步放进来。</p>
+        </div>
         <div class="quick-facts">
           <div class="fact">
-            <strong>6</strong>
-            <span>原创公开仓库</span>
+            <strong>文章</strong>
+            <span>主页核心内容</span>
           </div>
           <div class="fact">
-            <strong>C/C++</strong>
-            <span>主要工程方向</span>
+            <strong>教程</strong>
+            <span>步骤、截图、代码</span>
+          </div>
+          <div class="fact">
+            <strong>笔记</strong>
+            <span>学习过程沉淀</span>
           </div>
           <div class="fact">
             <strong>GitHub</strong>
-            <span>single5240</span>
-          </div>
-          <div class="fact">
-            <strong>2026</strong>
-            <span>持续整理中</span>
+            <span>持续发布更新</span>
           </div>
         </div>
       </aside>
     </section>
 
+    <section class="section alt" id="articles" aria-labelledby="articles-title">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2 id="articles-title">文章板块</h2>
+          <p>这里先放文章列表框架。后续每篇文章可以单独做成一个 HTML 页面，或者从 Markdown 笔记转换后发布。</p>
+        </div>
+
+        <div class="article-layout">
+          <aside class="category-panel" aria-label="文章分类">
+            <h3>分类</h3>
+            <a class="category" href="#articles">全部 <span>3</span></a>
+            <a class="category" href="#articles">嵌入式 <span>待补充</span></a>
+            <a class="category" href="#articles">C/C++ <span>待补充</span></a>
+            <a class="category" href="#articles">Qt 工具 <span>待补充</span></a>
+            <a class="category" href="#articles">学习方法 <span>待补充</span></a>
+          </aside>
+
+          <div class="article-list">
+            <article class="article-card">
+              <div>
+                <div class="article-meta">
+                  <span class="tag">置顶</span>
+                  <span class="tag">说明</span>
+                </div>
+                <h3>欢迎来到我的笔记主页</h3>
+                <p>这个入口会用来说明网站更新方向、文章分类和笔记整理规则。你可以把它改成第一篇正式文章。</p>
+                <a class="article-link" href="#workflow">查看整理方式</a>
+              </div>
+              <time class="article-date">2026-05</time>
+            </article>
+
+            <article class="article-card">
+              <div>
+                <div class="article-meta">
+                  <span class="tag">嵌入式</span>
+                  <span class="tag">教程草稿</span>
+                </div>
+                <h3>STM32 学习笔记索引</h3>
+                <p>可以把 GPIO、定时器、串口、CAN、FOC 等内容按专题拆开，形成一个连续的学习教程目录。</p>
+                <a class="article-link" href="https://github.com/single5240/LEARN" target="_blank" rel="noreferrer">查看现有笔记仓库</a>
+              </div>
+              <time class="article-date">待发布</time>
+            </article>
+
+            <article class="article-card">
+              <div>
+                <div class="article-meta">
+                  <span class="tag">工程复盘</span>
+                  <span class="tag">模板</span>
+                </div>
+                <h3>调试记录模板</h3>
+                <p>记录问题现象、排查过程、关键代码、最终原因和复盘结论，方便以后遇到类似问题快速定位。</p>
+                <a class="article-link" href="#contact">提交或补充内容</a>
+              </div>
+              <time class="article-date">待整理</time>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="about" aria-labelledby="about-title">
       <div class="section-inner">
         <div class="section-head">
-          <h2 id="about-title">关于我</h2>
-          <p>这个页面先搭好结构，后面可以继续补头像、履历、项目截图和更完整的技术文章。</p>
+          <h2 id="about-title">关于这个站点</h2>
+          <p>它现在更像一个公开知识库，而不是作品集。文章会比项目更重要。</p>
         </div>
         <div class="about-grid">
           <div class="about-copy">
             <p>
-              我喜欢把工程问题拆开、验证、整理，再把学到的东西沉淀成可以复用的笔记和项目。现在的仓库里已经有嵌入式、Qt 工具、C 语言工程和学习资料。
+              我会把学习和工程中的内容整理成短文章：有些是教程，有些是调试记录，有些是概念笔记。目标不是堆很多链接，而是把真正有用的过程留下来。
             </p>
             <p>
-              如果你正在看这个网站，可以从项目区了解我做过的东西，也可以进入学习笔记仓库看更零散但真实的积累。
+              后续可以继续增加文章详情页、目录页、标签页，也可以把 Obsidian 或 Markdown 笔记整理后发布到这里。
             </p>
           </div>
-          <div class="skill-list" aria-label="技能方向">
-            <div class="skill-row">
+          <div class="topic-list" aria-label="文章方向">
+            <div class="topic-row">
               <strong>嵌入式</strong>
               <span>STM32、驱动、外设调试、控制相关实验</span>
             </div>
-            <div class="skill-row">
+            <div class="topic-row">
               <strong>C/C++</strong>
-              <span>基础工程、算法整理、Qt 桌面工具</span>
+              <span>基础语法、工程结构、算法整理、代码片段</span>
             </div>
-            <div class="skill-row">
-              <strong>工具链</strong>
-              <span>Git、GitHub Pages、Keil、VS Code、Qt</span>
+            <div class="topic-row">
+              <strong>Qt 工具</strong>
+              <span>桌面工具、串口调试、GUI 开发记录</span>
             </div>
-            <div class="skill-row">
-              <strong>学习整理</strong>
-              <span>知识库、项目复盘、问题记录</span>
+            <div class="topic-row">
+              <strong>学习复盘</strong>
+              <span>知识索引、问题记录、教程和总结</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section alt" id="projects" aria-labelledby="projects-title">
+    <section class="section alt" id="workflow" aria-labelledby="workflow-title">
       <div class="section-inner">
         <div class="section-head">
-          <h2 id="projects-title">项目展示</h2>
-          <p>这里先放你 GitHub 上的原创公开仓库。描述可以逐步改得更具体，也可以加截图和演示链接。</p>
+          <h2 id="workflow-title">整理方式</h2>
+          <p>后面上传笔记时，可以按这个结构慢慢扩展，不需要一次把系统做复杂。</p>
         </div>
-        <div class="project-grid">
-          <article class="project-card">
-            <div>
-              <h3>LEARN</h3>
-              <p>学习笔记和知识整理仓库，包含基础知识、单片机、项目记录等内容。</p>
-              <div class="tags">
-                <span class="tag">Notes</span>
-                <span class="tag">Obsidian</span>
-              </div>
-            </div>
-            <a class="project-link" href="https://github.com/single5240/LEARN" target="_blank" rel="noreferrer">查看仓库</a>
+        <div class="workflow-grid">
+          <article class="workflow-card">
+            <strong>1</strong>
+            <h3>先放原始笔记</h3>
+            <p>把 Markdown、图片、代码片段按主题放进文章目录，先保证内容能被保存和访问。</p>
           </article>
-
-          <article class="project-card">
-            <div>
-              <h3>handPlayer</h3>
-              <p>C 语言相关项目，包含 hand_robot 工程目录，适合继续补充硬件说明和运行方式。</p>
-              <div class="tags">
-                <span class="tag">C</span>
-                <span class="tag">Robot</span>
-              </div>
-            </div>
-            <a class="project-link" href="https://github.com/single5240/handPlayer" target="_blank" rel="noreferrer">查看仓库</a>
+          <article class="workflow-card">
+            <strong>2</strong>
+            <h3>整理成教程</h3>
+            <p>把零散记录改成有标题、背景、步骤、结论的文章，读起来更顺。</p>
           </article>
-
-          <article class="project-card">
-            <div>
-              <h3>QTSerial</h3>
-              <p>Qt 串口调试相关项目，可以作为桌面工具和 C++ GUI 开发经验展示。</p>
-              <div class="tags">
-                <span class="tag">Qt</span>
-                <span class="tag">C++</span>
-              </div>
-            </div>
-            <a class="project-link" href="https://github.com/single5240/QTSerial" target="_blank" rel="noreferrer">查看仓库</a>
-          </article>
-
-          <article class="project-card">
-            <div>
-              <h3>test_c</h3>
-              <p>STM32/C 工程结构，包含 Drivers、Inc、Src、bsp、application 等目录。</p>
-              <div class="tags">
-                <span class="tag">STM32</span>
-                <span class="tag">Embedded</span>
-              </div>
-            </div>
-            <a class="project-link" href="https://github.com/single5240/test_c" target="_blank" rel="noreferrer">查看仓库</a>
-          </article>
-
-          <article class="project-card">
-            <div>
-              <h3>foc_test</h3>
-              <p>预留项目仓库，可以作为 FOC、电机控制或实验记录的入口继续完善。</p>
-              <div class="tags">
-                <span class="tag">FOC</span>
-                <span class="tag">Draft</span>
-              </div>
-            </div>
-            <a class="project-link" href="https://github.com/single5240/foc_test" target="_blank" rel="noreferrer">查看仓库</a>
-          </article>
-
-          <article class="project-card">
-            <div>
-              <h3>个人主页</h3>
-              <p>当前网站本身，用 GitHub Pages 发布，后续可加入博客、项目截图和在线简历。</p>
-              <div class="tags">
-                <span class="tag">HTML</span>
-                <span class="tag">GitHub Pages</span>
-              </div>
-            </div>
-            <a class="project-link" href="https://github.com/single5240/single5240.github.io" target="_blank" rel="noreferrer">查看仓库</a>
+          <article class="workflow-card">
+            <strong>3</strong>
+            <h3>建立索引</h3>
+            <p>给文章补分类、标签和更新时间，让主页成为学习路线的入口。</p>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="section" id="notes" aria-labelledby="notes-title">
-      <div class="section-inner">
-        <div class="section-head">
-          <h2 id="notes-title">学习记录</h2>
-          <p>把学习路径放在页面上，可以让这个网站不只是名片，也成为长期更新的索引。</p>
-        </div>
-        <div class="timeline">
-          <div class="timeline-item">
-            <time>现在</time>
-            <div>
-              <h3>整理个人主页和项目入口</h3>
-              <p>用 GitHub Pages 搭建公开主页，把仓库、笔记、联系方式统一起来。</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <time>项目</time>
-            <div>
-              <h3>嵌入式与控制实验</h3>
-              <p>围绕 STM32、FOC、外设驱动和应用代码持续补充工程说明。</p>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <time>积累</time>
-            <div>
-              <h3>学习笔记知识库</h3>
-              <p>把基础知识、调试记录、项目复盘整理到 LEARN 仓库。</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section alt" id="contact" aria-labelledby="contact-title">
+    <section class="section" id="contact" aria-labelledby="contact-title">
       <div class="section-inner">
         <div class="contact">
           <div>
             <h2 id="contact-title">联系我</h2>
-            <p>如果你想交流项目、学习路线或工程问题，可以通过邮件或 GitHub 找到我。</p>
+            <p>如果你想交流学习笔记、教程内容或工程问题，可以通过邮件或 GitHub 找到我。</p>
           </div>
           <div class="contact-actions">
             <a class="button" href="mailto:jwslove40@163.com">jwslove40@163.com</a>
