@@ -1,7 +1,723 @@
-<p>你好，my friend</p>
-<p>我是你的朋友</p>
-<p></p>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="single5240 的个人主页，记录学习、工程项目和开发实践。">
+  <title>single5240 | 个人主页</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e252b;
+      --muted: #63707a;
+      --line: #d9e1e7;
+      --paper: #f8faf7;
+      --panel: #ffffff;
+      --accent: #0f8b8d;
+      --accent-dark: #09686a;
+      --warm: #d9822b;
+      --soft: #e8f2ef;
+      --shadow: 0 18px 50px rgba(22, 35, 42, 0.12);
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
 
-<ul>
+    * {
+      box-sizing: border-box;
+    }
 
-</ul>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid rgba(217, 225, 231, 0.8);
+      background: rgba(248, 250, 247, 0.92);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: min(1120px, calc(100% - 32px));
+      min-height: 68px;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 8px 22px rgba(15, 139, 141, 0.25);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .nav-links a {
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+
+    .nav-links a:hover {
+      background: var(--soft);
+      color: var(--accent-dark);
+    }
+
+    main {
+      overflow: hidden;
+    }
+
+    .hero {
+      width: min(1120px, calc(100% - 32px));
+      min-height: calc(100vh - 68px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      align-items: center;
+      gap: 56px;
+      padding: 54px 0 72px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      color: var(--accent-dark);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: var(--warm);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin-bottom: 20px;
+      font-size: clamp(42px, 7vw, 86px);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .hero-text {
+      max-width: 660px;
+      color: #39454d;
+      font-size: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 800;
+      box-shadow: 0 8px 18px rgba(22, 35, 42, 0.07);
+    }
+
+    .button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .portrait-panel {
+      position: relative;
+      display: grid;
+      gap: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .portrait {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--soft);
+    }
+
+    .quick-facts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .fact {
+      min-height: 86px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+    }
+
+    .fact strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .fact span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section {
+      padding: 86px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section.alt {
+      background: #eef5f3;
+    }
+
+    .section-inner {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 28px;
+    }
+
+    .section-head h2 {
+      margin-bottom: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      max-width: 520px;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .about-copy,
+    .skill-list {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .about-copy p:last-child {
+      margin-bottom: 0;
+    }
+
+    .skill-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .skill-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 14px;
+      align-items: baseline;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .skill-row:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .skill-row strong {
+      color: var(--accent-dark);
+    }
+
+    .skill-row span {
+      color: var(--muted);
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .project-card {
+      display: flex;
+      min-height: 250px;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .project-card h3 {
+      margin-bottom: 10px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .project-card p {
+      color: var(--muted);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #47545c;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .project-link {
+      margin-top: 22px;
+      color: var(--accent-dark);
+      font-weight: 850;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 18px;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(99, 112, 122, 0.25);
+    }
+
+    .timeline-item:last-child {
+      border-bottom: 0;
+    }
+
+    .timeline-item time {
+      color: var(--accent-dark);
+      font-weight: 850;
+    }
+
+    .timeline-item h3 {
+      margin-bottom: 6px;
+      font-size: 19px;
+    }
+
+    .timeline-item p {
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .contact {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 24px;
+      padding: 32px;
+      border-radius: 8px;
+      background: #17232a;
+      color: #fff;
+    }
+
+    .contact p {
+      max-width: 680px;
+      margin-bottom: 0;
+      color: #cbd7dd;
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .contact .button {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .site-footer {
+      padding: 30px 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 860px) {
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .hero,
+      .about-grid,
+      .contact {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+        gap: 34px;
+        padding-top: 44px;
+      }
+
+      .project-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .contact-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .quick-facts,
+      .project-grid,
+      .skill-row,
+      .timeline-item {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 64px 0;
+      }
+
+      .project-card {
+        min-height: 220px;
+      }
+
+      .contact {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="主导航">
+      <a class="brand" href="#top" aria-label="回到首页">
+        <span class="brand-mark">S5</span>
+        <span>single5240</span>
+      </a>
+      <div class="nav-links">
+        <a href="#about">关于</a>
+        <a href="#projects">项目</a>
+        <a href="#notes">笔记</a>
+        <a href="#contact">联系</a>
+        <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow">个人主页</p>
+        <h1 id="hero-title">你好，我是 single5240。</h1>
+        <p class="hero-text">
+          我关注嵌入式、Qt、C/C++ 和工程实践。这里用来整理学习记录、展示项目，也记录从想法到作品的过程。
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#projects">查看项目</a>
+          <a class="button" href="mailto:jwslove40@163.com">发送邮件</a>
+        </div>
+      </div>
+
+      <aside class="portrait-panel" aria-label="个人信息概览">
+        <img class="portrait" src="https://github.com/single5240.png" alt="single5240 的 GitHub 头像">
+        <div class="quick-facts">
+          <div class="fact">
+            <strong>6</strong>
+            <span>原创公开仓库</span>
+          </div>
+          <div class="fact">
+            <strong>C/C++</strong>
+            <span>主要工程方向</span>
+          </div>
+          <div class="fact">
+            <strong>GitHub</strong>
+            <span>single5240</span>
+          </div>
+          <div class="fact">
+            <strong>2026</strong>
+            <span>持续整理中</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2 id="about-title">关于我</h2>
+          <p>这个页面先搭好结构，后面可以继续补头像、履历、项目截图和更完整的技术文章。</p>
+        </div>
+        <div class="about-grid">
+          <div class="about-copy">
+            <p>
+              我喜欢把工程问题拆开、验证、整理，再把学到的东西沉淀成可以复用的笔记和项目。现在的仓库里已经有嵌入式、Qt 工具、C 语言工程和学习资料。
+            </p>
+            <p>
+              如果你正在看这个网站，可以从项目区了解我做过的东西，也可以进入学习笔记仓库看更零散但真实的积累。
+            </p>
+          </div>
+          <div class="skill-list" aria-label="技能方向">
+            <div class="skill-row">
+              <strong>嵌入式</strong>
+              <span>STM32、驱动、外设调试、控制相关实验</span>
+            </div>
+            <div class="skill-row">
+              <strong>C/C++</strong>
+              <span>基础工程、算法整理、Qt 桌面工具</span>
+            </div>
+            <div class="skill-row">
+              <strong>工具链</strong>
+              <span>Git、GitHub Pages、Keil、VS Code、Qt</span>
+            </div>
+            <div class="skill-row">
+              <strong>学习整理</strong>
+              <span>知识库、项目复盘、问题记录</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="projects" aria-labelledby="projects-title">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2 id="projects-title">项目展示</h2>
+          <p>这里先放你 GitHub 上的原创公开仓库。描述可以逐步改得更具体，也可以加截图和演示链接。</p>
+        </div>
+        <div class="project-grid">
+          <article class="project-card">
+            <div>
+              <h3>LEARN</h3>
+              <p>学习笔记和知识整理仓库，包含基础知识、单片机、项目记录等内容。</p>
+              <div class="tags">
+                <span class="tag">Notes</span>
+                <span class="tag">Obsidian</span>
+              </div>
+            </div>
+            <a class="project-link" href="https://github.com/single5240/LEARN" target="_blank" rel="noreferrer">查看仓库</a>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>handPlayer</h3>
+              <p>C 语言相关项目，包含 hand_robot 工程目录，适合继续补充硬件说明和运行方式。</p>
+              <div class="tags">
+                <span class="tag">C</span>
+                <span class="tag">Robot</span>
+              </div>
+            </div>
+            <a class="project-link" href="https://github.com/single5240/handPlayer" target="_blank" rel="noreferrer">查看仓库</a>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>QTSerial</h3>
+              <p>Qt 串口调试相关项目，可以作为桌面工具和 C++ GUI 开发经验展示。</p>
+              <div class="tags">
+                <span class="tag">Qt</span>
+                <span class="tag">C++</span>
+              </div>
+            </div>
+            <a class="project-link" href="https://github.com/single5240/QTSerial" target="_blank" rel="noreferrer">查看仓库</a>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>test_c</h3>
+              <p>STM32/C 工程结构，包含 Drivers、Inc、Src、bsp、application 等目录。</p>
+              <div class="tags">
+                <span class="tag">STM32</span>
+                <span class="tag">Embedded</span>
+              </div>
+            </div>
+            <a class="project-link" href="https://github.com/single5240/test_c" target="_blank" rel="noreferrer">查看仓库</a>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>foc_test</h3>
+              <p>预留项目仓库，可以作为 FOC、电机控制或实验记录的入口继续完善。</p>
+              <div class="tags">
+                <span class="tag">FOC</span>
+                <span class="tag">Draft</span>
+              </div>
+            </div>
+            <a class="project-link" href="https://github.com/single5240/foc_test" target="_blank" rel="noreferrer">查看仓库</a>
+          </article>
+
+          <article class="project-card">
+            <div>
+              <h3>个人主页</h3>
+              <p>当前网站本身，用 GitHub Pages 发布，后续可加入博客、项目截图和在线简历。</p>
+              <div class="tags">
+                <span class="tag">HTML</span>
+                <span class="tag">GitHub Pages</span>
+              </div>
+            </div>
+            <a class="project-link" href="https://github.com/single5240/single5240.github.io" target="_blank" rel="noreferrer">查看仓库</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="notes" aria-labelledby="notes-title">
+      <div class="section-inner">
+        <div class="section-head">
+          <h2 id="notes-title">学习记录</h2>
+          <p>把学习路径放在页面上，可以让这个网站不只是名片，也成为长期更新的索引。</p>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <time>现在</time>
+            <div>
+              <h3>整理个人主页和项目入口</h3>
+              <p>用 GitHub Pages 搭建公开主页，把仓库、笔记、联系方式统一起来。</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <time>项目</time>
+            <div>
+              <h3>嵌入式与控制实验</h3>
+              <p>围绕 STM32、FOC、外设驱动和应用代码持续补充工程说明。</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <time>积累</time>
+            <div>
+              <h3>学习笔记知识库</h3>
+              <p>把基础知识、调试记录、项目复盘整理到 LEARN 仓库。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="contact" aria-labelledby="contact-title">
+      <div class="section-inner">
+        <div class="contact">
+          <div>
+            <h2 id="contact-title">联系我</h2>
+            <p>如果你想交流项目、学习路线或工程问题，可以通过邮件或 GitHub 找到我。</p>
+          </div>
+          <div class="contact-actions">
+            <a class="button" href="mailto:jwslove40@163.com">jwslove40@163.com</a>
+            <a class="button" href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026 single5240. Built with GitHub Pages.</span>
+  </footer>
+</body>
+</html>
