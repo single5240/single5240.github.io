@@ -290,8 +290,7 @@ title: single5240 | 笔记与教程
 
     .about-copy,
     .topic-list,
-    .article-card,
-    .workflow-card {
+    .article-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
@@ -435,37 +434,6 @@ title: single5240 | 笔记与教程
       font-weight: 850;
     }
 
-    .workflow-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .workflow-card {
-      padding: 22px;
-    }
-
-    .workflow-card strong {
-      display: grid;
-      width: 36px;
-      height: 36px;
-      place-items: center;
-      margin-bottom: 16px;
-      border-radius: 8px;
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .workflow-card h3 {
-      margin-bottom: 8px;
-      font-size: 20px;
-    }
-
-    .workflow-card p {
-      margin-bottom: 0;
-      color: var(--muted);
-    }
-
     .contact {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -534,10 +502,6 @@ title: single5240 | 笔记与教程
         position: static;
       }
 
-      .workflow-grid {
-        grid-template-columns: 1fr;
-      }
-
       .section-head {
         align-items: flex-start;
         flex-direction: column;
@@ -579,7 +543,6 @@ title: single5240 | 笔记与教程
       <div class="nav-links">
         <a href="#articles">文章</a>
         <a href="#about">关于</a>
-        <a href="#workflow">整理方式</a>
         <a href="#contact">联系</a>
         <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
       </div>
@@ -592,11 +555,11 @@ title: single5240 | 笔记与教程
         <p class="eyebrow">笔记与教程</p>
         <h1 id="hero-title">把学习过程整理成文章。</h1>
         <p class="hero-text">
-          这里会作为我的知识主页，重点发布学习笔记、教程、工程调试记录和问题复盘。项目展示先收起来，页面主轴改成文章。
+          这里是我的知识主页，重点发布学习笔记、教程、工程调试记录和问题复盘。
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#articles">查看文章</a>
-          <a class="button" href="#workflow">了解整理方式</a>
+          <a class="button" href="#about">关于本站</a>
         </div>
       </div>
 
@@ -604,7 +567,7 @@ title: single5240 | 笔记与教程
         <div class="feature-title">
           <strong>Knowledge Base</strong>
           <h2>从笔记到教程，再到可复用的知识库。</h2>
-          <p>先搭好文章入口，后续可以把 Markdown、教程、图片和代码示例逐步放进来。</p>
+          <p>记录嵌入式、C/C++、Qt 工具和工程实践中的关键知识。</p>
         </div>
         <div class="quick-facts">
           <div class="fact">
@@ -631,18 +594,22 @@ title: single5240 | 笔记与教程
       <div class="section-inner">
         <div class="section-head">
           <h2 id="articles-title">文章板块</h2>
-          <p>这里先放文章列表框架。后续每篇文章可以单独做成一个 HTML 页面，或者从 Markdown 笔记转换后发布。</p>
+          <p>按时间整理学习笔记和教程，保留关键步骤、代码片段和调试结论。</p>
         </div>
 
         {% assign articles = site.pages | where: "layout", "article" | sort: "date" | reverse %}
+        {% assign embedded_articles = articles | where: "category", "嵌入式" %}
+        {% assign cpp_articles = articles | where: "category", "C/C++" %}
+        {% assign qt_articles = articles | where: "category", "Qt 工具" %}
+        {% assign study_articles = articles | where: "category", "学习方法" %}
         <div class="article-layout">
           <aside class="category-panel" aria-label="文章分类">
             <h3>分类</h3>
             <a class="category" href="#articles">全部 <span>{{ articles.size }}</span></a>
-            <a class="category" href="#articles">嵌入式 <span>待补充</span></a>
-            <a class="category" href="#articles">C/C++ <span>待补充</span></a>
-            <a class="category" href="#articles">Qt 工具 <span>待补充</span></a>
-            <a class="category" href="#articles">学习方法 <span>待补充</span></a>
+            <a class="category" href="#articles">嵌入式 <span>{{ embedded_articles.size }}</span></a>
+            <a class="category" href="#articles">C/C++ <span>{{ cpp_articles.size }}</span></a>
+            <a class="category" href="#articles">Qt 工具 <span>{{ qt_articles.size }}</span></a>
+            <a class="category" href="#articles">学习方法 <span>{{ study_articles.size }}</span></a>
           </aside>
 
           <div class="article-list">
@@ -662,7 +629,7 @@ title: single5240 | 笔记与教程
                 <a class="article-link" href="{{ article.url | relative_url }}">阅读全文</a>
               </div>
               <time class="article-date">
-                {% if article.date %}{{ article.date | date: "%Y-%m" }}{% else %}待发布{% endif %}
+                {% if article.date %}{{ article.date | date: "%Y-%m" }}{% endif %}
               </time>
             </article>
             {% endfor %}
@@ -670,40 +637,11 @@ title: single5240 | 笔记与教程
             <article class="article-card">
               <div>
                 <div class="article-meta">
-                  <span class="tag">置顶</span>
-                  <span class="tag">说明</span>
+                  <span class="tag">文章</span>
                 </div>
-                <h3>欢迎来到我的笔记主页</h3>
-                <p>这个入口会用来说明网站更新方向、文章分类和笔记整理规则。你可以把它改成第一篇正式文章。</p>
-                <a class="article-link" href="#workflow">查看整理方式</a>
+                <h3>暂无文章</h3>
+                <p>文章内容整理后会显示在这里。</p>
               </div>
-              <time class="article-date">2026-05</time>
-            </article>
-
-            <article class="article-card">
-              <div>
-                <div class="article-meta">
-                  <span class="tag">嵌入式</span>
-                  <span class="tag">教程草稿</span>
-                </div>
-                <h3>STM32 学习笔记索引</h3>
-                <p>可以把 GPIO、定时器、串口、CAN、FOC 等内容按专题拆开，形成一个连续的学习教程目录。</p>
-                <a class="article-link" href="https://github.com/single5240/LEARN" target="_blank" rel="noreferrer">查看现有笔记仓库</a>
-              </div>
-              <time class="article-date">待发布</time>
-            </article>
-
-            <article class="article-card">
-              <div>
-                <div class="article-meta">
-                  <span class="tag">工程复盘</span>
-                  <span class="tag">模板</span>
-                </div>
-                <h3>调试记录模板</h3>
-                <p>记录问题现象、排查过程、关键代码、最终原因和复盘结论，方便以后遇到类似问题快速定位。</p>
-                <a class="article-link" href="#contact">提交或补充内容</a>
-              </div>
-              <time class="article-date">待整理</time>
             </article>
             {% endif %}
           </div>
@@ -715,7 +653,7 @@ title: single5240 | 笔记与教程
       <div class="section-inner">
         <div class="section-head">
           <h2 id="about-title">关于这个站点</h2>
-          <p>它现在更像一个公开知识库，而不是作品集。文章会比项目更重要。</p>
+          <p>这里用于沉淀学习记录、教程和工程实践。</p>
         </div>
         <div class="about-grid">
           <div class="about-copy">
@@ -723,7 +661,7 @@ title: single5240 | 笔记与教程
               我会把学习和工程中的内容整理成短文章：有些是教程，有些是调试记录，有些是概念笔记。目标不是堆很多链接，而是把真正有用的过程留下来。
             </p>
             <p>
-              后续可以继续增加文章详情页、目录页、标签页，也可以把 Obsidian 或 Markdown 笔记整理后发布到这里。
+              我会持续把嵌入式、C/C++、Qt 工具和调试复盘整理成文章，方便查阅和复用。
             </p>
           </div>
           <div class="topic-list" aria-label="文章方向">
@@ -748,33 +686,7 @@ title: single5240 | 笔记与教程
       </div>
     </section>
 
-    <section class="section alt" id="workflow" aria-labelledby="workflow-title">
-      <div class="section-inner">
-        <div class="section-head">
-          <h2 id="workflow-title">整理方式</h2>
-          <p>后面上传笔记时，可以按这个结构慢慢扩展，不需要一次把系统做复杂。</p>
-        </div>
-        <div class="workflow-grid">
-          <article class="workflow-card">
-            <strong>1</strong>
-            <h3>先放原始笔记</h3>
-            <p>把 Markdown、图片、代码片段按主题放进文章目录，先保证内容能被保存和访问。</p>
-          </article>
-          <article class="workflow-card">
-            <strong>2</strong>
-            <h3>整理成教程</h3>
-            <p>把零散记录改成有标题、背景、步骤、结论的文章，读起来更顺。</p>
-          </article>
-          <article class="workflow-card">
-            <strong>3</strong>
-            <h3>建立索引</h3>
-            <p>给文章补分类、标签和更新时间，让主页成为学习路线的入口。</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="contact" aria-labelledby="contact-title">
+    <section class="section alt" id="contact" aria-labelledby="contact-title">
       <div class="section-inner">
         <div class="contact">
           <div>
