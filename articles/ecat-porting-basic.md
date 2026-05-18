@@ -15,12 +15,12 @@ tags:
 
 ### 参考链接
 
-1. [基于 STM32F407-LAN9252 的 EtherCAT 从站协议移植过程 - CSDN 博客](https://blog.csdn.net/qq_41580996/article/details/130291788)
-2. [STM32F407 与 LAN9252 EtherCAT HBI 资源文件介绍 - CSDN 博客](https://blog.csdn.net/gitblog_09761/article/details/143404001)
-3. [EtherCAT 之 TwinCAT3 安装、使用 - CSDN 博客](https://blog.csdn.net/LclLsh/article/details/122863502)
-4. [STM32 + LAN9252 + HAL 库 EtherCAT 从站搭建教程 - CSDN 博客](https://blog.csdn.net/a1547998353/article/details/146331849)
-5. [从零搭建 EtherCAT 从站（STM32F407 + ET1200）学习记录 - CSDN 博客](https://blog.csdn.net/xuexidexiaohai/article/details/138668675)
-6. `EtherCAT从站学习板参考资料V 2.1\00_必读`
+- [基于 STM32F407-LAN9252 的 EtherCAT 从站协议移植过程 - CSDN 博客](https://blog.csdn.net/qq_41580996/article/details/130291788)
+- [STM32F407 与 LAN9252 EtherCAT HBI 资源文件介绍 - CSDN 博客](https://blog.csdn.net/gitblog_09761/article/details/143404001)
+- [EtherCAT 之 TwinCAT3 安装、使用 - CSDN 博客](https://blog.csdn.net/LclLsh/article/details/122863502)
+- [STM32 + LAN9252 + HAL 库 EtherCAT 从站搭建教程 - CSDN 博客](https://blog.csdn.net/a1547998353/article/details/146331849)
+- [从零搭建 EtherCAT 从站（STM32F407 + ET1200）学习记录 - CSDN 博客](https://blog.csdn.net/xuexidexiaohai/article/details/138668675)
+- `EtherCAT从站学习板参考资料V 2.1\00_必读`
 
 ### 硬件适配
 
@@ -49,11 +49,11 @@ ECAT 协议栈回调函数：
 
 ### 参考链接
 
-1. [Beckhoff Information System - English](https://infosys.beckhoff.com/english.php?content=../content/1033/el6695/1317558667.html&id=)
-2. [EtherCAT PDO 映射概述 - CSDN 博客](https://blog.csdn.net/m0_74823933/article/details/146030778)
-3. [EtherCAT 从站实现动态 PDO 功能 - HPMicro 知识库](https://kb.hpmicro.com/2025/08/26/ethercat%e4%bb%8e%e7%ab%99%e5%ae%9e%e7%8e%b0%e5%8a%a8%e6%80%81pdo%e5%8a%9f%e8%83%bd/)
-4. [EtherCAT Module and Slot - CSDN 博客](https://blog.csdn.net/qq_42039294/article/details/148441210)
-5. 定义模块化设备的核心文档是 **ETG.5001 (Modular Device Profile Specification)**。
+- [Beckhoff Information System - English](https://infosys.beckhoff.com/english.php?content=../content/1033/el6695/1317558667.html&id=)
+- [EtherCAT PDO 映射概述 - CSDN 博客](https://blog.csdn.net/m0_74823933/article/details/146030778)
+- [EtherCAT 从站实现动态 PDO 功能 - HPMicro 知识库](https://kb.hpmicro.com/2025/08/26/ethercat%e4%bb%8e%e7%ab%99%e5%ae%9e%e7%8e%b0%e5%8a%a8%e6%80%81pdo%e5%8a%9f%e8%83%bd/)
+- [EtherCAT Module and Slot - CSDN 博客](https://blog.csdn.net/qq_42039294/article/details/148441210)
+- 定义模块化设备的核心文档是 **ETG.5001 (Modular Device Profile Specification)**。
 
 ### 动态 PDO
 
