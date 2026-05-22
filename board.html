@@ -242,31 +242,33 @@
       <section class="hero">
         <p class="eyebrow">Board Access</p>
         <h1>ATK-IMX6U</h1>
-        <p class="lead">家里 Linux 板子的远程访问入口。自己维护时走 Tailscale，临时分享给别人时走 Cloudflare Tunnel 登录页。</p>
+        <p class="lead">家里 Linux 板子的远程访问入口。接路由器时优先用 192.168.3.50，插电脑直连时继续用 192.168.10.2。</p>
       </section>
 
       <section class="grid" aria-label="板子访问入口">
         <article class="panel">
           <h2>Tailscale 自用维护</h2>
-          <p class="panel-copy">适合自己调试硬件、SSH 登录、查看 IO 控制台。访问设备需要加入同一个 Tailscale 网络。</p>
+          <p class="panel-copy">适合自己调试硬件、SSH 登录、查看 IO 控制台。路由器/Wi-Fi 场景优先使用家里主网段地址。</p>
           <ul class="status">
-            <li><span>IO 控制台</span><strong>192.168.10.2:80</strong></li>
-            <li><span>SSH</span><strong>root@192.168.10.2</strong></li>
-            <li><span>网关</span><strong>desktop-im8si77</strong></li>
+            <li><span>路由器/Wi-Fi</span><strong>192.168.3.50:80</strong></li>
+            <li><span>电脑直连</span><strong>192.168.10.2:80</strong></li>
+            <li><span>SSH</span><strong>root@192.168.3.50 或 192.168.10.2</strong></li>
           </ul>
           <div class="actions">
-            <a class="button primary" href="http://192.168.10.2/" target="_blank" rel="noreferrer">打开 Tailscale 入口</a>
+            <a class="button primary" href="http://192.168.3.50/" target="_blank" rel="noreferrer">打开路由器入口</a>
+            <a class="button" href="http://192.168.10.2/" target="_blank" rel="noreferrer">打开直连入口</a>
           </div>
-          <p class="note">需要 Windows 网关在线，并且 Tailscale 子网路由 192.168.10.0/24 已启用。</p>
+          <p class="note">路由器入口需要板子接入家里路由器或 Wi-Fi；直连入口需要板子网线接在这台 Windows 电脑上。</p>
         </article>
 
         <article class="panel">
           <h2>Cloudflare 分享访问</h2>
-          <p class="panel-copy">适合临时给别人浏览器访问。对方不需要安装 Tailscale，但需要输入访问密码。</p>
+          <p class="panel-copy">适合临时给别人浏览器访问。代理会优先连接 192.168.3.50，失败后自动回退到 192.168.10.2。</p>
           <ul class="status">
             <li><span>公网入口</span><strong>trycloudflare.com</strong></li>
             <li><span>代理</span><strong>Windows 127.0.0.1:8090</strong></li>
-            <li><span>目标</span><strong>ATK-IMX6U IO 控制台</strong></li>
+            <li><span>优先目标</span><strong>192.168.3.50</strong></li>
+            <li><span>回退目标</span><strong>192.168.10.2</strong></li>
           </ul>
           <div class="actions">
             <a class="button share" href="https://cholesterol-remark-increasing-dimension.trycloudflare.com" target="_blank" rel="noreferrer">打开 Cloudflare 入口</a>
@@ -277,7 +279,7 @@
         <article class="panel wide">
           <h2>SSH 命令</h2>
           <p class="panel-copy">旧版 Dropbear 只提供 ssh-rsa，需要在新版本 OpenSSH 中显式允许该算法。</p>
-          <code id="ssh-command">ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.10.2</code>
+          <code id="ssh-command">ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.3.50</code>
           <div class="actions">
             <button class="button" type="button" id="copy-ssh">复制命令</button>
           </div>
@@ -287,7 +289,8 @@
         <article class="panel wide">
           <h2>使用顺序</h2>
           <ol class="steps">
-            <li>自己访问：先打开 Tailscale，再打开 Tailscale 入口。</li>
+            <li>板子接路由器或 Wi-Fi：优先打开 192.168.3.50。</li>
+            <li>板子插电脑直连：打开 192.168.10.2。</li>
             <li>分享访问：确认 Windows 上 Node 登录代理和 cloudflared 都在运行，再发送 Cloudflare 入口。</li>
             <li>不要把 SSH 密码或 Cloudflare 访问密码写在公开网页里。</li>
           </ol>
