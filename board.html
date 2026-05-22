@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ATK-IMX6U Linux 板子的 Tailscale 与 Cloudflare Tunnel 访问入口。">
+  <title>ATK-IMX6U | single5240</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #667681;
+      --line: #d8e1e8;
+      --paper: #f7faf8;
+      --panel: #ffffff;
+      --accent: #0f8b8d;
+      --accent-dark: #09686a;
+      --warm: #b86018;
+      --soft: #e8f2ef;
+      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .wrap {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 72px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 54px;
+      margin-bottom: 42px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .back {
+      color: var(--accent-dark);
+      font-weight: 750;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent-dark);
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 14px;
+      font-size: clamp(38px, 7vw, 68px);
+      line-height: 1.02;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .panel {
+      min-height: 260px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .panel.wide {
+      grid-column: 1 / -1;
+      min-height: 0;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 23px;
+      line-height: 1.2;
+    }
+
+    .panel-copy {
+      margin-bottom: 18px;
+      color: var(--muted);
+    }
+
+    .status {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .status li {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .status strong {
+      color: var(--ink);
+      text-align: right;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .button.share {
+      border-color: var(--warm);
+      background: var(--warm);
+      color: #fff;
+    }
+
+    code {
+      display: block;
+      overflow-x: auto;
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 8px;
+      background: #17232a;
+      color: #e9f3ef;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .note {
+      margin-top: 18px;
+      color: var(--warm);
+      font-size: 14px;
+    }
+
+    .steps {
+      margin: 16px 0 0;
+      padding-left: 20px;
+      color: #34454f;
+    }
+
+    @media (max-width: 780px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="./">
+        <span class="brand-mark">S5</span>
+        <span>single5240</span>
+      </a>
+      <a class="back" href="./">返回主页</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">Board Access</p>
+        <h1>ATK-IMX6U</h1>
+        <p class="lead">家里 Linux 板子的远程访问入口。自己维护时走 Tailscale，临时分享给别人时走 Cloudflare Tunnel 登录页。</p>
+      </section>
+
+      <section class="grid" aria-label="板子访问入口">
+        <article class="panel">
+          <h2>Tailscale 自用维护</h2>
+          <p class="panel-copy">适合自己调试硬件、SSH 登录、查看 IO 控制台。访问设备需要加入同一个 Tailscale 网络。</p>
+          <ul class="status">
+            <li><span>IO 控制台</span><strong>192.168.10.2:80</strong></li>
+            <li><span>SSH</span><strong>root@192.168.10.2</strong></li>
+            <li><span>网关</span><strong>desktop-im8si77</strong></li>
+          </ul>
+          <div class="actions">
+            <a class="button primary" href="http://192.168.10.2/" target="_blank" rel="noreferrer">打开 Tailscale 入口</a>
+          </div>
+          <p class="note">需要 Windows 网关在线，并且 Tailscale 子网路由 192.168.10.0/24 已启用。</p>
+        </article>
+
+        <article class="panel">
+          <h2>Cloudflare 分享访问</h2>
+          <p class="panel-copy">适合临时给别人浏览器访问。对方不需要安装 Tailscale，但需要输入访问密码。</p>
+          <ul class="status">
+            <li><span>公网入口</span><strong>trycloudflare.com</strong></li>
+            <li><span>代理</span><strong>Windows 127.0.0.1:8090</strong></li>
+            <li><span>目标</span><strong>ATK-IMX6U IO 控制台</strong></li>
+          </ul>
+          <div class="actions">
+            <a class="button share" href="https://cholesterol-remark-increasing-dimension.trycloudflare.com" target="_blank" rel="noreferrer">打开 Cloudflare 入口</a>
+          </div>
+          <p class="note">这是临时 quick tunnel 地址，重启 cloudflared 后可能变化；密码请通过单独渠道提供。</p>
+        </article>
+
+        <article class="panel wide">
+          <h2>SSH 命令</h2>
+          <p class="panel-copy">旧版 Dropbear 只提供 ssh-rsa，需要在新版本 OpenSSH 中显式允许该算法。</p>
+          <code id="ssh-command">ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.10.2</code>
+          <div class="actions">
+            <button class="button" type="button" id="copy-ssh">复制命令</button>
+          </div>
+          <p class="note" id="copy-note" aria-live="polite"></p>
+        </article>
+
+        <article class="panel wide">
+          <h2>使用顺序</h2>
+          <ol class="steps">
+            <li>自己访问：先打开 Tailscale，再打开 Tailscale 入口。</li>
+            <li>分享访问：确认 Windows 上 Node 登录代理和 cloudflared 都在运行，再发送 Cloudflare 入口。</li>
+            <li>不要把 SSH 密码或 Cloudflare 访问密码写在公开网页里。</li>
+          </ol>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const button = document.querySelector("#copy-ssh");
+    const command = document.querySelector("#ssh-command").textContent;
+    const note = document.querySelector("#copy-note");
+
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(command);
+        note.textContent = "已复制。";
+      } catch {
+        note.textContent = "复制失败，请手动选择命令。";
+      }
+    });
+  </script>
+</body>
+</html>
