@@ -277,6 +277,17 @@
         </article>
 
         <article class="panel wide">
+          <h2>控制台功能</h2>
+          <p class="panel-copy">板子首页现在是 IO 与系统状态控制台，适合在浏览器里直接观察硬件和运行状态。</p>
+          <ul class="status">
+            <li><span>输出控制</span><strong>sys-led、beep</strong></li>
+            <li><span>输入显示</span><strong>GPIO Key 实时事件</strong></li>
+            <li><span>系统状态</span><strong>CPU、温度、内存、磁盘、运行时间</strong></li>
+            <li><span>网络状态</span><strong>eth0 路由器、eth1 电脑直连</strong></li>
+          </ul>
+        </article>
+
+        <article class="panel wide">
           <h2>SSH 命令</h2>
           <p class="panel-copy">旧版 Dropbear 只提供 ssh-rsa，需要在新版本 OpenSSH 中显式允许该算法。</p>
           <code id="ssh-command">ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.168.3.50</code>
