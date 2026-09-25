@@ -1,21 +1,21 @@
 ---
-title: single5240 | 笔记与教程
+title: single5240 | 笔记分享
 ---
 <!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="single5240 的个人知识主页，整理笔记、教程和工程学习文章。">
+  <meta name="description" content="个人笔记记录与分享。">
   <meta name="theme-color" content="#0f8b8d">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_CN">
-  <meta property="og:title" content="single5240 | 笔记与教程">
-  <meta property="og:description" content="嵌入式、C/C++、Qt 工具和工程实践笔记。">
+  <meta property="og:title" content="single5240 | 笔记分享">
+  <meta property="og:description" content="个人笔记记录与分享。">
   <meta property="og:url" content="{{ '/' | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
-  <title>single5240 | 笔记与教程</title>
+  <title>single5240 | 笔记分享</title>
   <link rel="canonical" href="{{ '/' | absolute_url }}">
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
@@ -185,58 +185,6 @@ title: single5240 | 笔记与教程
       border: 1px solid var(--line);
     }
 
-    .feature-title {
-      padding: 22px;
-      border-radius: 8px;
-      background: var(--deep);
-      color: #fff;
-    }
-
-    .feature-title strong {
-      display: block;
-      margin-bottom: 10px;
-      color: #f0b15f;
-      font-size: 14px;
-    }
-
-    .feature-title h2 {
-      margin-bottom: 10px;
-      font-size: 30px;
-      line-height: 1.15;
-    }
-
-    .feature-title p {
-      margin-bottom: 0;
-      color: #cbd7dd;
-    }
-
-    .quick-facts {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .fact {
-      min-height: 86px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fbfdfc;
-    }
-
-    .fact strong {
-      display: block;
-      font-size: 22px;
-      line-height: 1;
-    }
-
-    .fact span {
-      display: block;
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
     .section {
       padding: 86px 0;
       border-top: 1px solid var(--line);
@@ -271,54 +219,10 @@ title: single5240 | 笔记与教程
       color: var(--muted);
     }
 
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .about-copy,
-    .topic-list,
     .article-card {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
-    }
-
-    .about-copy,
-    .topic-list {
-      padding: 24px;
-    }
-
-    .about-copy p:last-child {
-      margin-bottom: 0;
-    }
-
-    .topic-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .topic-row {
-      display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 14px;
-      align-items: baseline;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .topic-row:last-child {
-      padding-bottom: 0;
-      border-bottom: 0;
-    }
-
-    .topic-row strong {
-      color: var(--accent-dark);
-    }
-
-    .topic-row span {
-      color: var(--muted);
     }
 
     .article-layout {
@@ -515,7 +419,6 @@ title: single5240 | 笔记与教程
       }
 
       .hero,
-      .about-grid,
       .article-layout,
       .contact {
         grid-template-columns: 1fr;
@@ -542,8 +445,6 @@ title: single5240 | 笔记与教程
     }
 
     @media (max-width: 620px) {
-      .quick-facts,
-      .topic-row,
       .article-card {
         grid-template-columns: 1fr;
       }
@@ -572,7 +473,6 @@ title: single5240 | 笔记与教程
       </a>
       <div class="nav-links">
         <a href="#articles">文章</a>
-        <a href="#about">关于</a>
         <a href="#contact">联系</a>
         <a href="board.html">板子项目</a>
         <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
@@ -583,51 +483,23 @@ title: single5240 | 笔记与教程
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
       <div>
-        <p class="eyebrow">笔记与教程</p>
-        <h1 id="hero-title">把学习过程整理成文章。</h1>
-        <p class="hero-text">
-          这里是我的知识主页，重点发布学习笔记、教程、工程调试记录和问题复盘。
-        </p>
+        <p class="eyebrow">个人笔记</p>
+        <h1 id="hero-title">记录与分享。</h1>
+        <p class="hero-text">记录学习和实践中的笔记。</p>
         <div class="hero-actions">
-          <a class="button primary" href="#articles">查看文章</a>
-          <a class="button" href="#about">关于本站</a>
-          <a class="button" href="board.html">板子项目</a>
+          <a class="button primary" href="#articles">浏览笔记</a>
         </div>
       </div>
 
-      <aside class="feature-panel" aria-label="文章主页概览">
+      <aside class="feature-panel" aria-label="嵌入式开发插画">
         <img class="feature-image" src="assets/images/engineer-computer-lineart.jpg" width="1000" height="750" fetchpriority="high" decoding="async" alt="工程师操作电脑进行嵌入式开发调试的线稿插画">
-        <div class="feature-title">
-          <strong>Knowledge Base</strong>
-          <h2>从笔记到教程，再到可复用的知识库。</h2>
-          <p>记录嵌入式、C/C++、Qt 工具和工程实践中的关键知识。</p>
-        </div>
-        <div class="quick-facts">
-          <div class="fact">
-            <strong>文章</strong>
-            <span>主页核心内容</span>
-          </div>
-          <div class="fact">
-            <strong>教程</strong>
-            <span>步骤、截图、代码</span>
-          </div>
-          <div class="fact">
-            <strong>笔记</strong>
-            <span>学习过程沉淀</span>
-          </div>
-          <div class="fact">
-            <strong>GitHub</strong>
-            <span>持续发布更新</span>
-          </div>
-        </div>
       </aside>
     </section>
 
     <section class="section alt" id="articles" aria-labelledby="articles-title">
       <div class="section-inner">
         <div class="section-head">
-          <h2 id="articles-title">文章板块</h2>
-          <p>按时间整理学习笔记和教程，保留关键步骤、代码片段和调试结论。</p>
+          <h2 id="articles-title">笔记</h2>
         </div>
 
         {% assign articles = site.pages | where: "layout", "article" | sort: "date" | reverse %}
@@ -679,49 +551,11 @@ title: single5240 | 笔记与教程
       </div>
     </section>
 
-    <section class="section" id="about" aria-labelledby="about-title">
-      <div class="section-inner">
-        <div class="section-head">
-          <h2 id="about-title">关于这个站点</h2>
-          <p>这里用于沉淀学习记录、教程和工程实践。</p>
-        </div>
-        <div class="about-grid">
-          <div class="about-copy">
-            <p>
-              我会把学习和工程中的内容整理成短文章：有些是教程，有些是调试记录，有些是概念笔记。目标不是堆很多链接，而是把真正有用的过程留下来。
-            </p>
-            <p>
-              我会持续把嵌入式、C/C++、Qt 工具和调试复盘整理成文章，方便查阅和复用。
-            </p>
-          </div>
-          <div class="topic-list" aria-label="文章方向">
-            <div class="topic-row">
-              <strong>嵌入式</strong>
-              <span>STM32、驱动、外设调试、控制相关实验</span>
-            </div>
-            <div class="topic-row">
-              <strong>C/C++</strong>
-              <span>基础语法、工程结构、算法整理、代码片段</span>
-            </div>
-            <div class="topic-row">
-              <strong>Qt 工具</strong>
-              <span>桌面工具、串口调试、GUI 开发记录</span>
-            </div>
-            <div class="topic-row">
-              <strong>学习复盘</strong>
-              <span>知识索引、问题记录、教程和总结</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="section alt" id="contact" aria-labelledby="contact-title">
       <div class="section-inner">
         <div class="contact">
           <div>
             <h2 id="contact-title">联系我</h2>
-            <p>如果你想交流学习笔记、教程内容或工程问题，可以通过邮件或 GitHub 找到我。</p>
           </div>
           <div class="contact-actions">
             <a class="button" href="mailto:jwslove40@163.com">jwslove40@163.com</a>
@@ -763,9 +597,9 @@ title: single5240 | 笔记与教程
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "single5240 笔记与教程",
+      "name": "single5240 笔记分享",
       "url": {{ '/' | absolute_url | jsonify }},
-      "description": "嵌入式、C/C++、Qt 工具和工程实践笔记。",
+      "description": "个人笔记记录与分享。",
       "inLanguage": "zh-CN"
     }
   </script>
