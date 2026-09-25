@@ -1,0 +1,10 @@
+title: single5240 笔记与教程
+description: 嵌入式、C/C++、Qt 工具和工程实践笔记。
+url: https://single5240.github.io
+lang: zh-CN
+timezone: Asia/Shanghai
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - scripts

@@ -1,0 +1,15 @@
+{
+  "name": "single5240 笔记与教程",
+  "short_name": "single5240",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8faf7",
+  "theme_color": "#0f8b8d",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

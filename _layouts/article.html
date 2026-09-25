@@ -4,29 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{ page.description | default: page.title }}">
+  <meta name="theme-color" content="#0f8b8d">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="{{ page.title }}">
+  <meta property="og:description" content="{{ page.description | default: page.title }}">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
+  <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
+  <meta name="twitter:card" content="summary_large_image">
   <title>{{ page.title }} | single5240</title>
+  <link rel="canonical" href="{{ page.url | absolute_url }}">
+  <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
   <style>
-    :root {
-      color-scheme: light;
-      --ink: #1e252b;
-      --muted: #63707a;
-      --line: #d9e1e7;
-      --paper: #f8faf7;
-      --panel: #ffffff;
-      --accent: #0f8b8d;
-      --accent-dark: #09686a;
-      --warm: #d9822b;
-      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      margin: 0;
-      background: var(--paper);
-      color: var(--ink);
       line-height: 1.75;
     }
 
@@ -37,6 +29,9 @@
     }
 
     .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
       border-bottom: 1px solid var(--line);
       background: rgba(248, 250, 247, 0.94);
       backdrop-filter: blur(18px);
@@ -79,6 +74,15 @@
       padding: 58px 0 80px;
     }
 
+    .reading-progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      z-index: 30;
+      width: 0;
+      height: 3px;
+      background: var(--warm);
+    }
+
     .article-meta {
       display: flex;
       flex-wrap: wrap;
@@ -107,6 +111,32 @@
       font-size: 18px;
     }
 
+    .toc {
+      margin: 0 0 26px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef5f3;
+    }
+
+    .toc[hidden] { display: none; }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .toc ol {
+      columns: 2;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .toc li {
+      break-inside: avoid;
+      margin: 5px 0;
+    }
+
     .content {
       padding: 30px;
       border: 1px solid var(--line);
@@ -115,6 +145,7 @@
     }
 
     .content h2 {
+      scroll-margin-top: 86px;
       margin-top: 34px;
       padding-top: 22px;
       border-top: 1px solid var(--line);
@@ -129,6 +160,7 @@
     }
 
     .content h3 {
+      scroll-margin-top: 86px;
       margin-top: 26px;
       font-size: 22px;
     }
@@ -184,6 +216,7 @@
     }
 
     .content pre {
+      position: relative;
       overflow-x: auto;
       padding: 16px;
       border-radius: 8px;
@@ -195,6 +228,42 @@
       padding: 0;
       background: transparent;
       color: inherit;
+    }
+
+    .copy-code {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 5px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 6px;
+      background: #263a44;
+      color: #fff;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .article-navigation {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    .article-navigation a {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .article-navigation a:last-child { text-align: right; }
+
+    .article-navigation small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
     }
 
     .back {
@@ -212,10 +281,18 @@
       .content {
         padding: 22px;
       }
+
+      .toc ol { columns: 1; }
+
+      .article-navigation { grid-template-columns: 1fr; }
+
+      .article-navigation a:last-child { text-align: left; }
     }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+  <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
   <header class="site-header">
     <nav class="nav" aria-label="主导航">
       <a class="brand" href="{{ '/' | relative_url }}">
@@ -226,7 +303,7 @@
     </nav>
   </header>
 
-  <main class="article">
+  <main class="article" id="main-content">
     <div class="article-meta">
       {% if page.category %}
       <span class="tag">{{ page.category }}</span>
@@ -235,17 +312,101 @@
       <span class="tag">{{ tag }}</span>
       {% endfor %}
       {% if page.date %}
-      <span class="tag">{{ page.date | date: "%Y-%m-%d" }}</span>
+      <time class="tag" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y-%m-%d" }}</time>
       {% endif %}
     </div>
     <h1>{{ page.title }}</h1>
     {% if page.description %}
     <p class="description">{{ page.description }}</p>
     {% endif %}
+    <nav class="toc" id="article-toc" aria-label="本文目录" hidden>
+      <strong>本文目录</strong>
+      <ol></ol>
+    </nav>
     <article class="content">
       {{ content }}
     </article>
+    {% assign article_pages = site.pages | where: "layout", "article" | sort: "date" %}
+    {% assign current_index = nil %}
+    {% for item in article_pages %}
+      {% if item.url == page.url %}{% assign current_index = forloop.index0 %}{% endif %}
+    {% endfor %}
+    {% if current_index != nil %}
+      {% assign previous_index = current_index | minus: 1 %}
+      {% assign next_index = current_index | plus: 1 %}
+      <nav class="article-navigation" aria-label="相邻文章">
+        {% if current_index > 0 %}
+          {% assign previous_article = article_pages[previous_index] %}
+          <a href="{{ previous_article.url | relative_url }}"><small>上一篇</small>{{ previous_article.title }}</a>
+        {% else %}<span></span>{% endif %}
+        {% if next_index < article_pages.size %}
+          {% assign next_article = article_pages[next_index] %}
+          <a href="{{ next_article.url | relative_url }}"><small>下一篇</small>{{ next_article.title }}</a>
+        {% endif %}
+      </nav>
+    {% endif %}
     <a class="back" href="{{ '/' | relative_url }}#articles">返回文章列表</a>
   </main>
+  <script>
+    (() => {
+      const content = document.querySelector(".content");
+      const headings = [...content.querySelectorAll("h2")];
+      const toc = document.querySelector("#article-toc");
+      const tocList = toc.querySelector("ol");
+      const slugify = (text, index) => {
+        const slug = text.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
+        return slug || `section-${index + 1}`;
+      };
+
+      headings.forEach((heading, index) => {
+        heading.id ||= slugify(heading.textContent, index);
+        const item = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = `#${encodeURIComponent(heading.id)}`;
+        link.textContent = heading.textContent;
+        item.append(link);
+        tocList.append(item);
+      });
+      toc.hidden = headings.length < 3;
+
+      content.querySelectorAll("pre").forEach((pre) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy-code";
+        button.textContent = "复制";
+        button.setAttribute("aria-label", "复制代码");
+        button.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(pre.querySelector("code")?.textContent || pre.textContent);
+            button.textContent = "已复制";
+          } catch {
+            button.textContent = "复制失败";
+          }
+          window.setTimeout(() => { button.textContent = "复制"; }, 1800);
+        });
+        pre.append(button);
+      });
+
+      const progress = document.querySelector("#reading-progress");
+      const updateProgress = () => {
+        const height = document.documentElement.scrollHeight - window.innerHeight;
+        progress.style.width = `${height > 0 ? Math.min(100, window.scrollY / height * 100) : 0}%`;
+      };
+      updateProgress();
+      addEventListener("scroll", updateProgress, { passive: true });
+      addEventListener("resize", updateProgress);
+    })();
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": {{ page.title | jsonify }},
+      "description": {{ page.description | default: page.title | jsonify }},
+      "datePublished": "{{ page.date | date_to_xmlschema }}",
+      "mainEntityOfPage": {{ page.url | absolute_url | jsonify }},
+      "inLanguage": "zh-CN"
+    }
+  </script>
 </body>
 </html>

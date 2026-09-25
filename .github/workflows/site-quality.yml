@@ -1,0 +1,26 @@
+name: Site quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+      - name: Build Jekyll site
+        run: bundle exec jekyll build --strict_front_matter
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check generated pages and internal links
+        run: node scripts/check-site.mjs

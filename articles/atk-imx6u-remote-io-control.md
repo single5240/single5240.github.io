@@ -30,7 +30,7 @@ tags:
 | Windows 有线网卡 | `192.168.10.1/24` | 与板子直连 |
 | 串口 | COM4，115200 | 备用控制台 |
 | SSH 用户 | `root` | Dropbear SSH，端口 22 |
-| Tailscale 地址 | `100.86.152.70` | Windows 网关 `desktop-im8si77` |
+| Tailscale 地址 | 登录后动态分配 | Windows 网关设备 |
 | 板子 IO 控制台 | `http://192.168.10.2/` | nginx 提供网页 |
 | 板子状态 API | `http://192.168.10.2/api/status` | nginx 反代到本机 Python API |
 
@@ -87,7 +87,7 @@ ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa root@192.
 
 ### 1. 安装并登录 Tailscale
 
-Windows 上安装 Tailscale 后登录账号，当前设备显示为 `desktop-im8si77`，Tailscale IP 为 `100.86.152.70`。
+Windows 上安装 Tailscale 后登录账号，记下当前网关设备名称与动态分配的 Tailscale IP。公开文档不记录真实设备名和组网地址。
 
 ```powershell
 winget install --id Tailscale.Tailscale --source winget --accept-package-agreements --accept-source-agreements
@@ -104,12 +104,11 @@ Windows 电脑作为 Tailscale 子网路由器，把直连板子的 `192.168.10.
 "C:\Program Files\Tailscale\tailscale.exe" up --advertise-routes=192.168.10.0/24
 ```
 
-随后在 Tailscale 管理后台进入 Machines，找到 `DESKTOP-IM8SI77`，批准 `192.168.10.0/24` 路由。批准后状态中会出现：
+随后在 Tailscale 管理后台进入 Machines，找到承担网关角色的 Windows 设备，批准 `192.168.10.0/24` 路由。批准后状态中会出现：
 
 ```text
 AllowedIPs:
-  100.86.152.70/32
-  fd7a:115c:a1e0::d036:9846/128
+  <tailscale-ip>/32
   192.168.10.0/24
 
 PrimaryRoutes:
@@ -208,13 +207,9 @@ node .\cloudflare-board-proxy.js
 cloudflared tunnel --url http://127.0.0.1:8090 --no-autoupdate
 ```
 
-### 4. 当前公网地址
+### 4. 获取临时公网地址
 
-当前 quick tunnel 地址如下。该地址是临时地址，进程重启后可能变化：
-
-```text
-https://cholesterol-remark-increasing-dimension.trycloudflare.com
-```
+终端会输出一个临时 `trycloudflare.com` 地址。该地址每次启动都可能变化，不应写入公开网页或长期保存；需要分享时通过单独渠道发送。
 
 > 访问密码不要写入公开文档。当前密码保存在 Windows 本机 `cloudflare-board-password.txt` 中；需要分享时建议通过单独渠道发送，并定期更换。
 
@@ -267,7 +262,7 @@ http://127.0.0.1:8088/board.html
 
 - 确认手机已经登录同一个 Tailscale。
 - 确认 Windows 电脑在线，Tailscale 在线。
-- 确认 Tailscale 后台已批准 `desktop-im8si77` 的 `192.168.10.0/24` 子网路由。
+- 确认 Tailscale 后台已批准网关设备发布的 `192.168.10.0/24` 子网路由。
 - 确认板子仍然是 `192.168.10.2`。
 
 ### 2. SSH 报 no matching host key type found

@@ -12,8 +12,6 @@ tags:
   - tslib
 ---
 
-# ATK-IMX6U Qt/QML UI 部署与排障指南
-
 本文记录在 ATK-IMX6U 开发板上，从 Windows 桌面调试到 WSL 交叉编译、部署 QML 触摸 UI，并控制 LED 与蜂鸣器的完整过程。
 
 ## 1. 最终架构

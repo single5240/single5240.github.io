@@ -7,39 +7,20 @@ title: single5240 | 笔记与教程
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="single5240 的个人知识主页，整理笔记、教程和工程学习文章。">
+  <meta name="theme-color" content="#0f8b8d">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="single5240 | 笔记与教程">
+  <meta property="og:description" content="嵌入式、C/C++、Qt 工具和工程实践笔记。">
+  <meta property="og:url" content="{{ '/' | absolute_url }}">
+  <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
+  <meta name="twitter:card" content="summary_large_image">
   <title>single5240 | 笔记与教程</title>
+  <link rel="canonical" href="{{ '/' | absolute_url }}">
+  <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
   <style>
-    :root {
-      color-scheme: light;
-      --ink: #1e252b;
-      --muted: #63707a;
-      --line: #d9e1e7;
-      --paper: #f8faf7;
-      --panel: #ffffff;
-      --accent: #0f8b8d;
-      --accent-dark: #09686a;
-      --warm: #d9822b;
-      --soft: #e8f2ef;
-      --deep: #17232a;
-      --shadow: 0 18px 50px rgba(22, 35, 42, 0.12);
-      font-family: Inter, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      background: var(--paper);
-      color: var(--ink);
-      line-height: 1.6;
-    }
-
     a {
       color: inherit;
       text-decoration: none;
@@ -375,6 +356,23 @@ title: single5240 | 笔记与教程
       font-weight: 750;
     }
 
+    button.category {
+      width: 100%;
+      border: 0;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .category[aria-pressed="true"] {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .category[aria-pressed="true"] span {
+      color: #fff;
+    }
+
     .category span {
       color: var(--muted);
       font-size: 13px;
@@ -387,6 +385,7 @@ title: single5240 | 笔记与教程
     }
 
     .article-card {
+      position: relative;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 18px;
@@ -397,6 +396,28 @@ title: single5240 | 笔记与教程
     .article-card:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow);
+    }
+
+    .article-card[hidden] {
+      display: none;
+    }
+
+    .article-card h3 a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    .article-card .tag,
+    .article-card .article-link {
+      position: relative;
+      z-index: 1;
+    }
+
+    .filter-status {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .article-card h3 {
@@ -542,6 +563,7 @@ title: single5240 | 笔记与教程
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#top">跳到主要内容</a>
   <header class="site-header">
     <nav class="nav" aria-label="主导航">
       <a class="brand" href="#top" aria-label="回到首页">
@@ -552,7 +574,7 @@ title: single5240 | 笔记与教程
         <a href="#articles">文章</a>
         <a href="#about">关于</a>
         <a href="#contact">联系</a>
-        <a href="board.html">板子</a>
+        <a href="board.html">板子项目</a>
         <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
       </div>
     </nav>
@@ -569,12 +591,12 @@ title: single5240 | 笔记与教程
         <div class="hero-actions">
           <a class="button primary" href="#articles">查看文章</a>
           <a class="button" href="#about">关于本站</a>
-          <a class="button" href="board.html">板子控制</a>
+          <a class="button" href="board.html">板子项目</a>
         </div>
       </div>
 
       <aside class="feature-panel" aria-label="文章主页概览">
-        <img class="feature-image" src="assets/images/engineer-computer-lineart.png" alt="工程师操作电脑进行开发调试的简笔画">
+        <img class="feature-image" src="assets/images/engineer-computer-lineart.jpg" width="1000" height="750" fetchpriority="high" decoding="async" alt="工程师操作电脑进行嵌入式开发调试的线稿插画">
         <div class="feature-title">
           <strong>Knowledge Base</strong>
           <h2>从笔记到教程，再到可复用的知识库。</h2>
@@ -609,23 +631,20 @@ title: single5240 | 笔记与教程
         </div>
 
         {% assign articles = site.pages | where: "layout", "article" | sort: "date" | reverse %}
-        {% assign embedded_articles = articles | where: "category", "嵌入式" %}
-        {% assign cpp_articles = articles | where: "category", "C/C++" %}
-        {% assign qt_articles = articles | where: "category", "Qt 工具" %}
-        {% assign study_articles = articles | where: "category", "学习方法" %}
         <div class="article-layout">
           <aside class="category-panel" aria-label="文章分类">
             <h3>分类</h3>
-            <a class="category" href="#articles">全部 <span>{{ articles.size }}</span></a>
-            <a class="category" href="#articles">嵌入式 <span>{{ embedded_articles.size }}</span></a>
-            <a class="category" href="#articles">C/C++ <span>{{ cpp_articles.size }}</span></a>
-            <a class="category" href="#articles">Qt 工具 <span>{{ qt_articles.size }}</span></a>
-            <a class="category" href="#articles">学习方法 <span>{{ study_articles.size }}</span></a>
+            <button class="category" type="button" data-filter="" aria-pressed="true">全部 <span data-count>{{ articles.size }}</span></button>
+            <button class="category" type="button" data-filter="嵌入式" aria-pressed="false">嵌入式 <span data-count>0</span></button>
+            <button class="category" type="button" data-filter="C/C++" aria-pressed="false">C/C++ <span data-count>0</span></button>
+            <button class="category" type="button" data-filter="Qt 工具" aria-pressed="false">Qt 工具 <span data-count>0</span></button>
+            <button class="category" type="button" data-filter="学习方法" aria-pressed="false">学习方法 <span data-count>0</span></button>
+            <p class="filter-status" id="filter-status" aria-live="polite">显示全部 {{ articles.size }} 篇文章</p>
           </aside>
 
           <div class="article-list">
             {% for article in articles %}
-            <article class="article-card">
+            <article class="article-card" data-category="{{ article.category | escape }}">
               <div>
                 <div class="article-meta">
                   {% if article.category %}
@@ -635,7 +654,7 @@ title: single5240 | 笔记与教程
                   <span class="tag">{{ tag }}</span>
                   {% endfor %}
                 </div>
-                <h3>{{ article.title }}</h3>
+                <h3><a href="{{ article.url | relative_url }}">{{ article.title }}</a></h3>
                 <p>{{ article.description }}</p>
                 <a class="article-link" href="{{ article.url | relative_url }}">阅读全文</a>
               </div>
@@ -714,7 +733,41 @@ title: single5240 | 笔记与教程
   </main>
 
   <footer class="site-footer">
-    <span>© 2026 single5240. Built with GitHub Pages.</span>
+    <span>© {{ site.time | date: "%Y" }} single5240. Built with GitHub Pages.</span>
   </footer>
+  <script>
+    (() => {
+      const cards = [...document.querySelectorAll(".article-card[data-category]")];
+      const filters = [...document.querySelectorAll("[data-filter]")];
+      const status = document.querySelector("#filter-status");
+
+      filters.forEach((button) => {
+        const filter = button.dataset.filter;
+        const count = cards.filter((card) => !filter || card.dataset.category.includes(filter)).length;
+        button.querySelector("[data-count]").textContent = count;
+
+        button.addEventListener("click", () => {
+          filters.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+          let visible = 0;
+          cards.forEach((card) => {
+            const matches = !filter || card.dataset.category.includes(filter);
+            card.hidden = !matches;
+            visible += Number(matches);
+          });
+          status.textContent = filter ? `“${filter}”分类共 ${visible} 篇文章` : `显示全部 ${visible} 篇文章`;
+        });
+      });
+    })();
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "single5240 笔记与教程",
+      "url": {{ '/' | absolute_url | jsonify }},
+      "description": "嵌入式、C/C++、Qt 工具和工程实践笔记。",
+      "inLanguage": "zh-CN"
+    }
+  </script>
 </body>
 </html>
