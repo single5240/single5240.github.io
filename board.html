@@ -1,3 +1,7 @@
+---
+layout: null
+permalink: /board.html
+---
 <!doctype html>
 <html lang="zh-CN">
 <head>
@@ -6,9 +10,23 @@
   <meta name="description" content="ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#0f8b8d">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="ATK-IMX6U 项目 | single5240">
+  <meta property="og:description" content="ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。">
+  <meta property="og:url" content="{{ '/board.html' | absolute_url }}">
+  <meta property="og:site_name" content="single5240 笔记分享">
+  <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
+  <meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ATK-IMX6U 项目 | single5240">
+  <meta name="twitter:description" content="ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。">
+  <meta name="twitter:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
   <title>ATK-IMX6U 项目 | single5240</title>
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="canonical" href="{{ '/board.html' | absolute_url }}">
+  <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
   <style>
     a {
       color: inherit;
@@ -165,27 +183,28 @@
     }
 
     .button.share {
-      border-color: var(--warm);
-      background: var(--warm);
+      border-color: #bc5827;
+      background: #bc5827;
       color: #fff;
     }
 
     code {
       display: block;
       overflow-x: auto;
+      max-width: 100%;
       margin-top: 14px;
       padding: 14px;
       border-radius: 8px;
       background: #17232a;
       color: #e9f3ef;
-      font-family: Consolas, "SFMono-Regular", monospace;
+      font-family: ui-monospace, Consolas, "SFMono-Regular", "Sarasa Mono SC", "Noto Sans Mono CJK SC", "WenQuanYi Micro Hei Mono", monospace;
       font-size: 13px;
       white-space: nowrap;
     }
 
     .note {
       margin-top: 18px;
-      color: var(--warm);
+      color: #bc5827;
       font-size: 14px;
     }
 
@@ -211,11 +230,11 @@
   <a class="skip-link" href="#main-content">跳到主要内容</a>
   <div class="wrap">
     <header class="topbar">
-      <a class="brand" href="./">
+      <a class="brand" href="{{ '/' | relative_url }}">
         <span class="brand-mark">S5</span>
         <span>single5240</span>
       </a>
-      <a class="back" href="./">返回主页</a>
+      <a class="back" href="{{ '/' | relative_url }}">返回主页</a>
     </header>
 
     <main id="main-content">
@@ -265,9 +284,9 @@
         <article class="panel wide">
           <h2>相关实践文章</h2>
           <ol class="steps">
-            <li><a href="articles/atk-imx6u-remote-io-control.html">远程访问与 IO 控制搭建教程</a></li>
-            <li><a href="articles/atk-imx6u-qt-ui-deployment-guide.html">Qt/QML UI 部署与排障指南</a></li>
-            <li><a href="articles/atk-imx6u-systemui-autostart.html">开机自启动 LCD UI 配置教程</a></li>
+            <li><a href="{{ '/articles/atk-imx6u-remote-io-control.html' | relative_url }}">远程访问与 IO 控制搭建教程</a></li>
+            <li><a href="{{ '/articles/atk-imx6u-qt-ui-deployment-guide.html' | relative_url }}">Qt/QML UI 部署与排障指南</a></li>
+            <li><a href="{{ '/articles/atk-imx6u-systemui-autostart.html' | relative_url }}">开机自启动 LCD UI 配置教程</a></li>
           </ol>
         </article>
       </section>

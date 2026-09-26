@@ -15,6 +15,11 @@ title: single5240 | 笔记分享
   <meta property="og:url" content="{{ '/' | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="single5240 | 笔记分享">
+  <meta name="twitter:description" content="个人笔记记录与分享。">
+  <meta name="twitter:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
+  <meta property="og:site_name" content="single5240 笔记分享">
+  <meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
   <title>single5240 | 笔记分享</title>
   <link rel="canonical" href="{{ '/' | absolute_url }}">
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
@@ -81,10 +86,6 @@ title: single5240 | 笔记分享
     .nav-links a:hover {
       background: var(--soft);
       color: var(--accent-dark);
-    }
-
-    main {
-      overflow: hidden;
     }
 
     .hero {
@@ -492,7 +493,7 @@ title: single5240 | 笔记分享
       </div>
 
       <aside class="feature-panel" aria-label="嵌入式开发插画">
-        <img class="feature-image" src="assets/images/engineer-computer-lineart.jpg" width="1000" height="750" fetchpriority="high" decoding="async" alt="工程师操作电脑进行嵌入式开发调试的线稿插画">
+        <img class="feature-image" src="{{ '/assets/images/engineer-computer-lineart.jpg' | relative_url }}" width="1000" height="750" fetchpriority="high" decoding="async" alt="工程师操作电脑进行嵌入式开发调试的线稿插画">
       </aside>
     </section>
 
@@ -503,14 +504,17 @@ title: single5240 | 笔记分享
         </div>
 
         {% assign articles = site.pages | where: "layout", "article" | sort: "date" | reverse %}
+        {% assign category_names = articles | map: "category" | uniq %}
         <div class="article-layout">
           <aside class="category-panel" aria-label="文章分类">
             <h3>分类</h3>
             <button class="category" type="button" data-filter="" aria-pressed="true">全部 <span data-count>{{ articles.size }}</span></button>
-            <button class="category" type="button" data-filter="嵌入式" aria-pressed="false">嵌入式 <span data-count>0</span></button>
-            <button class="category" type="button" data-filter="C/C++" aria-pressed="false">C/C++ <span data-count>0</span></button>
-            <button class="category" type="button" data-filter="Qt 工具" aria-pressed="false">Qt 工具 <span data-count>0</span></button>
-            <button class="category" type="button" data-filter="学习方法" aria-pressed="false">学习方法 <span data-count>0</span></button>
+            {% for category in category_names %}
+              {% if category != nil and category != "" %}
+                {% assign category_count = articles | where: "category", category | size %}
+                <button class="category" type="button" data-filter="{{ category | escape }}" aria-pressed="false">{{ category }} <span data-count>{{ category_count }}</span></button>
+              {% endif %}
+            {% endfor %}
             <p class="filter-status" id="filter-status" aria-live="polite">显示全部 {{ articles.size }} 篇文章</p>
           </aside>
 
@@ -577,14 +581,14 @@ title: single5240 | 笔记分享
 
       filters.forEach((button) => {
         const filter = button.dataset.filter;
-        const count = cards.filter((card) => !filter || card.dataset.category.includes(filter)).length;
+        const count = cards.filter((card) => !filter || card.dataset.category === filter).length;
         button.querySelector("[data-count]").textContent = count;
 
         button.addEventListener("click", () => {
           filters.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
           let visible = 0;
           cards.forEach((card) => {
-            const matches = !filter || card.dataset.category.includes(filter);
+            const matches = !filter || card.dataset.category === filter;
             card.hidden = !matches;
             visible += Number(matches);
           });

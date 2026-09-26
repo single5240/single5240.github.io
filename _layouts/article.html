@@ -12,6 +12,11 @@
   <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.title }}">
+  <meta name="twitter:description" content="{{ page.description | default: page.title }}">
+  <meta name="twitter:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
+  <meta property="og:site_name" content="single5240 笔记分享">
+  <meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
   <title>{{ page.title }} | single5240</title>
   <link rel="canonical" href="{{ page.url | absolute_url }}">
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
@@ -49,6 +54,12 @@
       justify-content: space-between;
       min-height: 68px;
       gap: 16px;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
     }
 
     .brand {
@@ -142,6 +153,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
+      overflow-wrap: anywhere;
     }
 
     .content h2 {
@@ -186,12 +198,26 @@
 
     .content table {
       display: block;
-      width: 100%;
+      width: max-content;
+      min-width: 100%;
+      max-width: 100%;
       overflow-x: auto;
       border-collapse: collapse;
       margin: 24px 0;
       font-size: 15px;
       white-space: nowrap;
+    }
+
+    .content .table-scroll {
+      overflow-x: auto;
+      max-width: 100%;
+      margin: 24px 0;
+    }
+
+    .content .table-scroll table {
+      display: table;
+      margin: 0;
+      overflow: visible;
     }
 
     .content th,
@@ -212,13 +238,20 @@
       border-radius: 6px;
       background: #eef5f3;
       color: #0b6264;
-      font-family: Consolas, "SFMono-Regular", monospace;
+      font-family: ui-monospace, Consolas, "SFMono-Regular", "Sarasa Mono SC", "Noto Sans Mono CJK SC", "WenQuanYi Micro Hei Mono", monospace;
+    }
+
+    .content pre,
+    .content pre code {
+      overflow-wrap: normal;
+      white-space: pre;
     }
 
     .content pre {
       position: relative;
       overflow-x: auto;
-      padding: 16px;
+      max-width: 100%;
+      padding: 2.6rem 16px 16px;
       border-radius: 8px;
       background: #17232a;
       color: #e8f2ef;
@@ -282,9 +315,16 @@
         padding: 22px;
       }
 
+      .content h2,
+      .content h3 {
+        scroll-margin-top: 132px;
+      }
+
       .toc ol { columns: 1; }
 
       .article-navigation { grid-template-columns: 1fr; }
+
+      .article-navigation span:empty { display: none; }
 
       .article-navigation a:last-child { text-align: left; }
     }
@@ -299,7 +339,10 @@
         <span class="brand-mark">S5</span>
         <span>single5240</span>
       </a>
-      <a href="{{ '/' | relative_url }}#articles">返回文章列表</a>
+      <div class="nav-links">
+        <a href="{{ '/' | relative_url }}#articles">返回文章列表</a>
+        <a href="{{ '/board.html' | relative_url }}">板子项目</a>
+      </div>
     </nav>
   </header>
 
@@ -362,12 +405,21 @@
         heading.id ||= slugify(heading.textContent, index);
         const item = document.createElement("li");
         const link = document.createElement("a");
-        link.href = `#${encodeURIComponent(heading.id)}`;
+        link.setAttribute("href", `#${heading.id}`);
         link.textContent = heading.textContent;
         item.append(link);
         tocList.append(item);
       });
       toc.hidden = headings.length < 3;
+
+      content.querySelectorAll("table").forEach((table) => {
+        if (table.parentElement?.classList.contains("table-scroll")) return;
+        const wrap = document.createElement("div");
+        wrap.className = "table-scroll";
+        wrap.tabIndex = 0;
+        table.replaceWith(wrap);
+        wrap.append(table);
+      });
 
       content.querySelectorAll("pre").forEach((pre) => {
         const button = document.createElement("button");
