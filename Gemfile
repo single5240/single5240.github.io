@@ -1,3 +1,4 @@
 source "https://rubygems.org"
 
-gem "github-pages", group: :jekyll_plugins
+# Pin the gem GitHub Pages currently runs (https://pages.github.com/versions.json).
+gem "github-pages", "232", group: :jekyll_plugins
