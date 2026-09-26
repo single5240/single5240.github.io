@@ -1,0 +1,69 @@
+/* One Dark-inspired Rouge syntax highlighting. */
+.highlight { color: #abb2bf; }
+.highlight .c,
+.highlight .ch,
+.highlight .cm,
+.highlight .c1,
+.highlight .cs,
+.highlight .cp,
+.highlight .cpf { color: #7f848e; font-style: italic; }
+.highlight .err { color: #e06c75; }
+.highlight .k,
+.highlight .kc,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt { color: #c678dd; }
+.highlight .o,
+.highlight .ow { color: #56b6c2; }
+.highlight .p,
+.highlight .pi { color: #abb2bf; }
+.highlight .n,
+.highlight .na,
+.highlight .nb,
+.highlight .bp,
+.highlight .no,
+.highlight .nd,
+.highlight .ni,
+.highlight .ne,
+.highlight .nl,
+.highlight .nn,
+.highlight .nx,
+.highlight .py { color: #abb2bf; }
+.highlight .nc,
+.highlight .nf,
+.highlight .fm { color: #61afef; }
+.highlight .nt { color: #e06c75; }
+.highlight .nv,
+.highlight .vc,
+.highlight .vg,
+.highlight .vi,
+.highlight .vm { color: #e06c75; }
+.highlight .s,
+.highlight .sa,
+.highlight .sb,
+.highlight .sc,
+.highlight .dl,
+.highlight .sd,
+.highlight .s1,
+.highlight .s2,
+.highlight .se,
+.highlight .sh,
+.highlight .si,
+.highlight .sx,
+.highlight .sr,
+.highlight .ss { color: #98c379; }
+.highlight .m,
+.highlight .mb,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .il,
+.highlight .mo { color: #d19a66; }
+.highlight .gd { color: #e06c75; }
+.highlight .gi { color: #98c379; }
+.highlight .gh,
+.highlight .gu { color: #61afef; font-weight: 700; }
+.highlight .ge { font-style: italic; }
+.highlight .gs { font-weight: 700; }

@@ -6,7 +6,7 @@ layout: null
   <url>
     <loc>{{ '/' | absolute_url }}</loc>
   </url>
-  {% assign sitemap_pages = site.pages | where_exp: "item", "item.layout == 'article'" %}
+  {% assign sitemap_pages = site.articles %}
   {% for item in sitemap_pages %}
   <url>
     <loc>{{ item.url | absolute_url }}</loc>

@@ -47,8 +47,28 @@ if (!existsSync(root)) {
 
 const robotsPath = join(root, "robots.txt");
 const sitemapPath = join(root, "sitemap.xml");
+const feedPath = join(root, "feed.xml");
+const manifestPath = join(root, "site.webmanifest");
 if (!existsSync(robotsPath)) failures.push("robots.txt: missing");
 if (!existsSync(sitemapPath)) failures.push("sitemap.xml: missing");
+if (!existsSync(feedPath)) failures.push("feed.xml: missing");
+if (!existsSync(manifestPath)) failures.push("site.webmanifest: missing");
+
+const feed = existsSync(feedPath) ? readFileSync(feedPath, "utf8") : "";
+if (feed && !/<entry(?:\s|>)/i.test(feed)) failures.push("feed.xml: contains no article entries");
+
+if (existsSync(manifestPath)) {
+  try {
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    for (const size of ["192x192", "512x512"]) {
+      const icon = manifest.icons?.find((item) => item.sizes === size && item.type === "image/png");
+      if (!icon) failures.push(`site.webmanifest: missing ${size} PNG icon`);
+      else if (!existsSync(join(root, icon.src.replace(/^\//, "")))) failures.push(`site.webmanifest: missing icon file ${icon.src}`);
+    }
+  } catch {
+    failures.push("site.webmanifest: invalid JSON");
+  }
+}
 
 const robots = existsSync(robotsPath) ? readFileSync(robotsPath, "utf8") : "";
 if (robots && !/^Sitemap:\s+\S+/m.test(robots)) failures.push("robots.txt: missing Sitemap directive");

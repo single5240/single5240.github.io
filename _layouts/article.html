@@ -19,9 +19,12 @@
   <meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
   <title>{{ page.title }} | single5240</title>
   <link rel="canonical" href="{{ page.url | absolute_url }}">
+  <link rel="alternate" type="application/atom+xml" title="single5240 笔记分享" href="{{ '/feed.xml' | relative_url }}">
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/syntax.css' | relative_url }}">
   <style>
     body {
       line-height: 1.75;
@@ -342,6 +345,7 @@
       <div class="nav-links">
         <a href="{{ '/' | relative_url }}#articles">返回文章列表</a>
         <a href="{{ '/board.html' | relative_url }}">板子项目</a>
+        <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
       </div>
     </nav>
   </header>
@@ -369,7 +373,7 @@
     <article class="content">
       {{ content }}
     </article>
-    {% assign article_pages = site.pages | where: "layout", "article" | sort: "date" %}
+    {% assign article_pages = site.articles | sort: "date" %}
     {% assign current_index = nil %}
     {% for item in article_pages %}
       {% if item.url == page.url %}{% assign current_index = forloop.index0 %}{% endif %}

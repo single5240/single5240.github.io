@@ -1,8 +1,19 @@
 title: single5240 笔记分享
-description: 个人笔记记录与分享。
+description: 记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。
 url: https://single5240.github.io
 lang: zh-CN
 timezone: Asia/Shanghai
+collections:
+  articles:
+    output: true
+    permalink: /articles/:name.html
+plugins:
+  - jekyll-feed
+feed:
+  path: /feed/posts.xml
+  collections:
+    articles:
+      path: /feed.xml
 exclude:
   - Gemfile
   - Gemfile.lock

@@ -6,23 +6,25 @@ title: single5240 | 笔记分享
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="个人笔记记录与分享。">
+  <meta name="description" content="记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。">
   <meta name="theme-color" content="#0f8b8d">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_CN">
   <meta property="og:title" content="single5240 | 笔记分享">
-  <meta property="og:description" content="个人笔记记录与分享。">
+  <meta property="og:description" content="记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。">
   <meta property="og:url" content="{{ '/' | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="single5240 | 笔记分享">
-  <meta name="twitter:description" content="个人笔记记录与分享。">
+  <meta name="twitter:description" content="记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。">
   <meta name="twitter:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
   <meta property="og:site_name" content="single5240 笔记分享">
   <meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
   <title>single5240 | 笔记分享</title>
   <link rel="canonical" href="{{ '/' | absolute_url }}">
+  <link rel="alternate" type="application/atom+xml" title="single5240 笔记分享" href="{{ '/feed.xml' | relative_url }}">
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
   <style>
@@ -476,6 +478,7 @@ title: single5240 | 笔记分享
         <a href="#articles">文章</a>
         <a href="#contact">联系</a>
         <a href="board.html">板子项目</a>
+        <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
         <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
       </div>
     </nav>
@@ -486,7 +489,7 @@ title: single5240 | 笔记分享
       <div>
         <p class="eyebrow">个人笔记</p>
         <h1 id="hero-title">记录与分享。</h1>
-        <p class="hero-text">记录学习和实践中的笔记。</p>
+        <p class="hero-text">记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。</p>
         <div class="hero-actions">
           <a class="button primary" href="#articles">浏览笔记</a>
         </div>
@@ -503,7 +506,7 @@ title: single5240 | 笔记分享
           <h2 id="articles-title">笔记</h2>
         </div>
 
-        {% assign articles = site.pages | where: "layout", "article" | sort: "date" | reverse %}
+        {% assign articles = site.articles | sort: "date" | reverse %}
         {% assign category_names = articles | map: "category" | uniq %}
         <div class="article-layout">
           <aside class="category-panel" aria-label="文章分类">
@@ -534,8 +537,8 @@ title: single5240 | 笔记分享
                 <p>{{ article.description }}</p>
                 <a class="article-link" href="{{ article.url | relative_url }}">阅读全文</a>
               </div>
-              <time class="article-date">
-                {% if article.date %}{{ article.date | date: "%Y-%m" }}{% endif %}
+              <time class="article-date"{% if article.date %} datetime="{{ article.date | date_to_xmlschema }}"{% endif %}>
+                {% if article.date %}{{ article.date | date: "%Y-%m-%d" }}{% endif %}
               </time>
             </article>
             {% endfor %}
@@ -603,7 +606,7 @@ title: single5240 | 笔记分享
       "@type": "WebSite",
       "name": "single5240 笔记分享",
       "url": {{ '/' | absolute_url | jsonify }},
-      "description": "个人笔记记录与分享。",
+      "description": "记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。",
       "inLanguage": "zh-CN"
     }
   </script>
