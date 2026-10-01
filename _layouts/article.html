@@ -92,9 +92,12 @@
       position: fixed;
       inset: 0 auto auto 0;
       z-index: 30;
-      width: 0;
-      height: 3px;
+      width: 100%;
+      height: 2px;
       background: var(--warm);
+      transform: scaleX(0);
+      transform-origin: left center;
+      will-change: transform;
     }
 
     .article-meta {
@@ -278,6 +281,7 @@
       font: inherit;
       font-size: 12px;
       cursor: pointer;
+      transition: transform 180ms ease, box-shadow 180ms ease;
     }
 
     .article-navigation {
@@ -292,6 +296,15 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    @media (hover: hover) {
+      .copy-code:hover,
+      .article-navigation a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(22, 35, 42, 0.12);
+      }
     }
 
     .article-navigation a:last-child { text-align: right; }
@@ -394,6 +407,7 @@
     {% endif %}
     <a class="back" href="{{ '/' | relative_url }}#articles">返回文章列表</a>
   </main>
+  <script src="{{ '/assets/js/motion.js' | relative_url }}" defer></script>
   <script>
     (() => {
       const content = document.querySelector(".content");
@@ -415,6 +429,17 @@
         tocList.append(item);
       });
       toc.hidden = headings.length < 3;
+
+      tocList.addEventListener("click", (event) => {
+        const link = event.target.closest("a");
+        if (!link) return;
+        const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+        if (!target) return;
+        event.preventDefault();
+        const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+        history.pushState(null, "", link.hash);
+      });
 
       content.querySelectorAll("table").forEach((table) => {
         if (table.parentElement?.classList.contains("table-scroll")) return;
@@ -446,7 +471,8 @@
       const progress = document.querySelector("#reading-progress");
       const updateProgress = () => {
         const height = document.documentElement.scrollHeight - window.innerHeight;
-        progress.style.width = `${height > 0 ? Math.min(100, window.scrollY / height * 100) : 0}%`;
+        const ratio = height > 0 ? Math.max(0, Math.min(1, window.scrollY / height)) : 0;
+        progress.style.transform = `scaleX(${ratio})`;
       };
       updateProgress();
       addEventListener("scroll", updateProgress, { passive: true });

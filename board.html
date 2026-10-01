@@ -117,6 +117,14 @@ permalink: /board.html
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
+      transition: opacity 600ms ease, transform 200ms ease, box-shadow 200ms ease;
+    }
+
+    @media (hover: hover) {
+      .panel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(22, 35, 42, 0.1);
+      }
     }
 
     .panel.wide {
@@ -294,6 +302,6 @@ permalink: /board.html
       </section>
     </main>
   </div>
-
+  <script src="{{ '/assets/js/motion.js' | relative_url }}" defer></script>
 </body>
 </html>

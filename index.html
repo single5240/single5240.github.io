@@ -157,7 +157,7 @@ title: single5240 | 笔记分享
       color: var(--ink);
       font-weight: 800;
       box-shadow: 0 8px 18px rgba(22, 35, 42, 0.07);
-      transition: transform 160ms ease;
+      transition: transform 180ms ease, box-shadow 180ms ease;
     }
 
     .button.primary {
@@ -167,7 +167,12 @@ title: single5240 | 笔记分享
     }
 
     .button:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(22, 35, 42, 0.13);
+    }
+
+    .button:active {
+      transform: translateY(0);
     }
 
     .feature-panel {
@@ -178,6 +183,26 @@ title: single5240 | 笔记分享
       border-radius: 8px;
       background: var(--panel);
       box-shadow: var(--shadow);
+    }
+
+    .hero-copy,
+    .feature-panel {
+      animation: hero-fade-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .feature-panel {
+      animation-delay: 180ms;
+    }
+
+    @keyframes hero-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .feature-image {
@@ -297,7 +322,7 @@ title: single5240 | 笔记分享
       grid-template-columns: 1fr auto;
       gap: 18px;
       padding: 22px;
-      transition: transform 160ms ease, box-shadow 160ms ease;
+      transition: opacity 600ms ease, transform 200ms ease, box-shadow 200ms ease;
     }
 
     .article-card:hover {
@@ -486,7 +511,7 @@ title: single5240 | 笔记分享
 
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
-      <div>
+      <div class="hero-copy">
         <p class="eyebrow">个人笔记</p>
         <h1 id="hero-title">记录与分享。</h1>
         <p class="hero-text">记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。</p>
@@ -576,6 +601,7 @@ title: single5240 | 笔记分享
   <footer class="site-footer">
     <span>© {{ site.time | date: "%Y" }} single5240. Built with GitHub Pages.</span>
   </footer>
+  <script src="{{ '/assets/js/motion.js' | relative_url }}" defer></script>
   <script>
     (() => {
       const cards = [...document.querySelectorAll(".article-card[data-category]")];
