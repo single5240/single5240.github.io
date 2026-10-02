@@ -26,8 +26,8 @@ title: single5240 | 笔记分享
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
-  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
-  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}?v={{ site.time | date: '%s' }}">
   <style>
     a {
       color: inherit;
@@ -500,12 +500,15 @@ title: single5240 | 笔记分享
         <span class="brand-mark">S5</span>
         <span>single5240</span>
       </a>
-      <div class="nav-links">
-        <a href="#articles">文章</a>
-        <a href="#contact">联系</a>
-        <a href="board.html">板子项目</a>
-        <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
-        <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
+      <div class="nav-actions">
+        <div class="nav-links">
+          <a href="#articles">文章</a>
+          <a href="#contact">联系</a>
+          <a href="board.html">板子项目</a>
+          <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
+          <a href="https://github.com/single5240" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+        <div class="theme-picker" data-theme-picker></div>
       </div>
     </nav>
   </header>

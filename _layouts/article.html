@@ -23,8 +23,8 @@
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
-  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
-  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}?v={{ site.time | date: '%s' }}">
   <link rel="stylesheet" href="{{ '/assets/css/syntax.css' | relative_url }}">
   <style>
     body {
@@ -356,10 +356,13 @@
         <span class="brand-mark">S5</span>
         <span>single5240</span>
       </a>
-      <div class="nav-links">
-        <a href="{{ '/' | relative_url }}#articles">返回文章列表</a>
-        <a href="{{ '/board.html' | relative_url }}">板子项目</a>
-        <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
+      <div class="nav-actions">
+        <div class="nav-links">
+          <a href="{{ '/' | relative_url }}#articles">返回文章列表</a>
+          <a href="{{ '/board.html' | relative_url }}">板子项目</a>
+          <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
+        </div>
+        <div class="theme-picker" data-theme-picker></div>
       </div>
     </nav>
   </header>

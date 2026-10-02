@@ -28,8 +28,8 @@ permalink: /board.html
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
-  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
-  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}?v={{ site.time | date: '%s' }}">
   <style>
     a {
       color: inherit;
@@ -226,11 +226,6 @@ permalink: /board.html
     }
 
     @media (max-width: 780px) {
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
       .grid {
         grid-template-columns: 1fr;
       }
@@ -245,7 +240,10 @@ permalink: /board.html
         <span class="brand-mark">S5</span>
         <span>single5240</span>
       </a>
-      <a class="back" href="{{ '/' | relative_url }}">返回主页</a>
+      <div class="topbar-actions">
+        <a class="back" href="{{ '/' | relative_url }}">返回主页</a>
+        <div class="theme-picker" data-theme-picker></div>
+      </div>
     </header>
 
     <main id="main-content">
