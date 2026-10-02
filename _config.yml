@@ -18,5 +18,6 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
+  - AGENTS.md
   - scripts
   - vendor
