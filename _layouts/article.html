@@ -23,6 +23,7 @@
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
   <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/syntax.css' | relative_url }}">
   <style>
@@ -41,7 +42,7 @@
       top: 0;
       z-index: 20;
       border-bottom: 1px solid var(--line);
-      background: rgba(248, 250, 247, 0.94);
+      background: var(--header-bg);
       backdrop-filter: blur(18px);
     }
 
@@ -80,7 +81,7 @@
       place-items: center;
       border-radius: 8px;
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       font-size: 14px;
     }
 
@@ -111,7 +112,7 @@
       padding: 5px 9px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      color: #47545c;
+      color: var(--tag-ink);
       font-size: 12px;
       font-weight: 750;
     }
@@ -133,7 +134,7 @@
       padding: 18px 20px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #eef5f3;
+      background: var(--alt-bg);
     }
 
     .toc[hidden] { display: none; }
@@ -185,7 +186,7 @@
 
     .content p,
     .content li {
-      color: #334049;
+      color: var(--content-copy);
     }
 
     .content img {
@@ -198,8 +199,8 @@
       padding: 16px 18px;
       border-left: 4px solid var(--accent);
       border-radius: 8px;
-      background: #eef5f3;
-      color: #334049;
+      background: var(--alt-bg);
+      color: var(--content-copy);
     }
 
     .content table {
@@ -235,15 +236,15 @@
     }
 
     .content th {
-      background: #eef5f3;
+      background: var(--alt-bg);
       color: var(--ink);
     }
 
     .content code {
       padding: 2px 5px;
       border-radius: 6px;
-      background: #eef5f3;
-      color: #0b6264;
+      background: var(--alt-bg);
+      color: var(--inline-code);
       font-family: ui-monospace, Consolas, "SFMono-Regular", "Sarasa Mono SC", "Noto Sans Mono CJK SC", "WenQuanYi Micro Hei Mono", monospace;
     }
 
@@ -259,8 +260,8 @@
       max-width: 100%;
       padding: 2.6rem 16px 16px;
       border-radius: 8px;
-      background: #17232a;
-      color: #e8f2ef;
+      background: var(--code-bg);
+      color: var(--code-ink);
     }
 
     .content pre code {
@@ -277,7 +278,7 @@
       border: 1px solid rgba(255, 255, 255, 0.28);
       border-radius: 6px;
       background: #263a44;
-      color: #fff;
+      color: var(--on-accent);
       font: inherit;
       font-size: 12px;
       cursor: pointer;

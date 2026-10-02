@@ -26,6 +26,7 @@ title: single5240 | 笔记分享
   <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+  <script src="{{ '/assets/js/theme.js' | relative_url }}"></script>
   <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}">
   <style>
     a {
@@ -37,8 +38,8 @@ title: single5240 | 笔记分享
       position: sticky;
       top: 0;
       z-index: 10;
-      border-bottom: 1px solid rgba(217, 225, 231, 0.8);
-      background: rgba(248, 250, 247, 0.92);
+      border-bottom: 1px solid var(--header-line);
+      background: var(--header-bg);
       backdrop-filter: blur(18px);
     }
 
@@ -66,7 +67,7 @@ title: single5240 | 笔记分享
       place-items: center;
       border-radius: 8px;
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       font-size: 14px;
       box-shadow: 0 8px 22px rgba(15, 139, 141, 0.25);
     }
@@ -134,7 +135,7 @@ title: single5240 | 笔记分享
 
     .hero-text {
       max-width: 660px;
-      color: #39454d;
+      color: var(--body-copy);
       font-size: 18px;
     }
 
@@ -163,7 +164,7 @@ title: single5240 | 笔记分享
     .button.primary {
       border-color: var(--accent);
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
     }
 
     .button:hover {
@@ -219,7 +220,7 @@ title: single5240 | 笔记分享
     }
 
     .section.alt {
-      background: #eef5f3;
+      background: var(--alt-bg);
     }
 
     .section-inner {
@@ -283,8 +284,8 @@ title: single5240 | 笔记分享
       gap: 10px;
       padding: 10px 12px;
       border-radius: 8px;
-      background: #f5f8f6;
-      color: #41505a;
+      background: var(--subtle-bg);
+      color: var(--body-copy);
       font-weight: 750;
     }
 
@@ -298,11 +299,11 @@ title: single5240 | 笔记分享
 
     .category[aria-pressed="true"] {
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
     }
 
     .category[aria-pressed="true"] span {
-      color: #fff;
+      color: var(--on-accent);
     }
 
     .category span {
@@ -374,7 +375,7 @@ title: single5240 | 笔记分享
       padding: 5px 9px;
       border: 1px solid var(--line);
       border-radius: 8px;
-      color: #47545c;
+      color: var(--tag-ink);
       font-size: 12px;
       font-weight: 750;
     }
@@ -403,13 +404,13 @@ title: single5240 | 笔记分享
       padding: 32px;
       border-radius: 8px;
       background: var(--deep);
-      color: #fff;
+      color: var(--on-accent);
     }
 
     .contact p {
       max-width: 680px;
       margin-bottom: 0;
-      color: #cbd7dd;
+      color: var(--contact-copy);
     }
 
     .contact-actions {
@@ -422,7 +423,7 @@ title: single5240 | 笔记分享
     .contact .button {
       border-color: rgba(255, 255, 255, 0.28);
       background: rgba(255, 255, 255, 0.08);
-      color: #fff;
+      color: var(--on-accent);
       box-shadow: none;
     }
 
