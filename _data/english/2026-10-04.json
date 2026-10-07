@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-04",
+  "sentence": "Programs must be written for people to read, and only incidentally for machines to execute.",
+  "source": {
+    "author": "Harold Abelson",
+    "work": "Structure and Interpretation of Computer Programs (SICP)",
+    "year": "1985",
+    "detail": "前言"
+  },
+  "translation": "程序首先是写给人读的，只是顺便让机器去执行。",
+  "grammar": [
+    "主干是 Programs must be written，被动语态，结构是“情态动词 + be + 过去分词”。",
+    "for people to read 和 for machines to execute 都是“for + 名词 + to do”结构，意思是“让某人/某物去做某事”，people 和 machines 是不定式的逻辑主语，两者形成对比。",
+    "and only incidentally 把重心拨到“人”这边，后半句省略了 must be written，完整说法是 and (must be written) only incidentally for machines to execute，这种并列省略很常见。"
+  ],
+  "vocab": [
+    {
+      "word": "incidentally",
+      "phonetic": "/ˌɪnsɪˈdentəli/",
+      "pos": "adv.",
+      "meaning": "附带地、顺便地；也常作“顺便说一句”",
+      "collocation": "incidentally = by the way",
+      "example": "I found the bug incidentally while cleaning up the logs."
+    },
+    {
+      "word": "execute",
+      "phonetic": "/ˈeksɪkjuːt/",
+      "pos": "v.",
+      "meaning": "执行（程序、命令），名词 execution",
+      "collocation": "execute a program / a command",
+      "example": "The MCU executes the interrupt handler first."
+    },
+    {
+      "word": "for sb. to do",
+      "phonetic": "",
+      "pos": "structure",
+      "meaning": "让某人去做某事",
+      "collocation": "",
+      "example": "We write comments for teammates to understand the logic."
+    }
+  ],
+  "note": "写得让人一眼能懂，机器自然也能跑，写固件时值得时不时想想这句。"
+}

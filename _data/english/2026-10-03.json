@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-03",
+  "sentence": "You can't connect the dots looking forward; you can only connect them looking backwards.",
+  "source": {
+    "author": "Steve Jobs",
+    "work": "Stanford Commencement Address",
+    "year": "2005",
+    "detail": "斯坦福大学毕业典礼演讲"
+  },
+  "translation": "往前看时，你无法把这些点串起来；只有回头看，才能把它们连在一起。",
+  "grammar": [
+    "句子由分号连接两个并列分句，结构完全对称：You can't connect the dots 对 you can only connect them，looking forward 对 looking backwards。分号在这里相当于一个隐形的 but，用对称制造反差，是演讲里常见的修辞。",
+    "looking forward / looking backwards 是现在分词短语作状语，表示“在……的时候”或“以……的方式”，逻辑主语就是句子的主语 you，可以理解成 when you look forward 的简化写法。",
+    "them 指代前面的 the dots，避免重复。"
+  ],
+  "vocab": [
+    {
+      "word": "connect the dots",
+      "phonetic": "/kəˈnekt ðə dɒts/",
+      "pos": "idiom",
+      "meaning": "把零散的信息或经历联系起来，看出其中的关联（字面是儿童连线游戏）",
+      "collocation": "",
+      "example": "It took me years to connect the dots between those early projects."
+    },
+    {
+      "word": "look forward",
+      "phonetic": "/lʊk ˈfɔːwəd/",
+      "pos": "phr. v.",
+      "meaning": "向前看、展望",
+      "collocation": "注意区分 look forward to + 名词/动名词（期待）",
+      "example": "I look forward to hearing from you."
+    },
+    {
+      "word": "backwards",
+      "phonetic": "/ˈbækwədz/",
+      "pos": "adv.",
+      "meaning": "向后、往回（英式常用 backwards，美式多用 backward）",
+      "collocation": "",
+      "example": "She took a step backwards."
+    }
+  ],
+  "note": "这句话的下一句是 \"So you have to trust that the dots will somehow connect in your future.\""
+}

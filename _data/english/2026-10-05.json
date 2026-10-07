@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-05",
+  "sentence": "So we beat on, boats against the current, borne back ceaselessly into the past.",
+  "source": {
+    "author": "F. Scott Fitzgerald",
+    "work": "The Great Gatsby",
+    "year": "1925",
+    "detail": "全书最后一句"
+  },
+  "translation": "于是我们奋力向前，如逆水行舟，却不断被浪潮推回到过去。",
+  "grammar": [
+    "整句主干很短，就是 we beat on（我们继续奋力前行）。句首 So 意为“于是、就这样”，用来收束全文。",
+    "boats against the current 是名词短语，作 we 的同位语，意思是“我们就是逆流中的小船”，比写成 like boats 更简洁，画面感更强。",
+    "borne back ceaselessly into the past 是过去分词短语作伴随状语。用 borne 而不是 bearing，是因为“我们”是被水流带回去的。规律：分词和逻辑主语是主动关系用 -ing，被动关系用过去分词。",
+    "主动的“前进”（beat on）和被动的“被推回”（borne back）同时发生、互相拉扯，这正是这句话的力量所在。"
+  ],
+  "vocab": [
+    {
+      "word": "beat on",
+      "phonetic": "/biːt ɒn/",
+      "pos": "phr. v.",
+      "meaning": "顶着阻力继续前进（beat 本义是敲打、拍击）",
+      "collocation": "beat against（拍打、撞击）",
+      "example": "The waves beat against the rocks."
+    },
+    {
+      "word": "current",
+      "phonetic": "/ˈkʌrənt/",
+      "pos": "n.",
+      "meaning": "水流、潮流",
+      "collocation": "against the current, ocean current, electric current",
+      "example": "The MCU draws very little current in sleep mode."
+    },
+    {
+      "word": "borne",
+      "phonetic": "/bɔːn/",
+      "pos": "v.",
+      "meaning": "bear 的过去分词，被承载、被带走（与 born 读音相同，意思不同）",
+      "collocation": "be borne by, airborne",
+      "example": "The cost will be borne by the company."
+    },
+    {
+      "word": "ceaselessly",
+      "phonetic": "/ˈsiːsləsli/",
+      "pos": "adv.",
+      "meaning": "不停地（cease + -less + -ly）",
+      "collocation": "近义词 constantly, endlessly",
+      "example": ""
+    }
+  ],
+  "note": "盖茨比一生都想追回过去，这句话说的是，我们都在努力向前，却总被过去牵着走。"
+}
