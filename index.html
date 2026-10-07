@@ -133,6 +133,64 @@ title: single5240 | 笔记分享
       line-height: 0.98;
     }
 
+    .daily-quote {
+      max-width: 40rem;
+      margin: 0 0 22px;
+      padding: 2px 0 2px 14px;
+      border-left: 2px solid var(--warm);
+      min-height: 7.5rem;
+    }
+
+    .daily-quote blockquote {
+      margin: 0;
+    }
+
+    .daily-quote-zh,
+    .daily-quote-en,
+    .daily-quote-meta {
+      margin-bottom: 0;
+    }
+
+    .daily-quote-zh {
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 650;
+      line-height: 1.65;
+    }
+
+    .daily-quote-en {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14.5px;
+      font-style: italic;
+      line-height: 1.55;
+    }
+
+    .daily-quote-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      margin-top: 8px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
+    .daily-quote-meta::before {
+      content: "——";
+      margin-right: 0.4em;
+      font-weight: 650;
+    }
+
+    .daily-quote-source:not([hidden])::before {
+      content: "·";
+      margin: 0 0.45em;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
     .hero-text {
       max-width: 660px;
       color: var(--body-copy);
@@ -518,6 +576,31 @@ title: single5240 | 笔记分享
       <div class="hero-copy">
         <p class="eyebrow">个人笔记</p>
         <h1 id="hero-title">记录与分享。</h1>
+        {% assign daily = site.data.quotes.first %}
+        {% assign quote_index = 0 %}
+        {% assign quote_count = site.data.quotes | size %}
+        {% if quote_count > 0 %}
+          {% assign day_number = site.time | date: "%s" | plus: 28800 | divided_by: 86400 | floor %}
+          {% assign quote_index = day_number | modulo: quote_count | floor %}
+          {% for quote in site.data.quotes %}
+            {% if forloop.index0 == quote_index %}
+              {% assign daily = quote %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        <figure class="daily-quote" data-daily-quote data-quote-index="{{ quote_index }}" aria-label="每日一句">
+          <blockquote>
+            <p class="daily-quote-zh" lang="zh-CN">{{ daily.zh | escape }}</p>
+            <p class="daily-quote-en" lang="en">{{ daily.en | escape }}</p>
+          </blockquote>
+          <figcaption class="daily-quote-meta">
+            <span class="daily-quote-author">{{ daily.author | escape }}</span><span class="daily-quote-source"{% unless daily.source %} hidden{% endunless %}>{{ daily.source | escape }}</span>
+          </figcaption>
+        </figure>
+        <script type="application/json" id="daily-quote-data">{{ site.data.quotes | jsonify }}</script>
+        <script>
+{% include daily-quote.js %}
+        </script>
         <p class="hero-text">记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。</p>
         <div class="hero-actions">
           <a class="button primary" href="#articles">浏览笔记</a>

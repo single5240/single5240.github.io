@@ -40,8 +40,89 @@ function attr(tag, name) {
   return tag.match(new RegExp(`${name}=["']([^"']+)["']`, "i"))?.[1] || "";
 }
 
+const quotesPath = resolve("_data/quotes.yml");
+const requiredQuoteFields = ["zh", "en", "author", "origin"];
+
+function unquoteYaml(value) {
+  if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) {
+    return JSON.parse(value);
+  }
+  return value;
+}
+
+function parseQuotes(text) {
+  const entries = [];
+  let current = null;
+  const lines = text.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim();
+    if (!line || line.startsWith("#")) continue;
+    if (line.startsWith("- ")) {
+      if (current) entries.push(current);
+      current = { line: index + 1 };
+      const rest = line.slice(2).trim();
+      if (rest) assignQuoteField(current, rest, index + 1);
+      continue;
+    }
+    if (!current) throw new Error(`line ${index + 1}: field outside an entry`);
+    assignQuoteField(current, line, index + 1);
+  }
+  if (current) entries.push(current);
+  return entries;
+}
+
+function assignQuoteField(entry, text, line) {
+  const match = text.match(/^([A-Za-z_]+):\s*(.*)$/);
+  if (!match) throw new Error(`line ${line}: expected key: value`);
+  entry[match[1]] = unquoteYaml(match[2].trim());
+}
+
+function validateQuotes() {
+  const problems = [];
+  if (!existsSync(quotesPath)) {
+    problems.push("_data/quotes.yml: missing");
+    return problems;
+  }
+
+  let quotes;
+  try {
+    quotes = parseQuotes(readFileSync(quotesPath, "utf8"));
+  } catch (error) {
+    problems.push(`_data/quotes.yml: ${error.message}`);
+    return problems;
+  }
+
+  if (quotes.length < 80) problems.push(`_data/quotes.yml: expected at least 80 quotes, found ${quotes.length}`);
+  const seen = new Set();
+  const counts = { cn: 0, foreign: 0 };
+  for (const [index, quote] of quotes.entries()) {
+    const label = `_data/quotes.yml entry ${index + 1}`;
+    for (const field of requiredQuoteFields) {
+      if (typeof quote[field] !== "string" || quote[field].trim() === "") {
+        problems.push(`${label}: missing ${field}`);
+      }
+    }
+    if (quote.source !== undefined && (typeof quote.source !== "string" || quote.source.trim() === "")) {
+      problems.push(`${label}: source is present but empty`);
+    }
+    if (quote.origin === "cn" || quote.origin === "foreign") counts[quote.origin] += 1;
+    else if (quote.origin) problems.push(`${label}: origin must be cn or foreign`);
+    if (quote.zh && seen.has(quote.zh)) problems.push(`${label}: duplicate zh`);
+    if (quote.zh) seen.add(quote.zh);
+  }
+
+  const shareFloor = Math.ceil(quotes.length * 0.4);
+  if (quotes.length && (counts.cn < shareFloor || counts.foreign < shareFloor)) {
+    problems.push(`_data/quotes.yml: expected at least ${shareFloor} cn and ${shareFloor} foreign quotes, found cn ${counts.cn}, foreign ${counts.foreign}`);
+  }
+  return problems;
+}
+
+failures.push(...validateQuotes());
+
 if (!existsSync(root)) {
-  console.error("_site does not exist. Build the Jekyll site first.");
+  failures.push("_site does not exist. Build the Jekyll site first.");
+  console.error(failures.join("\n"));
   process.exit(1);
 }
 
@@ -109,6 +190,25 @@ for (const file of htmlFiles) {
   if (noindex && listed) failures.push(`${label}: noindex page is listed in sitemap.xml`);
   if (!noindex && !listed) failures.push(`${label}: indexable page is missing from sitemap.xml`);
 
+  if (path === "/") {
+    const quoteData = html.match(/<script type="application\/json" id="daily-quote-data">([\s\S]*?)<\/script>/);
+    if (!quoteData) failures.push("index.html: missing embedded daily quote data");
+    else {
+      try {
+        const embedded = JSON.parse(quoteData[1]);
+        if (!Array.isArray(embedded) || embedded.length < 80) {
+          failures.push("index.html: embedded quote data is missing or too short");
+        } else if (embedded.some((item) => !item.zh || !item.en || !item.author || !item.origin)) {
+          failures.push("index.html: an embedded quote is missing a required field");
+        }
+      } catch {
+        failures.push("index.html: embedded quote data is not valid JSON");
+      }
+    }
+    if (!html.includes("data-daily-quote")) failures.push("index.html: missing daily quote");
+    if (!html.includes("Asia/Shanghai")) failures.push("index.html: daily quote does not document Asia/Shanghai");
+  }
+
   for (const match of html.matchAll(/(?:href|src)=["']([^"']+)["']/gi)) {
     const href = match[1];
     if (/^(?:https?:|mailto:|tel:|javascript:|data:|#)/i.test(href)) continue;
@@ -132,4 +232,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Site structure, metadata, sitemap, and internal links look good.");
+console.log("Site structure, metadata, sitemap, quotes, and internal links look good.");
