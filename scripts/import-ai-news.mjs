@@ -156,9 +156,19 @@ function chromeBlock({ title, description, canonical, weekId }) {
 .s5-news-sources h2 { margin: 0 0 10px; font-size: 16px; }
 .s5-news-sources ol { margin: 0; padding-left: 1.2em; }
 .s5-news-sources a { color: var(--accent, #1d5fbf); overflow-wrap: anywhere; }
-@media (max-width: 640px) {
+@media (max-width: 760px) {
   .s5-news-bar { padding-right: 14px; }
-  .am-toolbar { top: 78px !important; }
+  .am-toolbar {
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100% - 24px);
+    margin: 8px 12px 0;
+  }
+  .am-sheet,
+  .am-doc { padding-top: 16px !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .s5-news-bar, .s5-news-bar a { transition: none; scroll-behavior: auto; }
