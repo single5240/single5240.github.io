@@ -7,6 +7,9 @@ collections:
   articles:
     output: true
     permalink: /articles/:name.html
+  english:
+    output: true
+    permalink: /english/:name.html
 plugins:
   - jekyll-feed
 feed:
@@ -21,3 +24,4 @@ exclude:
   - AGENTS.md
   - scripts
   - vendor
+  - docs

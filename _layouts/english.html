@@ -1,0 +1,78 @@
+---
+layout: frame
+---
+{% assign entry = site.data.english[page.day] %}
+<article class="study">
+  <h1>{{ page.title }}</h1>
+  {% if entry %}
+    <blockquote class="study-sentence" lang="en">
+      <p>{{ entry.sentence | escape }}</p>
+    </blockquote>
+    <p class="study-source">
+      {{ entry.source.author | escape }}
+      {% if entry.source.work.size > 0 %} · <cite>{{ entry.source.work | escape }}</cite>{% endif %}
+      {% if entry.source.year %} · {{ entry.source.year }}{% endif %}
+      {% if entry.source.detail.size > 0 %} · {{ entry.source.detail | escape }}{% endif %}
+    </p>
+
+    <h2>译文</h2>
+    <p>{{ entry.translation | escape }}</p>
+
+    {% if entry.grammar.size > 0 %}
+    <h2>语法</h2>
+    <ol>
+      {% for point in entry.grammar %}
+      <li>{{ point | escape }}</li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+
+    {% if entry.vocab.size > 0 %}
+    <h2>词汇</h2>
+    <ul class="vocab">
+      {% for item in entry.vocab %}
+      <li>
+        <p class="vocab-word">
+          <span lang="en">{{ item.word | escape }}</span>
+          {% if item.phonetic.size > 0 %}<span class="phonetic" lang="en">{{ item.phonetic | escape }}</span>{% endif %}
+          {% if item.pos.size > 0 %}<span class="pos">{{ item.pos | escape }}</span>{% endif %}
+        </p>
+        <p>{{ item.meaning | escape }}</p>
+        {% if item.collocation.size > 0 %}<p>搭配：{{ item.collocation | escape }}</p>{% endif %}
+        {% if item.example.size > 0 %}<p class="example" lang="en">{{ item.example | escape }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if entry.note.size > 0 %}
+    <h2>笔记</h2>
+    <p class="note">{{ entry.note | escape }}</p>
+    {% endif %}
+  {% else %}
+    <p>这一天的内容还没有写进数据文件。</p>
+  {% endif %}
+
+  {% assign ordered = site.english | sort: "day" %}
+  {% assign current_index = nil %}
+  {% for item in ordered %}
+    {% if item.url == page.url %}{% assign current_index = forloop.index0 %}{% endif %}
+  {% endfor %}
+  {% if current_index != nil %}
+    {% assign previous_index = current_index | minus: 1 %}
+    {% assign next_index = current_index | plus: 1 %}
+    <nav class="pager" aria-label="相邻的每日英语">
+      {% if current_index > 0 %}
+        {% assign previous_day = ordered[previous_index] %}
+        <a href="{{ previous_day.url | relative_url }}">上一则 · {{ previous_day.day }}</a>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if next_index < ordered.size %}
+        {% assign next_day = ordered[next_index] %}
+        <a href="{{ next_day.url | relative_url }}">下一则 · {{ next_day.day }}</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+  <p><a href="{{ '/english/index.html' | relative_url }}">全部每日英语</a></p>
+</article>

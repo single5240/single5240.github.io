@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-07",
+  "sentence": "I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived.",
+  "source": {
+    "author": "Henry David Thoreau",
+    "work": "Walden",
+    "year": 1854,
+    "detail": "第二章 \"Where I Lived, and What I Lived For\""
+  },
+  "translation": "我走进森林，是因为我想从容、有意识地生活，只去面对生活中最本质的东西，看看自己能否学到生活要教给我的道理，免得到了临终之时，才发现自己从未真正活过。",
+  "grammar": [
+    "主干是 I went to the woods，后面是 because 引导的原因状语从句；wished 后接一串并列不定式（to live / (to) front / (to) see / not (to) discover），后几个 to 省略。否定不定式 not 放在 to do 前。",
+    "when I came to die 中 come to do 意为“到了……的时候”；discover that I had not lived 用过去完成时，表示“过去的过去”。"
+  ],
+  "vocab": [
+    {
+      "word": "deliberately",
+      "phonetic": "/dɪˈlɪbərətli/",
+      "pos": "adv.",
+      "meaning": "有意识地、从容审慎地",
+      "collocation": "",
+      "example": "He spoke slowly and deliberately."
+    },
+    {
+      "word": "front",
+      "phonetic": "/frʌnt/",
+      "pos": "v.",
+      "meaning": "面对、直面（较古典，现代多用 confront）",
+      "collocation": "",
+      "example": "The house fronts the river."
+    },
+    {
+      "word": "essential",
+      "phonetic": "/ɪˈsenʃl/",
+      "pos": "adj.",
+      "meaning": "本质的、必不可少的",
+      "collocation": "essential to/for sth",
+      "example": "Sleep is essential for good health."
+    },
+    {
+      "word": "come to do",
+      "phonetic": "",
+      "pos": "phrase",
+      "meaning": "逐渐、终于开始做某事",
+      "collocation": "",
+      "example": "I came to realize that practice matters more than talent."
+    },
+    {
+      "word": "see if",
+      "phonetic": "",
+      "pos": "phrase",
+      "meaning": "看看是否……",
+      "collocation": "",
+      "example": "Let me see if the code compiles."
+    }
+  ],
+  "note": "写代码也一样，deliberately 地去做，比赶工更有收获。"
+}

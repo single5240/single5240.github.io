@@ -1,0 +1,515 @@
+# 每日一句。首页按 Asia/Shanghai（UTC+8，无夏令时）的日历日选取，
+# 同一天所有访客看到同一句，不需要每天重新构建。
+# dayNumber = floor((unix 秒 + 28800) / 86400)
+# step = 不小于 floor(条数/3)+1、且与条数互质的最小整数（100 条时为 37）
+# 序号 = (dayNumber % 条数) * step % 条数
+# 一个完整周期内每句恰好出现一次；相邻两天在库里相隔 step 条。
+# 预览某一天：在首页地址后加 ?date=YYYY-MM-DD（按这个公历日期，不是本机时区）。
+#
+# 增改条目时保持下面的字段，一条一行，字符串用双引号，内部双引号写成 \"。
+#   origin  必填，cn（中文出处）或 foreign（外文出处）
+#   author  必填
+#   source  可选
+#   zh      必填，中文原文，或外文的准确中译
+#   en      必填，外文原文或通行英译，或中文的忠实英译
+# 只收录出处可靠的原话，不要编造，也不要收录归属含糊的网络名言。
+- origin: cn
+  author: "孔子"
+  source: "《论语·为政》"
+  zh: "知之为知之，不知为不知，是知也。"
+  en: "When you know a thing, to hold that you know it; and when you do not know a thing, to allow that you do not know it—this is knowledge."
+- origin: cn
+  author: "孔子"
+  source: "《论语·学而》"
+  zh: "学而时习之，不亦说乎？"
+  en: "Is it not a pleasure to learn and, from time to time, to practice what one has learned?"
+- origin: cn
+  author: "孔子"
+  source: "《论语·为政》"
+  zh: "温故而知新，可以为师矣。"
+  en: "One who reviews the old and thereby comes to know the new is fit to be a teacher."
+- origin: cn
+  author: "孔子"
+  source: "《论语·为政》"
+  zh: "学而不思则罔，思而不学则殆。"
+  en: "Learning without thinking is labor lost; thinking without learning is perilous."
+- origin: cn
+  author: "孔子"
+  source: "《论语·雍也》"
+  zh: "知之者不如好之者，好之者不如乐之者。"
+  en: "Those who know it are not the equal of those who love it; those who love it are not the equal of those who delight in it."
+- origin: cn
+  author: "孔子"
+  source: "《论语·卫灵公》"
+  zh: "工欲善其事，必先利其器。"
+  en: "A craftsperson who wants to do good work must first sharpen the tools."
+- origin: cn
+  author: "孔子"
+  source: "《论语·述而》"
+  zh: "三人行，必有我师焉。择其善者而从之，其不善者而改之。"
+  en: "When three walk together, there is surely a teacher for me among them. I follow what is good in them, and correct what is not."
+- origin: cn
+  author: "孔子"
+  source: "《论语·里仁》"
+  zh: "见贤思齐焉，见不贤而内自省也。"
+  en: "When you meet someone worthy, think of equaling them; when you meet someone unworthy, look inward and examine yourself."
+- origin: cn
+  author: "曾子"
+  source: "《论语·泰伯》"
+  zh: "士不可以不弘毅，任重而道远。"
+  en: "A scholar must be broad-minded and resolute. The burden is heavy, and the road is long."
+- origin: cn
+  author: "蔡元培"
+  source: "《答林琴南君》，1919"
+  zh: "对于学说，仿世界各大学通例，循思想自由原则，取兼容并包主义。"
+  en: "Regarding scholarship, we follow the common practice of universities around the world: the principle of freedom of thought, and an inclusive approach."
+- origin: cn
+  author: "荀子"
+  source: "《劝学》"
+  zh: "不积跬步，无以至千里；不积小流，无以成江海。"
+  en: "Without piling up half-steps, you cannot travel a thousand li; without gathering small streams, you cannot form a river or a sea."
+- origin: cn
+  author: "荀子"
+  source: "《劝学》"
+  zh: "锲而舍之，朽木不折；锲而不舍，金石可镂。"
+  en: "Carve for a while and then quit, and even rotten wood will not break; keep carving, and metal and stone can be engraved."
+- origin: cn
+  author: "华罗庚"
+  source: "《从孙子的神奇妙算谈起》"
+  zh: "勤能补拙是良训，一分辛苦一分才。"
+  en: "Diligence can make up for clumsiness—that is a sound lesson; each share of effort becomes a share of ability."
+- origin: cn
+  author: "荀子"
+  source: "《劝学》"
+  zh: "青，取之于蓝，而青于蓝。"
+  en: "Blue dye is taken from the indigo plant, yet it is bluer than the plant."
+- origin: cn
+  author: "荀子"
+  source: "《劝学》"
+  zh: "不登高山，不知天之高也；不临深溪，不知地之厚也。"
+  en: "Without climbing a high mountain, you do not know how high the sky is; without looking into a deep ravine, you do not know how thick the earth is."
+- origin: cn
+  author: "子思"
+  source: "《礼记·中庸》"
+  zh: "博学之，审问之，慎思之，明辨之，笃行之。"
+  en: "Study it broadly, inquire into it carefully, think it over thoroughly, sift it clearly, and practice it earnestly."
+- origin: cn
+  author: "子思"
+  source: "《礼记·中庸》"
+  zh: "人一能之，己百之；人十能之，己千之。"
+  en: "What another can do in one try, do in a hundred; what another can do in ten, do in a thousand."
+- origin: cn
+  author: "《大学》"
+  source: "《礼记·大学》"
+  zh: "致知在格物。"
+  en: "The extension of knowledge lies in investigating things."
+- origin: cn
+  author: "《学记》"
+  source: "《礼记·学记》"
+  zh: "玉不琢，不成器；人不学，不知道。"
+  en: "Jade that is not cut does not become a vessel; a person who does not study does not know the Way."
+- origin: cn
+  author: "《学记》"
+  source: "《礼记·学记》"
+  zh: "学然后知不足，教然后知困。"
+  en: "After learning, one knows what one lacks; after teaching, one knows where one is stuck."
+- origin: cn
+  author: "老子"
+  source: "《道德经·第六十四章》"
+  zh: "千里之行，始于足下。"
+  en: "A journey of a thousand li begins beneath one's feet."
+- origin: cn
+  author: "老子"
+  source: "《道德经·第六十四章》"
+  zh: "合抱之木，生于毫末；九层之台，起于累土。"
+  en: "A tree that fills the embrace grows from a tiny shoot; a terrace of nine stories rises from piled earth."
+- origin: cn
+  author: "老子"
+  source: "《道德经·第六十三章》"
+  zh: "图难于其易，为大于其细。"
+  en: "Tackle what is difficult while it is still easy; do what is great while it is still small."
+- origin: cn
+  author: "鲁迅"
+  source: "《故乡》"
+  zh: "其实地上本没有路，走的人多了，也便成了路。"
+  en: "There was no road on the ground to begin with; it became a road only because many people walked it."
+- origin: cn
+  author: "庄子"
+  source: "《养生主》"
+  zh: "臣之所好者，道也，进乎技矣。"
+  en: "What I care about is the Way, which goes beyond skill."
+- origin: cn
+  author: "庄子"
+  source: "《养生主》"
+  zh: "吾生也有涯，而知也无涯。以有涯随无涯，殆已。"
+  en: "My life has a limit, but knowledge has none. To chase the limitless with the limited is perilous."
+- origin: cn
+  author: "《周易》"
+  source: "《乾卦·象传》"
+  zh: "天行健，君子以自强不息。"
+  en: "As heaven moves with vigor, a noble person strives without ceasing to improve."
+- origin: cn
+  author: "《尚书》"
+  source: "《周官》"
+  zh: "功崇惟志，业广惟勤。"
+  en: "Achievement is made great by purpose; an undertaking is made broad by diligence."
+- origin: cn
+  author: "《管子》"
+  source: "《权修》"
+  zh: "一年之计，莫如树谷；十年之计，莫如树木；终身之计，莫如树人。"
+  en: "For a plan of one year, nothing compares with planting grain; for a plan of ten years, nothing compares with planting trees; for a plan of a lifetime, nothing compares with cultivating people."
+- origin: cn
+  author: "韩非"
+  source: "《韩非子·五蠹》"
+  zh: "世异则事异，事异则备变。"
+  en: "When the age changes, affairs change; when affairs change, the means must change."
+- origin: cn
+  author: "孙武"
+  source: "《孙子兵法·谋攻篇》"
+  zh: "知彼知己者，百战不殆。"
+  en: "One who knows the other and knows oneself will not be in danger in a hundred battles."
+- origin: cn
+  author: "孙武"
+  source: "《孙子兵法·始计篇》"
+  zh: "多算胜，少算不胜。"
+  en: "Those who calculate more win; those who calculate less do not."
+- origin: cn
+  author: "墨子"
+  source: "《墨子·修身》"
+  zh: "志不强者智不达。"
+  en: "If the will is not firm, understanding does not get through."
+- origin: cn
+  author: "屈原"
+  source: "《离骚》"
+  zh: "路漫漫其修远兮，吾将上下而求索。"
+  en: "The road is long and far; I will search high and low."
+- origin: cn
+  author: "诸葛亮"
+  source: "《诫子书》"
+  zh: "非学无以广才，非志无以成学。"
+  en: "Without study, talent cannot broaden; without resolve, study cannot be completed."
+- origin: cn
+  author: "诸葛亮"
+  source: "《诫子书》"
+  zh: "非淡泊无以明志，非宁静无以致远。"
+  en: "Without simplicity, one cannot make one's aim clear; without stillness, one cannot reach far."
+- origin: cn
+  author: "韩愈"
+  source: "《师说》"
+  zh: "师者，所以传道受业解惑也。"
+  en: "A teacher is one who transmits the Way, passes on a craft, and resolves doubts."
+- origin: cn
+  author: "韩愈"
+  source: "《进学解》"
+  zh: "业精于勤，荒于嬉；行成于思，毁于随。"
+  en: "A craft is refined by diligence and wasted by play; conduct is formed by thought and ruined by drifting along."
+- origin: cn
+  author: "刘禹锡"
+  source: "《浪淘沙》"
+  zh: "千淘万漉虽辛苦，吹尽狂沙始到金。"
+  en: "A thousand washings are hard work; only when the wild sand is blown away does one reach the gold."
+- origin: cn
+  author: "杜甫"
+  source: "《奉赠韦左丞丈二十二韵》"
+  zh: "读书破万卷，下笔如有神。"
+  en: "Read ten thousand volumes until they are worn through, and the brush moves as if inspired."
+- origin: cn
+  author: "朱熹"
+  source: "《观书有感》"
+  zh: "问渠那得清如许？为有源头活水来。"
+  en: "How can the channel be so clear? Living water keeps flowing from its source."
+- origin: cn
+  author: "陆游"
+  source: "《冬夜读书示子聿》"
+  zh: "纸上得来终觉浅，绝知此事要躬行。"
+  en: "What comes only from paper still feels shallow; to know a thing completely, you must practice it yourself."
+- origin: cn
+  author: "苏轼"
+  source: "《稼说送张琥》"
+  zh: "博观而约取，厚积而薄发。"
+  en: "Look widely and take with restraint; accumulate deeply and bring it forth sparingly."
+- origin: cn
+  author: "王安石"
+  source: "《游褒禅山记》"
+  zh: "世之奇伟、瑰怪、非常之观，常在于险远，而人之所罕至焉。"
+  en: "The world's grand, rare, and extraordinary sights usually lie in dangerous, remote places that people seldom reach."
+- origin: cn
+  author: "师旷"
+  source: "《说苑·建本》"
+  zh: "少而好学，如日出之阳。"
+  en: "To love learning while young is like the sun at dawn."
+- origin: cn
+  author: "王阳明"
+  source: "《传习录》"
+  zh: "知而不行，只是未知。"
+  en: "To know and yet not act is simply not yet to know."
+- origin: cn
+  author: "曾国藩"
+  source: "《曾国藩家书》"
+  zh: "士人读书，第一要有志，第二要有识，第三要有恒。"
+  en: "For a scholar's reading, the first need is purpose, the second is judgment, and the third is perseverance."
+- origin: cn
+  author: "陶行知"
+  source: "《行是知之始》"
+  zh: "行是知之始，知是行之成。"
+  en: "Action is the beginning of knowing; knowing is the completion of action."
+- origin: cn
+  author: "陶行知"
+  source: "《手脑相长歌》"
+  zh: "人生两个宝，双手与大脑。"
+  en: "Life has two treasures: the two hands and the brain."
+- origin: cn
+  author: "胡适"
+  source: "《介绍我自己的思想》"
+  zh: "大胆的假设，小心的求证。"
+  en: "Bold hypotheses, and careful verification."
+- origin: foreign
+  author: "牛顿"
+  source: "1675年致胡克的信"
+  zh: "如果我看得更远，那是因为站在巨人的肩上。"
+  en: "If I have seen further it is by standing on the shoulders of Giants."
+- origin: foreign
+  author: "培根"
+  source: "Meditationes Sacrae，1597"
+  zh: "知识本身就是力量。"
+  en: "Knowledge itself is power."
+- origin: foreign
+  author: "培根"
+  source: "《学术的进展》"
+  zh: "若从确信出发，必将止于怀疑；若甘于从怀疑出发，则将止于确信。"
+  en: "If a man will begin with certainties, he shall end in doubts; but if he will be content to begin with doubts, he shall end in certainties."
+- origin: foreign
+  author: "笛卡尔"
+  source: "《谈谈方法》"
+  zh: "把考查中的每一个难题，分成尽可能多、而且为解决它所必要的部分。"
+  en: "Divide each of the difficulties under examination into as many parts as possible, and as might be necessary in order to resolve them."
+- origin: foreign
+  author: "亚里士多德"
+  source: "《形而上学》"
+  zh: "人天生渴望认识。"
+  en: "All men by nature desire to know."
+- origin: foreign
+  author: "亚里士多德"
+  source: "《尼各马可伦理学》"
+  zh: "凡我们在能够做之前必须先学的事，都是通过去做才学会的。"
+  en: "For the things we have to learn before we can do them, we learn by doing them."
+- origin: foreign
+  author: "苏格拉底"
+  source: "柏拉图《申辩篇》"
+  zh: "未经省察的人生不值得过。"
+  en: "The unexamined life is not worth living."
+- origin: foreign
+  author: "塞涅卡"
+  source: "《道德书简》第104封"
+  zh: "并不是因为事情难我们才不敢，而是因为我们不敢，事情才变得难。"
+  en: "It is not because things are difficult that we do not dare; it is because we do not dare that they are difficult."
+- origin: foreign
+  author: "范内瓦·布什"
+  source: "《诚如所思》，《大西洋月刊》1945年7月"
+  zh: "就专业而言，我们传递和审阅研究成果的方法已经落后了好几代，如今已完全不能胜任。"
+  en: "Professionally our methods of transmitting and reviewing the results of research are generations old and by now are totally inadequate for their purpose."
+- origin: foreign
+  author: "法拉第"
+  source: "实验日记，1849年3月19日"
+  zh: "没有什么事会奇妙到不可能为真，只要它与自然的法则相符。"
+  en: "Nothing is too wonderful to be true, if it be consistent with the laws of nature."
+- origin: foreign
+  author: "巴斯德"
+  source: "1854年里尔大学演讲"
+  zh: "在观察的领域里，机遇只偏爱有准备的头脑。"
+  en: "In the fields of observation chance favors only the prepared mind."
+- origin: foreign
+  author: "开尔文"
+  source: "1883年《电气测量单位》演讲"
+  zh: "当你能测量你所谈论的东西，并且用数字表达它，你才对它有所认识；不能测量、不能用数字表达时，你的认识就是贫乏而不足的。"
+  en: "When you can measure what you are speaking about, and express it in numbers, you know something about it; but when you cannot measure it, when you cannot express it in numbers, your knowledge is of a meagre and unsatisfactory kind."
+- origin: foreign
+  author: "居里夫人"
+  source: "《皮埃尔·居里》自传笔记"
+  zh: "我所学到的是：进步的道路既不迅捷，也不容易。"
+  en: "I was taught that the way of progress was neither swift nor easy."
+- origin: foreign
+  author: "爱因斯坦"
+  source: "1929年接受乔治·西尔维斯特·维瑞克访谈"
+  zh: "想象力比知识更重要。知识是有限的，而想象力拥抱着整个世界。"
+  en: "Imagination is more important than knowledge. For knowledge is limited, whereas imagination embraces the entire world."
+- origin: foreign
+  author: "爱因斯坦"
+  source: "《生活》杂志，1955年5月2日"
+  zh: "重要的是不要停止追问。好奇心自有其存在的理由。"
+  en: "The important thing is not to stop questioning. Curiosity has its own reason for existence."
+- origin: foreign
+  author: "费曼"
+  source: "《草包族科学》，1974"
+  zh: "第一条原则是你绝不能欺骗自己——而你自己正是最容易被你欺骗的人。"
+  en: "The first principle is that you must not fool yourself—and you are the easiest person to fool."
+- origin: foreign
+  author: "费曼"
+  source: "《科学的价值》，1955"
+  zh: "我可以与怀疑、不确定和不知道共处。活在未知之中，比握着也许错误的答案有趣得多。"
+  en: "I can live with doubt and uncertainty and not knowing. I think it is much more interesting to live not knowing than to have answers which might be wrong."
+- origin: foreign
+  author: "费曼"
+  source: "加州理工学院黑板，1988"
+  zh: "凡我不能创造的，我就不算理解。"
+  en: "What I cannot create, I do not understand."
+- origin: foreign
+  author: "图灵"
+  source: "《计算机器与智能》，1950"
+  zh: "我们只能看见不远的前方，但那里已有许多需要去做的事。"
+  en: "We can only see a short distance ahead, but we can see plenty there that needs to be done."
+- origin: foreign
+  author: "爱达·洛芙莱斯"
+  source: "关于分析机的笔记 A，1843"
+  zh: "分析机织出代数的图案，正如雅卡尔提花机织出花朵与叶子。"
+  en: "The Analytical Engine weaves algebraical patterns just as the Jacquard loom weaves flowers and leaves."
+- origin: foreign
+  author: "爱达·洛芙莱斯"
+  source: "关于分析机的笔记 G，1843"
+  zh: "分析机并不自命能原创任何东西。凡是我们知道如何吩咐它去做的，它都能做。"
+  en: "The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform."
+- origin: foreign
+  author: "阿瑟·克拉克"
+  source: "《未来的轮廓》1973年修订版"
+  zh: "任何足够先进的技术，都与魔法无异。"
+  en: "Any sufficiently advanced technology is indistinguishable from magic."
+- origin: foreign
+  author: "齐奥尔科夫斯基"
+  source: "1911年致《航空通报》的信"
+  zh: "地球是人类的摇篮，但人类不能永远留在摇篮里。"
+  en: "Earth is the cradle of humanity, but mankind cannot stay in the cradle forever."
+- origin: foreign
+  author: "爱迪生"
+  source: "《哈珀月刊》1932年9月"
+  zh: "天才是百分之一的灵感，加上百分之九十九的汗水。"
+  en: "Genius is one percent inspiration and ninety-nine percent perspiration."
+- origin: foreign
+  author: "富兰克林"
+  source: "《穷理查年鉴》，1736"
+  zh: "勤奋是好运之母。"
+  en: "Diligence is the mother of good luck."
+- origin: foreign
+  author: "约翰·谢德"
+  source: "Salt from My Attic，1928"
+  zh: "船停在港里是安全的，但船不是为此而造的。"
+  en: "A ship in harbor is safe, but that is not what ships are built for."
+- origin: foreign
+  author: "圣埃克苏佩里"
+  source: "《人的大地》，1939"
+  zh: "完美并不是在无可再添的时候达到的，而是在无可再减的时候。"
+  en: "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away."
+- origin: foreign
+  author: "乔治·博克斯"
+  source: "与诺曼·德雷珀，《经验模型构建与响应面》，1987"
+  zh: "本质上，所有模型都是错的，但有些是有用的。"
+  en: "Essentially, all models are wrong, but some are useful."
+- origin: foreign
+  author: "约翰·图基"
+  source: "《数据分析的未来》，1962"
+  zh: "对那个往往含糊的正确问题给出近似回答，远好过对那个总能被说精确的错误问题给出确切回答。"
+  en: "Far better an approximate answer to the right question, which is often vague, than an exact answer to the wrong question, which can always be made precise."
+- origin: foreign
+  author: "卡尔·波普尔"
+  source: "《猜想与反驳》"
+  zh: "我们的知识只能是有限的，而我们的无知必然是无限的。"
+  en: "Our knowledge can only be finite, while our ignorance must necessarily be infinite."
+- origin: foreign
+  author: "卡尔·波普尔"
+  source: "《猜想与反驳》"
+  zh: "科学必须从神话开始，并且从对神话的批判开始。"
+  en: "Science must begin with myths, and with the criticism of myths."
+- origin: foreign
+  author: "海森堡"
+  source: "《物理与哲学》，1958"
+  zh: "我们所观察到的并不是自然本身，而是暴露在我们提问方式之下的自然。"
+  en: "What we observe is not nature itself, but nature exposed to our method of questioning."
+- origin: foreign
+  author: "霍尔"
+  source: "1980年图灵奖演讲"
+  zh: "构造软件设计有两条路：一条是简单到明显没有缺陷，另一条是复杂到看不出明显的缺陷。前一条要难得多。"
+  en: "There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies, and the other way is to make it so complicated that there are no obvious deficiencies. The first method is far more difficult."
+- origin: foreign
+  author: "戴克斯特拉"
+  source: "《结构程序设计札记》，1970"
+  zh: "程序测试可以用来表明缺陷存在，却从不能表明缺陷不存在。"
+  en: "Program testing can be used to show the presence of bugs, but never to show their absence."
+- origin: foreign
+  author: "戴克斯特拉"
+  source: "EWD498，1975"
+  zh: "简单是可靠的前提。"
+  en: "Simplicity is prerequisite for reliability."
+- origin: foreign
+  author: "高德纳"
+  source: "1974年图灵奖演讲《作为艺术的计算机程序设计》"
+  zh: "作为教师和作者，我工作的首要目标，是帮助人们学会写出优美的程序。"
+  en: "The chief goal of my work as an educator and author is to help people learn how to write beautiful programs."
+- origin: foreign
+  author: "汉明"
+  source: "《科学家与工程师的数值方法》"
+  zh: "计算的目的是洞察，不是数字。"
+  en: "The purpose of computing is insight, not numbers."
+- origin: foreign
+  author: "汉明"
+  source: "《你和你的研究》，1986"
+  zh: "如果你不做重要的问题，就不太可能做出重要的工作。"
+  en: "If you do not work on an important problem, it's unlikely you'll do important work."
+- origin: foreign
+  author: "乔治·波利亚"
+  source: "《怎样解题》，1945"
+  zh: "如果你解不出眼前的题目，就先试着解一个与它相关的题目。"
+  en: "If you cannot solve the proposed problem, try to solve first some related problem."
+- origin: foreign
+  author: "克尼汉、里奇"
+  source: "《C程序设计语言》"
+  zh: "学习一门新的编程语言，唯一的办法就是用它来写程序。"
+  en: "The only way to learn a new programming language is by writing programs in it."
+- origin: foreign
+  author: "克尼汉"
+  source: "与普劳格，《程序设计风格的要素》，1978"
+  zh: "谁都知道，调试比一开始把程序写出来要难一倍。要是你写的时候已经聪明到了头，还拿什么去调试？"
+  en: "Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?"
+- origin: foreign
+  author: "罗布·派克"
+  source: "《C编程笔记》，1989"
+  zh: "数据说了算。数据结构选对了、事情组织好了，算法几乎总是不言自明。"
+  en: "Data dominates. If you've chosen the right data structures and organized things well, the algorithms will almost always be self-evident."
+- origin: foreign
+  author: "查尔斯·巴贝奇"
+  source: "《一个哲学家的生命历程》，1864"
+  zh: "有两次别人问我：巴贝奇先生，要是你把错误的数字放进机器，出来的会是正确的答案吗？"
+  en: "On two occasions I have been asked, 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?'"
+- origin: foreign
+  author: "道格拉斯·麦基尔罗伊"
+  source: "《贝尔系统技术杂志》，1978"
+  zh: "让每个程序把一件事做好。"
+  en: "Make each program do one thing well."
+- origin: foreign
+  author: "林纳斯·托瓦兹"
+  source: "linux-kernel 邮件，2000年8月25日"
+  zh: "空谈并不值钱。把代码拿给我看。"
+  en: "Talk is cheap. Show me the code."
+- origin: foreign
+  author: "埃里克·雷蒙德"
+  source: "《大教堂与集市》，1999"
+  zh: "只要眼睛够多，所有缺陷都是浅的。"
+  en: "Given enough eyeballs, all bugs are shallow."
+- origin: foreign
+  author: "弗雷德·布鲁克斯"
+  source: "《人月神话》，1975"
+  zh: "向已经延期的软件项目增加人手，只会让它更晚。"
+  en: "Adding manpower to a late software project makes it later."
+- origin: foreign
+  author: "斯特劳斯特鲁普"
+  source: "个人网站 FAQ"
+  zh: "语言只有两种：一种是大家抱怨的，一种是没人用的。"
+  en: "There are only two kinds of languages: the ones people complain about and the ones nobody uses."
+- origin: foreign
+  author: "艾伦·佩利斯"
+  source: "《编程箴言》，SIGPLAN Notices，1982"
+  zh: "一门影响不了你思考编程的方式的语言，不值得去了解。"
+  en: "A language that doesn't affect the way you think about programming, is not worth knowing."
+- origin: foreign
+  author: "史蒂夫·乔布斯"
+  source: "2005年斯坦福大学毕业演讲"
+  zh: "做出杰出工作的唯一办法，就是热爱你所做的事。"
+  en: "The only way to do great work is to love what you do."

@@ -74,6 +74,7 @@ title: single5240 | 笔记分享
 
     .nav-links {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 6px;
       color: var(--muted);
@@ -131,6 +132,64 @@ title: single5240 | 笔记分享
       margin-bottom: 20px;
       font-size: clamp(42px, 7vw, 82px);
       line-height: 0.98;
+    }
+
+    .daily-quote {
+      max-width: 40rem;
+      margin: 0 0 22px;
+      padding: 2px 0 2px 14px;
+      border-left: 2px solid var(--warm);
+      min-height: 7.5rem;
+    }
+
+    .daily-quote blockquote {
+      margin: 0;
+    }
+
+    .daily-quote-zh,
+    .daily-quote-en,
+    .daily-quote-meta {
+      margin-bottom: 0;
+    }
+
+    .daily-quote-zh {
+      color: var(--ink);
+      font-size: 17px;
+      font-weight: 650;
+      line-height: 1.65;
+    }
+
+    .daily-quote-en {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14.5px;
+      font-style: italic;
+      line-height: 1.55;
+    }
+
+    .daily-quote-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      margin-top: 8px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-style: normal;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
+    .daily-quote-meta::before {
+      content: "——";
+      margin-right: 0.4em;
+      font-weight: 650;
+    }
+
+    .daily-quote-source:not([hidden])::before {
+      content: "·";
+      margin: 0 0.45em;
+      color: var(--muted);
+      font-weight: 650;
     }
 
     .hero-text {
@@ -212,6 +271,100 @@ title: single5240 | 笔记分享
       border-radius: 8px;
       object-fit: cover;
       border: 1px solid var(--line);
+    }
+
+    .daily-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.85fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .reading-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow-small);
+    }
+
+    a.reading-card {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a.reading-card:hover {
+      border-color: var(--accent);
+    }
+
+    .reading-card h2 {
+      margin-bottom: 0;
+      font-size: clamp(22px, 3vw, 32px);
+      line-height: 1.2;
+    }
+
+    .reading-card h2 a {
+      text-decoration: underline;
+      text-underline-offset: 0.16em;
+    }
+
+    .reading-sentence {
+      margin-bottom: 0;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .reading-source,
+    .reading-translation,
+    .reading-days p {
+      margin-bottom: 0;
+      color: var(--body-copy);
+      line-height: 1.6;
+    }
+
+    .reading-source {
+      color: var(--accent-dark);
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .reading-days {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .reading-days a {
+      color: var(--accent-dark);
+      font-weight: 750;
+      text-decoration: underline;
+      text-underline-offset: 0.16em;
+    }
+
+    .reading-days p {
+      display: -webkit-box;
+      margin-top: 4px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 14px;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .reading-more {
+      margin-top: auto;
+      color: var(--accent-dark);
+      font-weight: 800;
+      text-decoration: underline;
+      text-underline-offset: 0.16em;
     }
 
     .section {
@@ -449,7 +602,8 @@ title: single5240 | 笔记分享
 
       .hero,
       .article-layout,
-      .contact {
+      .contact,
+      .daily-grid {
         grid-template-columns: 1fr;
       }
 
@@ -503,6 +657,8 @@ title: single5240 | 笔记分享
       <div class="nav-actions">
         <div class="nav-links">
           <a href="#articles">文章</a>
+          <a href="{{ '/english/index.html' | relative_url }}">每日英语</a>
+          <a href="{{ '/ai-news/index.html' | relative_url }}">AI 资讯</a>
           <a href="#contact">联系</a>
           <a href="board.html">板子项目</a>
           <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
@@ -518,6 +674,21 @@ title: single5240 | 笔记分享
       <div class="hero-copy">
         <p class="eyebrow">个人笔记</p>
         <h1 id="hero-title">记录与分享。</h1>
+        {% include daily-quote-select.html %}
+        <figure class="daily-quote" data-daily-quote data-quote-index="{{ quote_index }}" data-quote-step="{{ quote_step }}" aria-label="每日一句">
+          <blockquote>
+            <p class="daily-quote-zh" lang="zh-CN">{{ daily.zh | escape }}</p>
+            <p class="daily-quote-en" lang="en">{{ daily.en | escape }}</p>
+          </blockquote>
+          <figcaption class="daily-quote-meta">
+            <span class="daily-quote-author">{{ daily.author | escape }}</span><span class="daily-quote-source"{% unless daily.source %} hidden{% endunless %}>{{ daily.source | escape }}</span>
+          </figcaption>
+        </figure>
+        <script type="application/json" id="daily-quote-data">{{ site.data.quotes | jsonify }}</script>
+        <script>
+{% include quote-order.js %}
+{% include daily-quote.js %}
+        </script>
         <p class="hero-text">记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。</p>
         <div class="hero-actions">
           <a class="button primary" href="#articles">浏览笔记</a>
@@ -528,6 +699,50 @@ title: single5240 | 笔记分享
         <img class="feature-image" src="{{ '/assets/images/engineer-computer-lineart.jpg' | relative_url }}" width="1000" height="750" fetchpriority="high" decoding="async" alt="工程师操作电脑进行嵌入式开发调试的线稿插画">
       </aside>
     </section>
+
+    {% assign english_days = site.english | sort: "day" | reverse %}
+    {% assign latest_english = english_days.first %}
+    {% assign latest_entry = nil %}
+    {% if latest_english %}
+      {% assign latest_entry = site.data.english[latest_english.day] %}
+    {% endif %}
+    {% assign latest_week = nil %}
+    {% if site.data.ai_news %}
+      {% if site.data.ai_news.weeks.size > 0 %}
+        {% assign latest_week = site.data.ai_news.weeks.first %}
+      {% endif %}
+    {% endif %}
+    {% if latest_entry or latest_week %}
+    <section class="section" id="daily-reading" aria-label="每日英语与 AI 资讯">
+      <div class="section-inner daily-grid">
+        {% if latest_entry %}
+        <a class="reading-card" href="{{ latest_english.url | relative_url }}" aria-label="每日英语 {{ latest_english.day }}，阅读全文">
+          <p class="eyebrow">每日英语</p>
+          <h2><time datetime="{{ latest_english.day }}">{{ latest_english.day }}</time></h2>
+          <p class="reading-sentence" lang="en">{{ latest_entry.sentence | escape }}</p>
+          <p class="reading-source">{{ latest_entry.source.author | escape }}{% if latest_entry.source.work.size > 0 %} · {{ latest_entry.source.work | escape }}{% endif %}{% if latest_entry.source.year %} · {{ latest_entry.source.year }}{% endif %}</p>
+          <p class="reading-translation">{{ latest_entry.translation | escape }}</p>
+          <span class="reading-more">阅读全文</span>
+        </a>
+        {% endif %}
+        {% if latest_week %}
+        <article class="reading-card">
+          <p class="eyebrow">AI 资讯</p>
+          <h2><a href="{{ '/ai-news/index.html' | relative_url }}#week-{{ latest_week.id }}">{{ latest_week.label }}</a></h2>
+          <ul class="reading-days">
+            {% for day in latest_week.days %}
+            <li>
+              <a href="{{ '/ai-news/' | append: day.date | append: '.html' | relative_url }}"><time datetime="{{ day.date }}">{{ day.weekday }} {{ day.date }}</time></a>
+              <p>{{ day.summary | escape }}</p>
+            </li>
+            {% endfor %}
+          </ul>
+          <a class="reading-more" href="{{ '/ai-news/index.html' | relative_url }}">全部周报</a>
+        </article>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
 
     <section class="section alt" id="articles" aria-labelledby="articles-title">
       <div class="section-inner">
