@@ -13,4 +13,25 @@ layout: null
     {% if item.date %}<lastmod>{{ item.date | date_to_xmlschema }}</lastmod>{% endif %}
   </url>
   {% endfor %}
+  <url>
+    <loc>{{ '/english/index.html' | absolute_url }}</loc>
+  </url>
+  {% assign english_pages = site.english | sort: "day" %}
+  {% for item in english_pages %}
+  <url>
+    <loc>{{ item.url | absolute_url }}</loc>
+    {% if item.date %}<lastmod>{{ item.date | date_to_xmlschema }}</lastmod>{% endif %}
+  </url>
+  {% endfor %}
+  <url>
+    <loc>{{ '/ai-news/index.html' | absolute_url }}</loc>
+  </url>
+  {% for week in site.data.ai_news.weeks %}
+    {% for day in week.days %}
+  <url>
+    <loc>{{ '/ai-news/' | append: day.date | append: '.html' | absolute_url }}</loc>
+    <lastmod>{{ day.date }}</lastmod>
+  </url>
+    {% endfor %}
+  {% endfor %}
 </urlset>

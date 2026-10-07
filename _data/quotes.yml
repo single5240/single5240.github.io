@@ -1,6 +1,9 @@
 # 每日一句。首页按 Asia/Shanghai（UTC+8，无夏令时）的日历日选取，
 # 同一天所有访客看到同一句，不需要每天重新构建。
-# 算法：dayNumber = floor((unix 秒 + 28800) / 86400)，序号 = dayNumber % 条数。
+# dayNumber = floor((unix 秒 + 28800) / 86400)
+# step = 不小于 floor(条数/3)+1、且与条数互质的最小整数（100 条时为 37）
+# 序号 = (dayNumber % 条数) * step % 条数
+# 一个完整周期内每句恰好出现一次；相邻两天在库里相隔 step 条。
 # 预览某一天：在首页地址后加 ?date=YYYY-MM-DD（按这个公历日期，不是本机时区）。
 #
 # 增改条目时保持下面的字段，一条一行，字符串用双引号，内部双引号写成 \"。
@@ -56,10 +59,10 @@
   zh: "士不可以不弘毅，任重而道远。"
   en: "A scholar must be broad-minded and resolute. The burden is heavy, and the road is long."
 - origin: cn
-  author: "华罗庚"
-  source: "1981年为中国科学技术大学题词"
-  zh: "聪明在于学习，天才在于积累。"
-  en: "Cleverness comes from study; genius comes from accumulation."
+  author: "蔡元培"
+  source: "《答林琴南君》，1919"
+  zh: "对于学说，仿世界各大学通例，循思想自由原则，取兼容并包主义。"
+  en: "Regarding scholarship, we follow the common practice of universities around the world: the principle of freedom of thought, and an inclusive approach."
 - origin: cn
   author: "荀子"
   source: "《劝学》"
@@ -151,10 +154,10 @@
   zh: "功崇惟志，业广惟勤。"
   en: "Achievement is made great by purpose; an undertaking is made broad by diligence."
 - origin: cn
-  author: "毛泽东"
-  source: "《实践论》"
-  zh: "真理的标准只能是社会的实践。"
-  en: "The criterion of truth can only be social practice."
+  author: "《管子》"
+  source: "《权修》"
+  zh: "一年之计，莫如树谷；十年之计，莫如树木；终身之计，莫如树人。"
+  en: "For a plan of one year, nothing compares with planting grain; for a plan of ten years, nothing compares with planting trees; for a plan of a lifetime, nothing compares with cultivating people."
 - origin: cn
   author: "韩非"
   source: "《韩非子·五蠹》"
@@ -301,10 +304,10 @@
   zh: "并不是因为事情难我们才不敢，而是因为我们不敢，事情才变得难。"
   en: "It is not because things are difficult that we do not dare; it is because we do not dare that they are difficult."
 - origin: foreign
-  author: "达·芬奇"
-  source: "笔记"
-  zh: "不能超越老师的学生是可怜的。"
-  en: "Poor is the pupil who does not surpass his master."
+  author: "范内瓦·布什"
+  source: "《诚如所思》，《大西洋月刊》1945年7月"
+  zh: "就专业而言，我们传递和审阅研究成果的方法已经落后了好几代，如今已完全不能胜任。"
+  en: "Professionally our methods of transmitting and reviewing the results of research are generations old and by now are totally inadequate for their purpose."
 - origin: foreign
   author: "法拉第"
   source: "实验日记，1849年3月19日"
@@ -366,18 +369,18 @@
   zh: "分析机并不自命能原创任何东西。凡是我们知道如何吩咐它去做的，它都能做。"
   en: "The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform."
 - origin: foreign
-  author: "冯·卡门"
-  source: "谈科学与工程"
-  zh: "科学家研究世界本来的样子；工程师创造从未有过的世界。"
-  en: "Scientists study the world as it is; engineers create the world that never has been."
+  author: "阿瑟·克拉克"
+  source: "《未来的轮廓》1973年修订版"
+  zh: "任何足够先进的技术，都与魔法无异。"
+  en: "Any sufficiently advanced technology is indistinguishable from magic."
 - origin: foreign
   author: "齐奥尔科夫斯基"
-  source: "1911年的信"
+  source: "1911年致《航空通报》的信"
   zh: "地球是人类的摇篮，但人类不能永远留在摇篮里。"
   en: "Earth is the cradle of humanity, but mankind cannot stay in the cradle forever."
 - origin: foreign
   author: "爱迪生"
-  source: "他多次说过的话，见《哈珀月刊》1932年等"
+  source: "《哈珀月刊》1932年9月"
   zh: "天才是百分之一的灵感，加上百分之九十九的汗水。"
   en: "Genius is one percent inspiration and ninety-nine percent perspiration."
 - origin: foreign
@@ -437,9 +440,9 @@
   en: "Simplicity is prerequisite for reliability."
 - origin: foreign
   author: "高德纳"
-  source: "证明过正确性的代码旁的附注"
-  zh: "当心上面代码里的错误；我只证明了它是对的，还没有试过。"
-  en: "Beware of bugs in the above code; I have only proved it correct, not tried it."
+  source: "1974年图灵奖演讲《作为艺术的计算机程序设计》"
+  zh: "作为教师和作者，我工作的首要目标，是帮助人们学会写出优美的程序。"
+  en: "The chief goal of my work as an educator and author is to help people learn how to write beautiful programs."
 - origin: foreign
   author: "汉明"
   source: "《科学家与工程师的数值方法》"
@@ -451,10 +454,10 @@
   zh: "如果你不做重要的问题，就不太可能做出重要的工作。"
   en: "If you do not work on an important problem, it's unlikely you'll do important work."
 - origin: foreign
-  author: "艾伦·凯"
-  source: "1971年前后的话"
-  zh: "预测未来的最好办法，就是把它发明出来。"
-  en: "The best way to predict the future is to invent it."
+  author: "乔治·波利亚"
+  source: "《怎样解题》，1945"
+  zh: "如果你解不出眼前的题目，就先试着解一个与它相关的题目。"
+  en: "If you cannot solve the proposed problem, try to solve first some related problem."
 - origin: foreign
   author: "克尼汉、里奇"
   source: "《C程序设计语言》"
@@ -471,10 +474,10 @@
   zh: "数据说了算。数据结构选对了、事情组织好了，算法几乎总是不言自明。"
   en: "Data dominates. If you've chosen the right data structures and organized things well, the algorithms will almost always be self-evident."
 - origin: foreign
-  author: "肯·汤普森"
-  source: "Unix 编程中常被引用的话"
-  zh: "拿不准的时候，就用蛮力。"
-  en: "When in doubt, use brute force."
+  author: "查尔斯·巴贝奇"
+  source: "《一个哲学家的生命历程》，1864"
+  zh: "有两次别人问我：巴贝奇先生，要是你把错误的数字放进机器，出来的会是正确的答案吗？"
+  en: "On two occasions I have been asked, 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?'"
 - origin: foreign
   author: "道格拉斯·麦基尔罗伊"
   source: "《贝尔系统技术杂志》，1978"
@@ -496,10 +499,10 @@
   zh: "向已经延期的软件项目增加人手，只会让它更晚。"
   en: "Adding manpower to a late software project makes it later."
 - origin: foreign
-  author: "格蕾丝·霍珀"
-  source: "演讲中的话"
-  zh: "这门语言里最危险的一句话，就是“我们一直都是这么做的”。"
-  en: "The most dangerous phrase in the language is, \"We've always done it this way.\""
+  author: "斯特劳斯特鲁普"
+  source: "个人网站 FAQ"
+  zh: "语言只有两种：一种是大家抱怨的，一种是没人用的。"
+  en: "There are only two kinds of languages: the ones people complain about and the ones nobody uses."
 - origin: foreign
   author: "艾伦·佩利斯"
   source: "《编程箴言》，SIGPLAN Notices，1982"

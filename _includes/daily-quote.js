@@ -1,7 +1,7 @@
-// Daily quote.
+// Daily quote. Loaded in the same script, after quote-order.js.
 // Calendar day: Asia/Shanghai (UTC+8, no daylight-saving time).
 // dayNumber = floor((unixSeconds + 28800) / 86400)
-// index = dayNumber modulo the number of quotes
+// index = quoteIndex(dayNumber, count); see quote-order.js
 // The same Shanghai date always selects the same quote, with no rebuild.
 // Preview another day at ?date=YYYY-MM-DD (that calendar date).
 (() => {
@@ -43,7 +43,7 @@
 
   const override = dayNumberForCalendarDate(new URLSearchParams(window.location.search).get("date"));
   const dayNumber = override === null ? dayNumberForNow(new Date()) : override;
-  const index = ((dayNumber % quotes.length) + quotes.length) % quotes.length;
+  const index = quoteIndex(dayNumber, quotes.length);
   const quote = quotes[index];
   if (!quote || !quote.zh || !quote.en || !quote.author) return;
 

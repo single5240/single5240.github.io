@@ -1,0 +1,41 @@
+{% comment %}
+  Keep this in lockstep with _includes/quote-order.js.
+  step = smallest integer >= floor(count / 3) + 1 that is coprime to count.
+  index = (dayNumber mod count) * step mod count.
+  dayNumber = floor((unix seconds + 28800) / 86400), Asia/Shanghai.
+{% endcomment %}
+{% assign daily = site.data.quotes.first %}
+{% assign quote_index = 0 %}
+{% assign quote_step = 1 %}
+{% assign quote_count = site.data.quotes | size %}
+{% if quote_count > 0 %}
+  {% assign day_number = site.time | date: "%s" | plus: 28800 | divided_by: 86400 | floor %}
+  {% if quote_count > 1 %}
+    {% assign step_start = quote_count | divided_by: 3 | floor | plus: 1 %}
+    {% assign quote_step_found = 0 %}
+    {% for candidate in (1..400) %}
+      {% if quote_step_found == 0 and candidate >= step_start and candidate < quote_count %}
+        {% assign ga = quote_count %}
+        {% assign gb = candidate %}
+        {% for gcd_round in (1..20) %}
+          {% if gb != 0 %}
+            {% assign remainder = ga | modulo: gb %}
+            {% assign ga = gb %}
+            {% assign gb = remainder %}
+          {% endif %}
+        {% endfor %}
+        {% if ga == 1 %}
+          {% assign quote_step = candidate %}
+          {% assign quote_step_found = 1 %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% assign day_mod = day_number | modulo: quote_count %}
+  {% assign quote_index = day_mod | times: quote_step | modulo: quote_count | floor %}
+  {% for quote in site.data.quotes %}
+    {% if forloop.index0 == quote_index %}
+      {% assign daily = quote %}
+    {% endif %}
+  {% endfor %}
+{% endif %}

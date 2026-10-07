@@ -1,0 +1,28 @@
+---
+layout: frame
+title: AI 资讯
+description: 按周收录的 AI 资讯日报，每个工作日一篇。
+permalink: /ai-news/index.html
+---
+<h1>AI 资讯</h1>
+<p class="lede">工作日各一篇日报，每周一集中发布上一周。同一周里按日期从早到晚排列。</p>
+{% if site.data.ai_news and site.data.ai_news.weeks.size > 0 %}
+  {% for week in site.data.ai_news.weeks %}
+  <section class="week" id="week-{{ week.id }}" aria-labelledby="week-{{ week.id }}-title">
+    <h2 id="week-{{ week.id }}-title">{{ week.label }}</h2>
+    <ul class="day-list">
+      {% for day in week.days %}
+      <li>
+        <a href="{{ '/ai-news/' | append: day.date | append: '.html' | relative_url }}">
+          <time datetime="{{ day.date }}">{{ day.weekday }} · {{ day.date }}</time>
+          {{ day.title }}
+        </a>
+        <p>{{ day.summary | escape }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+{% else %}
+<p>还没有发布的周报。</p>
+{% endif %}
