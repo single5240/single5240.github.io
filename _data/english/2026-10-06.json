@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-06",
+  "sentence": "All we have to decide is what to do with the time that is given us.",
+  "source": {
+    "author": "J. R. R. Tolkien",
+    "work": "The Fellowship of the Ring",
+    "year": "1954",
+    "detail": "《魔戒》第一部，甘道夫对弗罗多说的话"
+  },
+  "translation": "我们唯一要决定的，是如何利用被赋予我们的时间。",
+  "grammar": [
+    "主干是“主语 + is + 表语”：All (we have to decide) + is + what to do...",
+    "All we have to decide 是省略了 that 的主语，完整形式是 All (that) we have to decide。all 后接定语从句时关系代词一般用 that，that 在从句里作宾语可省略。这种结构常表示“唯一、仅仅”，如 All you need is love.",
+    "what to do 是“疑问词 + 不定式”，整体当名词用，这里作表语，相当于 what we should do。",
+    "the time that is given us 是被动结构，主动形式是 give us the time（双宾语）。现代英语更常说 given to us，托尔金的写法更古典庄重。"
+  ],
+  "vocab": [
+    {
+      "word": "decide",
+      "phonetic": "/dɪˈsaɪd/",
+      "pos": "v.",
+      "meaning": "决定",
+      "collocation": "decide to do, decide on sth",
+      "example": "We decided to refactor the driver first."
+    },
+    {
+      "word": "have to",
+      "phonetic": "/ˈhæf tə/",
+      "pos": "modal",
+      "meaning": "必须、不得不（多指外部要求；must 更偏主观判断）",
+      "collocation": "",
+      "example": "I have to finish the board bring-up by Friday."
+    },
+    {
+      "word": "what to do with",
+      "phonetic": "",
+      "pos": "phr.",
+      "meaning": "怎么处理、怎么利用某物",
+      "collocation": "",
+      "example": "I don't know what to do with all this free time."
+    },
+    {
+      "word": "given",
+      "phonetic": "/ˈɡɪvn/",
+      "pos": "v. / prep.",
+      "meaning": "give 的过去分词，被给予的；作介词意为“考虑到”",
+      "collocation": "",
+      "example": "Given the deadline, we should keep it simple."
+    }
+  ],
+  "note": "小练习：试着用 \"All I have to do is...\" 造一个和工作有关的句子，比如 All I have to do is fix this one interrupt bug."
+}

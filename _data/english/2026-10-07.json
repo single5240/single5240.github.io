@@ -4,21 +4,21 @@
   "source": {
     "author": "Henry David Thoreau",
     "work": "Walden",
-    "year": 1854,
+    "year": "1854",
     "detail": "第二章 \"Where I Lived, and What I Lived For\""
   },
   "translation": "我走进森林，是因为我想从容、有意识地生活，只去面对生活中最本质的东西，看看自己能否学到生活要教给我的道理，免得到了临终之时，才发现自己从未真正活过。",
   "grammar": [
-    "主干是 I went to the woods，后面是 because 引导的原因状语从句；wished 后接一串并列不定式（to live / (to) front / (to) see / not (to) discover），后几个 to 省略。否定不定式 not 放在 to do 前。",
-    "when I came to die 中 come to do 意为“到了……的时候”；discover that I had not lived 用过去完成时，表示“过去的过去”。"
+    "主干是 I went to the woods，后面是 because 引导的原因状语从句。从句核心是 I wished to…，后接一串并列不定式：to live deliberately、(to) front only the essential facts of life、(to) see if…、and not (to) discover…，后面几个 to 省略。否定不定式的 not 放在 to do 前面（not to discover），而不是 to not。",
+    "when I came to die 中 come to do 意为“到了……的时候”。discover that I had not lived 用过去完成时：站在“临终”这个过去时间点往回看，“没有活过”发生在它之前，是过去完成时最典型的用法。"
   ],
   "vocab": [
     {
       "word": "deliberately",
       "phonetic": "/dɪˈlɪbərətli/",
       "pos": "adv.",
-      "meaning": "有意识地、从容审慎地",
-      "collocation": "",
+      "meaning": "有意识地、从容审慎地（不只是“故意”）",
+      "collocation": "act deliberately, deliberately choose",
       "example": "He spoke slowly and deliberately."
     },
     {
@@ -34,21 +34,21 @@
       "phonetic": "/ɪˈsenʃl/",
       "pos": "adj.",
       "meaning": "本质的、必不可少的",
-      "collocation": "essential to/for sth",
+      "collocation": "essential to/for sth, the essentials",
       "example": "Sleep is essential for good health."
     },
     {
       "word": "come to do",
       "phonetic": "",
-      "pos": "phrase",
-      "meaning": "逐渐、终于开始做某事",
+      "pos": "phr.",
+      "meaning": "逐渐、终于开始做某事；到了做某事的时候",
       "collocation": "",
       "example": "I came to realize that practice matters more than talent."
     },
     {
       "word": "see if",
       "phonetic": "",
-      "pos": "phrase",
+      "pos": "phr.",
       "meaning": "看看是否……",
       "collocation": "",
       "example": "Let me see if the code compiles."
