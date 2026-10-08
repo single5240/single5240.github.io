@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-08",
+  "sentence": "Two roads diverged in a wood, and I— / I took the one less traveled by, / And that has made all the difference.",
+  "source": {
+    "author": "Robert Frost",
+    "work": "The Road Not Taken",
+    "year": "1916",
+    "detail": "诗的最后一节（第 18–20 行），收录于诗集 Mountain Interval"
+  },
+  "translation": "林中分出两条路，而我——我选了人迹更少的那一条，从此一切都不一样了。",
+  "grammar": [
+    "主干拆解：三个分句——Two roads（主）diverged（谓，不及物）in a wood；I（主）took（谓）the one（宾）；that（主）has made（谓）all the difference（宾）。and 把它们串起来，读起来像一口气讲完的回忆。",
+    "重点一：the one less traveled by 是“代词 + 过去分词短语后置定语”。the one 代替 the road，避免重复；less traveled by 相当于 that was less traveled by（被走得更少的），分词短语较长时放在名词后面。句末的 by 不能省，因为 travel by a road 里 by 是介词，变成被动/分词后介词留在句尾。",
+    "重点二：has made 用现在完成时。took 是过去的一次选择，has made 强调这个选择的影响一直延续到现在——“过去的动作 + 至今的结果”，正是现在完成时最典型的用法。",
+    "小细节：and I— / I took 的重复和破折号是诗人故意的停顿，模仿人在回忆时的迟疑，日常写作中不必模仿。"
+  ],
+  "vocab": [
+    {
+      "word": "diverge",
+      "phonetic": "/daɪˈvɜːrdʒ/",
+      "pos": "v.（不及物）",
+      "meaning": "（道路、线条）分叉；（意见、观点）出现分歧",
+      "collocation": "diverge from sth；opinions diverge；diverging paths",
+      "example": "The two branches diverged after the 2.0 release."
+    },
+    {
+      "word": "less traveled (by)",
+      "phonetic": "/les ˈtrævəld baɪ/",
+      "pos": "分词短语",
+      "meaning": "走的人更少的；比喻少有人选择的",
+      "collocation": "the road less traveled；a less-traveled path",
+      "example": "He chose the road less traveled and became a hardware engineer."
+    },
+    {
+      "word": "make all the difference",
+      "phonetic": "/meɪk ɔːl ðə ˈdɪfrəns/",
+      "pos": "短语",
+      "meaning": "起决定性作用；带来根本的不同",
+      "collocation": "make a big difference；make no difference；make all the difference to/in sth",
+      "example": "A good debugger makes all the difference when you're chasing a timing bug."
+    },
+    {
+      "word": "wood",
+      "phonetic": "/wʊd/",
+      "pos": "n.",
+      "meaning": "树林（常用复数 woods）；也指木头",
+      "collocation": "in the woods；a walk in the wood",
+      "example": "We got lost in the woods behind the village."
+    }
+  ],
+  "note": "小练习：用 make all the difference 造一个和你工作有关的句子，比如“One extra pull-up resistor made all the difference.”（多加一个上拉电阻，问题就彻底解决了）。另外，这首诗其实带点自嘲：诗里前文说两条路“really about the same”，“人迹更少”是事后回想时赋予的意义，读原诗会更有意思。"
+}
