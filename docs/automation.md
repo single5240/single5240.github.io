@@ -17,17 +17,17 @@ node scripts/import-english.mjs path/to/YYYY-MM-DD.json
 
 然后提交这两个文件。首页「每日英语」卡片、`/english/YYYY-MM-DD.html` 和 `/english/index.html` 会在下次构建时带上这一天。可以一次传入多个 JSON。
 
-## AI 资讯周报
+## AI 资讯日报
 
-每个工作日可能有 `YYYY-MM-DD.html`，以及可选的同名 `YYYY-MM-DD.md`。HTML 保持生成器原样即可，里面就算出现 `{{` 或 `{%` 也不会被 Jekyll 执行：导入后它是不带 front matter 的静态文件。Markdown 里的 `[文字](https://…)` 和裸链接会被抽成页面底部的「来源」。没有 Markdown，或里面没有链接时，不加来源一节。
+每天一篇，文件是 `YYYY-MM-DD.html`，以及可选的同名 `YYYY-MM-DD.md`。HTML 保持生成器原样即可，里面就算出现 `{{` 或 `{%` 也不会被 Jekyll 执行：导入后它是不带 front matter 的静态文件。Markdown 里的 `[文字](https://…)` 和裸链接会被抽成页面底部的「来源」。没有 Markdown，或里面没有链接时，不加来源一节。
 
-每周一发布上一周时，把那几天的文件放在一个目录里：
+每天导入新的一天。把当天的 HTML 和可选的 Markdown 放在一个目录里：
 
 ```bash
-node scripts/import-ai-news.mjs path/to/week-dir
+node scripts/import-ai-news.mjs path/to/news-dir
 ```
 
-也可以直接列出文件：
+也可以一次列出多个文件：
 
 ```bash
 node scripts/import-ai-news.mjs path/to/2026-10-07.html path/to/2026-10-07.md
