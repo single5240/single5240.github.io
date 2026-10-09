@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-09",
+  "sentence": "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.",
+  "source": {
+    "author": "Antoine de Saint-Exupéry",
+    "work": "Wind, Sand and Stars (Terre des hommes)",
+    "year": "1939",
+    "detail": "法语原作《风沙星辰》/《人类的大地》，英译本常见此句"
+  },
+  "translation": "完美不是无可增添，而是无可删减。",
+  "grammar": [
+    "主干是 Perfection is achieved（被动语态：主语 + be + 过去分词），意思是“完美是被达成的”。",
+    "not when …, but when … 是对比结构，用两个 when 引导的时间状语从句说明“不是在……的时候，而是在……的时候”。两个分句结构对称：nothing more to add 对 nothing left to take away。",
+    "there is nothing more to add / there is nothing left to take away 都是 there be + 不定式作后置定语。to add、to take away 修饰 nothing，表示“可以再加的东西”“可以再拿走的东西”。left 是过去分词作后置定语，修饰 nothing，意为“剩下的”。"
+  ],
+  "vocab": [
+    {
+      "word": "perfection",
+      "phonetic": "/pəˈfekʃn/",
+      "pos": "n.",
+      "meaning": "完美、完善",
+      "collocation": "achieve perfection, strive for perfection",
+      "example": "We are not aiming for perfection in the first bring-up."
+    },
+    {
+      "word": "achieve",
+      "phonetic": "/əˈtʃiːv/",
+      "pos": "v.",
+      "meaning": "实现、达成",
+      "collocation": "achieve a goal / perfection",
+      "example": "The team achieved a stable baud rate after two days of debugging."
+    },
+    {
+      "word": "nothing more to add",
+      "phonetic": "",
+      "pos": "phr.",
+      "meaning": "没有什么可再添加的了",
+      "collocation": "",
+      "example": "I have nothing more to add to the design review."
+    },
+    {
+      "word": "take away",
+      "phonetic": "/teɪk əˈweɪ/",
+      "pos": "phr. v.",
+      "meaning": "拿走、删减；也可指带走的收获",
+      "collocation": "take away from, takeaway (n.)",
+      "example": "If we take away the unused interrupts, the ISR becomes much clearer."
+    },
+    {
+      "word": "left",
+      "phonetic": "/left/",
+      "pos": "adj. / past participle",
+      "meaning": "剩下的、留存的",
+      "collocation": "nothing left, leftovers",
+      "example": "There is nothing left in the backlog for this sprint."
+    }
+  ],
+  "note": "写驱动和精简固件时特别应景：先跑通，再砍掉多余的抽象和分支，直到只剩必要的部分。"
+}
