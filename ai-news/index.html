@@ -1,11 +1,11 @@
 ---
 layout: frame
 title: AI 资讯
-description: 按周收录的 AI 资讯日报，每个工作日一篇。
+description: 按日收录的 AI 资讯日报，每天一篇。
 permalink: /ai-news/index.html
 ---
 <h1>AI 资讯</h1>
-<p class="lede">工作日各一篇日报，每周一集中发布上一周。同一周里按日期从早到晚排列。</p>
+<p class="lede">每天一篇日报，列表按周归档，同一周里按日期从早到晚排列。</p>
 {% if site.data.ai_news and site.data.ai_news.weeks.size > 0 %}
   {% for week in site.data.ai_news.weeks %}
   <section class="week" id="week-{{ week.id }}" aria-labelledby="week-{{ week.id }}-title">
@@ -24,5 +24,5 @@ permalink: /ai-news/index.html
   </section>
   {% endfor %}
 {% else %}
-<p>还没有发布的周报。</p>
+<p>还没有发布的日报。</p>
 {% endif %}
