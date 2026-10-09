@@ -15,6 +15,12 @@
           "weekday": "周四",
           "title": "AI 资讯日报 · 10月8日（周四）",
           "summary": "ChatGPT 的 Chat 已换成 GPT-6 Sol。Codex 第 2 天补发了全额重置，第 3 天又给付费账户一次 banked reset。Cursor 上架 Claude Haiku 5.5。"
+        },
+        {
+          "date": "2026-10-09",
+          "weekday": "周五",
+          "title": "AI 资讯日报 · 10月9日（周五）",
+          "summary": "Codex 第 4 天交付即时转向，并放出 Sol Ultrafast。GPT-5.5 将于 10/14 下线。Cursor 无新功能，Opus 5.5 故障已恢复。"
         }
       ]
     }
