@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-10",
+  "sentence": "We are all in the gutter, but some of us are looking at the stars.",
+  "source": {
+    "author": "Oscar Wilde",
+    "work": "Lady Windermere's Fan",
+    "year": "1892",
+    "detail": "第三幕，Lord Darlington 的台词"
+  },
+  "translation": "我们都在阴沟里，但仍有人仰望星空。",
+  "grammar": [
+    "主干是两个并列分句，用 but 连接：We are all in the gutter 对比 some of us are looking at the stars，先承认处境，再点出态度的不同。",
+    "are looking 是现在进行时（be + V-ing）。这里不是“此刻正在看”，而是用进行时描写一种持续的姿态或习惯：有人选择抬头望向更远的地方。",
+    "some of us 是部分结构（some + of + 代词宾格），指“我们当中的一些人”，和前面的 all 形成数量与态度上的对照。"
+  ],
+  "vocab": [
+    {
+      "word": "gutter",
+      "phonetic": "/ˈɡʌtər/",
+      "pos": "n.",
+      "meaning": "排水沟、阴沟；引申为落魄、底层的处境",
+      "collocation": "in the gutter, gutter press",
+      "example": "The project felt stuck in the gutter until we fixed the clock tree."
+    },
+    {
+      "word": "looking at",
+      "phonetic": "/ˈlʊkɪŋ æt/",
+      "pos": "phr. v.",
+      "meaning": "看着、注视；也可表示考虑、关注",
+      "collocation": "look at the sky / the options",
+      "example": "We are looking at two interrupt schemes for this MCU."
+    },
+    {
+      "word": "stars",
+      "phonetic": "/stɑːrz/",
+      "pos": "n.",
+      "meaning": "星星；引申为理想、希望、更高目标",
+      "collocation": "reach for the stars, under the stars",
+      "example": "Keep the stars in mind when the bring-up feels endless."
+    },
+    {
+      "word": "some of us",
+      "phonetic": "/sʌm əv ʌs/",
+      "pos": "phr.",
+      "meaning": "我们当中的一些人",
+      "collocation": "some of us / them / you",
+      "example": "Some of us prefer bare-metal; others like an RTOS."
+    }
+  ],
+  "note": "处境可以一样糟，目光可以不同。调试卡住时，先承认问题在“阴沟”里，再抬头想清楚要去的方向。"
+}
