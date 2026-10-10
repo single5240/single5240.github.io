@@ -21,6 +21,12 @@
           "weekday": "周五",
           "title": "AI 资讯日报 · 10月9日（周五）",
           "summary": "Codex 第 4 天交付即时转向，并放出 Sol Ultrafast。GPT-5.5 将于 10/14 下线。Cursor 无新功能，Opus 5.5 故障已恢复。"
+        },
+        {
+          "date": "2026-10-10",
+          "weekday": "周六",
+          "title": "AI 资讯日报 · 10月10日（周六）",
+          "summary": "Codex 第 5 天上线 Composer predictions。手机 App 可创建并对话 Dot。Anthropic 切断全部内部评估的实时联网。GPT-5.5 仍在 10/14 下线。"
         }
       ]
     }
