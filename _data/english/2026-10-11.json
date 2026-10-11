@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-11",
+  "sentence": "Any sufficiently advanced technology is indistinguishable from magic.",
+  "source": {
+    "author": "Arthur C. Clarke",
+    "work": "Profiles of the Future",
+    "year": "1962",
+    "detail": "Clarke's Third Law；见于 Hazards of Prophecy: The Failure of Imagination 一章"
+  },
+  "translation": "任何足够先进的技术，都与魔法难以区分。",
+  "grammar": [
+    "主干是系表结构：Any sufficiently advanced technology（主语）+ is（系动词）+ indistinguishable from magic（表语）。整句是对“充分发展的技术”下的一个判断。",
+    "sufficiently advanced 是副词 + 过去分词作形容词，修饰 technology：sufficiently 表示“达到足够程度”，advanced 表示“先进的”。",
+    "indistinguishable from 是固定搭配，意思是“与……无法区分”。from 后面接对比对象 magic，强调两者在观察者看来一样。"
+  ],
+  "vocab": [
+    {
+      "word": "sufficiently",
+      "phonetic": "/səˈfɪʃəntli/",
+      "pos": "adv.",
+      "meaning": "足够地、充分地",
+      "collocation": "sufficiently advanced / large / clear",
+      "example": "The clock must be sufficiently stable for USB timing."
+    },
+    {
+      "word": "advanced",
+      "phonetic": "/ədˈvænst/",
+      "pos": "adj.",
+      "meaning": "先进的、高级的；也可指深入的",
+      "collocation": "advanced technology / features / course",
+      "example": "This MCU has advanced DMA that can chain transfers."
+    },
+    {
+      "word": "indistinguishable",
+      "phonetic": "/ˌɪndɪˈstɪŋɡwɪʃəbl/",
+      "pos": "adj.",
+      "meaning": "无法区分的、难以辨别的",
+      "collocation": "indistinguishable from",
+      "example": "At that scale, noise was indistinguishable from the signal."
+    },
+    {
+      "word": "technology",
+      "phonetic": "/tekˈnɒlədʒi/",
+      "pos": "n.",
+      "meaning": "技术、科技",
+      "collocation": "advanced technology, wireless technology",
+      "example": "Embedded technology often looks like magic until you open the datasheet."
+    },
+    {
+      "word": "magic",
+      "phonetic": "/ˈmædʒɪk/",
+      "pos": "n.",
+      "meaning": "魔法；也可引申为神奇、不可思议的效果",
+      "collocation": "like magic, work like magic",
+      "example": "The bootloader update worked like magic after we fixed the CRC."
+    }
+  ],
+  "note": "做嵌入式时，别人眼里的“魔法”，往往只是你已经吃透的寄存器和时序。今天读一句，想想哪块板级现象对你来说还像魔法——然后拆开它。"
+}
