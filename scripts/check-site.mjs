@@ -353,6 +353,7 @@ for (const file of htmlFiles) {
     }
     if (!html.includes("每日英语") || !html.includes("/english/")) failures.push("index.html: missing daily English card");
     if (!html.includes("AI 资讯") || !html.includes("/ai-news/")) failures.push("index.html: missing AI news teaser");
+    if (!html.includes("/projects/index.html")) failures.push("index.html: missing projects nav link");
   }
 
   for (const match of html.matchAll(/(?:href|src)=["']([^"']+)["']/gi)) {
