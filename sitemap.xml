@@ -24,6 +24,12 @@ layout: null
   </url>
   {% endfor %}
   <url>
+    <loc>{{ '/projects/index.html' | absolute_url }}</loc>
+  </url>
+  <url>
+    <loc>{{ '/projects/n32g455-tensile/index.html' | absolute_url }}</loc>
+  </url>
+  <url>
     <loc>{{ '/ai-news/index.html' | absolute_url }}</loc>
   </url>
   {% for week in site.data.ai_news.weeks %}

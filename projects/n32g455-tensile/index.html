@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="纯静态网页，演示 QW-603 拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。">
+<meta name="theme-color" content="#101216">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:site_name" content="single5240 笔记分享">
+<meta property="og:title" content="QW-603 数显式拉力计 界面演示">
+<meta property="og:description" content="纯静态网页，演示 QW-603 拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。">
+<meta property="og:url" content="https://single5240.github.io/projects/n32g455-tensile/index.html">
+<meta property="og:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
+<meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="QW-603 数显式拉力计 界面演示">
+<meta name="twitter:description" content="纯静态网页，演示 QW-603 拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。">
+<meta name="twitter:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
+<title>QW-603 数显式拉力计 界面演示</title>
+<link rel="canonical" href="https://single5240.github.io/projects/n32g455-tensile/index.html">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --shell: #2b2f36;
+    --shell-edge: #14161a;
+    --panel: #3a4048;
+    --text: #d8dde4;
+    --accent: #25dcff;
+    --key: #4a515a;
+    --key-edge: #22262b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #101216;
+    color: var(--text);
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    font-size: 13px;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .demo-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 18px;
+    width: min(1440px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 14px 0 0;
+  }
+  .demo-back {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .demo-back a {
+    color: #b7c2ce;
+    font-size: 13px;
+    font-weight: 650;
+    text-decoration: none;
+  }
+  .demo-back a:hover {
+    color: var(--accent);
+  }
+  .demo-top h1 {
+    margin: 0;
+    color: #c5ced8;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.4;
+  }
+  #app {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(1440px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 0 0 28px;
+  }
+  #app::before,
+  #app::after {
+    content: "";
+    flex: 1 0 18px;
+  }
+  .demo-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    column-gap: 28px;
+    align-items: center;
+    width: 100%;
+  }
+  /* 机壳 */
+  #device {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    max-width: 100%;
+    position: relative;
+    background: linear-gradient(180deg, #343a42, #23272d);
+    border: 2px solid var(--shell-edge);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  }
+  #device-inner {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+  }
+  #lcd {
+    display: block;
+    width: 480px;
+    height: 640px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background: #000;
+    border: 2px solid #0a0c0f;
+    border-radius: 4px;
+  }
+  /* 右侧演示控件列（不在 240x320 逻辑画面内） */
+  #controls {
+    width: 168px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ctl-title {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #8d97a4;
+    text-transform: uppercase;
+  }
+  #force-slider {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 320px;
+    height: 460px;
+    background: linear-gradient(180deg, #3f4650, #2a2e34);
+    border: 1px solid var(--key-edge);
+    border-radius: 8px;
+    touch-action: none;
+    cursor: ns-resize;
+    user-select: none;
+  }
+  #force-slider .mid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: #6b7683;
+  }
+  #force-slider .thumb {
+    position: absolute;
+    left: 50%;
+    width: 118px;
+    height: 12px;
+    margin-left: -59px;
+    margin-top: -6px;
+    background: linear-gradient(180deg, #6fd8ff, #1d8fb8);
+    border: 1px solid #0d5b75;
+    border-radius: 3px;
+    box-shadow: 0 0 8px rgba(37, 220, 255, 0.5);
+  }
+  #force-slider .top-label,
+  #force-slider .bottom-label {
+    position: absolute;
+    left: 4px;
+    font-size: 10px;
+    color: #7c8794;
+  }
+  #force-slider .top-label { top: 3px; }
+  #force-slider .bottom-label { bottom: 3px; }
+  #slider-readout {
+    text-align: center;
+    font-family: Consolas, monospace;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  #force-input-row {
+    display: flex;
+    gap: 6px;
+  }
+  #force-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: #1b1e23;
+    border: 1px solid var(--key-edge);
+    border-radius: 4px;
+    color: #e6ebf1;
+    padding: 5px 6px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+  }
+  #controls button {
+    background: var(--key);
+    border: 1px solid var(--key-edge);
+    border-radius: 4px;
+    color: var(--text);
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  #controls button:hover { background: #565e69; }
+  #controls button:active { background: #6b7480; }
+  .clamp-note {
+    min-height: 16px;
+    font-size: 11px;
+    color: #ffb066;
+  }
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: #262a30;
+    border: 1px solid var(--key-edge);
+    border-radius: 4px;
+    padding: 5px 8px;
+  }
+  .switch-row label { font-size: 12px; }
+  .switch-row input { transform: scale(1.15); }
+  .hint-list {
+    font-size: 11px;
+    color: #8d97a4;
+    line-height: 1.6;
+    max-width: 320px;
+  }
+  .hint-list code {
+    color: #cfe4ee;
+    background: #1b1e23;
+    border-radius: 3px;
+    padding: 0 3px;
+  }
+  /* 五个实体键 */
+  #keys {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center;
+  }
+  #keys button {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 44px;
+    background: linear-gradient(180deg, #4c545e, #2f353c);
+    border: 1px solid var(--key-edge);
+    border-bottom-width: 3px;
+    border-radius: 6px;
+    color: #e8edf2;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+  }
+  #keys button.active {
+    background: linear-gradient(180deg, #2a3037, #3b424b);
+    border-bottom-width: 1px;
+    transform: translateY(2px);
+  }
+  /* 右侧信息栏 */
+  #sidebar {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: start;
+    align-self: center;
+    width: min(300px, 100%);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #sidebar section {
+    background: #191c21;
+    border: 1px solid #262b32;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  #sidebar h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: #8d97a4;
+    text-transform: uppercase;
+  }
+  #status-lines {
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #b9c4d0;
+    white-space: pre-wrap;
+  }
+  .warn { color: #ffb066; }
+  @media (max-width: 1180px) {
+    .demo-stage {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 18px;
+      justify-items: center;
+    }
+    #device,
+    #sidebar {
+      grid-column: 1;
+      grid-row: auto;
+      justify-self: center;
+    }
+    #sidebar { width: min(100%, 720px); }
+  }
+  @media (max-width: 720px) {
+    .demo-top { padding-top: 10px; }
+    #app { padding-bottom: 20px; }
+    #app::before,
+    #app::after { flex-basis: 12px; }
+    #device { padding: 8px; max-width: 100%; }
+    #device-inner { gap: 8px; }
+    #lcd { width: 240px; height: 320px; }
+    #controls { width: 144px; }
+    #force-slider { min-height: 140px; height: 180px; }
+    #force-input-row { flex-wrap: wrap; }
+    #force-input { flex-basis: 100%; }
+  }
+  @media (max-width: 430px) {
+    #device-inner { flex-direction: column; align-items: center; }
+    #controls { width: 240px; }
+    #force-slider { min-height: 100px; height: 120px; }
+    #keys { width: 240px; gap: 4px; }
+    #keys button { font-size: 11px; letter-spacing: 0; }
+  }
+</style>
+</head>
+<body>
+<header class="demo-top">
+  <nav class="demo-back" aria-label="返回站点">
+    <a href="/">首页</a>
+    <a href="/projects/index.html">项目</a>
+  </nav>
+  <h1>QW-603 数显式拉力计 界面演示</h1>
+</header>
+<div id="app">
+  <div class="demo-stage">
+  <!-- 机壳：240x320 逻辑画面 + 演示控件 + 五个按键 -->
+  <div id="device">
+    <div id="device-inner">
+      <canvas id="lcd" width="240" height="320"></canvas>
+
+      <div id="controls">
+        <div class="ctl-title">模拟力值（毫牛输入）</div>
+        <div id="force-slider">
+          <div class="top-label">+FS 拉伸</div>
+          <div class="mid"></div>
+          <div class="bottom-label">-FS 压缩</div>
+          <div class="thumb" id="force-thumb"></div>
+        </div>
+        <div id="slider-readout">0.00 N</div>
+
+        <div class="ctl-title">力值输入</div>
+        <div id="force-input-row">
+          <input id="force-input" type="text" inputmode="decimal" placeholder="按当前单位">
+          <button id="force-hold" type="button">保持</button>
+          <button id="force-clear" type="button">清除</button>
+        </div>
+        <div class="clamp-note" id="clamp-note"></div>
+
+        <div class="ctl-title">演示开关</div>
+        <div class="switch-row">
+          <label for="contact-switch">接点（PA11 / INSER）</label>
+          <input id="contact-switch" type="checkbox">
+        </div>
+        <div class="switch-row">
+          <label for="orientation-switch">朝向（自动档用）</label>
+          <input id="orientation-switch" type="checkbox">
+        </div>
+      </div>
+    </div>
+
+    <div id="keys">
+      <button type="button" data-key="MENU">MENU</button>
+      <button type="button" data-key="UNIT">UNIT</button>
+      <button type="button" data-key="ZERO">ZERO</button>
+      <button type="button" data-key="DATA">DATA</button>
+      <button type="button" data-key="PWR">PWR</button>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <section>
+      <h2>运行状态</h2>
+      <div id="status-lines">初始化中…</div>
+    </section>
+    <section>
+      <h2>自检结果</h2>
+      <div id="selfcheck" class="hint-list">等待自检…</div>
+    </section>
+    <section>
+      <h2>操作说明</h2>
+      <div class="hint-list">
+        <p><b>滑块</b>：向上拖为拉伸（正），向下拖为压缩（负），中点为 0；松手后约 300 ms 回到 0，用于完成一次峰值测试。</p>
+        <p><b>力值输入框</b>：按当前单位输入，回车或点“保持”后力值保持不变；点“清除”或做一次有效的 ZERO 结束保持。</p>
+        <p><b>五个按键</b>：<code>UNIT</code> 按住 2 s 循环单位。首页 <code>DATA</code> 按住 2 s 进记录清单；松手后在清单内重新按住 5 s 进入清空确认，<code>PWR</code> 确认、<code>MENU</code> 取消。</p>
+        <p><b>测试</b>：基本设定选“峰值”，再选动作。起始载荷保持至少 200 ms；压缩输入负值，拉伸/破断输入正值，插拔依次输入负、正值，接点保持开始后打开接点开关。清除力值完成测试，<code>ZERO</code> 清结果后可再次测试。</p>
+        <p><b>校正</b>：密码为 0000；选择量程和方向，按目标从 0% 到 100% 逐点输入并保持稳定，用 <code>PWR</code> 采集。新量程与校正点只在六点保存成功后生效。</p>
+        <p>本页是演示，力值由滑块或输入框给出，不代表真实计量校准结果。</p>
+      </div>
+    </section>
+  </div>
+  </div>
+</div>
+
+<!-- 普通脚本，按依赖顺序加载；不使用 ES module，保证双击本地文件即可打开 -->
+<script src="js/minifont.js"></script>
+<script src="js/fonts_font16.js"></script>
+<script src="js/fonts_font24.js"></script>
+<script src="js/fonts_num40.js"></script>
+<script src="js/screen.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/units.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/force.js"></script>
+<script src="js/waveform.js"></script>
+<script src="js/tests.js"></script>
+<script src="js/records.js"></script>
+<script src="js/calibration.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+<script src="js/selfcheck.js"></script>
+</body>
+</html>
