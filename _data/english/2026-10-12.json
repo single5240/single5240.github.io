@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-12",
+  "sentence": "I am the master of my fate, I am the captain of my soul.",
+  "source": {
+    "author": "William Ernest Henley",
+    "work": "Invictus",
+    "year": "1888",
+    "detail": "诗作末两行；Invictus 为拉丁语，意为「不可征服的」"
+  },
+  "translation": "我是自己命运的主人，我是自己灵魂的舵手。",
+  "grammar": [
+    "两句并列，结构完全平行：I am the + 名词 + of my + 名词。主语 I、系动词 am、表语 the master / the captain 一一对应，读起来节奏整齐、力量感强。",
+    "of my fate / of my soul 是介词短语作后置定语，说明「哪方面的主人/舵手」。把抽象的 fate、soul 交给具体的 master、captain，是隐喻（metaphor）。",
+    "两句之间用逗号连接（诗歌里常分行书写），口语里也可拆成两句。重点体会：重复 I am，是在强调「掌控权在我」。"
+  ],
+  "vocab": [
+    {
+      "word": "master",
+      "phonetic": "/ˈmɑːstər/",
+      "pos": "n.",
+      "meaning": "主人；主宰者；能掌控某事的人",
+      "collocation": "master of one's fate / destiny; be one's own master",
+      "example": "After years of practice, he became master of the timing quirks on that MCU."
+    },
+    {
+      "word": "fate",
+      "phonetic": "/feɪt/",
+      "pos": "n.",
+      "meaning": "命运；注定的结局",
+      "collocation": "tempt fate; seal one's fate; a twist of fate",
+      "example": "One wrong fuse map can seal the board's fate in production."
+    },
+    {
+      "word": "captain",
+      "phonetic": "/ˈkæptɪn/",
+      "pos": "n.",
+      "meaning": "船长；队长；这里比喻「掌舵的人」",
+      "collocation": "captain of the team / ship; captain of one's soul",
+      "example": "As tech lead, she was the captain who kept the release on course."
+    },
+    {
+      "word": "soul",
+      "phonetic": "/soʊl/",
+      "pos": "n.",
+      "meaning": "灵魂；心灵；也可指精神内核",
+      "collocation": "heart and soul; bare one's soul; the soul of something",
+      "example": "He put his heart and soul into cleaning up that legacy driver."
+    }
+  ],
+  "note": "新的一周，用这两句给自己打气：进度、bug、英语，能推进一步的人，是你自己。试着用平行结构造一句，比如 I am the student of my craft, I am the keeper of my focus."
+}
