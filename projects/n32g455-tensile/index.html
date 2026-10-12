@@ -107,30 +107,46 @@
     justify-self: center;
     max-width: 100%;
     position: relative;
+    display: grid;
+    grid-template-columns: auto 168px;
+    grid-template-rows: auto minmax(320px, 1fr) auto auto auto;
+    grid-template-areas:
+      "lcd force-title"
+      "lcd slider"
+      "lcd readout"
+      "lcd controls"
+      "keys keys";
+    column-gap: 14px;
+    row-gap: 10px;
+    align-items: stretch;
     background: linear-gradient(180deg, #343a42, #23272d);
     border: 2px solid var(--shell-edge);
     border-radius: 14px;
     padding: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
   }
-  #device-inner {
-    display: flex;
-    gap: 14px;
-    align-items: stretch;
-  }
   #lcd {
+    grid-area: lcd;
     display: block;
     width: 480px;
     height: 640px;
+    min-width: 0;
+    justify-self: start;
+    align-self: start;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     background: #000;
     border: 2px solid #0a0c0f;
     border-radius: 4px;
   }
-  /* 右侧演示控件列（不在 240x320 逻辑画面内） */
+  /* 右侧演示控件（不在 240x320 逻辑画面内） */
+  #force-title {
+    grid-area: force-title;
+  }
   #controls {
-    width: 168px;
+    grid-area: controls;
+    width: auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -142,10 +158,11 @@
     text-transform: uppercase;
   }
   #force-slider {
+    grid-area: slider;
     position: relative;
-    flex: 1 1 auto;
+    align-self: stretch;
     min-height: 320px;
-    height: 460px;
+    height: auto;
     background: linear-gradient(180deg, #3f4650, #2a2e34);
     border: 1px solid var(--key-edge);
     border-radius: 8px;
@@ -183,6 +200,7 @@
   #force-slider .top-label { top: 3px; }
   #force-slider .bottom-label { bottom: 3px; }
   #slider-readout {
+    grid-area: readout;
     text-align: center;
     font-family: Consolas, monospace;
     font-size: 14px;
@@ -245,10 +263,12 @@
   }
   /* 五个实体键 */
   #keys {
+    grid-area: keys;
     display: flex;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 4px;
     justify-content: center;
+    min-width: 0;
   }
   #keys button {
     flex: 1 1 0;
@@ -318,25 +338,74 @@
     }
     #sidebar { width: min(100%, 720px); }
   }
+  /* 窄屏：滑块收成细列，五个按键紧贴屏幕下方 */
   @media (max-width: 720px) {
-    .demo-top { padding-top: 10px; }
-    #app { padding-bottom: 20px; }
+    .demo-top,
+    #app {
+      width: min(1440px, calc(100% - 16px));
+    }
+    .demo-top { padding-top: 8px; }
+    #app { padding-bottom: 16px; }
     #app::before,
-    #app::after { flex-basis: 12px; }
-    #device { padding: 8px; max-width: 100%; }
-    #device-inner { gap: 8px; }
-    #lcd { width: 240px; height: 320px; }
-    #controls { width: 144px; }
-    #force-slider { min-height: 140px; height: 180px; }
-    #force-input-row { flex-wrap: wrap; }
-    #force-input { flex-basis: 100%; }
+    #app::after { flex-basis: 8px; }
+    #device {
+      --slider-col: 56px;
+      container-type: inline-size;
+      grid-template-columns: minmax(0, 240px) var(--slider-col);
+      grid-template-rows: auto auto auto auto auto;
+      grid-template-areas:
+        "lcd slider"
+        "keys keys"
+        "force-title force-title"
+        "readout readout"
+        "controls controls";
+      column-gap: 8px;
+      row-gap: 8px;
+      align-items: start;
+      width: min(100%, calc(240px + var(--slider-col) + 8px + 16px + 4px));
+      padding: 8px;
+    }
+    #lcd {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 240 / 320;
+    }
+    #force-slider {
+      width: 100%;
+      min-height: min(320px, calc((100cqi - var(--slider-col) - 8px) * 4 / 3));
+      height: min(320px, calc((100cqi - var(--slider-col) - 8px) * 4 / 3));
+      align-self: start;
+    }
+    #force-slider .thumb {
+      width: 44px;
+      margin-left: -22px;
+    }
+    #force-slider .top-label,
+    #force-slider .bottom-label {
+      left: 1px;
+      right: 1px;
+      text-align: center;
+      font-size: 10px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    #keys {
+      margin-top: 0;
+      gap: 4px;
+      width: 100%;
+    }
+    #slider-readout,
+    #force-title,
+    #controls {
+      width: 100%;
+    }
   }
   @media (max-width: 430px) {
-    #device-inner { flex-direction: column; align-items: center; }
-    #controls { width: 240px; }
-    #force-slider { min-height: 100px; height: 120px; }
-    #keys { width: 240px; gap: 4px; }
-    #keys button { font-size: 11px; letter-spacing: 0; }
+    #keys button {
+      font-size: 11px;
+      letter-spacing: 0;
+      padding: 0 2px;
+    }
   }
 </style>
 </head>
@@ -352,45 +421,40 @@
   <div class="demo-stage">
   <!-- 机壳：240x320 逻辑画面 + 演示控件 + 五个按键 -->
   <div id="device">
-    <div id="device-inner">
-      <canvas id="lcd" width="240" height="320"></canvas>
-
-      <div id="controls">
-        <div class="ctl-title">模拟力值（毫牛输入）</div>
-        <div id="force-slider">
-          <div class="top-label">+FS 拉伸</div>
-          <div class="mid"></div>
-          <div class="bottom-label">-FS 压缩</div>
-          <div class="thumb" id="force-thumb"></div>
-        </div>
-        <div id="slider-readout">0.00 N</div>
-
-        <div class="ctl-title">力值输入</div>
-        <div id="force-input-row">
-          <input id="force-input" type="text" inputmode="decimal" placeholder="按当前单位">
-          <button id="force-hold" type="button">保持</button>
-          <button id="force-clear" type="button">清除</button>
-        </div>
-        <div class="clamp-note" id="clamp-note"></div>
-
-        <div class="ctl-title">演示开关</div>
-        <div class="switch-row">
-          <label for="contact-switch">接点（PA11 / INSER）</label>
-          <input id="contact-switch" type="checkbox">
-        </div>
-        <div class="switch-row">
-          <label for="orientation-switch">朝向（自动档用）</label>
-          <input id="orientation-switch" type="checkbox">
-        </div>
-      </div>
+    <canvas id="lcd" width="240" height="320"></canvas>
+    <div id="force-slider">
+      <div class="top-label">+FS 拉伸</div>
+      <div class="mid"></div>
+      <div class="bottom-label">-FS 压缩</div>
+      <div class="thumb" id="force-thumb"></div>
     </div>
-
     <div id="keys">
       <button type="button" data-key="MENU">MENU</button>
       <button type="button" data-key="UNIT">UNIT</button>
       <button type="button" data-key="ZERO">ZERO</button>
       <button type="button" data-key="DATA">DATA</button>
       <button type="button" data-key="PWR">PWR</button>
+    </div>
+    <div class="ctl-title" id="force-title">模拟力值（毫牛输入）</div>
+    <div id="slider-readout">0.00 N</div>
+    <div id="controls">
+      <div class="ctl-title">力值输入</div>
+      <div id="force-input-row">
+        <input id="force-input" type="text" inputmode="decimal" placeholder="按当前单位">
+        <button id="force-hold" type="button">保持</button>
+        <button id="force-clear" type="button">清除</button>
+      </div>
+      <div class="clamp-note" id="clamp-note"></div>
+
+      <div class="ctl-title">演示开关</div>
+      <div class="switch-row">
+        <label for="contact-switch">接点（PA11 / INSER）</label>
+        <input id="contact-switch" type="checkbox">
+      </div>
+      <div class="switch-row">
+        <label for="orientation-switch">朝向（自动档用）</label>
+        <input id="orientation-switch" type="checkbox">
+      </div>
     </div>
   </div>
 
