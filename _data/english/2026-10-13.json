@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-13",
+  "sentence": "The limits of my language mean the limits of my world.",
+  "source": {
+    "author": "Ludwig Wittgenstein",
+    "work": "Tractatus Logico-Philosophicus",
+    "year": "1922",
+    "detail": "命题 5.6；德文首版 1921，英译本 1922；原德文：Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt"
+  },
+  "translation": "我的语言的界限，意味着我的世界的界限。",
+  "grammar": [
+    "主干很清楚：The limits（主语）+ mean（谓语）+ the limits（宾语）。两头都是 the limits，中间用 mean 连接，形成对称。",
+    "of my language / of my world 是介词短语作后置定语，分别修饰前后两个 limits，说明「哪方面的界限」。整句结构是 The limits of A mean the limits of B。",
+    "这里的 mean 不是「打算」，而是「意味着、等于」。哲学里常把语言和世界绑在一起：你能说清的，才是你能把握的。学英语，也是在拓宽自己的世界。"
+  ],
+  "vocab": [
+    {
+      "word": "limit",
+      "phonetic": "/ˈlɪmɪt/",
+      "pos": "n.",
+      "meaning": "界限；限度；极限（句中常用复数 limits）",
+      "collocation": "the limits of; push the limits; within limits",
+      "example": "Debugging without a scope can push the limits of what you can see on a bare-metal board."
+    },
+    {
+      "word": "language",
+      "phonetic": "/ˈlæŋɡwɪdʒ/",
+      "pos": "n.",
+      "meaning": "语言；也引申为表达方式、术语体系",
+      "collocation": "spoken / written language; a programming language; in plain language",
+      "example": "In datasheets, the same idea is often said in denser language than in app notes."
+    },
+    {
+      "word": "mean",
+      "phonetic": "/miːn/",
+      "pos": "v.",
+      "meaning": "意味着；表示（不是「刻薄」那个形容词）",
+      "collocation": "mean that; what does it mean; mean the world to someone",
+      "example": "A rising IRQ line can mean the peripheral has finished a transfer."
+    },
+    {
+      "word": "world",
+      "phonetic": "/wɜːrld/",
+      "pos": "n.",
+      "meaning": "世界；也可指某人的生活范围、领域",
+      "collocation": "the world of; in one's own world; a whole new world",
+      "example": "Learning English opens a whole new world of docs, talks, and open-source threads."
+    }
+  ],
+  "note": "学英语不只是背单词，也是在把「说不清」变成「说得清」。今天试着把这句改写成你的版本，比如：The limits of my vocabulary mean the limits of my clarity."
+}
