@@ -1,6 +1,5 @@
 /* 由 N32G455/font/font/font_num_40.c 机械转写生成，请勿手改点阵。
  * 每个字形 120 字节（24 x 40 像素），用 8 行拼接，每行 15 字节（30 个小写十六进制字符）。
- * 可用 demo/force-gauge/tools/gen_num40_js.py 重新生成。
  */
 (function (FG) {
   "use strict";

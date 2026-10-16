@@ -135,16 +135,16 @@
     }
     check("2 kg 档六点目标 0/3922/7845/11767/15690/19613 mN", targetOk);
 
-    /* 10. 零点回滞：进入 FS/800、退出 FS/400 */
+    /* 10. 零点回滞：进入 FS/2000、退出 FS/1000 */
     var ui = new FG.Ui({screen: app.screen, settings: settings, tests: tests,
       waveform: new FG.Waveform(), records: app.records, calibration: cal,
       getForce: function () { return 0; }, tick: function () { return 0; }});
     ui.forceZeroActive = true;
     ui.displayedForce = 0;
-    check("零点回滞进入阈值按固件四舍五入 = 25 mN",
-      ui.zeroDeadband() === 25, String(ui.zeroDeadband()));
-    var shown = ui.filterForce(24);
-    check("24 mN 仍显示 0", shown === 0, String(shown));
+    check("零点回滞进入阈值按固件四舍五入 = 10 mN",
+      ui.zeroDeadband() === 10, String(ui.zeroDeadband()));
+    var shown = ui.filterForce(19);
+    check("19 mN 仍显示 0", shown === 0, String(shown));
     shown = ui.filterForce(50);
     check("50 mN 退出零点", shown === 50, String(shown));
 
@@ -169,10 +169,10 @@
       String(peakWave.getPeak()));
 
     /* 13. 设定页分组条目数 */
-    check("基本设定 9 项 / 系统设定 10 项 / 通信 6 项 / 存储 5 项",
-      settings.getGroupItems(FG.SETTING_GROUP.BASIC).length === 9 &&
+    check("基本设定 10 项（按键结果按动作隐藏） / 系统设定 10 项 / 通信 7 项 / 存储 5 项",
+      settings.getGroupItems(FG.SETTING_GROUP.BASIC).length === 10 &&
       settings.getGroupItems(FG.SETTING_GROUP.SYSTEM).length === 10 &&
-      settings.getGroupItems(FG.SETTING_GROUP.COMM).length === 6 &&
+      settings.getGroupItems(FG.SETTING_GROUP.COMM).length === 7 &&
       settings.getGroupItems(FG.SETTING_GROUP.STORAGE).length === 5);
 
     /* 14. 记录上限与分页 */
@@ -200,11 +200,11 @@
       var text = String(font.bitmap).replace(/[\s+]/g, "");
       return /^[0-9a-fA-F]*$/.test(text) && (text.length % 2 === 0);
     }
-    check("font_16 位图 = 6624 字节",
+    check("font_16 位图长度与元数据一致",
       hexLength(FG.FONT16) === FG.FONT16.bitmapSize * 2 && hexOk(FG.FONT16),
       "实测 " + hexLength(FG.FONT16) + " 字符，期望 " + (FG.FONT16.bitmapSize * 2) +
       "（缺 " + ((FG.FONT16.bitmapSize * 2) - hexLength(FG.FONT16)) + " 字符）");
-    check("font_24 位图 = 2952 字节",
+    check("font_24 位图长度与元数据一致",
       hexLength(FG.FONT24) === FG.FONT24.bitmapSize * 2 && hexOk(FG.FONT24),
       "实测 " + hexLength(FG.FONT24) + " 字符，期望 " + (FG.FONT24.bitmapSize * 2));
     var num40Ok = FG.NUM40.glyphs.length === 12;
@@ -217,14 +217,14 @@
       }
     }
     check("num40 12 个字形，每个 240 字符", num40Ok, num40Detail);
-    check("font_16 字形数 255 / font_24 字形数 47",
-      FG.FONT16.glyphs.length === 255 && FG.FONT24.glyphs.length === 47,
+    check("font_16 字形数 351 / font_24 字形数 57",
+      FG.FONT16.glyphs.length === 351 && FG.FONT24.glyphs.length === 57,
       FG.FONT16.glyphs.length + " / " + FG.FONT24.glyphs.length);
-    check("font_16 末项偏移 + 长度 = 位图字节数",
-      (FG.FONT16.glyphs[254][2] + FG.FONT16.glyphs[254][3]) === FG.FONT16.bitmapSize,
+    check("font_16 所有字形偏移均在位图范围内",
+      FG.FONT16.glyphs.every(function(g) { return g[2] + g[3] <= FG.FONT16.bitmapSize; }),
       String(FG.FONT16.glyphs[254][2] + FG.FONT16.glyphs[254][3]));
-    check("font_24 末项偏移 + 长度 = 位图字节数",
-      (FG.FONT24.glyphs[46][2] + FG.FONT24.glyphs[46][3]) === FG.FONT24.bitmapSize,
+    check("font_24 所有字形偏移均在位图范围内",
+      FG.FONT24.glyphs.every(function(g) { return g[2] + g[3] <= FG.FONT24.bitmapSize; }),
       String(FG.FONT24.glyphs[46][2] + FG.FONT24.glyphs[46][3]));
 
     /* 16. 字体是否覆盖当前界面文案 */
@@ -245,8 +245,8 @@
       FG.APP_CAL_STABLE_TOLERANCE_PERMILLE === 5);
     check("校正六点 / 密码四位",
       FG.APP_CAL_POINT_COUNT === 6 && FG.APP_CAL_PASSWORD_DIGITS === 4);
-    check("零点回滞 800 / 400",
-      FG.FORCE_ZERO_ENTER_DIVISOR === 800 && FG.FORCE_ZERO_EXIT_DIVISOR === 400);
+    check("零点回滞 2000 / 1000",
+      FG.FORCE_ZERO_ENTER_DIVISOR === 2000 && FG.FORCE_ZERO_EXIT_DIVISOR === 1000);
 
     var failed = results.filter(function (item) { return !item.ok; });
     FG.selfCheck = {

@@ -19,8 +19,8 @@
   var MENU_FIRST_PAGE = PAGE.BASIC;
   var MENU_LAST_PAGE = PAGE.CALIBRATION;
   var REFRESH_PERIOD_MS = 100;
-  var FORCE_ZERO_ENTER_DIVISOR = 800;
-  var FORCE_ZERO_EXIT_DIVISOR = 400;
+  var FORCE_ZERO_ENTER_DIVISOR = 2000;
+  var FORCE_ZERO_EXIT_DIVISOR = 1000;
   var SETTING_LABEL_X = 12;
   var SETTING_LABEL_COLUMN_WIDTH = 64;
   var CHART_LEFT = 28;
@@ -34,7 +34,7 @@
   var PEAK_TEXT_Y = 123;
   var INSERT_FP_TEXT_Y = 118;
   var INSERT_FT_TEXT_Y = 136;
-  var TIME_TEXT_X = 188;
+  var TIME_TEXT_X = 6;
   var TIME_TEXT_Y = 3;
   var BATTERY_TEXT_X = 22;
   var BATTERY_TEXT_Y = 8;
@@ -46,7 +46,8 @@
   var RECORD_ROW_Y0 = 32;
   var RECORD_ROW_PITCH = 48;
   var RECORD_LINE2_DY = 20;
-  var RECORD_VIEW = { LIST: 0, CONFIRM: 1, CLEARING: 2, CLEAR_FAIL: 3 };
+  var RECORD_VIEW = { LIST: 0, CONFIRM: 1, CLEARING: 2, CLEAR_FAIL: 3,
+    DELETE_SELECT: 4, DELETE_CONFIRM: 5, DELETING: 6, DELETE_FAIL: 7 };
   var CHART_RANGE = { BIPOLAR: 0, POSITIVE: 1, NEGATIVE: 2 };
 
   function Ui(options) {
@@ -70,6 +71,7 @@
     this.settingEditPart = 0;
     this.recordView = RECORD_VIEW.LIST;
     this.recordPage = 0;
+    this.recordSelection = 0;
     this.recordWait = 0;
     this.recordHoldSuppressClear = 0;
     this.recordClearArmed = 0;
@@ -99,7 +101,7 @@
     return this.settings.fullScale();
   };
 
-  /* 零点死区：|值| <= (FS + 400) / 800 时显示 0 */
+  /* 零点死区：进入 0.05% FS，退出 0.1% FS。 */
   Ui.prototype.zeroDeadband = function () {
     return Math.trunc((this.fullScale() + Math.trunc(FORCE_ZERO_ENTER_DIVISOR / 2)) /
       FORCE_ZERO_ENTER_DIVISOR);
@@ -113,7 +115,7 @@
     if (Math.abs(value) <= this.zeroDeadband()) {
       value = 0;
     }
-    return FG.Unit.formatForce(value, this.settings.getForceUnit());
+    return FG.Unit.formatForce(value, this.settings.getForceUnit(), this.settings.data.forceRange <= 1);
   };
 
   /*
@@ -163,7 +165,7 @@
       return sign + (whole < 10 ? "0" : "") + whole + "." +
         Math.trunc(fraction / 100) + Math.trunc(fraction / 10) % 10;
     }
-    return FG.Unit.formatForce(millinewton, unit);
+    return FG.Unit.formatForce(millinewton, unit, this.settings.data.forceRange <= 1);
   };
 
   /* ---------- 图表 ---------- */
@@ -174,6 +176,7 @@
     }
     switch (this.tests.action) {
       case FG.TEST_ACTION.COMPRESSION:
+      case FG.TEST_ACTION.BUTTON:
         return CHART_RANGE.NEGATIVE;
       case FG.TEST_ACTION.TENSION:
       case FG.TEST_ACTION.CONTACT:
@@ -247,14 +250,13 @@
 
   Ui.prototype.drawBattery = function () {
     var s = this.screen;
-    s.fillRect(5, 6, 14, 10, COLOR.GRAY);
-    s.fillRect(7, 8, 10, 6, COLOR.BG);
-    s.fillRect(8, 9, 8, 4, COLOR.CYAN);
-    s.fillRect(19, 9, 2, 4, COLOR.GRAY);
+    s.fillRect(219, 6, 14, 10, COLOR.GRAY);
+    s.fillRect(221, 8, 10, 6, COLOR.BG);
+    s.fillRect(222, 9, 8, 4, COLOR.CYAN);
+    s.fillRect(233, 9, 2, 4, COLOR.GRAY);
     var percent = Math.min(this.batteryPercent, 100);
     var text = String(percent);
-    s.drawMiniText(BATTERY_TEXT_X, BATTERY_TEXT_Y, text, COLOR.GRAY);
-    s.drawMiniText(BATTERY_TEXT_X + 6 * text.length, BATTERY_TEXT_Y, "%", COLOR.GRAY);
+    s.drawMiniText(217 - (text.length + 1) * 6, BATTERY_TEXT_Y, text + "%", COLOR.GRAY);
   };
 
   Ui.prototype.drawDirection = function () {
@@ -391,11 +393,13 @@
       case FG.TEST_ACTION.INSERT: return ["FP", "FT"];
       case FG.TEST_ACTION.BREAK: return ["MAX", "FB"];
       case FG.TEST_ACTION.CONTACT: return ["PEAK", "ACT"];
+      case FG.TEST_ACTION.BUTTON: return ["Fp", ["", "Fc", "Fr", "Cc", "Cr"][this.settings.data.buttonResultSelection]];
       default: return ["", ""];
     }
   };
 
   Ui.prototype.verdictText = function (verdict) {
+    if (verdict === FG.TEST_VERDICT.ERROR) return "ERR";
     if (verdict === FG.TEST_VERDICT.HIGH) return "+NG";
     if (verdict === FG.TEST_VERDICT.LOW) return "-NG";
     return "OK";
@@ -415,10 +419,13 @@
 
     /* 中：存储提示 */
     var prompt = this.tests.storagePrompt;
-    if (prompt !== FG.TEST_PROMPT.NONE) {
+    if (prompt !== FG.TEST_PROMPT.NONE || Math.abs(this.getForce()) > this.fullScale()) {
       var text;
       var color;
-      if (prompt === FG.TEST_PROMPT.SUCCESS) {
+      if (Math.abs(this.getForce()) > this.fullScale()) {
+        text = FG.T(FG.STR.HOME_OVER_LIMIT);
+        color = COLOR.RED;
+      } else if (prompt === FG.TEST_PROMPT.SUCCESS) {
         text = FG.T(8);
         color = COLOR.CYAN;
       } else if (prompt === FG.TEST_PROMPT.FAILURE) {
@@ -449,8 +456,30 @@
       case FG.TEST_ACTION.INSERT: return FG.T(66);
       case FG.TEST_ACTION.CONTACT: return FG.T(67);
       case FG.TEST_ACTION.BREAK: return FG.T(68);
+      case FG.TEST_ACTION.BUTTON: return FG.T(FG.STR.OPT_BUTTON);
       default: return "";
     }
+  };
+
+  Ui.prototype.drawFixedValue = function (text, unit, y) {
+    text = text || "---";
+    var s = this.screen;
+    var ux = 224 - s.measure(FG.FONT16, unit);
+    var body = text.slice(1);
+    var x = Math.max(0, ux - 8 - (body.length + 1) * FG.NUM40.width);
+    if (text.charAt(0) === "-") s.drawNumber40(x, y, "-", COLOR.WHITE);
+    s.drawNumber40(x + FG.NUM40.width, y, body, COLOR.WHITE);
+    s.drawText(FG.FONT16, ux, y + 12, unit, COLOR.WHITE);
+  };
+
+  Ui.prototype.drawResultRow = function (label, text, unit, y, large) {
+    var s = this.screen, font = large ? FG.FONT24 : FG.FONT16;
+    var ux = 224 - s.measure(FG.FONT16, unit), ry = y + (large ? 4 : 0);
+    s.drawText(FG.FONT16, 8, ry, label, COLOR.GRAY);
+    s.drawText(FG.FONT16, ux, ry, unit, COLOR.GRAY);
+    text = text || "---";
+    s.drawText(font, Math.max(0, ux - 8 - s.measure(font, text)), y, text,
+      text === "---" ? COLOR.GRAY : COLOR.WHITE);
   };
 
   Ui.prototype.drawHome = function () {
@@ -465,17 +494,42 @@
     var peakMode = this.settings.testMode() === FG.TEST_MODE.PEAK;
     s.fillRect(6, 27, 48, 16, COLOR.CYAN);
     s.drawText(FG.FONT16, 14, 27, peakMode ? FG.T(62) : FG.T(61), COLOR.BLACK);
-    this.drawDirection();
     s.fillRect(0, 45, 240, 1, COLOR.GRID);
-
-    this.drawForceText(this.displayedForceText);
-    s.fillRect(0, 117, 240, 1, COLOR.GRID);
-    this.drawPeakRows(this.displayedPeakText,
-      this.hasSecondPeakRow() ? this.displayedSecondPeakText : null);
-    s.fillRect(0, 153, 240, 1, COLOR.GRID);
-
-    this.drawChart(snapshot);
-    this.drawAxisText(snapshot);
+    var unit = FG.Unit.label(this.settings.getForceUnit());
+    var button = this.tests.action === FG.TEST_ACTION.BUTTON;
+    var labels = this.peakRowLabels();
+    var secondUnit = button && this.settings.data.buttonResultSelection >= 3 ? "%" : unit;
+    var plain = this.settings.data.waveform === 0;
+    if (plain) {
+      s.fillRect(0, 168, 240, 1, COLOR.GRID);
+      if (peakMode) {
+        if (this.hasSecondPeakRow()) {
+          s.drawText(FG.FONT16, 8, 49, labels[0], COLOR.GRAY);
+          this.drawFixedValue(this.displayedPeakText, unit, 67);
+          s.drawText(FG.FONT16, 8, 109, labels[1], COLOR.GRAY);
+          this.drawFixedValue(this.displayedSecondPeakText, secondUnit, 127);
+        } else {
+          s.drawText(FG.FONT16, 8, 67, button ? "Fp" : FG.T(7), COLOR.GRAY);
+          this.drawFixedValue(this.displayedPeakText, unit, 91);
+        }
+        s.drawText(FG.FONT16, 8, 190, FG.T(61), COLOR.GRAY);
+        this.drawFixedValue(this.displayedForceText, unit, 214);
+      } else {
+        this.drawFixedValue(this.displayedForceText, unit, 86);
+        s.drawText(FG.FONT16, 8, 190, FG.T(7), COLOR.GRAY);
+        this.drawFixedValue(this.displayedPeakText, unit, 214);
+      }
+    } else {
+      if (peakMode && this.hasSecondPeakRow()) {
+        this.drawResultRow(labels[0], this.displayedPeakText, unit, 52, true);
+        this.drawResultRow(labels[1], this.displayedSecondPeakText, secondUnit, 86, true);
+      } else this.drawFixedValue(peakMode ? this.displayedPeakText : this.displayedForceText, unit, 65);
+      s.fillRect(0, 117, 240, 1, COLOR.GRID);
+      this.drawResultRow(peakMode ? FG.T(61) : FG.T(7), peakMode ? this.displayedForceText : this.displayedPeakText, unit, 123, false);
+      s.fillRect(0, 153, 240, 1, COLOR.GRID);
+      this.drawChart(snapshot);
+      this.drawAxisText(snapshot);
+    }
     s.fillRect(0, 291, 240, 1, COLOR.GRID);
     this.drawBottomBar();
   };
@@ -486,7 +540,7 @@
     }
     var action = this.tests.action;
     return action === FG.TEST_ACTION.INSERT || action === FG.TEST_ACTION.BREAK ||
-      action === FG.TEST_ACTION.CONTACT;
+      action === FG.TEST_ACTION.CONTACT || (action === FG.TEST_ACTION.BUTTON && this.settings.data.buttonResultSelection !== 0);
   };
 
   /* ---------- 菜单页 ---------- */
@@ -507,7 +561,7 @@
 
   Ui.prototype.drawTitle = function (page) {
     var s = this.screen;
-    if (FG.GetLanguage() === FG.APP_LANG_ZH) {
+    if (FG.GetLanguage() !== FG.APP_LANG_EN) {
       s.drawText(FG.FONT24, 12, 10, FG.T(this.pageTitleId(page)), COLOR.WHITE);
     } else {
       s.drawText(FG.FONT16, 12, 12, FG.T(this.pageTitleId(page)), COLOR.WHITE);
@@ -517,7 +571,7 @@
 
   Ui.prototype.drawMenu = function () {
     var s = this.screen;
-    var zh = (FG.GetLanguage() === FG.APP_LANG_ZH);
+    var zh = (FG.GetLanguage() !== FG.APP_LANG_EN);
     s.fill(COLOR.BG);
     this.drawTitle(PAGE.MENU);
 
@@ -561,7 +615,10 @@
   };
 
   Ui.prototype.settingItems = function (page) {
-    return this.settings.getGroupItems(this.settingGroupOf(page));
+    var self = this;
+    return this.settings.getGroupItems(this.settingGroupOf(page)).filter(function(id) {
+      return id !== FG.SETTING_ID.BUTTON_RESULT || (self.settings.testMode() === 1 && self.settings.testAction() === 5);
+    });
   };
 
   Ui.prototype.drawSettingPage = function (page) {
@@ -569,7 +626,7 @@
     var items = this.settingItems(page);
     var itemCount = items.length;
     var rowStep = (itemCount > 7) ? 24 : 29;
-    var zh = (FG.GetLanguage() === FG.APP_LANG_ZH);
+    var zh = (FG.GetLanguage() !== FG.APP_LANG_EN);
 
     s.fill(COLOR.BG);
     this.drawTitle(page);
@@ -601,7 +658,10 @@
       var textColor = selected ? COLOR.BLACK : COLOR.WHITE;
       var valueColor = selected ? COLOR.BLACK : COLOR.CYAN;
       s.drawText(FG.FONT16, labelX, y, label, textColor);
-      s.drawText(FG.FONT16, 132, y, value, valueColor);
+      var valueWidth = s.measure(FG.FONT16, value);
+      var valueX = valueWidth + 132 > 228 ? 228 - valueWidth : 132;
+      valueX = Math.max(valueX, labelX + s.measure(FG.FONT16, label) + 8);
+      s.drawText(FG.FONT16, valueX, y, value, valueColor);
     }
   };
 
@@ -620,6 +680,13 @@
 
   /* 记录页第二行结果串：标签 + 结果 + 单位；单位跟当前设置，不跟记录里的单位 */
   Ui.prototype.recordResultsText = function (entry) {
+    if (entry.a === FG.TEST_ACTION.BUTTON) {
+      var unit = this.settings.getForceUnit();
+      var text = "Fp " + FG.Unit.formatForce(entry.r1, unit).trim() + " " + FG.Unit.label(unit);
+      if (entry.br === 1 || entry.br === 2) text += " " + (entry.br === 1 ? "Fc" : "Fr") + " " + FG.Unit.formatForce(entry.br === 1 ? entry.r2 : entry.r3, unit).trim() + " " + FG.Unit.label(unit);
+      if (entry.br >= 3) text += " " + (entry.br === 3 ? "Cc" : "Cr") + " " + (Math.round((entry.r1 - (entry.br === 3 ? entry.r2 : entry.r3)) * 1000 / entry.r1) / 10).toFixed(1) + "%";
+      return text;
+    }
     var unit = this.settings.getForceUnit();
     var unitLabel = FG.Unit.label(unit);
     var text = this.recordLabel(entry.a, false);
@@ -635,6 +702,7 @@
   };
 
   Ui.prototype.recordActionName = function (action) {
+    if (action === FG.TEST_ACTION.BUTTON) return FG.T(FG.STR.OPT_BUTTON);
     if (action >= FG.TEST_ACTION.COUNT) {
       return "?";
     }
@@ -665,13 +733,13 @@
     var rowY2 = rowY + RECORD_LINE2_DY;
     var showTime = this.settings.data.timeDisplay !== 0;
 
-    /* 序号：5 位补零 */
+    /* 当前排序中的连续展示序号，至少三位。 */
     var sequence = entry.seq || 0;
     var seqText = String(sequence);
-    while (seqText.length < 5) {
+    while (seqText.length < 3) {
       seqText = "0" + seqText;
     }
-    s.drawText(FG.FONT16, 2, rowY, seqText, COLOR.WHITE);
+    s.drawText(FG.FONT16, 8, rowY, seqText, 0xff8e);
 
     /* 时间：右对齐到 232，时间显示 OFF 或时间非法时不画 */
     var timeX = 8;
@@ -688,21 +756,21 @@
     }
 
     /* 动作名：画出时间时右边界收到 timeX-4 */
-    var actionRight = 236;
+    var actionRight = 234;
     if (timeText && timeX > 50) {
       actionRight = timeX - 4;
     }
-    s.drawTextClipped(FG.FONT16, 46, actionRight, rowY,
+    s.drawTextClipped(FG.FONT16, 52, actionRight, rowY,
       this.recordActionName(entry.a), COLOR.CYAN);
 
     /* 判定 */
     var verdictText = this.verdictText(entry.v);
     var verdictWidth = s.measure(FG.FONT16, verdictText);
-    var verdictX = (verdictWidth < 34) ? 236 - verdictWidth : 202;
+    var verdictX = (verdictWidth < 34) ? 234 - verdictWidth : 200;
 
     /* 结果串 */
     var results = this.recordResultsText(entry);
-    s.drawTextClipped(FG.FONT16, 2, verdictX - 4, rowY2, results, COLOR.WHITE);
+    s.drawTextClipped(FG.FONT16, 8, verdictX - 4, rowY2, results, COLOR.WHITE);
     s.drawText(FG.FONT16, verdictX, rowY2, verdictText, this.recordVerdictColor(entry.v));
   };
 
@@ -726,6 +794,18 @@
 
     /* 标题在所有视图都画，16 px 字体 */
     s.drawText(FG.FONT16, 8, 8, FG.T(51), COLOR.WHITE);
+    if (this.recordView === RECORD_VIEW.DELETE_CONFIRM) {
+      this.drawCentered16(72, FG.T(FG.STR.RECORD_DELETE_ASK), COLOR.WHITE);
+      if (this.recordDeleteEntry) this.drawRecordEntry(2, this.recordDeleteEntry);
+      this.drawRecordHints(true); return;
+    }
+    if (this.recordView === RECORD_VIEW.DELETE_FAIL) {
+      this.drawCentered16(120, FG.T(FG.STR.RECORD_DELETE_FAIL), COLOR.RED);
+      this.drawRecordHints(true); return;
+    }
+    if (this.recordView === RECORD_VIEW.DELETING) {
+      this.drawCentered16(120, FG.T(FG.STR.RECORD_DELETING), COLOR.CYAN); return;
+    }
 
     if (this.recordView === RECORD_VIEW.CLEARING) {
       this.drawCentered16(120, FG.T(23), COLOR.CYAN);
@@ -763,6 +843,13 @@
       var entry = info.entries[i];
       entry.seq = info.newestFirst ? (info.recordCount - slot) : (slot + 1);
       this.drawRecordEntry(i, entry);
+      if (this.recordView === RECORD_VIEW.DELETE_SELECT && i === this.recordSelection) {
+        var ry = RECORD_ROW_Y0 + i * RECORD_ROW_PITCH;
+        s.fillRect(4, ry - 4, 234, 2, COLOR.CYAN);
+        s.fillRect(4, ry + 39, 234, 2, COLOR.CYAN);
+        s.fillRect(4, ry - 4, 2, 45, COLOR.CYAN);
+        s.fillRect(236, ry - 4, 2, 45, COLOR.CYAN);
+      }
       if ((i + 1) < info.entries.length) {
         s.fillRect(8, RECORD_ROW_Y0 + i * RECORD_ROW_PITCH + 42, 224, 1, COLOR.GRID);
       }
@@ -771,6 +858,10 @@
     s.fillRect(8, lastY, 224, 2, COLOR.GRAY);
 
     this.drawRecordHints(false);
+    if (this.recordView === RECORD_VIEW.DELETE_SELECT) {
+      s.fillRect(120, 276, 120, 16, COLOR.BG);
+      this.drawHintRight(276, FG.T(17));
+    }
   };
 
   /* ---------- 校正页 ---------- */
@@ -778,14 +869,14 @@
   Ui.prototype.calibrationErrorText = function (error, state) {
     var text = "";
     switch (error) {
-      case FG.CAL_ERROR.PASSWORD: text = "密码错误"; break;
+      case FG.CAL_ERROR.PASSWORD: text = FG.T(FG.STR.CAL_ERROR_PASSWORD); break;
       case FG.CAL_ERROR.NO_SAMPLE:
-      case FG.CAL_ERROR.ADC: text = "采样异常"; break;
-      case FG.CAL_ERROR.UNSTABLE: text = "载荷未稳定"; break;
-      case FG.CAL_ERROR.DIRECTION: text = "方向错误"; break;
-      case FG.CAL_ERROR.POINT: text = "点位异常"; break;
-      case FG.CAL_ERROR.OVER_RANGE: text = "超出量程"; break;
-      case FG.CAL_ERROR.SAVE: text = "保存失败"; break;
+      case FG.CAL_ERROR.ADC: text = FG.T(FG.STR.CAL_ERROR_SAMPLE); break;
+      case FG.CAL_ERROR.UNSTABLE: text = FG.T(FG.STR.CAL_ERROR_UNSTABLE); break;
+      case FG.CAL_ERROR.DIRECTION: text = FG.T(FG.STR.CAL_ERROR_DIRECTION); break;
+      case FG.CAL_ERROR.POINT: text = FG.T(FG.STR.CAL_ERROR_POINT); break;
+      case FG.CAL_ERROR.OVER_RANGE: text = FG.T(FG.STR.CAL_ERROR_RANGE); break;
+      case FG.CAL_ERROR.SAVE: text = FG.T(FG.STR.CAL_ERROR_SAVE); break;
       default: text = ""; break;
     }
     if (!text) {
@@ -807,7 +898,7 @@
     var view = this.calibration.getSnapshot();
     var unit = this.settings.getForceUnit();
     var unitLabel = FG.Unit.label(unit);
-    var zh = (FG.GetLanguage() === FG.APP_LANG_ZH);
+    var zh = (FG.GetLanguage() !== FG.APP_LANG_EN);
     var i;
 
     s.fill(COLOR.BG);
@@ -821,7 +912,7 @@
     var state = view.state;
 
     if (state === FG.CAL_STATE.PASSWORD) {
-      s.drawText(FG.FONT16, 28, 78, "密码", COLOR.WHITE);
+      s.drawText(FG.FONT16, 28, 78, FG.T(FG.STR.CAL_PASSWORD), COLOR.WHITE);
       s.fillRect(102 + view.passwordCursor * 16, 72, 14, 24, COLOR.CYAN);
       for (i = 0; i < FG.APP_CAL_PASSWORD_DIGITS; i++) {
         s.drawText(FG.FONT16, 105 + i * 16, 77, String(view.password[i]),
@@ -831,13 +922,13 @@
       if (passwordError) {
         s.drawText(FG.FONT16, 76, 122, passwordError, COLOR.RED);
       }
-      s.drawText(FG.FONT16, 8, 270, "UNIT +  DATA >  ZERO <", COLOR.GRAY);
-      s.drawText(FG.FONT16, 8, 294, "MENU BACK  PWR OK", COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 270, FG.T(FG.STR.CAL_HINT_ZERO), COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 294, FG.T(FG.STR.CAL_HINT_PASSWORD), COLOR.GRAY);
       return;
     }
 
     if (state === FG.CAL_STATE.SELECT) {
-      var items = [FG.T(33), FG.T(65), FG.T(64)];
+      var items = [FG.T(FG.STR.CAL_RANGE), FG.T(FG.STR.CAL_LARGE), FG.T(FG.STR.CAL_SMALL)];
       if (view.rangeEditing === 0 && view.selectFocus === 0) {
         s.fillRect(10, 62, 220, 28, COLOR.CYAN);
       } else if (view.rangeEditing !== 0) {
@@ -855,45 +946,63 @@
       var rangeText = this.calibrationRangeText(view.rangeIndex);
       s.drawText(FG.FONT16, 150, 66, rangeText, (view.selectFocus === 0) ? COLOR.BLACK : COLOR.CYAN);
 
-      if (view.selectFocus > 0) {
-        var valid = (view.selectFocus === 1) ? view.tensionCalibrated : view.compressionCalibrated;
-        s.drawText(FG.FONT16, 160, 220, valid ? "已校正" : "未校正",
-          valid ? COLOR.CYAN : COLOR.RED);
+      var statuses = [view.tensionCalibrated, view.compressionCalibrated, view.tensionSmallCalibrated, view.compressionSmallCalibrated];
+      var statusIds = [FG.STR.CAL_STATUS_LT, FG.STR.CAL_STATUS_LC, FG.STR.CAL_STATUS_ST, FG.STR.CAL_STATUS_SC];
+      for (i = 0; i < 4; i++) {
+        var sx = i % 2 ? 124 : 8, sy = i >= 2 ? 240 : 210;
+        s.fillRect(sx, sy, 108, 24, statuses[i] ? COLOR.CYAN : COLOR.RED);
+        s.drawText(FG.FONT16, sx + 5, sy + 4, FG.T(statusIds[i]), COLOR.BLACK);
+        s.drawText(FG.FONT16, sx + 76, sy + 4, statuses[i] ? "OK" : "--", COLOR.BLACK);
       }
-      s.drawText(FG.FONT16, 8, 270, "UNIT PREV  DATA NEXT", COLOR.GRAY);
-      s.drawText(FG.FONT16, 8, 294, "MENU BACK  PWR ENTER", COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 270, FG.T(FG.STR.CAL_HINT_SELECT), COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 294, FG.T(FG.STR.CAL_HINT_ENTER), COLOR.GRAY);
+      return;
+    }
+
+    if (state === FG.CAL_STATE.DIRECTION) {
+      s.drawText(FG.FONT16, 18, 56, FG.T(view.layer ? FG.STR.CAL_SMALL : FG.STR.CAL_LARGE), COLOR.CYAN);
+      for (i = 0; i < 2; i++) {
+        var dy = 104 + i * 52;
+        var focused = view.directionFocus === i;
+        var valid = view.layer ? (i ? view.compressionSmallCalibrated : view.tensionSmallCalibrated) : (i ? view.compressionCalibrated : view.tensionCalibrated);
+        if (focused) s.fillRect(10, dy - 4, 220, 28, COLOR.CYAN);
+        s.drawText(FG.FONT16, 18, dy, FG.T(i ? FG.STR.CAL_COMPRESSION : FG.STR.CAL_TENSION), focused ? COLOR.BLACK : COLOR.WHITE);
+        s.drawText(FG.FONT16, 148, dy, FG.T(valid ? FG.STR.CAL_CALIBRATED : FG.STR.CAL_NOT_CALIBRATED), focused ? COLOR.BLACK : (valid ? COLOR.CYAN : COLOR.RED));
+      }
+      s.drawText(FG.FONT16, 8, 270, FG.T(FG.STR.CAL_HINT_SELECT), COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 294, FG.T(FG.STR.CAL_HINT_ENTER), COLOR.GRAY);
       return;
     }
 
     if (state === FG.CAL_STATE.ABORT_CONFIRM) {
-      s.drawText(FG.FONT16, 40, 105, "放弃本次校正？", COLOR.RED);
-      s.drawText(FG.FONT16, 36, 145, "PWR 确认放弃", COLOR.WHITE);
+      s.drawText(FG.FONT16, 40, 105, FG.T(FG.STR.CAL_ABORT_ASK), COLOR.RED);
+      s.drawText(FG.FONT16, 36, 145, FG.T(FG.STR.CAL_ABORT_CONFIRM), COLOR.WHITE);
       s.drawText(FG.FONT16, 36, 172, "MENU BACK", COLOR.GRAY);
       return;
     }
 
     if (state === FG.CAL_STATE.SAVING) {
-      s.drawText(FG.FONT16, 76, 120, "正在保存", COLOR.CYAN);
+      s.drawText(FG.FONT16, 76, 120, FG.T(FG.STR.CAL_SAVING), COLOR.CYAN);
       return;
     }
 
     if (state === FG.CAL_STATE.RESULT_SUCCESS || state === FG.CAL_STATE.RESULT_FAILED) {
       var success = (state === FG.CAL_STATE.RESULT_SUCCESS);
-      s.drawText(FG.FONT16, 70, 88, success ? "校正成功" : "校正失败",
+      s.drawText(FG.FONT16, 70, 88, success ? FG.T(FG.STR.CAL_SUCCESS) : FG.T(FG.STR.CAL_FAILURE),
         success ? COLOR.GREEN : COLOR.RED);
       s.drawText(FG.FONT16, 28, 122,
         (view.direction === FG.CAL_DIRECTION.TENSION) ? FG.T(65) : FG.T(64), COLOR.WHITE);
       s.drawText(FG.FONT16, 126, 122, this.calibrationRangeText(view.rangeIndex), COLOR.WHITE);
       if (success) {
-        s.drawText(FG.FONT16, 90, 154, "已保存", COLOR.CYAN);
+        s.drawText(FG.FONT16, 90, 154, FG.T(FG.STR.CAL_SAVED), COLOR.CYAN);
       } else {
-        s.drawText(FG.FONT16, 46, 154, "旧参数已保留", COLOR.WHITE);
+        s.drawText(FG.FONT16, 46, 154, FG.T(FG.STR.CAL_OLD_PARAMS_KEPT), COLOR.WHITE);
         var resultError = this.calibrationErrorText(view.error, state);
         if (resultError) {
           s.drawText(FG.FONT16, 62, 188, resultError, COLOR.RED);
         }
       }
-      s.drawText(FG.FONT16, 8, 294, "MENU/PWR BACK", COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 294, FG.T(FG.STR.CAL_HINT_RESULT_BACK), COLOR.GRAY);
       return;
     }
 
@@ -901,17 +1010,17 @@
       if (view.pointIndex >= FG.APP_CAL_POINT_COUNT) {
         return;
       }
-      var percent = 20 * view.pointIndex;
+      var percent = (view.layer ? 4 : 20) * view.pointIndex;
       s.drawText(FG.FONT16, 150, 58,
         (view.pointIndex + 1) + "/6 " + percent + "%", COLOR.CYAN);
       s.drawText(FG.FONT16, 14, 58,
         (view.direction === FG.CAL_DIRECTION.TENSION) ? FG.T(65) : FG.T(64), COLOR.WHITE);
 
-      s.drawText(FG.FONT16, 14, 98, "目标", COLOR.WHITE);
+      s.drawText(FG.FONT16, 14, 98, FG.T(FG.STR.CAL_TARGET), COLOR.WHITE);
       s.drawText(FG.FONT16, 92, 98, FG.Unit.formatForce(view.targetForceMillinewton, unit), COLOR.CYAN);
       s.drawText(FG.FONT16, 190, 98, unitLabel, COLOR.CYAN);
 
-      s.drawText(FG.FONT16, 14, 132, "实际", COLOR.WHITE);
+      s.drawText(FG.FONT16, 14, 132, FG.T(FG.STR.CAL_ACTUAL), COLOR.WHITE);
       s.drawText(FG.FONT16, 92, 132, FG.Unit.formatForce(view.actualForceMillinewton, unit), COLOR.CYAN);
       s.drawText(FG.FONT16, 190, 132, unitLabel, COLOR.CYAN);
 
@@ -919,13 +1028,13 @@
       if (waitError) {
         s.drawText(FG.FONT16, 52, 178, waitError, COLOR.RED);
       } else if (view.stable) {
-        s.drawText(FG.FONT16, 76, 178, "已稳定", COLOR.GREEN);
+        s.drawText(FG.FONT16, 76, 178, FG.T(FG.STR.CAL_STABLE), COLOR.GREEN);
       } else {
-        s.drawText(FG.FONT16, 76, 178, "等待稳定", COLOR.GRAY);
+        s.drawText(FG.FONT16, 76, 178, FG.T(FG.STR.CAL_WAIT_STABLE), COLOR.GRAY);
       }
 
       s.drawText(FG.FONT16, 14, 220, this.calibrationRangeText(view.rangeIndex), COLOR.WHITE);
-      s.drawText(FG.FONT16, 8, 294, "MENU EXIT  PWR CAPTURE", COLOR.GRAY);
+      s.drawText(FG.FONT16, 8, 294, FG.T(FG.STR.CAL_HINT_CAPTURE), COLOR.GRAY);
       return;
     }
   };
@@ -955,6 +1064,12 @@
     var secondText = null;
     if (this.settings.testMode() === FG.TEST_MODE.PEAK) {
       switch (this.tests.action) {
+        case FG.TEST_ACTION.BUTTON:
+          var br = this.tests.button, selection = this.settings.data.buttonResultSelection;
+          peakText = this.peakDisplayText(br.valid ? -br.fp : null);
+          var result = selection === 1 ? -br.fc : -br.fr;
+          secondText = br.valid ? (selection >= 3 ? " " + ((selection === 3 ? br.cc : br.cr) / 10).toFixed(1) : this.peakDisplayText(result)) : "---";
+          break;
         case FG.TEST_ACTION.INSERT:
           peakText = this.peakDisplayText(this.tests.insertFP);
           secondText = this.peakDisplayText(this.tests.insertFT);
@@ -1210,6 +1325,38 @@
   };
 
   Ui.prototype.dispatchRecordEvent = function (event, tick) {
+    var info = this.records.getPage(this.recordPage, this.settings.data.dataSort);
+    if (this.recordView === RECORD_VIEW.DELETING) return;
+    if (event === EVENT.MENU && this.recordView >= RECORD_VIEW.DELETE_SELECT) {
+      this.recordView = this.recordView === RECORD_VIEW.DELETE_SELECT ? RECORD_VIEW.LIST : RECORD_VIEW.DELETE_SELECT;
+      this.redrawPending = true; return;
+    }
+    if (this.recordView === RECORD_VIEW.DELETE_SELECT && (event === EVENT.PREVIOUS || event === EVENT.NEXT)) {
+      var slot = this.recordPage * FG.RECORD_PAGE_SIZE + this.recordSelection;
+      slot = Math.max(0, Math.min(info.recordCount - 1, slot + (event === EVENT.PREVIOUS ? -1 : 1)));
+      this.recordPage = Math.floor(slot / FG.RECORD_PAGE_SIZE);
+      this.recordSelection = slot % FG.RECORD_PAGE_SIZE;
+      this.redrawPending = true; return;
+    }
+    if (event === EVENT.CONFIRM) {
+      if (this.recordView === RECORD_VIEW.LIST && info.entries.length) {
+        this.recordSelection = 0; this.recordView = RECORD_VIEW.DELETE_SELECT;
+        this.redrawPending = true; return;
+      }
+      if (this.recordView === RECORD_VIEW.DELETE_SELECT) {
+        this.recordDeleteEntry = info.entries[this.recordSelection];
+        if (this.recordDeleteEntry) this.recordView = RECORD_VIEW.DELETE_CONFIRM;
+        this.redrawPending = true; return;
+      }
+      if (this.recordView === RECORD_VIEW.DELETE_CONFIRM) {
+        this.recordView = this.records.deleteEntry(this.recordDeleteEntry) ? RECORD_VIEW.DELETING : RECORD_VIEW.DELETE_FAIL;
+        this.recordDeleteTick = tick;
+        this.redrawPending = true; return;
+      }
+      if (this.recordView === RECORD_VIEW.DELETE_FAIL) {
+        this.recordView = RECORD_VIEW.DELETE_SELECT; this.redrawPending = true; return;
+      }
+    }
     if (event === EVENT.MENU) {
       if (this.recordView === RECORD_VIEW.CLEARING) {
         return;
@@ -1268,6 +1415,14 @@
 
   /* 清空是同步完成的，用一个短延时显示"正在清空" */
   Ui.prototype.processRecord = function (tick) {
+    if (this.recordView === RECORD_VIEW.DELETING && tick - this.recordDeleteTick >= 300) {
+      var total = this.records.count();
+      var slot = Math.min(Math.max(0, total - 1), this.recordPage * FG.RECORD_PAGE_SIZE + this.recordSelection);
+      this.recordPage = Math.floor(slot / FG.RECORD_PAGE_SIZE);
+      this.recordSelection = slot % FG.RECORD_PAGE_SIZE;
+      this.recordView = total ? RECORD_VIEW.DELETE_SELECT : RECORD_VIEW.LIST;
+      this.redrawPending = true;
+    }
     if (this.recordView === RECORD_VIEW.CLEARING &&
       (tick - this.recordClearTick) >= 300) {
       this.recordView = RECORD_VIEW.LIST;

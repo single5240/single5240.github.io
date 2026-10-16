@@ -14,12 +14,12 @@
     POWER_OFF: 19, OUTPUT: 20, BAUD: 21, DATA_BITS: 22, STOP_BITS: 23,
     PARITY: 24, STORAGE_LIST: 25, TIME_DISPLAY: 26, AUTO_STORE: 27,
     DATA_SORT: 28, STORAGE_LINK: 29, CAL_AUTH: 30, CAL_ENTER: 31,
-    CAL_SEGMENT: 32, CAL_SETPOINT: 33, CAL_ACTUAL: 34, COUNT: 35
+    CAL_SEGMENT: 32, CAL_SETPOINT: 33, CAL_ACTUAL: 34, BACKLIGHT: 35,
+    WAVEFORM: 36, BUTTON_RESULT: 37, COUNT: 38
   };
 
   var KIND = { ENUM: 0, UINT: 1, FIXED: 2, ACTION: 3, TOLERANCE: 4 };
 
-  var TOLERANCE_MAX_X10 = 300;
   var GRAVITY_MIN_X1000 = 9700;
   var GRAVITY_MAX_X1000 = 9900;
   var GRAVITY_DEFAULT_X1000 = 9807;
@@ -49,17 +49,20 @@
       testMode: 0,
       testAction: 0,
       sampleRate: 1,
+      backlightLevel: 0,
+      waveform: 1,
+      buttonResultSelection: 0,
       autoZero: 0,
       autoZeroDelaySeconds: 1,
       gravityX1000: GRAVITY_DEFAULT_X1000,
       extFunc: 0,
       forceUnit: FORCE_UNIT.N,
-      toleranceLowX10: 0,
-      toleranceHighX10: TOLERANCE_MAX_X10,
+      toleranceLowX10: -196,
+      toleranceHighX10: 196,
       forceRange: 0,
       startForceMillinewton: START_FORCE_DEFAULT_MN,
       autoSleepMin: 0,
-      loadLimitPercent: 80,
+      loadLimitPercent: 100,
       polarity: 0,
       screenDir: 2,
       language: 0,
@@ -76,6 +79,9 @@
 
   /* 每一项：{ labelId, kind, group } */
   var DESCRIPTORS = {};
+  DESCRIPTORS[ID.BACKLIGHT] = { labelId: FG.STR.ITEM_BACKLIGHT, kind: KIND.ENUM };
+  DESCRIPTORS[ID.WAVEFORM] = { labelId: FG.STR.ITEM_WAVEFORM, kind: KIND.ENUM };
+  DESCRIPTORS[ID.BUTTON_RESULT] = { labelId: FG.STR.ITEM_BUTTON_RESULT, kind: KIND.ENUM };
   DESCRIPTORS[ID.TEST_MODE] = { labelId: 26, kind: KIND.ENUM };
   DESCRIPTORS[ID.TEST_ACTION] = { labelId: 27, kind: KIND.ENUM };
   DESCRIPTORS[ID.SAMPLE_RATE] = { labelId: 28, kind: KIND.ENUM };
@@ -113,13 +119,13 @@
   DESCRIPTORS[ID.CAL_ACTUAL] = { labelId: 60, kind: KIND.FIXED };
 
   var GROUP_ITEMS = {};
-  GROUP_ITEMS[0] = [ID.TEST_MODE, ID.TEST_ACTION, ID.SAMPLE_RATE, ID.TRANSFER_RATE,
+  GROUP_ITEMS[0] = [ID.TEST_MODE, ID.TEST_ACTION, ID.BUTTON_RESULT, ID.SAMPLE_RATE, ID.BACKLIGHT,
   ID.AUTO_ZERO, ID.AUTO_ZERO_DELAY, ID.TOLERANCE, ID.FORCE_RANGE, ID.START_FORCE];
-  GROUP_ITEMS[1] = [ID.GRAVITY, ID.AUTO_SLEEP, ID.EXT_FUNC, ID.LOAD_LIMIT,
-  ID.POLARITY, ID.SCREEN_DIR, ID.LANGUAGE, ID.FACTORY_RESET, ID.CHART_DIR,
+  GROUP_ITEMS[1] = [ID.GRAVITY, ID.AUTO_SLEEP, ID.EXT_FUNC,
+  ID.POLARITY, ID.SCREEN_DIR, ID.LANGUAGE, ID.FACTORY_RESET, ID.WAVEFORM, ID.CHART_DIR,
   ID.CHART_WINDOW];
   GROUP_ITEMS[2] = [ID.POWER_OFF, ID.OUTPUT, ID.BAUD, ID.DATA_BITS, ID.STOP_BITS,
-  ID.PARITY];
+  ID.PARITY, ID.TRANSFER_RATE];
   GROUP_ITEMS[3] = [ID.STORAGE_LIST, ID.TIME_DISPLAY, ID.AUTO_STORE, ID.DATA_SORT,
   ID.STORAGE_LINK];
   GROUP_ITEMS[4] = [];
@@ -146,13 +152,14 @@
       }
       this.data = fresh;
       var bounds = {
-        testMode: [0, 1], testAction: [0, 4], sampleRate: [0, 3],
+        testMode: [0, 1], testAction: [0, 5], sampleRate: [0, 3],
+        backlightLevel: [0, 5], waveform: [0, 1], buttonResultSelection: [0, 4],
         autoZero: [0, 1], autoZeroDelaySeconds: [1, 9], gravityX1000: [9700, 9900],
-        extFunc: [0, 1], forceUnit: [0, 3], toleranceLowX10: [0, 300],
-        toleranceHighX10: [0, 300], forceRange: [0, 5],
+        extFunc: [0, 1], forceUnit: [0, 3], toleranceLowX10: [-9806, 9806],
+        toleranceHighX10: [-9806, 9806], forceRange: [0, 5],
         startForceMillinewton: [10, FORCE_RANGES[fresh.forceRange >= 0 && fresh.forceRange <= 5 ? fresh.forceRange : 0].mn],
         autoSleepMin: [0, 99], loadLimitPercent: [1, 100], polarity: [0, 2],
-        screenDir: [0, 2], language: [0, 1], chartDir: [0, 2], chartWindowSeconds: [0, 99],
+        screenDir: [0, 2], language: [0, 2], chartDir: [0, 2], chartWindowSeconds: [0, 99],
         powerOff: [0, 99], baud: [0, 2], dataBits: [0, 1], timeDisplay: [0, 1], autoStore: [0, 1], dataSort: [0, 1]
       };
       var baseline = defaults();
@@ -160,6 +167,8 @@
         if (fresh[key] < bounds[key][0] || fresh[key] > bounds[key][1]) fresh[key] = baseline[key];
       });
       if (fresh.toleranceLowX10 > fresh.toleranceHighX10) fresh.toleranceLowX10 = fresh.toleranceHighX10;
+      this.clampTolerance();
+      fresh.loadLimitPercent = 100;
       if (stored.calibration) this.data.calibration = stored.calibration;
     }
     this.dirty = false;
@@ -187,6 +196,8 @@
   };
 
   Settings.prototype.getKind = function (id) {
+    if (id === ID.BUTTON_RESULT && (this.data.testMode !== 1 || this.data.testAction !== 5)) return KIND.FIXED;
+    if (id === ID.LOAD_LIMIT) return KIND.FIXED;
     if (id < 0 || id >= ID.COUNT) {
       return KIND.FIXED;
     }
@@ -262,10 +273,12 @@
   };
 
   Settings.prototype.toleranceLow = function () {
+    this.clampTolerance();
     return this.data.toleranceLowX10 * 100;
   };
 
   Settings.prototype.toleranceHigh = function () {
+    this.clampTolerance();
     return this.data.toleranceHighX10 * 100;
   };
 
@@ -279,7 +292,13 @@
   };
 
   Settings.prototype.testAction = function () {
-    return this.data.testAction % 5;
+    return this.data.testAction % 6;
+  };
+
+  Settings.prototype.clampTolerance = function () {
+    var span = Math.floor(this.fullScale() / 100);
+    this.data.toleranceLowX10 = Math.max(-span, Math.min(span, this.data.toleranceLowX10));
+    this.data.toleranceHighX10 = Math.max(this.data.toleranceLowX10, Math.min(span, this.data.toleranceHighX10));
   };
 
   Settings.prototype.formatValue = function (id, editPart) {
@@ -291,7 +310,13 @@
         if (d.testMode !== TEST_MODE.PEAK) {
           return FG.T(63);
         }
-        return FG.T(64 + (d.testAction % 5));
+        return FG.T(d.testAction === 5 ? FG.STR.OPT_BUTTON : 64 + (d.testAction % 5));
+      case ID.BACKLIGHT:
+        return (100 - 12 * d.backlightLevel) + "%";
+      case ID.WAVEFORM:
+        return FG.T(d.waveform ? 70 : 69);
+      case ID.BUTTON_RESULT:
+        return this.getKind(id) === KIND.FIXED ? "---" : ["Fp", "Fp/Fc", "Fp/Fr", "Fp/Cc", "Fp/Cr"][d.buttonResultSelection];
       case ID.SAMPLE_RATE:
         return SAMPLE_RATE_TEXT[d.sampleRate % 4];
       case ID.TRANSFER_RATE:
@@ -301,6 +326,7 @@
       case ID.AUTO_ZERO_DELAY:
         return (d.autoZero === 0) ? "---" : (d.autoZeroDelaySeconds + " s");
       case ID.TOLERANCE:
+        this.clampTolerance();
         return formatTolerance(d.toleranceLowX10, d.toleranceHighX10, editPart);
       case ID.FORCE_RANGE:
         return FORCE_RANGES[d.forceRange % FORCE_RANGES.length].kg + " kg";
@@ -319,7 +345,7 @@
       case ID.SCREEN_DIR:
         return FG.T([72, 73, 75][d.screenDir % 3]);
       case ID.LANGUAGE:
-        return FG.T(d.language % 2 ? 83 : 82);
+        return FG.T([82, 83, FG.STR.OPT_LANG_TW][d.language % 3]);
       case ID.FACTORY_RESET:
         return FG.T(76);
       case ID.CHART_DIR:
@@ -333,11 +359,11 @@
       case ID.BAUD:
         return BAUD_TEXT[d.baud % 3];
       case ID.DATA_BITS:
-        return (d.dataBits % 2) ? "8 位" : "7 位";
+        return ((d.dataBits % 2) ? "8 " : "7 ") + ["位", "bit", "位元"][FG.GetLanguage()];
       case ID.STOP_BITS:
-        return "1 位";
+        return ["1 位", "1 bit", "1 位元"][FG.GetLanguage()];
       case ID.PARITY:
-        return "无校验";
+        return ["无校验", "NONE", "無同位檢查"][FG.GetLanguage()];
       case ID.STORAGE_LIST:
         return FG.T(77);
       case ID.TIME_DISPLAY:
@@ -377,9 +403,7 @@
   }
 
   function formatX10(valueX10) {
-    var whole = Math.floor(valueX10 / 10);
-    var frac = valueX10 % 10;
-    return whole + "." + frac;
+    return (valueX10 < 0 ? "-" : "") + Math.floor(Math.abs(valueX10) / 10) + "." + Math.abs(valueX10) % 10;
   }
 
   /* 起始值显示：毫牛转成带 1~3 位小数的牛顿 */
@@ -496,7 +520,20 @@
         if (d.testMode !== TEST_MODE.PEAK) {
           return false;
         }
-        d.testAction = cycleU8(d.testAction, 5, delta);
+        d.testAction = cycleU8(d.testAction, 6, delta);
+        this.dirty = true;
+        return true;
+      case ID.BACKLIGHT:
+        d.backlightLevel = cycleU8(d.backlightLevel, 6, delta);
+        this.dirty = true;
+        return true;
+      case ID.WAVEFORM:
+        d.waveform = cycleU8(d.waveform, 2, delta);
+        this.dirty = true;
+        return true;
+      case ID.BUTTON_RESULT:
+        if (this.getKind(id) === KIND.FIXED) return false;
+        d.buttonResultSelection = cycleU8(d.buttonResultSelection, 5, delta);
         this.dirty = true;
         return true;
       case ID.SAMPLE_RATE:
@@ -525,11 +562,13 @@
         this.dirty = true;
         return true;
       case ID.TOLERANCE:
+        this.clampTolerance();
+        var span = Math.floor(this.fullScale() / 100);
         if (editPart === 0) {
-          d.toleranceLowX10 = stepU16(d.toleranceLowX10, 0, d.toleranceHighX10, delta);
+          d.toleranceLowX10 = stepU16(d.toleranceLowX10, -span, d.toleranceHighX10, delta);
         } else {
           d.toleranceHighX10 = stepU16(d.toleranceHighX10, d.toleranceLowX10,
-            TOLERANCE_MAX_X10, delta);
+            span, delta);
         }
         this.dirty = true;
         return true;
@@ -547,9 +586,7 @@
         this.dirty = true;
         return true;
       case ID.LOAD_LIMIT:
-        d.loadLimitPercent = stepU8(d.loadLimitPercent, 1, 100, delta);
-        this.dirty = true;
-        return true;
+        return false;
       case ID.POLARITY:
         d.polarity = cycleU8(d.polarity, 3, delta);
         this.dirty = true;
@@ -559,7 +596,7 @@
         this.dirty = true;
         return true;
       case ID.LANGUAGE:
-        d.language = cycleU8(d.language, 2, delta);
+        d.language = cycleU8(d.language, 3, delta);
         FG.SetLanguage(d.language);
         this.dirty = true;
         return true;
