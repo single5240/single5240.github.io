@@ -1,4 +1,4 @@
-/* 五种峰值动作、判定和完成后的计时。
+/* 六种峰值动作、判定和完成后的计时。
  *
  * 行为对照 N32G455/APP/app_test.c、app_push_pull_test.c、app_insert_test.c、
  * app_break_test.c、app_contact_test.c、drv_contact_input.c 重写。要点：
@@ -21,9 +21,9 @@
   var STORAGE_PROMPT_MS = 1000;
   var AUTO_STORE_DELAY_MS = 1000;
 
-  var ACTION = { COMPRESSION: 0, TENSION: 1, INSERT: 2, CONTACT: 3, BREAK: 4, COUNT: 5 };
+  var ACTION = { COMPRESSION: 0, TENSION: 1, INSERT: 2, CONTACT: 3, BREAK: 4, BUTTON: 5, COUNT: 6 };
   var PROMPT = { NONE: 0, SUCCESS: 1, FAILURE: 2, FULL: 3 };
-  var VERDICT = { LOW: 0, OK: 1, HIGH: 2 };
+  var VERDICT = { LOW: 0, OK: 1, HIGH: 2, ERROR: 3 };
   var MASK1 = 0x01;
   var MASK2 = 0x02;
 
@@ -83,6 +83,7 @@
     this.insert = newInsert();
     this.contact = newContact();
     this.breakTest = newBreak();
+    this.button = new FG.ButtonTest();
 
     this.contactLevel = false;
     this.contactDebounced = false;
@@ -177,6 +178,7 @@
   };
 
   Tests.prototype.resetResult = function () {
+    this.button = new FG.ButtonTest();
     this.pushPull = [newPushPull(), newPushPull()];
     this.insert = newInsert();
     this.contact = newContact();
@@ -298,6 +300,9 @@
       }
       case ACTION.BREAK:
         event = this.stepBreak(fast, display, start, tick);
+        break;
+      case ACTION.BUTTON:
+        event = this.button.addSample(Math.max(0, -fast), start, tick, Math.abs(fast) > this.fullScale);
         break;
       default:
         break;
@@ -739,6 +744,14 @@
     var contactResultValid = false;
 
     switch (this.action) {
+      case ACTION.BUTTON:
+        if (this.button.valid) {
+          validMask = 7;
+          result1 = -this.button.fp;
+          result2 = -this.button.fc;
+        }
+        verdictMask = this.buttonResultSelection === 1 ? 3 : this.buttonResultSelection === 2 ? 5 : 1;
+        break;
       case ACTION.INSERT:
         if (this.insertFP !== null) {
           validMask |= MASK1;
@@ -791,6 +804,7 @@
 
     var valid = (requiredMask !== 0) &&
       ((validMask & requiredMask) === requiredMask);
+    if (this.action === ACTION.BUTTON) valid = this.button.valid;
     if (this.action === ACTION.CONTACT && !contactResultValid) {
       valid = false;
     }
@@ -804,11 +818,16 @@
       verdictMask: verdictMask,
       result1: result1,
       result2: result2,
+      result3: this.action === ACTION.BUTTON ? -this.button.fr : 0,
+      buttonResultSelection: this.buttonResultSelection || 0,
+      buttonAlgorithmVersion: this.action === ACTION.BUTTON ? 2 : 0,
+      buttonCcX10: this.button.cc,
+      buttonCrX10: this.button.cr,
       forceUnit: this.forceUnit,
       forceRange: this.forceRange,
       toleranceLow: this.toleranceLow,
       toleranceHigh: this.toleranceHigh,
-      verdict: this.computeVerdict(verdictMask, result1, result2)
+      verdict: this.computeVerdict(verdictMask, result1, result2, -this.button.fr)
     };
 
     if (this.onComplete) {
@@ -817,7 +836,7 @@
   };
 
   Tests.prototype.judge = function (value) {
-    var magnitude = Math.abs(value);
+    var magnitude = value;
     if (magnitude > this.toleranceHigh) {
       return VERDICT.HIGH;
     }
@@ -837,7 +856,7 @@
     return VERDICT.OK;
   };
 
-  Tests.prototype.computeVerdict = function (verdictMask, result1, result2) {
+  Tests.prototype.computeVerdict = function (verdictMask, result1, result2, result3) {
     var verdict = VERDICT.OK;
     var started = false;
     if (verdictMask & MASK1) {
@@ -846,12 +865,15 @@
     }
     if (verdictMask & MASK2) {
       verdict = started ? this.mergeVerdict(verdict, this.judge(result2)) : this.judge(result2);
+      started = true;
     }
+    if (verdictMask & 4) verdict = started ? this.mergeVerdict(verdict, this.judge(result3)) : this.judge(result3);
     return verdict;
   };
 
   /* 主界面判定用的比较对象 */
   Tests.prototype.currentVerdict = function (displayForce) {
+    if (this.action === ACTION.BUTTON && this.mode === "peak" && this.resultLocked && !this.snapshotValid) return VERDICT.ERROR;
     if (this.resultLocked && this.snapshot) return this.snapshot.verdict;
     if (this.mode !== "peak") {
       return this.judge(displayForce);

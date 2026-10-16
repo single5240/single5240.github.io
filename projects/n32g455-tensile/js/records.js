@@ -71,6 +71,9 @@
       v: verdict,
       r1: snapshot.result1,
       r2: snapshot.result2,
+      r3: snapshot.result3 || 0,
+      br: snapshot.buttonResultSelection || 0,
+      ba: snapshot.buttonAlgorithmVersion || 0,
       tl: toleranceLow,
       th: toleranceHigh
     };
@@ -85,6 +88,16 @@
   Records.prototype.clear = function () {
     if (!FG.Storage.saveRecords([])) return false;
     this.list = [];
+    return true;
+  };
+
+  Records.prototype.deleteEntry = function (entry) {
+    var index = this.list.indexOf(entry);
+    if (index < 0) return false;
+    var next = this.list.slice();
+    next.splice(index, 1);
+    if (!FG.Storage.saveRecords(next)) return false;
+    this.list = next;
     return true;
   };
 

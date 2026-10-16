@@ -84,6 +84,9 @@
         var next = Object.assign({}, self.settings.data, {
           forceRange: candidate.rangeIndex, calibration: candidate
         });
+        var span = Math.floor(FG.FORCE_RANGES[candidate.rangeIndex].mn / 100);
+        next.toleranceLowX10 = Math.max(-span, Math.min(span, next.toleranceLowX10));
+        next.toleranceHighX10 = Math.max(next.toleranceLowX10, Math.min(span, next.toleranceHighX10));
         if (!FG.Storage.saveSettings(next)) return false;
         self.settings.data = next;
         self.settings.dirty = false;
@@ -161,6 +164,10 @@
 
   App.prototype.syncSettings = function () {
     var settings = this.settings;
+    FG.Unit.setGravity(settings.data.gravityX1000);
+    FG.SetLanguage(settings.data.language);
+    this.screen.canvas.style.filter = "brightness(" + (100 - settings.data.backlightLevel * 12) + "%)";
+    this.tests.buttonResultSelection = settings.data.buttonResultSelection;
     var fullScale = settings.fullScale();
 
     var inputScale = this.ui && this.ui.page === FG.PAGE.CALIBRATION
@@ -208,11 +215,28 @@
   App.prototype.sample = function (tick) {
     if (this.ui.page === FG.PAGE.CALIBRATION) return;
     var force = this.measuredForce();
-    this.tests.addSample(force, force, tick);
+    if (this.tests.action === FG.TEST_ACTION.BUTTON) {
+      // Browser input is continuous between frames; resample only that known input.
+      // Cap catch-up at 100 ms so a background tab cannot block the UI.
+      var from = Math.max(this.lastButtonTick || tick, tick - 100);
+      for (var t = from + 1000 / 2402; t <= tick; t += 1000 / 2402) this.tests.addSample(force, force, t);
+      this.lastButtonTick = tick;
+    } else {
+      this.lastButtonTick = tick;
+      this.tests.addSample(force, force, tick);
+    }
   };
 
   App.prototype.frame = function () {
     var now = FG.now();
+    if (this.buttonDemo) {
+      var elapsed = now - this.buttonDemo.tick;
+      var plan = [[100, -500], [200, -2000], [300, -1200], [400, -1600],
+        [550, -2500], [650, -1500], [750, -600], [850, -1000], [1000, 0]];
+      var stage = plan.find(function (step) { return elapsed < step[0]; });
+      this.forceInput.holdValue(String((stage ? stage[1] : 0) / 1000), FG.Unit.UNIT.N);
+      if (!stage) this.buttonDemo = null;
+    }
 
     this.forceInput.tick();
     this.syncSettings();
@@ -393,6 +417,14 @@
     var input = byId("force-input");
     var note = byId("clamp-note");
     var dragging = false;
+    byId("button-demo").addEventListener("click", function () {
+      self.settings.data.testMode = 1;
+      self.settings.data.testAction = FG.TEST_ACTION.BUTTON;
+      self.syncSettings();
+      self.tests.onManualZero();
+      self.ui.setPage(FG.PAGE.HOME);
+      self.buttonDemo = {tick: FG.now()};
+    });
 
     function updateReadout() {
       var unit = self.settings.getForceUnit();
@@ -536,7 +568,7 @@
     }
     if (fontShort.length > 0) {
       lines.push("字库不完整：" + fontShort.join("　"));
-      lines.push("补齐：python demo/force-gauge/tools/gen_fonts_js.py");
+      lines.push("补齐：请用固件字库重新生成 html/js/fonts_*.js");
     }
     if (!FG.Storage.isPersistent) {
       lines.push("localStorage 不可用，本次设置与记录不会保留");

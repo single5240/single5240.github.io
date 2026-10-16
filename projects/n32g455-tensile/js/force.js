@@ -11,8 +11,8 @@
   "use strict";
 
   var RETURN_MS = 300;        /* 松手回零时间 */
-  var ZERO_ENTER_DIVISOR = 800; /* 0.125% FS */
-  var ZERO_EXIT_DIVISOR = 400;  /* 0.25% FS */
+  var ZERO_ENTER_DIVISOR = 2000; /* 0.05% FS */
+  var ZERO_EXIT_DIVISOR = 1000;  /* 0.1% FS */
   var ZERO_TARE_DIVISOR = 5;    /* 满量程 20% 以上不去皮 */
 
   function ForceInput(options) {
@@ -131,7 +131,7 @@
     return changed;
   };
 
-  /* 零点回滞：进入 |f| <= FS/800，退出 |f| >= FS/400 */
+  /* 零点回滞：进入 |f| <= FS/2000，退出 |f| >= FS/1000 */
   ForceInput.prototype.updateZeroState = function () {
     var magnitude = Math.abs(this.value);
     var before = this.atZero;

@@ -1,30 +1,28 @@
 /* 单位换算：内部一律毫牛，只在这里转成显示文字。
  *
  * 规则取自 N32G455/APP/app_force_unit.c：
- *   1 gf  = 9.80665 mN       -> ToGram  = round(mN * 100000 / 980665)
- *   1 lbf = 4.4482216152605 N -> ToMilliPound = round(mN * 10000000 / 44482216)
- * 标准重力 9.80665；地域重力设定不参与显示换算。
+ *   1 gf = g mN；1 lbf = 0.45359237 × g N。
+ * 地域重力参与 g、kg、lb 换算，默认 9.807 m/s²。
  */
 (function (FG) {
   "use strict";
 
-  var MN_PER_GF_X100000 = 980665;
-  var MN_PER_MLBF_X10000000 = 44482216;
   var DISPLAY_MAX_X1000 = 999990;
   var DISPLAY_MAX_GRAM = 999999;
 
   var UNIT = { N: 0, G: 1, KG: 2, LB: 3, COUNT: 4 };
   var UNIT_LABEL = ["N", "g", "kg", "lb"];
+  var gravity = 9807;
+  function poundDivisor() { return Math.floor((45359237 * gravity + 5000) / 10000); }
 
   function toGram(millinewton) {
     var mag = Math.abs(millinewton);
-    return Math.floor((mag * 100000 + Math.floor(MN_PER_GF_X100000 / 2)) / MN_PER_GF_X100000);
+    return Math.floor((mag * 1000 + Math.floor(gravity / 2)) / gravity);
   }
 
   function toMilliPound(millinewton) {
     var mag = Math.abs(millinewton);
-    var value = Math.floor((mag * 10000000 + Math.floor(MN_PER_MLBF_X10000000 / 2)) /
-      MN_PER_MLBF_X10000000);
+    var value = Math.floor((mag * 10000000 + Math.floor(poundDivisor() / 2)) / poundDivisor());
     return Math.min(value, DISPLAY_MAX_X1000);
   }
 
@@ -90,9 +88,13 @@
     return writeFixed(sign, grams, 0);
   }
 
-  function formatForce(millinewton, unit) {
+  function formatForce(millinewton, unit, smallRange) {
     switch (unit) {
       case UNIT.G:
+        if (smallRange) {
+          var cg = Math.min(Math.floor((Math.abs(millinewton) * 100000 + Math.floor(gravity / 2)) / gravity), 999999);
+          return writeFixed(millinewton < 0 && cg ? "-" : " ", cg, 2);
+        }
         return formatGram(millinewton);
       case UNIT.KG:
         return formatScaled(millinewton, toGram(millinewton), millinewton < 0);
@@ -155,13 +157,13 @@
     var millinewton;
     switch (unit) {
       case UNIT.G:
-        millinewton = Math.round(value * MN_PER_GF_X100000 / 100000);
+        millinewton = Math.round(value * gravity / 1000);
         break;
       case UNIT.KG:
-        millinewton = Math.round(value * MN_PER_GF_X100000 / 100);
+        millinewton = Math.round(value * gravity);
         break;
       case UNIT.LB:
-        millinewton = Math.round(value * MN_PER_MLBF_X10000000 / 10000000);
+        millinewton = Math.round(value * poundDivisor() / 10000);
         break;
       case UNIT.N:
       default:
@@ -172,6 +174,7 @@
   }
 
   FG.Unit = {
+    setGravity: function(value) { gravity = value >= 9700 && value <= 9900 ? value : 9807; },
     UNIT: UNIT,
     LABEL: UNIT_LABEL,
     toGram: toGram,

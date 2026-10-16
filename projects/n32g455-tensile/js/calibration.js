@@ -13,7 +13,7 @@
 
   var STATE = {
     PASSWORD: 0, SELECT: 1, WAIT_STABLE: 2, ABORT_CONFIRM: 3,
-    SAVING: 4, RESULT_SUCCESS: 5, RESULT_FAILED: 6
+    SAVING: 4, RESULT_SUCCESS: 5, RESULT_FAILED: 6, DIRECTION: 7
   };
   var DIRECTION = { TENSION: 0, COMPRESSION: 1 };
   var ERROR = {
@@ -47,6 +47,8 @@
     this.view = {
       state: STATE.PASSWORD,
       direction: DIRECTION.TENSION,
+      layer: 0,
+      directionFocus: 0,
       error: ERROR.NONE,
       password: DEFAULT_PASSWORD.slice(),
       passwordCursor: 0,
@@ -78,16 +80,16 @@
   Calibration.prototype.validImage = function (image) {
     if (!image || !Number.isInteger(image.rangeIndex) || image.rangeIndex < 0 ||
         image.rangeIndex >= FG.FORCE_RANGES.length) return false;
-    for (var d = 0; d < 2; d++) {
-      var points = d === 0 ? image.tension : image.compression;
-      if (points === null) continue;
+    for (var d = 0; d < 4; d++) {
+      var points = image[["tension", "compression", "tensionSmall", "compressionSmall"][d]];
+      if (points === null || points === undefined) continue;
       if (!Array.isArray(points) || points.length !== POINT_COUNT) return false;
       for (var i = 0; i < POINT_COUNT; i++) {
         if (!Number.isInteger(points[i]) || points[i] < 0 || points[i] > 0xffffff) return false;
-        if (i && (d === 0 ? points[i] <= points[i - 1] : points[i] >= points[i - 1])) return false;
+        if (i && (d % 2 === 0 ? points[i] <= points[i - 1] : points[i] >= points[i - 1])) return false;
       }
     }
-    return !!(image.tension || image.compression) &&
+    return !!(image.tension || image.compression || image.tensionSmall || image.compressionSmall) &&
       (!image.tension || !image.compression || image.tension[0] === image.compression[0]);
   };
 
@@ -96,24 +98,42 @@
     var matches = saved && saved.rangeIndex === this.view.rangeIndex;
     this.view.tensionCalibrated = matches && saved.tension ? 1 : 0;
     this.view.compressionCalibrated = matches && saved.compression ? 1 : 0;
+    this.view.tensionSmallCalibrated = matches && saved.tensionSmall ? 1 : 0;
+    this.view.compressionSmallCalibrated = matches && saved.compressionSmall ? 1 : 0;
   };
 
   /* Piecewise interpolation uses only the committed image, never partial points. */
   Calibration.prototype.convertRaw = function (raw, rangeIndex) {
     var saved = this.saved;
     if (!saved || saved.rangeIndex !== rangeIndex) return this.millinewtonFromRaw(raw);
-    var zero = (saved.tension || saved.compression)[0];
+    var zero = (saved.tension || saved.compression || [FAKE_ADC_ZERO])[0];
     var positive = raw >= zero;
     var points = positive ? saved.tension : saved.compression;
     if (!points) return Math.round((raw - zero) * 1000 / FAKE_ADC_PER_NEWTON);
+    var small = positive ? saved.tensionSmall : saved.compressionSmall;
+    var segments = 5;
+    if (small) {
+      var derived = [];
+      for (var a = 0; a < 5; a++) {
+        for (var b = 0; b < 5; b++) {
+          var offset = (small[b] - small[0]) * (points[a + 1] - points[a]) / (small[5] - small[0]);
+          derived.push(points[a] + (offset < 0 ? -Math.round(-offset) : Math.round(offset)));
+        }
+      }
+      derived.push(points[5]);
+      if (derived.every(function(v,i) { return !i || (positive ? v > derived[i-1] : v < derived[i-1]); })) {
+        points = derived; segments = 25;
+      }
+    }
+    raw = positive ? Math.min(raw, points[segments]) : Math.max(raw, points[segments]);
     var segment = 1;
-    while (segment < POINT_COUNT - 1 && (positive ? raw > points[segment] : raw < points[segment])) segment++;
+    while (segment < segments && (positive ? raw > points[segment] : raw < points[segment])) segment++;
     var fs = this.getFullScale(rangeIndex);
-    var low = Math.trunc(fs * (segment - 1) / 5);
-    var high = Math.trunc(fs * segment / 5);
+    var low = Math.trunc(fs * (segment - 1) / segments);
+    var high = Math.trunc(fs * segment / segments);
     var value = low + (raw - points[segment - 1]) * (high - low) /
       (points[segment] - points[segment - 1]);
-    return Math.round(positive ? value : -value);
+    return Math.trunc(positive ? value : -value);
   };
 
   Calibration.prototype.enter = function () {
@@ -122,6 +142,8 @@
     this.view.password = DEFAULT_PASSWORD.slice();
     this.view.passwordCursor = 0;
     this.view.selectFocus = 0;
+    this.view.layer = 0;
+    this.view.directionFocus = 0;
     this.view.rangeEditing = 0;
     this.view.rangeIndex = this.getRangeIndex();
     this.updateDirectionStatus();
@@ -130,7 +152,7 @@
 
   Calibration.prototype.updateTarget = function () {
     var fullScale = this.getFullScale(this.view.rangeIndex);
-    var target = Math.trunc((fullScale * this.view.pointIndex) / 5);
+    var target = Math.trunc((fullScale * this.view.pointIndex) / (this.view.layer ? 25 : 5));
     this.view.targetForceMillinewton =
       (this.view.direction === DIRECTION.TENSION) ? target : -target;
   };
@@ -279,15 +301,21 @@
       return;
     }
     var candidate = {
-      rangeIndex: this.view.rangeIndex, tension: null, compression: null
+      rangeIndex: this.view.rangeIndex, tension: null, compression: null,
+      tensionSmall: null, compressionSmall: null
     };
     if (this.saved && this.saved.rangeIndex === candidate.rangeIndex) {
       candidate.tension = this.saved.tension && this.saved.tension.slice();
       candidate.compression = this.saved.compression && this.saved.compression.slice();
+      candidate.tensionSmall = this.saved.tensionSmall && this.saved.tensionSmall.slice();
+      candidate.compressionSmall = this.saved.compressionSmall && this.saved.compressionSmall.slice();
     }
-    candidate[this.view.direction === DIRECTION.TENSION ? "tension" : "compression"] = this.points.slice();
-    if (candidate.tension) candidate.tension[0] = this.points[0];
-    if (candidate.compression) candidate.compression[0] = this.points[0];
+    var key = (this.view.direction === DIRECTION.TENSION ? "tension" : "compression") + (this.view.layer ? "Small" : "");
+    candidate[key] = this.points.slice();
+    if (!this.view.layer) {
+      if (candidate.tension) candidate.tension[0] = this.points[0];
+      if (candidate.compression) candidate.compression[0] = this.points[0];
+    }
     if (!this.validImage(candidate)) {
       this.view.error = ERROR.POINT;
       this.view.state = STATE.RESULT_FAILED;
@@ -379,17 +407,21 @@
             return false;
           }
           if (view.selectFocus === 1) {
-            /* 焦点第 1 项 = 拉伸校正：确认即按拉伸方向进入采点 */
-            this.startDirection(DIRECTION.TENSION);
-            return false;
+            view.layer = 0;
           }
           if (view.selectFocus === 2) {
-            /* 焦点第 2 项 = 压缩校正：确认即按压缩方向进入采点 */
-            this.startDirection(DIRECTION.COMPRESSION);
-            return false;
+            view.layer = 1;
           }
+          view.directionFocus = 0;
+          view.state = STATE.DIRECTION;
           return false;
         }
+        return false;
+
+      case STATE.DIRECTION:
+        if (event === EVENT.MENU) view.state = STATE.SELECT;
+        if (event === EVENT.PREVIOUS || event === EVENT.NEXT) view.directionFocus = 1 - view.directionFocus;
+        if (event === EVENT.CONFIRM) this.startDirection(view.directionFocus);
         return false;
 
       case STATE.WAIT_STABLE:
@@ -426,7 +458,7 @@
       case STATE.ABORT_CONFIRM:
         if (event === EVENT.CONFIRM) {
           this.capturedCount = 0;
-          view.state = STATE.SELECT;
+          view.state = STATE.DIRECTION;
           view.error = ERROR.NONE;
           return false;
         }
@@ -440,7 +472,9 @@
       case STATE.RESULT_SUCCESS:
       case STATE.RESULT_FAILED:
         if (event === EVENT.CONFIRM || event === EVENT.MENU) {
-          this.enter();
+          view.state = STATE.DIRECTION;
+          view.rangeIndex = this.getRangeIndex();
+          this.updateDirectionStatus();
           return false;
         }
         return false;
