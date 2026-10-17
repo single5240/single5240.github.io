@@ -1,9 +1,14 @@
-name: Site quality
+name: Site quality and Pages
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -25,3 +30,28 @@ jobs:
           package-manager-cache: false
       - name: Check generated pages and internal links
         run: node scripts/check-site.mjs
+      - name: Check shared JavaScript syntax
+        run: |
+          for file in assets/js/*.js scripts/*.mjs; do node --check "$file"; done
+      - name: Check report import regression
+        run: node --test scripts/import-ai-news.test.mjs
+      - name: Upload verified Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build-and-check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy checked site
+        id: deployment
+        uses: actions/deploy-pages@v4

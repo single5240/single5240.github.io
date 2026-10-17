@@ -1,6 +1,30 @@
 # 每日英语与 AI 资讯：怎么加一天
 
-在仓库根目录执行。脚本会写入需要提交的文件，提交并推送后，GitHub Pages 会按默认 Jekyll 构建发布。不要改 `_site/`。
+在仓库根目录执行。脚本会写入需要提交的文件，提交并推送到 main 后，Site quality and Pages 工作流先构建、检查，再发布通过检查的 `_site/` 产物。不要手动修改 `_site/`。
+
+## 本地验证与发布
+
+```bash
+bundle install
+bundle exec jekyll build --strict_front_matter
+node scripts/check-site.mjs
+node --test scripts/import-ai-news.test.mjs
+git diff --check
+```
+
+GitHub Pages 的发布源需要选择 GitHub Actions。工作流的 deploy 作业依赖 build-and-check，构建或检查失败时不会发布；拉取请求只做验证，不部署。原始 articles、english、ai-news 和项目演示地址保持可用。
+
+Windows 没有 Ruby 时，可在已安装 Ruby/Bundler 的 WSL 中执行构建，再在 Windows 运行 Node 检查。`vendor/`、`.bundle/`、`_site/` 和 Gemfile.lock 均为本地构建状态，不应提交。
+
+## 页面与内容维护
+
+- 公共外壳：`_layouts/default.html`，公共 head/header/footer 位于 `_includes/`。首页和文章不再复制站点导航。
+- 导航：`_data/navigation.yml`。专题：`_data/topics.yml`，每项 articles 写已有文章的文件名（去掉 `.md`）；文章可归入多个专题。项目：`_data/projects.yml`。
+- 首页精选：`index.html` 中的 featured_slugs。新增技术文章只需遵守 AGENTS.md 的 front matter 约定，归档、Feed、search.json 自动更新。
+- 文章可选字段：`updated`（实际内容更新日期）、`series`（系列名称）、`status`（文档完善状态）。不填写时不会显示空占位；文档状态不代表硬件验证状态。
+- 搜索覆盖技术文章的标题、摘要和全部标签，支持空格分隔的多个关键词及专题组合；查询保存在 URL，可直接分享。搜索索引加载失败时退回页面文字筛选，无 JavaScript 时仍有完整列表与专题入口。
+- 项目演示独立加载，避免全站样式或搜索脚本干扰模拟器；全站不加载模拟器代码。
+- AI 日报保持无 front matter 的独立 HTML。导入器维护顶部站点导航、元信息与来源，`news-theme.js` 只将网站深浅偏好映射到日报 data-mode，保留日报自己的 data-theme 与布局。日报模式下拉框的选择会同步回网站偏好。
 
 ## 每日英语
 

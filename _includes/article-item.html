@@ -1,0 +1,5 @@
+<article class="article-item"{% if include.filterable %} data-search-item data-topic="{% for topic in site.data.topics %}{% if topic.articles contains include.article.slug %}{{ topic.id }} {% endif %}{% endfor %}"{% endif %}>
+  <div class="item-date"><time datetime="{{ include.article.date | date_to_xmlschema }}">{{ include.article.date | date: '%Y.%m.%d' }}</time></div>
+  <div class="item-body"><h3><a href="{{ include.article.url | relative_url }}">{{ include.article.title | escape }}</a></h3><p>{{ include.article.description | escape }}</p><div class="item-tags">{% for tag in include.article.tags limit: 3 %}<span>{{ tag | escape }}</span>{% endfor %}</div></div>
+  <span class="item-arrow" aria-hidden="true">↗</span>
+</article>

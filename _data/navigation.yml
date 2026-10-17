@@ -1,0 +1,15 @@
+- label: 首页
+  url: /
+  section: home
+- label: 文章
+  url: /articles/index.html
+  section: articles
+- label: 项目
+  url: /projects/index.html
+  section: projects
+- label: 日常
+  url: /daily/index.html
+  section: daily
+- label: 关于
+  url: /about/index.html
+  section: about

@@ -1,0 +1,10 @@
+- id: tensile
+  title: 数显式拉力计
+  subtitle: 从固件逻辑到可操作的界面演示
+  description: 在浏览器中体验 240×320 仪表界面，探索测试模式、按键操作、记录与双层校正。
+  url: /projects/n32g455-tensile/
+  image: /assets/images/tensile-preview.svg
+  tags: [N32G455, 数据采集, LCD / UI]
+  articles:
+    - n32g455-spi-dma-guide
+  boundary: 力值由滑块模拟，不是真实计量结果。

@@ -1,0 +1,15 @@
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+<header class="site-header">
+  <nav class="nav" aria-label="主导航">
+    <a class="brand" href="{{ '/' | relative_url }}" aria-label="single5240 首页"><span class="brand-mark" aria-hidden="true">s5<span>.</span></span><span>single5240<span class="brand-caption"> / 工程笔记</span></span></a>
+    <div class="nav-actions">
+      <div class="nav-links">
+        {% for item in site.data.navigation %}
+        <a href="{{ item.url | relative_url }}"{% if page.section == item.section or page.layout == 'article' and item.section == 'articles' %} aria-current="page"{% endif %}>{{ item.label }}</a>
+        {% endfor %}
+      </div>
+      <a class="search-link" href="{{ '/articles/index.html' | relative_url }}#search" aria-label="搜索文章"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></a>
+      <div class="theme-picker" data-theme-picker></div>
+    </div>
+  </nav>
+</header>

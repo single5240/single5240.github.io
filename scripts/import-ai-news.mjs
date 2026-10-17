@@ -128,6 +128,7 @@ function chromeBlock({ title, description, canonical, weekId }) {
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${escapeHtml(image)}">
+<script src="/assets/js/news-theme.js?v=20261017"></script>
 <style>
 .s5-news-bar {
   position: sticky;
@@ -137,7 +138,7 @@ function chromeBlock({ title, description, canonical, weekId }) {
   flex-wrap: wrap;
   gap: 8px 16px;
   align-items: center;
-  padding: 8px 220px 8px 14px;
+  padding: 12px 20px;
   background: var(--paper, #fff);
   color: var(--ink, #16181d);
   border-bottom: 1px solid var(--line-2, #d6dae1);
@@ -146,7 +147,7 @@ function chromeBlock({ title, description, canonical, weekId }) {
 .s5-news-bar a { color: var(--accent, #1d5fbf); text-decoration: none; }
 .s5-news-bar a:hover { text-decoration: underline; }
 .s5-news-bar a:focus-visible { outline: 2px solid var(--accent, #1d5fbf); outline-offset: 2px; }
-.am-toolbar { top: 48px !important; }
+.am-toolbar { position: static !important; top: auto !important; right: auto !important; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 24px); margin: 12px 12px 0; }
 .s5-news-sources {
   margin: 28px 0 8px;
   padding-top: 16px;
@@ -184,7 +185,10 @@ function chromeBlock({ title, description, canonical, weekId }) {
 function barBlock(weekId) {
   return `<!-- s5-news-bar:start -->
 <div class="s5-news-bar">
-  <a href="/">返回笔记</a>
+  <a href="/">single5240 / 工程笔记</a>
+  <a href="/articles/index.html">文章</a>
+  <a href="/projects/index.html">项目</a>
+  <a href="/daily/index.html">日常</a>
   <a href="/ai-news/index.html#week-${weekId}">本周 AI 资讯</a>
 </div>
 <!-- s5-news-bar:end -->
@@ -219,12 +223,11 @@ export function prepareNewsHtml(html, { date, sources }) {
     throw new Error(`${date}: expected </head>, <body>, and </main>`);
   }
   next = next.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)} | single5240</title>`);
-  next = next.replace(/<\/head>/i, `${chromeBlock({ title, description, canonical, weekId })}\n</head>`);
-  next = next.replace(/<body([^>]*)>/i, `<body$1>\n${barBlock(weekId)}`);
+  next = next.replace(/\s*<\/head>/i, `\n${chromeBlock({ title, description, canonical, weekId })}</head>`);
+  next = next.replace(/<body([^>]*)>\s*/i, `<body$1>\n${barBlock(weekId)}`);
   const sourceHtml = sourcesBlock(sources);
   if (sourceHtml) {
-    const at = next.indexOf("</main>");
-    next = `${next.slice(0, at)}${sourceHtml}\n${next.slice(at)}`;
+    next = next.replace(/\s*<\/main>/i, `\n${sourceHtml}</main>`);
   }
   return { html: next, title, description, weekId };
 }

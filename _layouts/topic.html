@@ -1,0 +1,7 @@
+---
+layout: frame
+---
+{% assign topic = site.data.topics | where: 'id', page.topic | first %}
+<header class="page-heading"><a class="eyebrow" href="{{ '/articles/index.html' | relative_url }}">← 全部文章 / 专题</a><h1>{{ topic.title }}<span class="accent">。</span></h1><p class="lede">{{ topic.description }}</p></header>
+<h2 class="visually-hidden">专题文章</h2>{% assign posts = site.articles | sort: 'date' | reverse %}{% for post in posts %}{% if topic.articles contains post.slug %}{% include article-item.html article=post %}{% endif %}{% endfor %}
+{{ content }}<div class="end-note"><a href="{{ '/articles/index.html' | relative_url }}">浏览所有文章 →</a></div>

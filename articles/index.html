@@ -1,0 +1,16 @@
+---
+layout: frame
+title: 文章归档
+description: 按主题浏览嵌入式、Linux、Qt 与工业通信笔记，搜索标题、摘要和标签。
+section: articles
+permalink: /articles/index.html
+wide: true
+---
+<header class="page-heading"><p class="eyebrow">THE NOTEBOOK</p><h1>文章与笔记<span class="accent">。</span></h1><p class="lede">把实践中的问题，整理成可以再次找到的答案。</p></header>
+<section id="search" class="archive-tools" aria-label="搜索与筛选文章" data-search data-index-url="{{ '/search.json' | relative_url }}">
+<div class="search-controls" hidden><label for="article-search">搜索标题、摘要或标签</label><div class="search-input-wrap"><input type="search" id="article-search" placeholder="试试 DMA、Qt 或 EtherCAT" autocomplete="off" aria-controls="article-results"><button type="button" class="clear-search" aria-label="清除搜索">清除</button></div></div>
+<div class="filter-controls" hidden><div class="filter-list" role="group" aria-label="按专题筛选"><button type="button" data-topic-filter="" aria-pressed="true">全部</button>{% for topic in site.data.topics %}<button type="button" data-topic-filter="{{ topic.id }}" aria-pressed="false">{{ topic.title }}</button>{% endfor %}</div></div>
+<p class="search-status" role="status" aria-live="polite">共 {{ site.articles.size }} 篇笔记 · 按发布日期排列</p><noscript><p>下方提供完整文章列表，也可以通过<a href="#archive-topics">专题入口</a>浏览。</p></noscript></section>
+<h2 class="visually-hidden">文章列表</h2><div id="article-results">{% assign posts = site.articles | sort: 'date' | reverse %}{% for post in posts %}{% include article-item.html article=post filterable=true %}{% endfor %}</div><p class="search-empty" hidden>没有找到匹配的笔记。换一个关键词，或清除筛选再试试。</p>
+<section class="archive-topics" id="archive-topics"><h2>按专题阅读</h2><div class="topic-grid">{% for topic in site.data.topics %}<a class="topic-link" href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}"><h3>{{ topic.title }} ↗</h3><p>{{ topic.articles.size }} 篇笔记</p></a>{% endfor %}</div></section>
+<script src="{{ '/assets/js/search.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>

@@ -3,6 +3,20 @@ description: 记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和
 url: https://single5240.github.io
 lang: zh-CN
 timezone: Asia/Shanghai
+defaults:
+  - scope:
+      path: english
+    values:
+      section: daily
+  - scope:
+      path: ""
+      type: english
+    values:
+      section: daily
+  - scope:
+      path: ai-news
+    values:
+      section: daily
 collections:
   articles:
     output: true
