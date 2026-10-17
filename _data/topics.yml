@@ -2,6 +2,7 @@
   title: MCU 与驱动
   description: 外设配置、数据采集与固件调试。
   articles:
+    - nor-flash-powerfail-record-store
     - n32g455-lcd-strip-rendering
     - embedded-1bit-bitmap-font-pipeline
     - baremetal-firmware-scheduler-and-refactoring

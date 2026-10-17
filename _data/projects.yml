@@ -8,6 +8,7 @@
   cta: 打开演示
   tags: [N32G455, 数据采集, LCD / UI]
   articles:
+    - nor-flash-powerfail-record-store
     - n32g455-lcd-strip-rendering
     - embedded-1bit-bitmap-font-pipeline
     - baremetal-firmware-scheduler-and-refactoring
