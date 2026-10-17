@@ -59,4 +59,4 @@ node scripts/import-ai-news.mjs path/to/2026-10-07.html path/to/2026-10-07.md
 
 脚本会把页面写到 `ai-news/YYYY-MM-DD.html`（补上返回栏、标题、canonical、描述和 Open Graph；若有来源再补「来源」），并重写 `_data/ai_news.json`。周列表按周一到周日归周，新的一周在前。重复导入同一天会先去掉上次注入的栏和来源，再按当前文件重新生成。
 
-提交 `ai-news/` 里新增或更新的 HTML，以及 `_data/ai_news.json`。
+提交 `ai-news/` 里新增或更新的 HTML，以及 `_data/ai_news.json`。首页「AI 资讯」卡片读取这份数据里最新的一天，链到 `/ai-news/YYYY-MM-DD.html`，并显示「最新一期 YYYY-MM-DD」。

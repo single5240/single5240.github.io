@@ -192,6 +192,19 @@ function validateEnglishSources() {
   return problems;
 }
 
+function latestNewsDate() {
+  const dataFile = resolve("_data/ai_news.json");
+  if (!existsSync(dataFile)) return "";
+  try {
+    const data = JSON.parse(readFileSync(dataFile, "utf8"));
+    const days = data?.weeks?.[0]?.days;
+    if (!Array.isArray(days) || days.length === 0) return "";
+    return days[days.length - 1].date || "";
+  } catch {
+    return "";
+  }
+}
+
 function validateNewsSources() {
   const problems = [];
   const dataFile = resolve("_data/ai_news.json");
@@ -376,7 +389,12 @@ for (const file of htmlFiles) {
       failures.push(`index.html: quote index ${indexAttr && indexAttr[1]} !== ${expectedIndex}`);
     }
     if (!html.includes("每日英语") || !html.includes("/english/")) failures.push("index.html: missing daily English card");
-    if (!html.includes("AI 资讯") || !html.includes("/ai-news/")) failures.push("index.html: missing AI news teaser");
+    const latestNewsDay = latestNewsDate();
+    const latestNewsHref = `/ai-news/${latestNewsDay}.html`;
+    if (!latestNewsDay || !html.includes("AI 资讯") || !html.includes(`最新一期 ${latestNewsDay}`) || !html.includes(latestNewsHref)) {
+      failures.push(`index.html: AI news card should link to the latest daily page ${latestNewsHref}`);
+    }
+    if (html.includes("/ai-news/index.html#week-")) failures.push("index.html: AI news card still links to a week");
     if (!html.includes("/projects/index.html")) failures.push("index.html: missing projects nav link");
   }
 
