@@ -2,6 +2,14 @@
   title: MCU 与驱动
   description: 外设配置、数据采集与固件调试。
   articles:
+    - n32g455-lcd-strip-rendering
+    - embedded-1bit-bitmap-font-pipeline
+    - baremetal-firmware-scheduler-and-refactoring
+    - m24c02-eeprom-driver-guide
+    - w25q128-spi-flash-driver-guide
+    - c99-table-driven-state-machine
+    - st7789-command-and-pixel-dma
+    - lcd-rgb565-color-troubleshooting
     - n32g455-spi-dma-guide
 - id: linux
   title: 嵌入式 Linux

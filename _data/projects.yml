@@ -8,6 +8,14 @@
   cta: 打开演示
   tags: [N32G455, 数据采集, LCD / UI]
   articles:
+    - n32g455-lcd-strip-rendering
+    - embedded-1bit-bitmap-font-pipeline
+    - baremetal-firmware-scheduler-and-refactoring
+    - m24c02-eeprom-driver-guide
+    - w25q128-spi-flash-driver-guide
+    - c99-table-driven-state-machine
+    - st7789-command-and-pixel-dma
+    - lcd-rgb565-color-troubleshooting
     - n32g455-spi-dma-guide
   boundary: 力值由滑块模拟，不是真实计量结果。
 - id: my-skills
