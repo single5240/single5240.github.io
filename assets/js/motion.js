@@ -144,4 +144,61 @@
       }
     }
   });
+
+  // 6. 立体 3D 视差微倾斜（基于元素原生边界，彻底杜绝冒泡抖动）
+  if (finePointer.matches && !reducedMotion.matches) {
+    const tiltSelector = ".article-item, .project-feature, .daily-links a, .daily-quote";
+    const bindTilt = () => {
+      const cards = document.querySelectorAll(tiltSelector);
+      cards.forEach((card) => {
+        if (card.dataset.tiltBound) return;
+        card.dataset.tiltBound = "true";
+
+        let rafId = null;
+        let targetX = 0;
+        let targetY = 0;
+
+        const updateTransform = () => {
+          const rotateX = (-targetY * 11).toFixed(2);
+          const rotateY = (targetX * 11).toFixed(2);
+          const shadowX = (-targetX * 14).toFixed(1);
+          const shadowY = (-targetY * 14 + 6).toFixed(1);
+
+          card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          card.style.boxShadow = `${shadowX}px ${shadowY}px 24px rgba(0, 0, 0, 0.1)`;
+          rafId = null;
+        };
+
+        card.addEventListener("mouseenter", () => {
+          card.style.transition = "transform 0.12s ease-out, box-shadow 0.12s ease-out";
+        });
+
+        card.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) return;
+          targetX = (e.clientX - rect.left) / rect.width - 0.5;
+          targetY = (e.clientY - rect.top) / rect.height - 0.5;
+
+          if (!rafId) {
+            rafId = requestAnimationFrame(updateTransform);
+          }
+        });
+
+        card.addEventListener("mouseleave", () => {
+          if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+          card.style.transition = "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease";
+          card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg)";
+          card.style.boxShadow = "";
+        });
+      });
+    };
+
+    bindTilt();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindTilt);
+    }
+  }
 })();
