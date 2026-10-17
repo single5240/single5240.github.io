@@ -514,18 +514,20 @@ time {
 }
 
 
-/* 色谱指示条 */
+/* 色谱指示条（复古实体油墨色卡风） */
 .theme-spectrum-wrap {
-  margin: 18px 0 22px;
+  margin: 18px 0 24px;
 }
 
 .theme-spectrum {
   display: flex;
-  height: 36px;
-  border-radius: 8px;
+  height: 38px;
+  border-radius: 6px;
   overflow: hidden;
+  gap: 2px;
+  padding: 2px;
   border: 1px solid var(--line);
-  background: var(--panel);
+  background: var(--line);
   box-shadow: var(--shadow-small);
 }
 
@@ -537,9 +539,11 @@ time {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  background: linear-gradient(135deg, var(--item-color-1), var(--item-color-2));
-  opacity: 0.88;
-  transition: flex 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, box-shadow 0.25s ease;
+  background: linear-gradient(145deg, var(--item-color-1), var(--item-color-2));
+  opacity: 0.92;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition: flex 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, filter 0.25s ease;
 }
 
 .spectrum-item:hover,
@@ -547,18 +551,20 @@ time {
   flex: 2.8;
   opacity: 1;
   z-index: 2;
-  box-shadow: 0 0 16px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.08);
 }
 
 .spectrum-tooltip {
   position: absolute;
   white-space: nowrap;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 11px;
   font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+  letter-spacing: 0.05em;
+  color: #faf9f6;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateY(3px);
   transition: opacity 0.22s ease, transform 0.22s ease;
   pointer-events: none;
 }
@@ -570,13 +576,15 @@ time {
 }
 
 .spectrum-tooltip small {
+  font-family: ui-monospace, monospace;
   font-weight: 500;
   opacity: 0.9;
   margin-left: 5px;
   font-size: 10px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 1px 5px;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 /* 主题专属进度条调色 */
