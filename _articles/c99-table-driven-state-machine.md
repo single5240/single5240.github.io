@@ -53,6 +53,143 @@ tags:
 
 需要注意一个关键语义：**动作函数 `action()` 在 `currentState` 更新之前执行**。因此动作函数内部读取 `StateMachine_GetState()` 得到的是转移前的源状态；动作函数中通过 `StateMachine_PostEvent()` 投递的新事件会进入 FIFO 队列尾部，留待后续的 `Process()` 调用处理，不会在当前调用栈中发生递归重入。
 
+## 交互式内核演示：状态转移与事件调度
+
+为直观理解表驱动状态机在单圈主循环中的流转机制，下方提供了一个可在浏览器中实时交互的内核模拟器。你可以向 8 槽静态 FIFO 队列投递外部事件、单步推进 `StateMachine_Process()`、观察空闲自环（Loop Event）的自动保活机制，以及转移表匹配行的高亮与动作函数执行顺序：
+
+<div class="article-interactive-widget" id="fsm-demo-app" aria-label="C99 表驱动状态机交互演示">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE WIDGET · 纯前端模拟</span>
+    <h3 class="aiw-title">C99 表驱动有限状态机内核交互模拟器</h3>
+    <p class="aiw-desc">模拟 <code>StateMachine_Process()</code> 单步调度：FIFO 外部事件出队、无符号自环（Loop Event）保活、静态转移表匹配与动作函数分派。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="aiw-stats" aria-label="状态机运行时状态">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">当前状态 (State)</span>
+        <span class="aiw-stat-value accent" id="fsm-stat-state">IDLE (待机)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">调度事件 (Event)</span>
+        <span class="aiw-stat-value" id="fsm-stat-event">就绪</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">执行动作 (Action)</span>
+        <span class="aiw-stat-value" id="fsm-stat-action">无</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">FIFO 事件队列堆积</span>
+        <span class="aiw-stat-value warn" id="fsm-stat-qcount">0 / 8 (空闲)</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>状态拓扑节点 (State Nodes)</span>
+        <span class="aiw-hint">高亮带光圈者为当前活跃状态</span>
+      </div>
+      <div class="fsm-states-grid">
+        <div class="fsm-state-card is-active" data-state-id="0">
+          <div class="fsm-active-tag">ACTIVE</div>
+          <div class="fsm-state-name">STATE_IDLE [0]</div>
+          <div class="fsm-state-loop">Loop: EVENT_IDLE_LOOP</div>
+        </div>
+        <div class="fsm-state-card" data-state-id="1">
+          <div class="fsm-active-tag">ACTIVE</div>
+          <div class="fsm-state-name">STATE_RUNNING [1]</div>
+          <div class="fsm-state-loop">Loop: EVENT_RUNNING_LOOP</div>
+        </div>
+        <div class="fsm-state-card" data-state-id="2">
+          <div class="fsm-active-tag">ACTIVE</div>
+          <div class="fsm-state-name">STATE_PEAK_HOLD [2]</div>
+          <div class="fsm-state-loop">Loop: EVENT_PEAK_LOOP</div>
+        </div>
+        <div class="fsm-state-card" data-state-id="3">
+          <div class="fsm-active-tag">ACTIVE</div>
+          <div class="fsm-state-name">STATE_ALARM [3]</div>
+          <div class="fsm-state-loop">Loop: EVENT_ALARM_LOOP</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fsm-queue-box">
+      <div class="aiw-section-title">
+        <span>静态 FIFO 外部事件队列 (容量: 8，循环数组环形回绕)</span>
+        <span class="aiw-hint">H: 写入头指针(Head) · T: 读取尾指针(Tail)</span>
+      </div>
+      <div class="fsm-queue-slots" id="fsm-queue-slots"></div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>外部事件投递 (模拟 ISR 中断或按键事件)</span>
+        <span class="aiw-hint">调用 StateMachine_PostEvent()</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" data-fsm-event="EVENT_START">投递 START (启动)</button>
+        <button type="button" class="aiw-btn" data-fsm-event="EVENT_STOP">投递 STOP (停止)</button>
+        <button type="button" class="aiw-btn" data-fsm-event="EVENT_PEAK">投递 PEAK (捕捉峰值)</button>
+        <button type="button" class="aiw-btn danger" data-fsm-event="EVENT_ALARM">投递 ALARM (超载急停)</button>
+        <button type="button" class="aiw-btn warn" data-fsm-event="EVENT_RESET">投递 RESET (故障复位)</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>主循环内核单步推进 (StateMachine_Process)</span>
+        <span class="aiw-hint">每次调用最多消费 1 个事件</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" id="fsm-btn-step">单步调度 Process()</button>
+        <button type="button" class="aiw-btn" id="fsm-btn-auto">连续自动运行</button>
+        <button type="button" class="aiw-btn" id="fsm-btn-reset">重置状态机</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>C99 转移表匹配状态 (config->transitions)</span>
+        <span class="aiw-hint">绿色行表示当前 Process() 命中的转移项</span>
+      </div>
+      <div class="fsm-table-container">
+        <table class="fsm-table">
+          <thead>
+            <tr>
+              <th>触发事件 (event)</th>
+              <th>源状态 (currentState)</th>
+              <th>执行动作 (action)</th>
+              <th>目标状态 (nextState)</th>
+              <th>语义说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>EVENT_START</td><td>STATE_IDLE</td><td>Demo_Start</td><td>STATE_RUNNING</td><td>启动测试，清零计数并进入运行态</td></tr>
+            <tr><td>EVENT_STOP</td><td>STATE_RUNNING</td><td>Demo_Stop</td><td>STATE_IDLE</td><td>手动停止测试，退出运行并归零</td></tr>
+            <tr><td>EVENT_PEAK</td><td>STATE_RUNNING</td><td>Demo_PeakHold</td><td>STATE_PEAK_HOLD</td><td>捕捉到峰值点，锁存当前最大力值</td></tr>
+            <tr><td>EVENT_STOP</td><td>STATE_PEAK_HOLD</td><td>Demo_Stop</td><td>STATE_IDLE</td><td>从峰值保持退出，返回空闲待机</td></tr>
+            <tr><td>EVENT_ALARM</td><td>STATE_IDLE</td><td>Demo_Alarm</td><td>STATE_ALARM</td><td>待机超载安全报警</td></tr>
+            <tr><td>EVENT_ALARM</td><td>STATE_RUNNING</td><td>Demo_Alarm</td><td>STATE_ALARM</td><td>测试超载立即急停并报警</td></tr>
+            <tr><td>EVENT_ALARM</td><td>STATE_PEAK_HOLD</td><td>Demo_Alarm</td><td>STATE_ALARM</td><td>保持期超载急停并报警</td></tr>
+            <tr><td>EVENT_RESET</td><td>STATE_ALARM</td><td>Demo_Reset</td><td>STATE_IDLE</td><td>操作员清除报警，复位回到待机</td></tr>
+            <tr><td>EVENT_IDLE_LOOP</td><td>STATE_IDLE</td><td>NULL</td><td>STATE_IDLE</td><td>空闲状态周期自环保活</td></tr>
+            <tr><td>EVENT_RUNNING_LOOP</td><td>STATE_RUNNING</td><td>Demo_RunningLoop</td><td>STATE_RUNNING</td><td>测试采样中自环 (满4次自动报峰值)</td></tr>
+            <tr><td>EVENT_PEAK_LOOP</td><td>STATE_PEAK_HOLD</td><td>Demo_PeakLoop</td><td>STATE_PEAK_HOLD</td><td>峰值保持状态维持当前读数</td></tr>
+            <tr><td>EVENT_ALARM_LOOP</td><td>STATE_ALARM</td><td>Demo_AlarmLoop</td><td>STATE_ALARM</td><td>声光报警周期自环交替闪烁</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="aiw-log-panel">
+      <div class="aiw-section-title">
+        <span>内核执行轨迹日志 (Execution Trace)</span>
+        <span class="aiw-hint">动作执行发生在状态更新前</span>
+      </div>
+      <div class="aiw-log" id="fsm-log" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
 ## 完整源码实现
 
 ### 头文件：`state_machine.h`

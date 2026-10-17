@@ -91,6 +91,86 @@ NOR Flash 页编程如果在写正文中途断电，会留下部分字节已写�
 - **`VALID`（`commitFlag == 0x00` 且版本、长度、CRC-16 全部正确）**：有效已提交记录；
 - **`DIRTY`（任何非全 `0xFF` 但未提交或 CRC 错误的槽）**：掉电残槽，扫描时直接跳过、绝不原地覆写，留待整扇区回收时一并擦除。
 
+### 交互式在线演示：两阶段提交与掉电故障注入模拟
+
+为直观验证两阶段提交（2PC）、掉电故障注入（Power Fail）、原位墓碑单条删除（Tombstone）与世代控制环逻辑清空在物理 Flash 上的行为，下方提供了一个 64B 槽定长存储引擎纯前端模拟器。你可以点击任意槽位检视 64 字节结构体、模拟在阶段 1 写入中途断电、测试原位生命周期码 1→0 瞬时删除，或发起上电重构扫描：
+
+<div class="article-interactive-widget" id="flash-demo-app" aria-label="NOR Flash 掉电安全存储交互演示">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE WIDGET · 硬件物理层仿真</span>
+    <h3 class="aiw-title">NOR Flash 掉电安全两阶段提交与世代控制环模拟器</h3>
+    <p class="aiw-desc">仿真外部 SPI NOR Flash（W25Q128）物理约束：仅能 1→0 编程、64B 两阶段原子提交、原位墓碑生命周期码（0xFFFF ➔ 0x0000）与世代控制环逻辑秒级清空。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="aiw-stats" aria-label="Flash 存储引擎状态">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">控制环世代 (Generation)</span>
+        <span class="aiw-stat-value accent" id="flash-stat-gen">Gen 1</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">有效提交记录</span>
+        <span class="aiw-stat-value" id="flash-stat-count">0 条有效记录</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">下一追加写槽位</span>
+        <span class="aiw-stat-value warn" id="flash-stat-next">Slot 1</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">Flash 硬件状态</span>
+        <span class="aiw-stat-value" id="flash-stat-status">就绪 (IDLE)</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>数据扇区 0xFDC000 (4 KiB) 物理槽位视图</span>
+        <span class="aiw-hint">点击任意槽位可在下方检视 64 字节二进制结构</span>
+      </div>
+      <div class="flash-slots-grid" id="flash-slots-grid"></div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>两阶段写入与掉电故障注入操作</span>
+        <span class="aiw-hint">演示两阶段原子性与掉电防护</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" id="flash-btn-write">两阶段正常写入 (2PC Write)</button>
+        <button type="button" class="aiw-btn danger" id="flash-btn-fail">故障注入: 阶段1中断电</button>
+        <button type="button" class="aiw-btn warn" id="flash-btn-del">原位墓碑单条删除 (1→0)</button>
+        <button type="button" class="aiw-btn" id="flash-btn-clear">世代控制环逻辑清空 (Clear All)</button>
+        <button type="button" class="aiw-btn" id="flash-btn-scan">模拟上电扫描 (Boot Scan)</button>
+        <button type="button" class="aiw-btn" id="flash-btn-erase">整扇区擦除 4KB</button>
+      </div>
+    </div>
+
+    <div class="flash-inspector">
+      <div class="aiw-section-title">
+        <span>当前选定槽 64 字节结构体物理字段剖析</span>
+        <span class="aiw-hint">注意观察 commitFlag (偏移63) 与 lifecycle (偏移59..60) 的单向编程变化</span>
+      </div>
+      <table class="flash-fields-table">
+        <thead>
+          <tr>
+            <th style="width: 130px;">字节偏移与字段</th>
+            <th style="width: 140px;">物理存储值</th>
+            <th>工程约束与防掉电语义</th>
+          </tr>
+        </thead>
+        <tbody id="flash-inspector-body"></tbody>
+      </table>
+    </div>
+
+    <div class="aiw-log-panel">
+      <div class="aiw-section-title">
+        <span>SPI Flash 硬件层事务与验证日志</span>
+        <span class="aiw-hint">展示两阶段写入时序与安全校验</span>
+      </div>
+      <div class="aiw-log" id="flash-log" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
 ## 三扇区世代控制环与逻辑清空
 
 ### 为什么“清空全部”不擦除数据扇区

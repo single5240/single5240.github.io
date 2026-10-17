@@ -126,6 +126,147 @@ static void Sched_Run(void)
 }
 ```
 
+### 交互式在线演示：四级分频协作调度器与无锁环形总线
+
+为直观体验裸机协作调度器如何通过 `uint32_t` 无符号差值消除主循环抖动、以及如何利用静态无锁环形缓冲区解耦高频输入与低速后台任务，下方提供了一个可在浏览器中交互的调度内核沙箱。你可以触发按键单击/长按、注入传感器超载事件、推进单步或连续运行，观察 1ms / 10ms / 100ms 分频节拍及 Level 3 条带渐进刷新的流转：
+
+<div class="article-interactive-widget" id="sched-demo-app" aria-label="四级分频时间片调度器交互演示">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE WIDGET · 裸机调度沙箱</span>
+    <h3 class="aiw-title">四级分频时间片协作调度器与静态环形总线演示</h3>
+    <p class="aiw-desc">仿真 <code>Sched_Run()</code> 调度模型：Level 0 (1ms) 消抖、Level 1 (10ms) 测控解算、Level 2 (100ms) 状态量、Level 3 空闲分片 LCD 条带渲染与 10 槽无锁环形事件解耦。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="aiw-stats" aria-label="调度器全局指标">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">SysTick 时钟基准</span>
+        <span class="aiw-stat-value accent" id="sched-stat-tick">0 ms</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">各级任务触发统计</span>
+        <span class="aiw-stat-value" id="sched-stat-cycle">L0:0 | L1:0 | L2:0</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">LCD 8行条带分片渲染</span>
+        <span class="aiw-stat-value warn" id="sched-stat-strip">条带 1/40 (行 0..7)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">环形事件总线占用</span>
+        <span class="aiw-stat-value" id="sched-stat-q">0 / 10 (空闲)</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>四级任务分频执行通道 (Task Frequency Levels)</span>
+        <span class="aiw-hint">绿色指示灯闪烁表示当前 Tick 满足周期判定并执行</span>
+      </div>
+      <div class="sched-levels-grid">
+        <div class="sched-level-card" id="sched-card-l0">
+          <div class="sched-level-top">
+            <span class="sched-level-title">Level 0: 1 ms 硬实时</span>
+            <span class="sched-level-indicator"></span>
+          </div>
+          <div class="sched-level-func">AppButtons_Process()</div>
+          <div class="sched-level-meta">
+            <span>按键消抖/长按</span>
+            <span>预算 &lt; 50 μs</span>
+          </div>
+        </div>
+
+        <div class="sched-level-card" id="sched-card-l1">
+          <div class="sched-level-top">
+            <span class="sched-level-title">Level 1: 10 ms 测控</span>
+            <span class="sched-level-indicator"></span>
+          </div>
+          <div class="sched-level-func">AppAd7190_Process()</div>
+          <div class="sched-level-meta">
+            <span>力值滤波/破断判定</span>
+            <span>预算 &lt; 200 μs</span>
+          </div>
+        </div>
+
+        <div class="sched-level-card" id="sched-card-l2">
+          <div class="sched-level-top">
+            <span class="sched-level-title">Level 2: 100 ms 慢速</span>
+            <span class="sched-level-indicator"></span>
+          </div>
+          <div class="sched-level-func">BatteryAdc_Process()</div>
+          <div class="sched-level-meta">
+            <span>电量/重力/10Hz脏检查</span>
+            <span>预算 &lt; 300 μs</span>
+          </div>
+        </div>
+
+        <div class="sched-level-card" id="sched-card-l3">
+          <div class="sched-level-top">
+            <span class="sched-level-title">Level 3: 空闲分片</span>
+            <span class="sched-level-indicator"></span>
+          </div>
+          <div class="sched-level-func">AppUi_Process()</div>
+          <div class="sched-level-meta">
+            <span>8行条带/Flash查询</span>
+            <span>非阻塞背景分片</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sched-strip-box">
+      <div class="aiw-section-title">
+        <span>240×320 屏幕条带渐进刷新管线 (每圈推进 8 行，40 次完成整帧)</span>
+        <span class="aiw-hint">消除整屏 153.6 KB 显存占用，仅用 3.84 KB 局部画布</span>
+      </div>
+      <div class="sched-strip-bar">
+        <div class="sched-strip-fill" id="sched-strip-fill" style="width: 2.5%;"></div>
+      </div>
+    </div>
+
+    <div class="sched-ring-box">
+      <div class="aiw-section-title">
+        <span>静态无锁环形事件总线 (app_event / Ring Buffer，容量: 10)</span>
+        <span class="aiw-hint">Head: 生产者写入 · Tail: 消费者(UI)读取</span>
+      </div>
+      <div class="sched-ring-track" id="sched-ring-track"></div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>事件产生 (模拟物理输入与中断)</span>
+        <span class="aiw-hint">将异步事件写入环形缓冲区</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" id="sched-btn-key-click">产生按键单击 (KEY_CLICK)</button>
+        <button type="button" class="aiw-btn" id="sched-btn-key-long">产生按键长按 (KEY_LONG)</button>
+        <button type="button" class="aiw-btn danger" id="sched-btn-alarm">产生超载急停 (OVERLOAD)</button>
+        <button type="button" class="aiw-btn warn" id="sched-btn-burst">突发并发投递 (测试防溢出)</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>时基步进控制 (SysTick 时钟推进)</span>
+        <span class="aiw-hint">以无符号差值驱动 Sched_Run()</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" id="sched-btn-step1">单步推进 1 ms</button>
+        <button type="button" class="aiw-btn" id="sched-btn-step10">步进 10 ms (触发 L0+L1)</button>
+        <button type="button" class="aiw-btn" id="sched-btn-step100">步进 100 ms (全等级协同)</button>
+        <button type="button" class="aiw-btn" id="sched-btn-run">连续运行</button>
+        <button type="button" class="aiw-btn" id="sched-btn-reset">重置时基</button>
+      </div>
+    </div>
+
+    <div class="aiw-log-panel">
+      <div class="aiw-section-title">
+        <span>调度执行流与事件消费追踪 (Scheduler Trace)</span>
+        <span class="aiw-hint">展示分频调度与环形总线解耦优势</span>
+      </div>
+      <div class="aiw-log" id="sched-log" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
 ## 方案二：UI 巨石文件拆分与页面接口契约
 
 ### 模块职责切分

@@ -51,3 +51,603 @@
 .back { display: inline-block; margin-top: 28px; color: var(--accent-dark); font-size: 13px; }
 @media(max-width:1000px) { .reading-grid { display: flex; flex-direction: column; gap: 28px; } .toc { position: static; order: -1; max-height: 350px; width: 100%; background: var(--alt-bg); padding: 15px 20px; border-left: 2px solid var(--accent-dark); } .toc summary { margin: 0; } .toc[open] summary { margin-bottom: 12px; } .reading-main { width: 100%; } .content { max-width: 760px; } }
 @media(max-width:620px) { .reading-layout { width: calc(100% - 40px); padding-top: 32px; } .article-header h1 { font-size: 30px; } .description { font-size: 15px; } .content { font-size: 16px; line-height: 1.9; } .content h2 { font-size: 24px; } .content h3 { font-size: 20px; } .content pre { font-size: 12px; padding: 16px; } .article-navigation { gap: 15px; } .article-navigation a { font-size: 13px; } .content blockquote { padding: 14px 17px; font-size: 14px; } }
+
+/* ==========================================================================
+   Article Interactive Widgets (FSM, NOR Flash 2PC, Ring Buffer Scheduler)
+   ========================================================================== */
+.article-interactive-widget {
+  margin: 36px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  font-family: inherit;
+}
+
+.aiw-header {
+  padding: 16px 20px;
+  background: var(--alt-bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.aiw-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--accent-dark);
+  background: var(--panel);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.aiw-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 750;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.aiw-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.aiw-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.aiw-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--subtle-bg);
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.aiw-stat-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+  flex: 1 1 0;
+}
+
+.aiw-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.aiw-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.aiw-stat-value.accent { color: var(--accent-dark); }
+.aiw-stat-value.warn { color: var(--warm); }
+
+.aiw-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.aiw-section-title .aiw-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.aiw-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.aiw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 120ms ease;
+  user-select: none;
+}
+
+.aiw-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  background: var(--soft);
+}
+
+.aiw-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.aiw-btn.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+.aiw-btn.primary:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: var(--on-accent);
+}
+
+.aiw-btn.warn {
+  border-color: var(--warm);
+  color: var(--warm);
+}
+
+.aiw-btn.warn:hover {
+  background: rgba(217, 130, 43, 0.1);
+}
+
+.aiw-btn.danger {
+  border-color: #d32f2f;
+  color: #d32f2f;
+}
+
+.aiw-btn.danger:hover {
+  background: rgba(211, 47, 47, 0.1);
+}
+
+.aiw-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aiw-log-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.aiw-log {
+  height: 135px;
+  overflow-y: auto;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  border: 1px solid var(--line);
+}
+
+.aiw-log-line {
+  margin-bottom: 2px;
+  word-break: break-all;
+}
+
+.aiw-log-time {
+  color: #78d5dc;
+  margin-right: 6px;
+}
+
+.aiw-log-event {
+  color: #f1a65a;
+  font-weight: 600;
+}
+
+.aiw-log-success { color: #5fdba7; }
+.aiw-log-warn { color: #f39c12; }
+.aiw-log-error { color: #ff6b6b; font-weight: 700; }
+
+/* FSM Specific Styles */
+.fsm-states-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fsm-state-card {
+  padding: 12px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  text-align: center;
+  transition: all 180ms ease;
+  position: relative;
+}
+
+.fsm-state-card.is-active {
+  border-color: var(--accent);
+  background: var(--soft);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.fsm-state-card.is-active .fsm-state-name {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.fsm-state-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.fsm-state-loop {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.fsm-active-tag {
+  display: none;
+  font-size: 9.5px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--accent);
+  color: var(--on-accent);
+  margin-bottom: 4px;
+}
+
+.fsm-state-card.is-active .fsm-active-tag {
+  display: inline-block;
+}
+
+.fsm-queue-box {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--subtle-bg);
+}
+
+.fsm-queue-slots {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.fsm-slot {
+  min-height: 52px;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  padding: 4px 2px;
+  text-align: center;
+  position: relative;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.fsm-slot.has-item {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--soft);
+  font-weight: 600;
+  color: var(--accent-dark);
+}
+
+.fsm-slot-idx {
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.fsm-slot-ptr {
+  position: absolute;
+  top: -16px;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  white-space: nowrap;
+}
+
+.fsm-table-container {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.fsm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.fsm-table th {
+  position: sticky;
+  top: 0;
+  background: var(--alt-bg);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.fsm-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--body-copy);
+}
+
+.fsm-table tr.is-matched {
+  background: var(--soft);
+  color: var(--accent-dark);
+  font-weight: 750;
+  outline: 1px solid var(--accent);
+}
+
+/* Flash Storage Specific Styles */
+.flash-sector-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flash-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.flash-slot {
+  padding: 8px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  cursor: pointer;
+  text-align: center;
+  transition: all 120ms ease;
+  font-size: 11px;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.flash-slot:hover,
+.flash-slot.is-selected {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+
+.flash-slot.erased {
+  border-style: dashed;
+  color: var(--muted);
+  background: var(--subtle-bg);
+}
+
+.flash-slot.valid {
+  border-color: var(--accent);
+  background: var(--soft);
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.flash-slot.pending {
+  border-color: var(--warm);
+  background: rgba(217, 130, 43, 0.08);
+  color: var(--warm);
+}
+
+.flash-slot.tombstone {
+  border-color: var(--line);
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+.flash-slot.dirty {
+  border-color: #d32f2f;
+  background: rgba(211, 47, 47, 0.08);
+  color: #d32f2f;
+  font-weight: 700;
+}
+
+.flash-slot-num {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.flash-slot-status {
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+.flash-inspector {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--subtle-bg);
+}
+
+.flash-fields-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  font-family: ui-monospace, Consolas, monospace;
+  margin-top: 6px;
+}
+
+.flash-fields-table th,
+.flash-fields-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+/* Scheduler Specific Styles */
+.sched-levels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sched-level-card {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  position: relative;
+  transition: all 120ms ease;
+}
+
+.sched-level-card.is-firing {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.sched-level-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.sched-level-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  display: inline-block;
+  transition: all 80ms ease;
+}
+
+.sched-level-card.is-firing .sched-level-indicator {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.sched-level-title {
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--ink);
+}
+
+.sched-level-func {
+  font-size: 10.5px;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.sched-level-meta {
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+.sched-ring-box {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--subtle-bg);
+}
+
+.sched-ring-track {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.sched-ring-slot {
+  min-height: 50px;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  position: relative;
+  font-family: ui-monospace, Consolas, monospace;
+  padding: 2px;
+  text-align: center;
+}
+
+.sched-ring-slot.has-item {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--soft);
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+.sched-strip-box {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.sched-strip-bar {
+  height: 10px;
+  width: 100%;
+  border-radius: 5px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.sched-strip-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 100ms ease;
+}
+
+@media(max-width: 768px) {
+  .fsm-states-grid,
+  .sched-levels-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fsm-queue-slots,
+  .sched-ring-track {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media(max-width: 500px) {
+  .fsm-states-grid,
+  .sched-levels-grid {
+    grid-template-columns: 1fr;
+  }
+  .fsm-queue-slots,
+  .sched-ring-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
