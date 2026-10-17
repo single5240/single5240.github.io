@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-15",
+  "sentence": "If I have seen further it is by standing on the shoulders of giants.",
+  "source": {
+    "author": "Isaac Newton",
+    "work": "Letter to Robert Hooke",
+    "year": "1675",
+    "detail": "1675-02-05（儒略历；公历常作 1676）致 Robert Hooke 的信；原句为 If I have seen further it is by standing on the shoulders of Giants."
+  },
+  "translation": "如果说我看得更远，那是因为我站在巨人的肩膀上。",
+  "grammar": [
+    "整句是 If 条件从句 + 主句：If I have seen further（条件）+ it is by standing...（主句）。这里 If 不是「假如会发生」，而是「如果说、即便承认……」的缓和语气。",
+    "主句用 it is by + doing：by standing 是方式状语，说明「靠什么方式」看得更远；standing on the shoulders of giants 是动名词短语。",
+    "have seen 是现在完成时，强调「已经看到／看得更远」这一结果，而不是单纯叙述过去某一刻。"
+  ],
+  "vocab": [
+    {
+      "word": "further",
+      "phonetic": "/ˈfɜːðə(r)/",
+      "pos": "adv.",
+      "meaning": "更远；更进一步（句中修饰 seen，表示看得更远）",
+      "collocation": "see further; go further; take it further",
+      "example": "Reading the reference manual helped me see further into the interrupt path."
+    },
+    {
+      "word": "stand on",
+      "phonetic": "/stænd ɒn/",
+      "pos": "v. phrase",
+      "meaning": "站在……之上；比喻建立在……的基础上",
+      "collocation": "stand on the shoulders of; stand on one's own feet",
+      "example": "Every driver we write stands on datasheets and errata written by others."
+    },
+    {
+      "word": "shoulder",
+      "phonetic": "/ˈʃəʊldə(r)/",
+      "pos": "n.",
+      "meaning": "肩膀；句中用复数 shoulders，构成固定比喻",
+      "collocation": "on someone's shoulders; shoulder to shoulder; a chip on one's shoulder",
+      "example": "The responsibility for that silicon bring-up is on our shoulders."
+    },
+    {
+      "word": "giant",
+      "phonetic": "/ˈdʒaɪənt/",
+      "pos": "n.",
+      "meaning": "巨人；巨擘（喻指前辈大师）",
+      "collocation": "a giant in the field; standing on the shoulders of giants",
+      "example": "Knuth is a giant in algorithms; his books still guide my code reviews."
+    }
+  ],
+  "note": "做嵌入式也一样：寄存器手册、前人驱动、开源社区，都是你的「巨人肩膀」。今天试着口头说一句：If I have ______ further, it is by ______."
+}

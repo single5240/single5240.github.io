@@ -9,6 +9,36 @@
           "weekday": "周一",
           "title": "AI 资讯日报 · 10月12日（周一）",
           "summary": "Codex 第 7 天把 GPT-6.1 Sol 默认上下文提到 500k。ChatGPT 与 Cursor 无新品。GPT-5.5 还剩约 2 天下线。"
+        },
+        {
+          "date": "2026-10-13",
+          "weekday": "周二",
+          "title": "AI 资讯日报 · 10月13日（周二）",
+          "summary": "Cursor 多项服务 Major Outage（IDE / Cloud Agents / CLI 等）。Codex 第 8 天尚未见正式交付。GPT-5.5 明天（10/14）从 ChatGPT、Work、Codex 下线。"
+        },
+        {
+          "date": "2026-10-14",
+          "weekday": "周三",
+          "title": "AI 资讯日报 · 10月14日（周三）",
+          "summary": "GPT-5.5 今天从 ChatGPT、Work、Codex 下线。Codex 第 8 天全额重置已落地，第 9 天桌面端盘占用约减 60%。Cursor 已恢复，并上线 Origin App Marketplace。"
+        },
+        {
+          "date": "2026-10-15",
+          "weekday": "周四",
+          "title": "AI 资讯日报 · 10月15日（周四）",
+          "summary": "Lead: GPT-5.5 已于今晨约 03:00（北京时间）从 ChatGPT 登录的 Codex 下线。Codex 第 10 天截至本稿尚未公布。Cursor 昨日 Grok Bot 降级已恢复，当前全系统正常。"
+        },
+        {
+          "date": "2026-10-16",
+          "weekday": "周五",
+          "title": "AI 资讯日报 · 10月16日（周五）",
+          "summary": "Codex 第 10 天全额重置，第 11 天压容量卡死。GPT-Live-1.1 全量推送。Cursor Grok 模型报错升高，IDE 等仍标降级。"
+        },
+        {
+          "date": "2026-10-17",
+          "weekday": "周六",
+          "title": "AI 资讯日报 · 10月17日（周六）",
+          "summary": "Codex 第 12 天是改进，无全额重置：同样额度能干更多活。ChatGPT Chrome 扩展可读标签页并代办操作。Cursor 的 Grok 故障已恢复。"
         }
       ]
     },
