@@ -34,8 +34,8 @@ section: home
         {% assign latest = english_days.first %}
         {% assign entry = site.data.english[latest.day] %}
         {% if entry %}<a href="{{ latest.url | relative_url }}"><span class="eyebrow">每日英语 · {{ latest.day }}</span><strong lang="en">{{ entry.sentence | escape }}</strong><span aria-hidden="true">↗</span></a>{% endif %}
-        {% assign week = site.data.ai_news.weeks.first %}
-        {% if week %}<a href="{{ '/ai-news/index.html' | relative_url }}#week-{{ week.id }}"><span class="eyebrow">AI 资讯</span><strong>{{ week.label }}</strong><span aria-hidden="true">↗</span></a>{% endif %}
+        {% assign latest_news = site.data.ai_news.weeks.first.days.last %}
+        {% if latest_news %}<a href="{{ '/ai-news/' | append: latest_news.date | append: '.html' | relative_url }}"><span class="eyebrow">AI 资讯</span><strong>最新一期 {{ latest_news.date }}</strong><span aria-hidden="true">↗</span></a>{% endif %}
       </div>
     </div>
   </section>
