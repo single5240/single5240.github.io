@@ -485,11 +485,6 @@ samp {
     transform: none;
   }
 
-  .cursor-dot,
-  .cursor-ring {
-    display: none !important;
-  }
-
   .spectrum-item {
     transition: none !important;
   }
@@ -509,56 +504,6 @@ samp {
   pointer-events: none;
   box-shadow: 0 1px 6px rgba(15, 129, 141, 0.35);
   transition: transform 60ms linear;
-}
-
-/* 自定义微交互双层光标环 */
-.cursor-dot,
-.cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 10000;
-  pointer-events: none;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  will-change: transform;
-}
-
-.cursor-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  box-shadow: 0 0 8px rgba(15, 129, 141, 0.7);
-  transform: translate(-50%, -50%);
-}
-
-.cursor-ring {
-  width: 36px;
-  height: 36px;
-  border: 1.5px solid rgba(15, 129, 141, 0.45);
-  background: transparent;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.3s ease, width 0.28s cubic-bezier(0.22, 1, 0.36, 1), height 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.28s ease, border-color 0.28s ease;
-}
-
-.cursor-ring.is-hover {
-  width: 56px;
-  height: 56px;
-  background: rgba(15, 129, 141, 0.12);
-  border-color: var(--accent);
-  box-shadow: 0 0 16px rgba(15, 129, 141, 0.2);
-}
-
-.cursor-ring.is-pressed {
-  transform: translate(-50%, -50%) scale(0.82);
-}
-
-@media (pointer: coarse) {
-  .cursor-dot,
-  .cursor-ring {
-    display: none !important;
-  }
 }
 
 /* 卡片 3D 视差微倾斜容器基础样式 */
@@ -632,50 +577,16 @@ samp {
   border-radius: 8px;
 }
 
-/* 主题专属微交互调色 */
-:root[data-theme="swiss"] .cursor-dot {
-  background: #e63329;
-  box-shadow: 0 0 8px rgba(230, 51, 41, 0.7);
-}
-:root[data-theme="swiss"] .cursor-ring {
-  border-color: rgba(230, 51, 41, 0.45);
-}
-:root[data-theme="swiss"] .cursor-ring.is-hover {
-  background: rgba(230, 51, 41, 0.12);
-  border-color: #e63329;
-}
+/* 主题专属进度条调色 */
 :root[data-theme="swiss"] .reading-progress {
   background: linear-gradient(90deg, #e63329, #111111);
 }
 
-:root[data-theme="hud"] .cursor-dot {
-  background: #52d8e8;
-  box-shadow: 0 0 10px rgba(82, 216, 232, 0.85);
-}
-:root[data-theme="hud"] .cursor-ring {
-  border-color: rgba(82, 216, 232, 0.45);
-}
-:root[data-theme="hud"] .cursor-ring.is-hover {
-  background: rgba(82, 216, 232, 0.15);
-  border-color: #52d8e8;
-  box-shadow: 0 0 20px rgba(82, 216, 232, 0.35);
-}
 :root[data-theme="hud"] .reading-progress {
   background: linear-gradient(90deg, #52d8e8, #ffd166);
   box-shadow: 0 1px 8px rgba(82, 216, 232, 0.5);
 }
 
-:root[data-theme="mono"] .cursor-dot {
-  background: #141414;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
-}
-:root[data-theme="mono"] .cursor-ring {
-  border-color: rgba(20, 20, 20, 0.45);
-}
-:root[data-theme="mono"] .cursor-ring.is-hover {
-  background: rgba(20, 20, 20, 0.08);
-  border-color: #141414;
-}
 :root[data-theme="mono"] .reading-progress {
   background: linear-gradient(90deg, #141414, #737373);
 }
