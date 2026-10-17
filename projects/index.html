@@ -1,14 +1,9 @@
 ---
 layout: frame
-title: 项目
-description: 可在浏览器中打开的界面演示。
+title: 项目实验室
+description: 嵌入式项目的浏览器交互演示与相关技术笔记。
+section: projects
+wide: true
 permalink: /projects/index.html
 ---
-<h1>项目</h1>
-<p class="lede">可在浏览器里直接打开的界面演示。</p>
-<ul class="day-list">
-  <li>
-    <a href="{{ '/projects/n32g455-tensile/' | relative_url }}">数显式拉力计 界面演示</a>
-    <p>纯静态网页，演示拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。</p>
-  </li>
-</ul>
+<header class="page-heading"><p class="eyebrow">THE LAB</p><h1>让想法，运行起来<span class="accent">。</span></h1><p class="lede">从界面到逻辑，可以亲手试一试的工程实践。</p></header><h2 class="visually-hidden">项目列表</h2>{% for project in site.data.projects %}{% include project-card.html project=project %}{% endfor %}<div class="end-note">这里展示项目的交互与设计思路。涉及硬件的结果，以相应实测条件和记录为准。</div>

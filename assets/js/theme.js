@@ -113,6 +113,16 @@
       });
 
       picker.element.addEventListener("keydown", (event) => {
+        if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+          event.preventDefault();
+          picker.menu.hidden = false;
+          picker.toggle.setAttribute("aria-expanded", "true");
+          const current = picker.options.indexOf(document.activeElement);
+          const target = event.key === "Home" ? 0 : event.key === "End" ? picker.options.length - 1 :
+            event.key === "ArrowDown" ? (current + 1) % picker.options.length : (current <= 0 ? picker.options.length - 1 : current - 1);
+          picker.options[target].focus();
+          return;
+        }
         if (event.key !== "Escape" || picker.menu.hidden) return;
         event.preventDefault();
         closePicker(picker, true);

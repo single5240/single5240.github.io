@@ -1,0 +1,24 @@
+- id: mcu
+  title: MCU 与驱动
+  description: 外设配置、数据采集与固件调试。
+  articles:
+    - n32g455-spi-dma-guide
+- id: linux
+  title: 嵌入式 Linux
+  description: 从板子联网到服务部署，记录实际搭建过程。
+  articles:
+    - atk-imx6u-qt-ui-deployment-guide
+    - atk-imx6u-systemui-autostart
+    - linux-basic-commands-atk-imx6u
+    - atk-imx6u-remote-io-control
+- id: qt
+  title: Qt / QML
+  description: 声明式界面、C++ 集成与设备端部署。
+  articles:
+    - qml-syntax-and-practice-guide
+    - atk-imx6u-qt-ui-deployment-guide
+- id: industrial
+  title: 工业通信
+  description: EtherCAT 从站与协议栈移植笔记。
+  articles:
+    - ecat-porting-basic

@@ -284,6 +284,25 @@ const sitemap = existsSync(sitemapPath) ? readFileSync(sitemapPath, "utf8") : ""
 const sitemapPaths = [...sitemap.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((match) => urlPath(match[1].trim()));
 const htmlFiles = walk(root).filter((path) => extname(path) === ".html");
 
+// Verify the discovery index against the built article set, not only its syntax.
+try {
+  const entries = JSON.parse(readFileSync(join(root, "search.json"), "utf8"));
+  const articleFiles = htmlFiles.filter(file => /[\\/]articles[\\/]/.test(file) && !file.endsWith(`${join("articles", "index.html")}`));
+  if (!Array.isArray(entries) || entries.length !== articleFiles.length) failures.push("search.json: must contain every technical article exactly once");
+  const seen = new Set();
+  for (const entry of entries) {
+    if (!entry.title || !entry.description || !Array.isArray(entry.tags)) failures.push("search.json: invalid article metadata");
+    if (seen.has(entry.url)) failures.push(`search.json: duplicate ${entry.url}`);
+    seen.add(entry.url);
+    if (!targetExists(join(root, "index.html"), entry.url)) failures.push(`search.json: broken ${entry.url}`);
+  }
+} catch (error) { failures.push(`search.json: ${error.message}`); }
+
+for (const name of ["mcu", "linux", "qt", "industrial"]) {
+  const file = join(root, "topics", `${name}.html`);
+  if (!existsSync(file) || !readFileSync(file, "utf8").includes('class="article-item"')) failures.push(`topics/${name}.html: must contain published articles`);
+}
+
 for (const file of htmlFiles) {
   const html = readFileSync(file, "utf8");
   const label = file.slice(root.length + 1);
@@ -292,6 +311,11 @@ for (const file of htmlFiles) {
   if (h1Count !== 1) failures.push(`${label}: expected one h1, found ${h1Count}`);
   if (!/<title>[^<]+<\/title>/i.test(html)) failures.push(`${label}: missing title`);
   if (!/<meta\s+name=["']description["']/i.test(html)) failures.push(`${label}: missing description`);
+  if (html.includes('class="site-header"')) {
+    if (html.indexOf("/assets/js/theme.js") > html.indexOf("/assets/css/base.css")) failures.push(`${label}: theme bootstrap must precede base CSS`);
+    const activeLinks = [...html.matchAll(/aria-current="page"/g)].length;
+    if (activeLinks > 1) failures.push(`${label}: multiple active navigation links`);
+  }
 
   const links = tags(html, "link");
   const metas = tags(html, "meta");
