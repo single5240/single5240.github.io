@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-16",
+  "sentence": "The best way to predict the future is to invent it.",
+  "source": {
+    "author": "Alan Kay",
+    "work": "Remark associated with Xerox PARC / personal computing talks",
+    "year": "1971",
+    "detail": "常溯至约 1971 年 Alan Kay 在个人计算愿景相关场合的表述；他本人亦多次确认过这一说法。"
+  },
+  "translation": "预测未来的最好方法，就是去创造它。",
+  "grammar": [
+    "主干是 The best way ... is to invent it：主语 the best way，系动词 is，表语是不定式 to invent it。",
+    "to predict the future 是后置定语，修饰 way，表示「用来……的方式」；英语里 the best / a good way to do sth 是极常用结构。",
+    "两个 to do 分工不同：to predict 修饰名词 way，to invent 作表语，说明「是什么」。"
+  ],
+  "vocab": [
+    {
+      "word": "predict",
+      "phonetic": "/prɪˈdɪkt/",
+      "pos": "v.",
+      "meaning": "预测；预言",
+      "collocation": "predict the future; predict an outcome; hard to predict",
+      "example": "It is hard to predict how long the bring-up will take."
+    },
+    {
+      "word": "invent",
+      "phonetic": "/ɪnˈvent/",
+      "pos": "v.",
+      "meaning": "发明；创造（句中指主动把未来做出来）",
+      "collocation": "invent a solution; invent the future; newly invented",
+      "example": "We did not wait for a library; we invented a small driver of our own."
+    },
+    {
+      "word": "the best way to",
+      "phonetic": "/ðə best weɪ tə/",
+      "pos": "phrase",
+      "meaning": "……的最好办法",
+      "collocation": "the best way to learn; the best way to fix; the only way to",
+      "example": "The best way to learn a datasheet is to try the registers on real silicon."
+    },
+    {
+      "word": "future",
+      "phonetic": "/ˈfjuːtʃə(r)/",
+      "pos": "n.",
+      "meaning": "未来；前途",
+      "collocation": "in the future; the near future; shape the future",
+      "example": "Open tools shape the future of embedded workflows."
+    }
+  ],
+  "note": "做工程也一样：与其猜下一步会怎样，不如动手把原型做出来。今天试着口头说一句：The best way to ______ is to ______."
+}

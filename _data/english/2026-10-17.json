@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-17",
+  "sentence": "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+  "source": {
+    "author": "Jane Austen",
+    "work": "Pride and Prejudice",
+    "year": "1813",
+    "detail": "小说第一卷第一章的开篇第一句，英国文学里最有名的开头之一，带着奥斯汀式的反讽。"
+  },
+  "translation": "有一条举世公认的真理：凡是有钱的单身汉，总想娶位太太。",
+  "grammar": [
+    "形式主语 it：句子主干是 It is a truth（这是一条真理），it 只是占位的形式主语，真正的主语是后面的 that 从句“a single man ... must be in want of a wife”。因为真正的主语太长，英语习惯先用 it 撑住，把长内容放到句尾，读起来更平衡。现代写法一般不在 that 前加逗号，这里的逗号是 18、19 世纪的标点习惯。",
+    "过去分词短语作后置定语：universally acknowledged 修饰 a truth，相当于 a truth that is universally acknowledged（一条被普遍承认的真理），表被动。同理，in possession of a good fortune 是介词短语后置修饰 a single man，相当于 who is in possession of a good fortune。",
+    "must 表推测：must be in want of 不是“必须需要”，而是“肯定需要、一定缺”，表示说话人很有把握的推断。反讽就在这里：其实是周围的人一厢情愿地认定有钱单身汉“一定”想娶妻。"
+  ],
+  "vocab": [
+    {
+      "word": "universally",
+      "phonetic": "/ˌjuːnɪˈvɜːsəli/",
+      "pos": "adv.",
+      "meaning": "普遍地；全世界都",
+      "collocation": "universally accepted / universally recognized / universally acknowledged",
+      "example": "English is not universally spoken, but it is widely used in tech."
+    },
+    {
+      "word": "acknowledge",
+      "phonetic": "/əkˈnɒlɪdʒ/",
+      "pos": "v.",
+      "meaning": "承认；公认",
+      "collocation": "acknowledge a mistake / acknowledge that... / be widely acknowledged as",
+      "example": "He acknowledged that the bug was in his driver code."
+    },
+    {
+      "word": "in possession of",
+      "phonetic": "/ɪn pəˈzeʃn əv/",
+      "pos": "phr.",
+      "meaning": "拥有；持有（比 have 正式）",
+      "collocation": "be in possession of the facts / take possession of",
+      "example": "Make sure you are in possession of all the data before you decide."
+    },
+    {
+      "word": "fortune",
+      "phonetic": "/ˈfɔːtʃuːn/",
+      "pos": "n.",
+      "meaning": "财富，大笔钱财（句中义）；也指运气",
+      "collocation": "make a fortune / cost a fortune / good fortune",
+      "example": "That new oscilloscope cost me a fortune."
+    },
+    {
+      "word": "in want of",
+      "phonetic": "/ɪn wɒnt əv/",
+      "pos": "phr.",
+      "meaning": "需要；缺少（较正式、偏书面）",
+      "collocation": "be in want of help / in want of attention",
+      "example": "The old firmware is badly in want of a rewrite."
+    }
+  ],
+  "note": "小练习：仿照“It is a truth universally acknowledged, that...”造一句工程师版，比如 It is a truth universally acknowledged that a program without tests must be in want of a bug. 试着写一句你自己的吧。"
+}

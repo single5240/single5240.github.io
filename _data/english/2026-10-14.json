@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-14",
+  "sentence": "The important thing is not to stop questioning. Curiosity has its own reason for existing.",
+  "source": {
+    "author": "Albert Einstein",
+    "work": "Life magazine interview",
+    "year": "1955",
+    "detail": "William Miller 采访，刊于 Life，1955-05-02，文题 Death of a Genius；后半句常与前半句一并引用"
+  },
+  "translation": "重要的是不要停止提问。好奇心自有它存在的理由。",
+  "grammar": [
+    "第一句主干：The important thing（主语）+ is（系动词）+ not to stop questioning（不定式短语作表语）。用 The important thing is to… 强调「真正要紧的是……」。",
+    "not to stop questioning：不定式的否定，not 放在 to 前面；stop + doing 表示「停止正在做的事」。合起来是「不要停止提问」。",
+    "第二句：Curiosity（主语）+ has（谓语）+ its own reason（宾语）+ for existing（介词短语说明理由为何）。for + doing 表示「用于……、作为……的理由」。"
+  ],
+  "vocab": [
+    {
+      "word": "questioning",
+      "phonetic": "/ˈkwestʃənɪŋ/",
+      "pos": "n. / gerund",
+      "meaning": "提问；质疑；追问（由动词 question 变来）",
+      "collocation": "stop questioning; keep questioning; critical questioning",
+      "example": "Good debugging starts with questioning every assumption in the driver."
+    },
+    {
+      "word": "curiosity",
+      "phonetic": "/ˌkjʊəriˈɒsəti/",
+      "pos": "n.",
+      "meaning": "好奇心；求知欲",
+      "collocation": "curiosity about; out of curiosity; satisfy one's curiosity",
+      "example": "Out of curiosity, I read the errata sheet before touching the silicon."
+    },
+    {
+      "word": "reason",
+      "phonetic": "/ˈriːzn/",
+      "pos": "n.",
+      "meaning": "理由；原因；道理",
+      "collocation": "reason for; for a reason; the reason why",
+      "example": "There is a reason for every reserved bit in that register map."
+    },
+    {
+      "word": "exist",
+      "phonetic": "/ɪɡˈzɪst/",
+      "pos": "v.",
+      "meaning": "存在；生存（句中 existing 为动名词）",
+      "collocation": "exist for; continue to exist; cease to exist",
+      "example": "That race condition only seems to exist under heavy interrupt load."
+    }
+  ],
+  "note": "学英语也一样：别急着「背完」，多问一句 why / how。今天试着用这句结构造一句：The important thing is not to stop ______."
+}
