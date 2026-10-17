@@ -1334,6 +1334,797 @@
     log('[INIT] 240×8 条带渲染引擎初始化完成：40 条带覆盖 320 行，RAM 占用仅 3.84 KB', 'normal');
   }
 
+
+  /* ========================================================
+     Interactive Simulator 7: 1-bit Bitmap Font Pipeline
+     ======================================================== */
+  function initFontSimulator() {
+    const root = document.getElementById('font-demo-app');
+    if (!root) return;
+
+    // Tab switching
+    const tabBtns = root.querySelectorAll('.font-tab-btn');
+    const tabPanels = root.querySelectorAll('.font-tab-panel');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+        tabPanels.forEach(p => p.classList.toggle('active', p.id === 'font-panel-' + target));
+        if (target === 'compare') renderCompare();
+      });
+    });
+
+    // --- Tab 1: Editor & Generator ---
+    const grid16 = root.querySelector('#font-grid-16');
+    const previewCanvas = root.querySelector('#font-preview-canvas');
+    const codePre = root.querySelector('#font-c-code');
+    const infoBytes = root.querySelector('#font-byte-count');
+    const infoDims = root.querySelector('#font-dim-label');
+
+    let currentWidth = 16;
+    const grid = Array.from({ length: 16 }, () => Array(16).fill(0));
+    let isMouseDown = false;
+    let drawValue = 1;
+
+    // Presets
+    const presets = {
+      gui: [
+        0x00,0x00, 0x7F,0xFC, 0x44,0x44, 0x5F,0xF4,
+        0x44,0x44, 0x7F,0xFC, 0x04,0x40, 0xFF,0xFE,
+        0x44,0x44, 0x47,0xC4, 0x44,0x44, 0x7F,0xFC,
+        0x44,0x44, 0x44,0x44, 0x44,0x44, 0x00,0x00
+      ],
+      duan: [
+        0x00,0x00, 0x24,0x48, 0x24,0x88, 0x7F,0xFC,
+        0x24,0x08, 0x24,0x10, 0x7F,0xFE, 0x00,0x10,
+        0x3E,0x10, 0x22,0x20, 0x22,0x20, 0x22,0x40,
+        0x3E,0x40, 0x22,0x84, 0x22,0x78, 0x00,0x00
+      ],
+      he: [
+        0x08,0x20, 0x7F,0xFC, 0x08,0x20, 0x00,0x00,
+        0x3F,0xF8, 0x01,0x00, 0x01,0x00, 0x01,0x00,
+        0x3F,0xF8, 0x21,0x08, 0x21,0x08, 0x3F,0xF8,
+        0x21,0x08, 0x21,0x08, 0x21,0x08, 0x00,0x00
+      ],
+      asciiA: [
+        0x00, 0x00, 0x18, 0x24, 0x42, 0x42, 0x7E, 0x42,
+        0x42, 0x42, 0x42, 0x00, 0x00, 0x00, 0x00, 0x00
+      ],
+      ascii0: [
+        0x00, 0x00, 0x3C, 0x42, 0x46, 0x4A, 0x52, 0x62,
+        0x42, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+      ]
+    };
+
+    function loadPreset(key) {
+      const data = presets[key];
+      if (!data) return;
+      if (key.startsWith('ascii')) {
+        currentWidth = 8;
+        if (infoDims) infoDims.textContent = '8 × 16 (ASCII)';
+        if (infoBytes) infoBytes.textContent = '16 字节 (stride=1 B/行)';
+        for (let y = 0; y < 16; y++) {
+          const byte = data[y];
+          for (let x = 0; x < 8; x++) {
+            grid[y][x] = (byte & (0x80 >> x)) ? 1 : 0;
+          }
+          for (let x = 8; x < 16; x++) grid[y][x] = 0;
+        }
+      } else {
+        currentWidth = 16;
+        if (infoDims) infoDims.textContent = '16 × 16 (汉字)';
+        if (infoBytes) infoBytes.textContent = '32 字节 (stride=2 B/行)';
+        for (let y = 0; y < 16; y++) {
+          const b0 = data[y * 2];
+          const b1 = data[y * 2 + 1];
+          for (let x = 0; x < 8; x++) grid[y][x] = (b0 & (0x80 >> x)) ? 1 : 0;
+          for (let x = 0; x < 8; x++) grid[y][x + 8] = (b1 & (0x80 >> x)) ? 1 : 0;
+        }
+      }
+      renderEditor();
+    }
+
+    function renderEditor() {
+      if (!grid16) return;
+      grid16.innerHTML = '';
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          const pixel = document.createElement('div');
+          pixel.className = 'font-pixel' + (grid[y][x] ? ' on' : '');
+          if (x >= currentWidth) {
+            pixel.style.opacity = '0.2';
+            pixel.style.pointerEvents = 'none';
+          }
+          pixel.dataset.x = x;
+          pixel.dataset.y = y;
+          pixel.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isMouseDown = true;
+            drawValue = grid[y][x] ? 0 : 1;
+            grid[y][x] = drawValue;
+            pixel.classList.toggle('on', drawValue === 1);
+            updateOutput();
+          });
+          pixel.addEventListener('mouseenter', () => {
+            if (isMouseDown) {
+              grid[y][x] = drawValue;
+              pixel.classList.toggle('on', drawValue === 1);
+              updateOutput();
+            }
+          });
+          grid16.appendChild(pixel);
+        }
+      }
+      updateOutput();
+    }
+
+    document.addEventListener('mouseup', () => { isMouseDown = false; });
+
+    function updateOutput() {
+      if (previewCanvas) {
+        const ctx = previewCanvas.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, 32, 32);
+        ctx.fillStyle = '#10b981';
+        const scale = 32 / 16;
+        for (let y = 0; y < 16; y++) {
+          for (let x = 0; x < currentWidth; x++) {
+            if (grid[y][x]) {
+              ctx.fillRect(x * scale, y * scale, scale, scale);
+            }
+          }
+        }
+      }
+
+      const stride = Math.floor((currentWidth + 7) / 8);
+      const totalBytes = stride * 16;
+      if (infoBytes) infoBytes.textContent = totalBytes + ' 字节 (stride=' + stride + ' B/行)';
+
+      const bytes = [];
+      for (let y = 0; y < 16; y++) {
+        for (let s = 0; s < stride; s++) {
+          let byteVal = 0;
+          for (let b = 0; b < 8; b++) {
+            const x = s * 8 + b;
+            if (x < currentWidth && grid[y][x]) {
+              byteVal |= (0x80 >> b);
+            }
+          }
+          bytes.push('0x' + byteVal.toString(16).padStart(2, '0').toUpperCase());
+        }
+      }
+
+      let cCode = '/* 1-bit Bitmap: ' + currentWidth + 'x16 (' + totalBytes + ' Bytes, Row-major MSB leftmost) */\n';
+      cCode += 'const uint8_t glyph_bitmap[' + totalBytes + '] = {\n';
+      for (let y = 0; y < 16; y++) {
+        cCode += '  ';
+        for (let s = 0; s < stride; s++) {
+          cCode += bytes[y * stride + s] + ', ';
+        }
+        cCode += '/* Row ' + y.toString().padStart(2, ' ') + ' */\n';
+      }
+      cCode += '};';
+      if (codePre) codePre.textContent = cCode;
+    }
+
+    root.querySelector('#font-preset-gui')?.addEventListener('click', () => loadPreset('gui'));
+    root.querySelector('#font-preset-duan')?.addEventListener('click', () => loadPreset('duan'));
+    root.querySelector('#font-preset-he')?.addEventListener('click', () => loadPreset('he'));
+    root.querySelector('#font-preset-a')?.addEventListener('click', () => loadPreset('asciiA'));
+    root.querySelector('#font-preset-0')?.addEventListener('click', () => loadPreset('ascii0'));
+    root.querySelector('#font-btn-clear')?.addEventListener('click', () => {
+      for (let y = 0; y < 16; y++) grid[y].fill(0);
+      renderEditor();
+    });
+    root.querySelector('#font-btn-invert')?.addEventListener('click', () => {
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < currentWidth; x++) {
+          grid[y][x] = grid[y][x] ? 0 : 1;
+        }
+      }
+      renderEditor();
+    });
+
+    // --- Tab 2: Comparison (Vector Threshold vs Native Bitmap) ---
+    const zoomVector = root.querySelector('#font-zoom-vector');
+    const zoomNative = root.querySelector('#font-zoom-native');
+    const threshSlider = root.querySelector('#font-thresh-slider');
+    const threshVal = root.querySelector('#font-thresh-val');
+    let compareChar = '歸';
+
+    root.querySelectorAll('.font-compare-preset-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        compareChar = b.dataset.char;
+        root.querySelectorAll('.font-compare-preset-btn').forEach(btn => btn.classList.toggle('active', btn === b));
+        renderCompare();
+      });
+    });
+
+    if (threshSlider) {
+      threshSlider.addEventListener('input', () => {
+        if (threshVal) threshVal.textContent = threshSlider.value;
+        renderCompare();
+      });
+    }
+
+    function renderCompare() {
+      if (!zoomVector || !zoomNative) return;
+      const th = parseInt(threshSlider ? threshSlider.value : '128', 10);
+
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = 16;
+      offCanvas.height = 16;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.fillStyle = '#FFFFFF';
+      offCtx.fillRect(0, 0, 16, 16);
+      offCtx.fillStyle = '#000000';
+      offCtx.font = '15px "SimSun", "Songti SC", "Noto Serif CJK TC", serif';
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+      offCtx.fillText(compareChar, 8, 8);
+
+      const imgData = offCtx.getImageData(0, 0, 16, 16);
+      const data = imgData.data;
+
+      const vCtx = zoomVector.getContext('2d');
+      vCtx.imageSmoothingEnabled = false;
+      vCtx.fillStyle = '#111';
+      vCtx.fillRect(0, 0, 128, 128);
+
+      for (let y = 0; y < 16; y++) {
+        for (let x = 0; x < 16; x++) {
+          const idx = (y * 16 + x) * 4;
+          const gray = (data[idx] + data[idx+1] + data[idx+2]) / 3;
+          if (gray < th) {
+            vCtx.fillStyle = '#ef4444';
+            vCtx.fillRect(x * 8, y * 8, 7, 7);
+          }
+        }
+      }
+
+      const nCtx = zoomNative.getContext('2d');
+      nCtx.imageSmoothingEnabled = false;
+      nCtx.fillStyle = '#111';
+      nCtx.fillRect(0, 0, 128, 128);
+      nCtx.fillStyle = '#10b981';
+
+      const presetData = compareChar === '斷' ? presets.duan : presets.gui;
+      for (let y = 0; y < 16; y++) {
+        const b0 = presetData[y * 2];
+        const b1 = presetData[y * 2 + 1];
+        for (let x = 0; x < 8; x++) {
+          if (b0 & (0x80 >> x)) nCtx.fillRect(x * 8, y * 8, 7, 7);
+        }
+        for (let x = 0; x < 8; x++) {
+          if (b1 & (0x80 >> x)) nCtx.fillRect((x + 8) * 8, y * 8, 7, 7);
+        }
+      }
+    }
+
+    // --- Tab 3: Unicode Binary Search Step-by-Step ---
+    const codepoints = [
+      { cp: 0x0020, ch: "' '" }, { cp: 0x002B, ch: "'+'" }, { cp: 0x0030, ch: "'0'" },
+      { cp: 0x0039, ch: "'9'" }, { cp: 0x0041, ch: "'A'" }, { cp: 0x005A, ch: "'Z'" },
+      { cp: 0x0061, ch: "'a'" }, { cp: 0x007E, ch: "'~'" }, { cp: 0x00B1, ch: "'±'" },
+      { cp: 0x4E00, ch: "'一'" }, { cp: 0x505C, ch: "'停'" }, { cp: 0x514B, ch: "'克'" },
+      { cp: 0x5206, ch: "'分'" }, { cp: 0x529F, ch: "'功'" }, { cp: 0x538B, ch: "'压'" },
+      { cp: 0x65AD, ch: "'斷'" }, { cp: 0x6E05, ch: "'清'" }, { cp: 0x6E29, ch: "'温'" },
+      { cp: 0x7247, ch: "'片'" }, { cp: 0x7535, ch: "'电'" }, { cp: 0x8377, ch: "'荷'" },
+      { cp: 0x8B70, ch: "'議'" }, { cp: 0x8F93, ch: "'输'" }, { cp: 0x904B, ch: "'運'" },
+      { cp: 0x91CF, ch: "'量'" }, { cp: 0x95F8, ch: "'闸'" }, { cp: 0x9B41, ch: "'魁'" },
+      { cp: 0x9ED1, ch: "'黑'" }
+    ];
+
+    const barEl = root.querySelector('#font-bsearch-bar');
+    const logEl = root.querySelector('#font-bsearch-log');
+    const searchInput = root.querySelector('#font-bsearch-input');
+    const stepBtn = root.querySelector('#font-bsearch-step-btn');
+    const resetBtn = root.querySelector('#font-bsearch-reset-btn');
+
+    let bLow = 0;
+    let bHigh = codepoints.length - 1;
+    let bMid = -1;
+    let bTarget = 0x8377;
+    let bStepCount = 0;
+    let bDone = false;
+
+    function renderBsearchBar() {
+      if (!barEl) return;
+      barEl.innerHTML = '';
+      codepoints.forEach((item, idx) => {
+        const cell = document.createElement('div');
+        cell.className = 'font-bsearch-cell';
+        cell.title = 'Index ' + idx + ': ' + item.ch + ' (0x' + item.cp.toString(16).toUpperCase() + ')';
+
+        if (bDone && idx === bMid && codepoints[idx].cp === bTarget) {
+          cell.classList.add('found');
+        } else if (idx === bMid) {
+          cell.classList.add('mid');
+        } else if (idx >= bLow && idx <= bHigh) {
+          cell.classList.add('active-range');
+        } else {
+          cell.classList.add('eliminated');
+        }
+
+        cell.addEventListener('click', () => {
+          if (searchInput) searchInput.value = item.ch.replace(/'/g, '');
+          bTarget = item.cp;
+          resetBsearch();
+        });
+        barEl.appendChild(cell);
+      });
+    }
+
+    function resetBsearch() {
+      bLow = 0;
+      bHigh = codepoints.length - 1;
+      bMid = -1;
+      bStepCount = 0;
+      bDone = false;
+      const foundItem = codepoints.find(c => c.cp === bTarget);
+      if (logEl) {
+        logEl.innerHTML = '目标: 0x' + bTarget.toString(16).toUpperCase() + ' (' + (foundItem ? foundItem.ch : '自定义') + ')<br>初始范围: low=0, high=' + bHigh + ' (N=' + codepoints.length + ')';
+      }
+      if (stepBtn) stepBtn.disabled = false;
+      renderBsearchBar();
+    }
+
+    function stepBsearch() {
+      if (bDone || bLow > bHigh) return;
+      bStepCount++;
+      bMid = Math.floor((bLow + bHigh) / 2);
+      const cur = codepoints[bMid];
+
+      let logMsg = '第 ' + bStepCount + ' 步: low=' + bLow + ', high=' + bHigh + ' ➔ mid=' + bMid + ' [' + cur.ch + ' 0x' + cur.cp.toString(16).toUpperCase() + ']<br>';
+
+      if (cur.cp === bTarget) {
+        logMsg += '<span style="color:#10b981;font-weight:bold;">➔ 命中目标！共比较 ' + bStepCount + ' 次，直接提取 font_16_bitmap + offset</span>';
+        bDone = true;
+        if (stepBtn) stepBtn.disabled = true;
+      } else if (cur.cp < bTarget) {
+        logMsg += '➔ 0x' + cur.cp.toString(16).toUpperCase() + ' < 目标 0x' + bTarget.toString(16).toUpperCase() + '，向右收缩：low = ' + (bMid + 1);
+        bLow = bMid + 1;
+      } else {
+        logMsg += '➔ 0x' + cur.cp.toString(16).toUpperCase() + ' > 目标 0x' + bTarget.toString(16).toUpperCase() + '，向左收缩：high = ' + (bMid - 1);
+        bHigh = bMid - 1;
+      }
+
+      if (!bDone && bLow > bHigh) {
+        logMsg += '<br><span style="color:#ef4444;font-weight:bold;">➔ 查找结束：未收录字符（返回 NULL，安全回退到空白或替换字形）</span>';
+        bDone = true;
+        if (stepBtn) stepBtn.disabled = true;
+      }
+
+      if (logEl) logEl.innerHTML = logMsg;
+      renderBsearchBar();
+    }
+
+    if (stepBtn) stepBtn.addEventListener('click', stepBsearch);
+    if (resetBtn) resetBtn.addEventListener('click', resetBsearch);
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const val = searchInput.value.trim();
+        if (!val) return;
+        const code = val.charCodeAt(0);
+        bTarget = code;
+        resetBsearch();
+      });
+    }
+
+    loadPreset('gui');
+    resetBsearch();
+  }
+
+
+  /* ========================================================
+     Interactive Simulator 8: EtherCAT State Machine (ESM)
+     ======================================================== */
+  function initEcatEsmSimulator() {
+    const root = document.getElementById('ecat-esm-demo-app');
+    if (!root) return;
+
+    let currentState = 'INIT';
+    let hasError = false;
+    let alStatusCode = 0x0000;
+    let alStatusName = 'No error';
+
+    const modules = [
+      { id: 'm1', name: 'Slot 1: 4通道数字量输入 (4-CH DI)', type: 'tx', bytes: 1, active: true },
+      { id: 'm2', name: 'Slot 2: 8通道数字量输出 (8-CH DO)', type: 'rx', bytes: 1, active: true },
+      { id: 'm3', name: 'Slot 3: 2通道模拟量输出 (2-CH AO 16b)', type: 'rx', bytes: 4, active: true },
+      { id: 'm4', name: 'Slot 4: 4通道模拟量输入 (4-CH AI 16b)', type: 'tx', bytes: 8, active: true }
+    ];
+
+    let faultMbxSize = false;
+    let faultRxSize = false;
+    let faultTxSize = false;
+    let faultDcSync = false;
+
+    const elAlControl = root.querySelector('#ecat-al-control');
+    const elAlStatus = root.querySelector('#ecat-al-status');
+    const elAlCode = root.querySelector('#ecat-al-code');
+    const elLog = root.querySelector('#ecat-log');
+    const elRxSum = root.querySelector('#ecat-rx-sum');
+    const elTxSum = root.querySelector('#ecat-tx-sum');
+
+    function log(msg, type) {
+      if (!elLog) return;
+      const time = new Date().toTimeString().split(' ')[0] + '.' + Math.floor(performance.now() % 1000).toString().padStart(3, '0');
+      let color = '#d4d4d4';
+      if (type === 'error') color = '#ef4444';
+      if (type === 'success') color = '#10b981';
+      if (type === 'warn') color = '#f59e0b';
+      if (type === 'info') color = '#38bdf8';
+      const div = document.createElement('div');
+      div.style.color = color;
+      div.innerHTML = '[' + time + '] ' + msg;
+      elLog.appendChild(div);
+      elLog.scrollTop = elLog.scrollHeight;
+    }
+
+    function calcPdoSizes() {
+      let rxBytes = 0;
+      let txBytes = 0;
+      modules.forEach(m => {
+        if (m.active) {
+          if (m.type === 'rx') rxBytes += m.bytes;
+          if (m.type === 'tx') txBytes += m.bytes;
+        }
+      });
+      if (elRxSum) elRxSum.textContent = rxBytes + ' 字节';
+      if (elTxSum) elTxSum.textContent = txBytes + ' 字节';
+      return { rxBytes, txBytes };
+    }
+
+    function updateUI() {
+      const stateCodes = { INIT: '0x01', PREOP: '0x02', SAFEOP: '0x04', OP: '0x08' };
+      if (elAlControl) elAlControl.textContent = stateCodes[currentState];
+      if (elAlStatus) {
+        elAlStatus.textContent = stateCodes[currentState] + (hasError ? ' + ERROR' : '');
+        elAlStatus.className = 'ecat-status-val' + (hasError ? ' error' : '');
+      }
+      if (elAlCode) {
+        elAlCode.textContent = '0x' + alStatusCode.toString(16).padStart(4, '0').toUpperCase() + ' (' + alStatusName + ')';
+        elAlCode.className = 'ecat-status-val' + (hasError ? ' error' : '');
+      }
+
+      ['INIT', 'PREOP', 'SAFEOP', 'OP'].forEach(s => {
+        const node = root.querySelector('#esm-node-' + s.toLowerCase());
+        if (node) {
+          node.classList.remove('active', 'error');
+          if (s === currentState) {
+            node.classList.add(hasError ? 'error' : 'active');
+          }
+        }
+      });
+
+      const sm0 = root.querySelector('#sm-status-0');
+      const sm1 = root.querySelector('#sm-status-1');
+      const sm2 = root.querySelector('#sm-status-2');
+      const sm3 = root.querySelector('#sm-status-3');
+
+      const isMailboxActive = ['PREOP', 'SAFEOP', 'OP'].includes(currentState) && !hasError;
+      const isInputActive = ['SAFEOP', 'OP'].includes(currentState) && !hasError;
+      const isOutputActive = currentState === 'OP' && !hasError;
+
+      if (sm0) {
+        sm0.textContent = isMailboxActive ? 'ACTIVE (128B)' : 'CLOSED';
+        sm0.className = isMailboxActive ? 'ecat-sm-active' : 'ecat-sm-inactive';
+      }
+      if (sm1) {
+        sm1.textContent = isMailboxActive ? 'ACTIVE (128B)' : 'CLOSED';
+        sm1.className = isMailboxActive ? 'ecat-sm-active' : 'ecat-sm-inactive';
+      }
+      if (sm2) {
+        sm2.textContent = isOutputActive ? ('ACTIVE (' + calcPdoSizes().rxBytes + 'B)') : 'LOCKED';
+        sm2.className = isOutputActive ? 'ecat-sm-active' : 'ecat-sm-inactive';
+      }
+      if (sm3) {
+        sm3.textContent = isInputActive ? ('ACTIVE (' + calcPdoSizes().txBytes + 'B)') : 'CLOSED';
+        sm3.className = isInputActive ? 'ecat-sm-active' : 'ecat-sm-inactive';
+      }
+    }
+
+    function gotoPreOp() {
+      log('[TRANSITION] 主站写 AL Control (0x0120) = 0x02 (PREOP 请求)...', 'info');
+      if (faultMbxSize) {
+        hasError = true;
+        alStatusCode = 0x0016;
+        alStatusName = 'Invalid mailbox configuration';
+        log('[ERROR 0x0016] CheckSmSettings 校验失败：主站下发 SM0 长度(64B) 与 ESI XML/代码宏(128B) 不匹配！状态转换拒绝，置位 Error Ind。', 'error');
+      } else {
+        currentState = 'PREOP';
+        hasError = false;
+        alStatusCode = 0x0000;
+        alStatusName = 'No error';
+        log('[SUCCESS] SM0 (Mailbox Out) & SM1 (Mailbox In) 校验通过并启动，邮箱 SDO 通道开启！', 'success');
+      }
+      updateUI();
+    }
+
+    function gotoSafeOp() {
+      log('[TRANSITION] 主站写 AL Control (0x0120) = 0x04 (SAFEOP 请求)...', 'info');
+      const { rxBytes, txBytes } = calcPdoSizes();
+      log('[APPL_GenerateMapping] 从站计算当前生效 PDO 长度：RxPDO (SM2)=' + rxBytes + ' 字节, TxPDO (SM3)=' + txBytes + ' 字节', 'info');
+
+      if (faultRxSize) {
+        hasError = true;
+        alStatusCode = 0x001D;
+        alStatusName = 'Invalid output configuration';
+        log('[ERROR 0x001D] CheckSmSettings 失败：主站写入 SM2 寄存器长度(8 字节) 与 从站 APPL_GenerateMapping 计算值(' + rxBytes + ' 字节) 不相等！常见于 0x1C12 动态映射或 Slot 步进错位。', 'error');
+      } else if (faultTxSize) {
+        hasError = true;
+        alStatusCode = 0x001E;
+        alStatusName = 'Invalid input configuration';
+        log('[ERROR 0x001E] CheckSmSettings 失败：主站写入 SM3 长度与从站 TxPDO 计算值(' + txBytes + ' 字节) 不一致！', 'error');
+      } else {
+        currentState = 'SAFEOP';
+        hasError = false;
+        alStatusCode = 0x0000;
+        alStatusName = 'No error';
+        log('[SUCCESS] SM2/SM3 长度完全匹配，FMMU 逻辑地址映射生效，启动从站 SM3 输入采集上传！', 'success');
+      }
+      updateUI();
+    }
+
+    function gotoOp() {
+      log('[TRANSITION] 主站写 AL Control (0x0120) = 0x08 (OP 请求)...', 'info');
+      if (faultDcSync) {
+        hasError = true;
+        alStatusCode = 0x002C;
+        alStatusName = 'Fatal sync error';
+        log('[ERROR 0x002C] DC 分布式时钟校验失败：ESC 未在限定窗口内检测到 SYNC0 锁相中断！检查 LAN9252 SYNC0 引脚与 EXTI 中断配置。', 'error');
+      } else {
+        currentState = 'OP';
+        hasError = false;
+        alStatusCode = 0x0000;
+        alStatusName = 'No error';
+        log('[SUCCESS] 收到主站持续周期性过程数据帧，释放硬件输出锁：SM2 输出驱动物理设备，进入全功能闭环 OP 状态！', 'success');
+      }
+      updateUI();
+    }
+
+    function triggerWatchdogTimeout() {
+      if (currentState !== 'OP') {
+        log('[WARN] 看门狗超时故障注入仅在 OP 状态下有效！', 'warn');
+        return;
+      }
+      log('[FAULT INJECT] 主站突发中断发送周期过程数据帧，ESC 的 SM2 过程数据看门狗超时！', 'error');
+      currentState = 'SAFEOP';
+      hasError = true;
+      alStatusCode = 0x001B;
+      alStatusName = 'Sync manager watchdog';
+      log('[ERROR 0x001B] 从站紧急切回 SAFEOP + ERROR，立即关闭 SM2 输出以保现场安全！排查方向：网线掉线、MCU 中断死锁或 ESC_IRQ 丢失。', 'error');
+      updateUI();
+    }
+
+    function resetToInit() {
+      currentState = 'INIT';
+      hasError = false;
+      alStatusCode = 0x0000;
+      alStatusName = 'No error';
+      log('[RESET] 从站复位至 INIT 初始状态，关闭所有 SyncManager 与过程数据。', 'normal');
+      updateUI();
+    }
+
+    root.querySelector('#ecat-btn-to-preop')?.addEventListener('click', gotoPreOp);
+    root.querySelector('#ecat-btn-to-safeop')?.addEventListener('click', gotoSafeOp);
+    root.querySelector('#ecat-btn-to-op')?.addEventListener('click', gotoOp);
+    root.querySelector('#ecat-btn-to-init')?.addEventListener('click', resetToInit);
+    root.querySelector('#ecat-btn-fault-wd')?.addEventListener('click', triggerWatchdogTimeout);
+
+    root.querySelector('#ecat-fault-mbx')?.addEventListener('change', (e) => { faultMbxSize = e.target.checked; });
+    root.querySelector('#ecat-fault-rx')?.addEventListener('change', (e) => { faultRxSize = e.target.checked; });
+    root.querySelector('#ecat-fault-tx')?.addEventListener('change', (e) => { faultTxSize = e.target.checked; });
+    root.querySelector('#ecat-fault-dc')?.addEventListener('change', (e) => { faultDcSync = e.target.checked; });
+
+    modules.forEach(m => {
+      root.querySelector('#ecat-mod-' + m.id)?.addEventListener('change', (e) => {
+        m.active = e.target.checked;
+        calcPdoSizes();
+        log('[DYNAMIC PDO] SDO 更新模块列表：' + m.name + ' ➔ ' + (m.active ? '使能' : '禁用'), 'info');
+      });
+    });
+
+    calcPdoSizes();
+    updateUI();
+    log('[INIT] EtherCAT 从站协议栈初始化就绪：当前处于 INIT 状态', 'normal');
+  }
+
+
+  /* ========================================================
+     Interactive Simulator 9: W25Q128 Non-blocking Flash Driver
+     ======================================================== */
+  function initW25q128Simulator() {
+    const root = document.getElementById('w25q-demo-app');
+    if (!root) return;
+
+    let isNonBlocking = true;
+    let isOperating = false;
+    let opType = 'IDLE';
+    let opProgress = 0;
+    let totalOpTimeMs = 0;
+    let elapsedMs = 0;
+
+    let mainLoopJitterMs = 0.15;
+    let queueCount = 2;
+    let iwdgRemainingMs = 1000;
+
+    const elModeBtn = root.querySelector('#w25q-mode-toggle');
+    const elJitterVal = root.querySelector('#w25q-jitter-val');
+    const elJitterBar = root.querySelector('#w25q-jitter-bar');
+    const elQueueVal = root.querySelector('#w25q-queue-val');
+    const elQueueBar = root.querySelector('#w25q-queue-bar');
+    const elIwdgVal = root.querySelector('#w25q-iwdg-val');
+    const elIwdgBar = root.querySelector('#w25q-iwdg-bar');
+    const elLedWel = root.querySelector('#w25q-led-wel');
+    const elLedBusy = root.querySelector('#w25q-led-busy');
+    const elChipStateText = root.querySelector('#w25q-chip-state-text');
+    const elLog = root.querySelector('#w25q-log');
+
+    const seg0 = root.querySelector('#w25q-seg-0');
+    const seg1 = root.querySelector('#w25q-seg-1');
+    const seg2 = root.querySelector('#w25q-seg-2');
+
+    function log(msg, type) {
+      if (!elLog) return;
+      const time = new Date().toTimeString().split(' ')[0] + '.' + Math.floor(performance.now() % 1000).toString().padStart(3, '0');
+      let color = '#d4d4d4';
+      if (type === 'error') color = '#ef4444';
+      if (type === 'success') color = '#10b981';
+      if (type === 'warn') color = '#f59e0b';
+      if (type === 'info') color = '#38bdf8';
+      const div = document.createElement('div');
+      div.style.color = color;
+      div.innerHTML = '[' + time + '] ' + msg;
+      elLog.appendChild(div);
+      elLog.scrollTop = elLog.scrollHeight;
+    }
+
+    function updateMeters() {
+      if (elJitterVal) elJitterVal.textContent = mainLoopJitterMs.toFixed(2) + ' ms';
+      if (elJitterBar) {
+        const pct = Math.min(100, (mainLoopJitterMs / 90) * 100);
+        elJitterBar.style.width = pct + '%';
+        elJitterBar.className = 'w25q-meter-fill' + (mainLoopJitterMs > 50 ? ' danger' : mainLoopJitterMs > 5 ? ' warn' : '');
+      }
+
+      if (elQueueVal) elQueueVal.textContent = queueCount + ' / 255 帧';
+      if (elQueueBar) {
+        const pct = (queueCount / 255) * 100;
+        elQueueBar.style.width = pct + '%';
+        elQueueBar.className = 'w25q-meter-fill' + (queueCount > 200 ? ' danger' : queueCount > 50 ? ' warn' : '');
+      }
+
+      if (elIwdgVal) elIwdgVal.textContent = Math.round(iwdgRemainingMs) + ' ms';
+      if (elIwdgBar) {
+        const pct = (iwdgRemainingMs / 1000) * 100;
+        elIwdgBar.style.width = pct + '%';
+        elIwdgBar.className = 'w25q-meter-fill' + (iwdgRemainingMs < 200 ? ' danger' : iwdgRemainingMs < 500 ? ' warn' : '');
+      }
+
+      if (elLedBusy) elLedBusy.classList.toggle('busy', isOperating);
+      if (elLedWel) elLedWel.classList.toggle('active', isOperating);
+      if (elChipStateText) {
+        if (!isOperating) elChipStateText.textContent = 'STANDBY (空闲就绪)';
+        else elChipStateText.textContent = opType + ' 进行中 (' + Math.round(opProgress) + '%)...';
+      }
+    }
+
+    function startOperation(type, durationMs, desc) {
+      if (isOperating) {
+        log('[WARN] 上一次 Flash 写入/擦除尚未完成 (硬件 BUSY=1)！', 'warn');
+        return;
+      }
+
+      isOperating = true;
+      opType = type;
+      totalOpTimeMs = durationMs;
+      elapsedMs = 0;
+      opProgress = 0;
+
+      log('[START] 发送 0x06 (Write Enable) ➔ 校验 WEL=1 ➔ 下发指令 ' + desc, 'info');
+
+      if (!isNonBlocking) {
+        log('[BLOCKING] 主循环调用阻塞函数，原地死等 while(BUSY == 1)... 耗时约 ' + durationMs + ' ms！', 'warn');
+        mainLoopJitterMs = durationMs;
+        queueCount = Math.min(255, Math.floor(queueCount + durationMs * 2.4));
+        iwdgRemainingMs = Math.max(0, iwdgRemainingMs - durationMs);
+        updateMeters();
+
+        setTimeout(() => {
+          isOperating = false;
+          opProgress = 100;
+          mainLoopJitterMs = 0.15;
+          const drain = setInterval(() => {
+            if (queueCount > 2) {
+              queueCount -= 15;
+              if (queueCount < 2) queueCount = 2;
+              updateMeters();
+            } else {
+              clearInterval(drain);
+            }
+          }, 30);
+          iwdgRemainingMs = 1000;
+          log('[BLOCKING COMPLETE] 硬件 BUSY 清零，拉高 /CS，主循环终于恢复调度！', 'success');
+          updateMeters();
+        }, 1200);
+      } else {
+        log('[NON-BLOCKING] 下发指令与地址(耗时 < 0.2ms) ➔ 拉高 /CS ➔ 立即返回主循环，开启非阻塞轮询状态机！', 'success');
+        mainLoopJitterMs = 0.18;
+        queueCount = 2;
+        updateMeters();
+
+        const stepTime = 50;
+        const interval = setInterval(() => {
+          elapsedMs += stepTime * (durationMs / 600);
+          opProgress = Math.min(100, (elapsedMs / durationMs) * 100);
+
+          queueCount = 1 + Math.floor(Math.random() * 2);
+          mainLoopJitterMs = 0.15 + (Math.random() * 0.05);
+          iwdgRemainingMs = 998;
+
+          if (type === 'MULTI_PAGE') {
+            if (opProgress > 15 && seg0) seg0.classList.add('active');
+            if (opProgress > 65 && seg1) seg1.classList.add('active');
+            if (opProgress >= 99 && seg2) seg2.classList.add('active');
+          }
+
+          updateMeters();
+
+          if (elapsedMs >= durationMs) {
+            clearInterval(interval);
+            isOperating = false;
+            opProgress = 100;
+            log('[POLL COMPLETE] W25q128_PollOperation 检测到 BUSY=0，事务平稳完成！主循环全程零卡顿！', 'success');
+            updateMeters();
+          }
+        }, stepTime);
+      }
+    }
+
+    root.querySelector('#w25q-btn-erase')?.addEventListener('click', () => {
+      startOperation('SECTOR_ERASE', 88, '0x20 扇区擦除 (4 KiB, 地址 0x001000)');
+    });
+
+    root.querySelector('#w25q-btn-prog')?.addEventListener('click', () => {
+      startOperation('PAGE_PROGRAM', 5, '0x02 单页编程 (256 B, 地址 0x001000)');
+    });
+
+    root.querySelector('#w25q-btn-multipage')?.addEventListener('click', () => {
+      if (seg0) seg0.classList.remove('active');
+      if (seg1) seg1.classList.remove('active');
+      if (seg2) seg2.classList.remove('active');
+
+      log('[MULTI-PAGE WRITE] 用户发起 500 字节写入，起始地址 0x0010E0：', 'info');
+      log('  ├─ Chunk 1: 0x0010E0..0x0010FF (256 - 0xE0 = 32 字节，跨页尾截断)', 'info');
+      log('  ├─ Chunk 2: 0x001100..0x0011FF (满整页 256 字节)', 'info');
+      log('  └─ Chunk 3: 0x001200..0x0012D3 (剩余 212 字节)', 'info');
+
+      startOperation('MULTI_PAGE', 60, '自动拆分 3 笔页编程事务');
+    });
+
+    if (elModeBtn) {
+      elModeBtn.addEventListener('click', () => {
+        if (isOperating) {
+          log('[WARN] 操作进行中，无法切换驱动工作模式！', 'warn');
+          return;
+        }
+        isNonBlocking = !isNonBlocking;
+        elModeBtn.textContent = isNonBlocking ? '切换为：阻塞轮询 while(BUSY)' : '切换为：非阻塞状态机驱动';
+        const modeBadge = root.querySelector('#w25q-mode-badge');
+        if (modeBadge) {
+          modeBadge.textContent = isNonBlocking ? '当前模式：非阻塞状态机 (推荐)' : '当前模式：阻塞轮询 while(BUSY) (高危)';
+          modeBadge.className = 'ecat-status-val' + (isNonBlocking ? '' : ' error');
+        }
+        log('[MODE SWITCH] 驱动模式已切换为：' + (isNonBlocking ? '非阻塞异步状态机' : '阻塞轮询 while(BUSY)'), 'warn');
+      });
+    }
+
+    updateMeters();
+    log('[INIT] W25Q128 SPI NOR Flash 驱动仿真器就绪：默认采用非阻塞状态机架构', 'normal');
+  }
+
   // 初始化所有已挂载的交互组件
   initFsmSimulator();
   initFlashSimulator();
@@ -1341,4 +2132,7 @@
   initEepromSimulator();
   initRgb565Simulator();
   initLcdStripSimulator();
+  initFontSimulator();
+  initEcatEsmSimulator();
+  initW25q128Simulator();
 })();

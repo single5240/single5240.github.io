@@ -62,6 +62,114 @@ tags:
 
 此外，预生成脚本将提取后的繁体子集保存为仓库内的 `sources/unifont_t_ui_16.bdf` 与 `sources/noto_serif_tc_ui_24.bdf`，并对上游源文件执行 **SHA-256 哈希强校验**，确保团队在任何机器上重新运行 `python3 gen_fonts.py` 都能得到逐字节完全一致的 C 源码。
 
+<div id="font-demo-app" class="font-demo-root">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h3 style="margin:0; font-size:16px;">🎨 1-bit 点阵字库生成与光栅化排障实验室</h3>
+    <span style="font-size:12px; color:var(--muted);">纯前端交互演示</span>
+  </div>
+
+  <div class="font-tabs">
+    <button class="font-tab-btn active" data-tab="editor">16×16 点阵画板与 C99 生成</button>
+    <button class="font-tab-btn" data-tab="compare">矢量缩放粘连 vs 原生点阵</button>
+    <button class="font-tab-btn" data-tab="bsearch">Unicode 升序二分查找模拟</button>
+  </div>
+
+  <!-- Tab 1: Editor -->
+  <div id="font-panel-editor" class="font-tab-panel active">
+    <div class="font-editor-grid">
+      <div class="font-grid-wrap">
+        <div id="font-grid-16" class="font-grid-16"></div>
+        <div class="font-palette-bar">
+          <button class="font-palette-btn" id="font-preset-gui">預設: 歸</button>
+          <button class="font-palette-btn" id="font-preset-duan">預設: 斷</button>
+          <button class="font-palette-btn" id="font-preset-he">预设: 荷</button>
+          <button class="font-palette-btn" id="font-preset-a">ASCII: A</button>
+          <button class="font-palette-btn" id="font-preset-0">ASCII: 0</button>
+          <button class="font-palette-btn" id="font-btn-invert">反相</button>
+          <button class="font-palette-btn" id="font-btn-clear" style="color:#ef4444;">清空</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="font-preview-wrap">
+          <canvas id="font-preview-canvas" class="font-preview-canvas" width="32" height="32"></canvas>
+          <div class="font-preview-info">
+            <div>字形规格：<span id="font-dim-label">16 × 16 (汉字)</span></div>
+            <div>内存占用：<span id="font-byte-count">32 字节 (stride=2 B/行)</span></div>
+            <div style="font-size:11px; color:var(--muted); margin-top:2px;">编码标准：Row-major MSB leftmost (bit7 为行首最左像素)</div>
+          </div>
+        </div>
+
+        <div class="font-c-export">
+          <pre id="font-c-code">/* 正在生成 C99 const uint8_t 数组... */</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Compare -->
+  <div id="font-panel-compare" class="font-tab-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; gap:6px;">
+        <span style="font-size:13px; font-weight:600; line-height:26px;">测试繁体字：</span>
+        <button class="font-palette-btn font-compare-preset-btn active" data-char="歸">歸 (18画)</button>
+        <button class="font-palette-btn font-compare-preset-btn" data-char="斷">斷 (18画)</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; font-size:12px;">
+        <label for="font-thresh-slider">二值化阈值 (Threshold): <strong id="font-thresh-val">128</strong></label>
+        <input type="range" id="font-thresh-slider" min="40" max="220" value="128" style="width:110px;">
+      </div>
+    </div>
+
+    <div class="font-compare-grid">
+      <div class="font-compare-card bad">
+        <div class="font-compare-title">
+          <span>矢量字体缩放到 16 px + 阈值二值化</span>
+          <span class="font-compare-badge bad">粘连失真</span>
+        </div>
+        <canvas id="font-zoom-vector" class="font-zoom-canvas" width="128" height="128"></canvas>
+        <div class="font-compare-desc">
+          桌面级矢量字库在 16 px 极低网格下做灰度抗锯齿二值化裁剪时，繁体字密集横撇（如“歸”中间“𠂤”与“止”）像素间距不足 1 像素，强制二值化导致笔画粘连成黑色实心方块，完全失去可读性。
+        </div>
+      </div>
+
+      <div class="font-compare-card good">
+        <div class="font-compare-title">
+          <span>GNU Unifont 原生 16×16 点阵</span>
+          <span class="font-compare-badge good">像素级手工优化</span>
+        </div>
+        <canvas id="font-zoom-native" class="font-zoom-canvas" width="128" height="128"></canvas>
+        <div class="font-compare-desc">
+          上游源自手工修整的 16×16 原生点阵，在保证汉字骨架的同时对密集笔画做合理避让，严格保留单像素留白缝隙。不做任何插值缩放，在嵌入式小彩屏上边缘锐利、清晰辨识。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Binary Search -->
+  <div id="font-panel-bsearch" class="font-tab-panel">
+    <div class="font-bsearch-box">
+      <div class="font-bsearch-controls">
+        <label style="font-size:13px; font-weight:600;">输入查找字符或 Unicode 码点：</label>
+        <input type="text" id="font-bsearch-input" class="font-bsearch-input" value="荷" maxlength="4">
+        <button class="ecat-btn" id="font-bsearch-step-btn" style="background:var(--accent); color:#fff; border-color:var(--accent);">单步探测 (Step)</button>
+        <button class="ecat-btn" id="font-bsearch-reset-btn">重置探测</button>
+        <span style="font-size:12px; color:var(--muted); margin-left:auto;">
+          表中收录 28 个典型字形（已升序排列），最多只需要 ⌈log₂(28)⌉ = 5 次比较
+        </span>
+      </div>
+
+      <div class="font-bsearch-bar-wrap">
+        <div id="font-bsearch-bar" class="font-bsearch-bar"></div>
+      </div>
+
+      <div id="font-bsearch-log" class="font-bsearch-log">
+        准备就绪：输入目标字符后点击“单步探测”观察 low / mid / high 指针折半收敛过程。
+      </div>
+    </div>
+  </div>
+</div>
+
 ## Unicode 升序索引表与二分查找
 
 为了在 ARMCC 5 下避免 GBK/UTF-8 源文件编码混用问题，所有字库检索表统一按 **Unicode 码点（`uint16_t codepoint`）升序排列**：

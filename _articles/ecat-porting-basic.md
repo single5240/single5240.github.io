@@ -261,6 +261,158 @@ SSC 协议栈中处理状态转换请求的核心入口函数是 `AL_ControlInd(
   - 若启用了分布式时钟（DC），确认本地时钟已与主站参考时钟完成同步锁定，且正常接收到 `SYNC0` 中断。
   - 调用 `APPL_StartOutputHandler()`，激活硬件输出。
 
+<div id="ecat-esm-demo-app" class="ecat-demo-root">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h3 style="margin:0; font-size:16px;">🔄 EtherCAT 从站状态机（ESM）与动态 PDO 诊断控制台</h3>
+    <span style="font-size:12px; color:var(--muted);">纯前端交互演示</span>
+  </div>
+
+  <!-- State Track -->
+  <div class="esm-track">
+    <div id="esm-node-init" class="esm-node active">
+      <div class="esm-node-code">STATE_INIT</div>
+      <div class="esm-node-name">Init (初始)</div>
+      <div class="esm-node-ch">仅寄存器/EEPROM</div>
+    </div>
+    <div class="esm-arrow">➔</div>
+    <div id="esm-node-preop" class="esm-node">
+      <div class="esm-node-code">STATE_PREOP</div>
+      <div class="esm-node-name">Pre-Op (预运行)</div>
+      <div class="esm-node-ch">SM0/1 邮箱 SDO 通道</div>
+    </div>
+    <div class="esm-arrow">➔</div>
+    <div id="esm-node-safeop" class="esm-node">
+      <div class="esm-node-code">STATE_SAFEOP</div>
+      <div class="esm-node-name">Safe-Op (安全运行)</div>
+      <div class="esm-node-ch">SM3 输入采集上传</div>
+    </div>
+    <div class="esm-arrow">➔</div>
+    <div id="esm-node-op" class="esm-node">
+      <div class="esm-node-code">STATE_OP</div>
+      <div class="esm-node-name">Operational (运行)</div>
+      <div class="esm-node-ch">SM2 输出物理驱动</div>
+    </div>
+  </div>
+
+  <div class="ecat-grid">
+    <!-- Left Column: Controls & Module PDO Config -->
+    <div class="ecat-card">
+      <div class="ecat-card-title">
+        <span>主站状态推进控制</span>
+        <span style="font-size:11px; color:var(--muted);">AL Control 驱动</span>
+      </div>
+
+      <div class="ecat-btn-grid">
+        <button class="ecat-btn" id="ecat-btn-to-preop">Init ➔ Pre-Op</button>
+        <button class="ecat-btn" id="ecat-btn-to-safeop">Pre-Op ➔ Safe-Op</button>
+        <button class="ecat-btn" id="ecat-btn-to-op">Safe-Op ➔ Operational</button>
+        <button class="ecat-btn" id="ecat-btn-to-init">复位回到 Init</button>
+      </div>
+
+      <button class="ecat-btn danger" id="ecat-btn-fault-wd" style="width:100%; margin-bottom:12px;">
+        ⚡ 故障注入：在 OP 状态制造看门狗超时 (0x001B)
+      </button>
+
+      <div class="ecat-card-title" style="margin-top:12px;">
+        <span>ETG.5001 插槽模块动态挂载 (Slot/Module)</span>
+      </div>
+      <div class="ecat-modules-list">
+        <div class="ecat-module-row">
+          <label><input type="checkbox" id="ecat-mod-m1" checked> Slot 1: 4通道数字量输入 (4-CH DI)</label>
+          <span style="color:var(--muted);">TxPDO: 1B</span>
+        </div>
+        <div class="ecat-module-row">
+          <label><input type="checkbox" id="ecat-mod-m2" checked> Slot 2: 8通道数字量输出 (8-CH DO)</label>
+          <span style="color:var(--muted);">RxPDO: 1B</span>
+        </div>
+        <div class="ecat-module-row">
+          <label><input type="checkbox" id="ecat-mod-m3" checked> Slot 3: 2通道模拟量输出 (2-CH AO 16b)</label>
+          <span style="color:var(--muted);">RxPDO: 4B</span>
+        </div>
+        <div class="ecat-module-row">
+          <label><input type="checkbox" id="ecat-mod-m4" checked> Slot 4: 4通道模拟量输入 (4-CH AI 16b)</label>
+          <span style="color:var(--muted);">TxPDO: 8B</span>
+        </div>
+      </div>
+      <div class="ecat-calc-summary">
+        <div>从站计算 RxPDO (SM2 输出总长): <strong id="ecat-rx-sum">5 字节</strong></div>
+        <div>TxPDO (SM3 输入总长): <strong id="ecat-tx-sum">9 字节</strong></div>
+      </div>
+
+      <div class="ecat-card-title" style="margin-top:12px;">
+        <span>故障注入开关（勾选后触发对应跃迁校验失败）</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+        <label><input type="checkbox" id="ecat-fault-mbx"> 注入 0x0016: 主站下发 SM0 邮箱长度与 XML 不符 (I ➔ P)</label>
+        <label><input type="checkbox" id="ecat-fault-rx"> 注入 0x001D: 主站 SM2 输出长度与从站 RxPDO 不符 (P ➔ S)</label>
+        <label><input type="checkbox" id="ecat-fault-tx"> 注入 0x001E: 主站 SM3 输入长度与从站 TxPDO 不符 (P ➔ S)</label>
+        <label><input type="checkbox" id="ecat-fault-dc"> 注入 0x002C: DC SYNC0 锁相中断丢失 (S ➔ O)</label>
+      </div>
+    </div>
+
+    <!-- Right Column: Status & Logs -->
+    <div class="ecat-card" style="display:flex; flex-direction:column;">
+      <div class="ecat-card-title">
+        <span>ESC 核心寄存器与 SyncManager 状态</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
+        <div style="font-size:12px; color:var(--muted);">
+          AL Control (0x0120): <span id="ecat-al-control" class="ecat-status-val">0x01</span>
+        </div>
+        <div style="font-size:12px; color:var(--muted);">
+          AL Status (0x0130): <span id="ecat-al-status" class="ecat-status-val">0x01</span>
+        </div>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+        AL Status Code (0x0134): <span id="ecat-al-code" class="ecat-status-val">0x0000 (No error)</span>
+      </div>
+
+      <table class="ecat-sm-table">
+        <thead>
+          <tr>
+            <th>通道</th>
+            <th>物理地址</th>
+            <th>方向</th>
+            <th>当前通道状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SM0</td>
+            <td>0x1000</td>
+            <td>Mailbox Out (主 ➔ 从)</td>
+            <td id="sm-status-0" class="ecat-sm-inactive">CLOSED</td>
+          </tr>
+          <tr>
+            <td>SM1</td>
+            <td>0x1080</td>
+            <td>Mailbox In (从 ➔ 主)</td>
+            <td id="sm-status-1" class="ecat-sm-inactive">CLOSED</td>
+          </tr>
+          <tr>
+            <td>SM2</td>
+            <td>0x1100</td>
+            <td>Process Data Out (主 ➔ 从)</td>
+            <td id="sm-status-2" class="ecat-sm-inactive">LOCKED</td>
+          </tr>
+          <tr>
+            <td>SM3</td>
+            <td>0x1400</td>
+            <td>Process Data In (从 ➔ 主)</td>
+            <td id="sm-status-3" class="ecat-sm-inactive">CLOSED</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="ecat-card-title" style="margin-top:14px; margin-bottom:6px;">
+        <span>TwinCAT 3 / ESC 状态诊断日志</span>
+      </div>
+      <div id="ecat-log" style="flex:1; min-height:120px; max-height:160px; overflow-y:auto; background:#1e1e1e; border-radius:6px; padding:8px 10px; font-family:ui-monospace, Consolas, monospace; font-size:11px; line-height:1.5;"></div>
+    </div>
+  </div>
+</div>
+
 ### 常见 AL Status Code 错误码速查
 
 当 TwinCAT 报状态切换失败（如卡在 `INIT to PREOP`、`PREOP to SAFEOP` 或从 `OP` 掉回 `SAFEOP + ERROR`）时，优先查看 TwinCAT Logger 中的 **AL Status Code（`0x0134`）**：

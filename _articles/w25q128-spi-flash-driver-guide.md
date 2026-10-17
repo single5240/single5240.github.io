@@ -148,6 +148,115 @@ bool             W25q128_IsOperationActive(void);
 
 在非阻塞事务活动期间（`W25q128_IsOperationActive() == true`），任何普通 `Read`、重复 `Start` 或同步擦写都会被驱动拦截并返回 `W25Q128_STATUS_BUSY`，从而在单执行上下文下实现严密的事务互斥。
 
+<div id="w25q-demo-app" class="w25q-demo-root">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <h3 style="margin:0; font-size:16px;">⏱️ W25Q128 非阻塞状态机 vs 阻塞轮询抖动模拟器</h3>
+    <span style="font-size:12px; color:var(--muted);">纯前端交互演示</span>
+  </div>
+
+  <!-- Chip Status Bar -->
+  <div class="w25q-chip-bar">
+    <div class="w25q-chip-state">
+      <span id="w25q-led-busy" class="w25q-led"></span>
+      <span id="w25q-chip-state-text">STANDBY (空闲就绪)</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div class="w25q-chip-flags">
+        <span class="w25q-flag"><span id="w25q-led-wel" class="w25q-led" style="margin-right:4px;"></span>WEL</span>
+        <span class="w25q-flag">BUSY</span>
+      </div>
+      <span id="w25q-mode-badge" class="ecat-status-val">当前模式：非阻塞状态机 (推荐)</span>
+      <button class="ecat-btn" id="w25q-mode-toggle" style="background:#2a2a2a; border-color:#444; color:#fff;">切换为：阻塞轮询 while(BUSY)</button>
+    </div>
+  </div>
+
+  <!-- Meters Grid -->
+  <div class="w25q-meter-grid">
+    <div class="w25q-meter-card">
+      <div class="w25q-meter-title">
+        <span>主循环单圈耗时 (Jitter)</span>
+        <span style="color:var(--muted);">基准: 0.15 ms</span>
+      </div>
+      <div id="w25q-jitter-val" class="w25q-meter-val">0.15 ms</div>
+      <div class="w25q-meter-bar">
+        <div id="w25q-jitter-bar" class="w25q-meter-fill" style="width:2%;"></div>
+      </div>
+      <div style="font-size:11px; color:var(--muted); line-height:1.4;">
+        阻塞 88ms 期间主循环完全停摆，导致按键消抖掉帧、LCD 条带刷屏撕裂。
+      </div>
+    </div>
+
+    <div class="w25q-meter-card">
+      <div class="w25q-meter-title">
+        <span>AD7190 2.4kHz 连续采样队列</span>
+        <span style="color:var(--muted);">容量: 255 帧</span>
+      </div>
+      <div id="w25q-queue-val" class="w25q-meter-val">2 / 255 帧</div>
+      <div class="w25q-meter-bar">
+        <div id="w25q-queue-bar" class="w25q-meter-fill" style="width:1%;"></div>
+      </div>
+      <div style="font-size:11px; color:var(--muted); line-height:1.4;">
+        硬件中断以 2400 sps 灌入数据。阻塞 88ms 累积 ~211 帧，逼近 255 满溢危险线。
+      </div>
+    </div>
+
+    <div class="w25q-meter-card">
+      <div class="w25q-meter-title">
+        <span>独立看门狗 (IWDG 窗口)</span>
+        <span style="color:var(--muted);">超时: 1000 ms</span>
+      </div>
+      <div id="w25q-iwdg-val" class="w25q-meter-val">1000 ms</div>
+      <div class="w25q-meter-bar">
+        <div id="w25q-iwdg-bar" class="w25q-meter-fill" style="width:100%;"></div>
+      </div>
+      <div style="font-size:11px; color:var(--muted); line-height:1.4;">
+        主循环非阻塞轮询每圈正常喂狗；若连续阻塞擦除累积超时将引发单片机硬件复位。
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Chunking Visualizer -->
+  <div class="w25q-chunk-box">
+    <div class="w25q-chunk-title">
+      📄 跨页 256 字节边界自动拆分器 (以 500 字节写入地址 0x0010E0 为例)
+    </div>
+    <div class="w25q-chunk-track">
+      <div id="w25q-seg-0" class="w25q-chunk-segment" style="flex:32;">Page 0: 32B (0x10E0..0x10FF)</div>
+      <div id="w25q-seg-1" class="w25q-chunk-segment" style="flex:256;">Page 1: 满页 256B (0x1100..0x11FF)</div>
+      <div id="w25q-seg-2" class="w25q-chunk-segment" style="flex:212;">Page 2: 剩余 212B (0x1200..0x12D3)</div>
+    </div>
+    <div style="font-size:11px; color:var(--muted); margin-top:4px;">
+      单次 0x02 页编程若跨越 256 字节页尾会发生硬件回绕覆盖页首。驱动自动在页边界处拆分为多笔事务。
+    </div>
+  </div>
+
+  <!-- Actions and Log -->
+  <div class="w25q-actions-grid">
+    <div class="w25q-ctrl-card">
+      <div class="w25q-ctrl-title">发起 Flash 硬件操作</div>
+      <div class="w25q-btn-row">
+        <button class="ecat-btn" id="w25q-btn-erase" style="background:var(--accent); color:#fff; border-color:var(--accent);">
+          🧹 4 KiB 扇区擦除 (~88 ms)
+        </button>
+        <button class="ecat-btn" id="w25q-btn-prog">
+          ✏️ 256 B 页编程 (~0.8 ms)
+        </button>
+        <button class="ecat-btn" id="w25q-btn-multipage">
+          📑 跨页 500 字节写入 (自动拆包)
+        </button>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-top:4px; line-height:1.5;">
+        切换不同工作模式后点击上方操作按钮，对比观察左侧主循环耗时抖动与 AD7190 环形队列水位变化。
+      </div>
+    </div>
+
+    <div class="w25q-ctrl-card">
+      <div class="w25q-ctrl-title">驱动状态机与 SPI 事件日志</div>
+      <div id="w25q-log" style="flex:1; min-height:110px; max-height:140px; overflow-y:auto; background:#1e1e1e; border-radius:6px; padding:8px 10px; font-family:ui-monospace, Consolas, monospace; font-size:11px; line-height:1.5;"></div>
+    </div>
+  </div>
+</div>
+
 ## 最小探测与读写自检示例
 
 ```c
