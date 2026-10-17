@@ -80,17 +80,45 @@
 
   updateScrollState();
 
-  // 4. 嵌入式心跳时钟（本地/北京时间）
-  const clockEl = document.querySelector("#statusClock");
-  if (clockEl) {
+  // 4. 嵌入式心跳时钟（严格北京时间 BJT）
+  const initClock = () => {
+    const clockEl = document.querySelector("#statusClock");
+    if (!clockEl) return;
+
+    let formatter;
+    try {
+      formatter = new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch {
+      formatter = null;
+    }
+
     const updateClock = () => {
+      if (formatter) {
+        try {
+          clockEl.textContent = formatter.format(new Date());
+          return;
+        } catch {
+          // fallback to local time
+        }
+      }
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, "0");
       const minutes = String(now.getMinutes()).padStart(2, "0");
       clockEl.textContent = `${hours}:${minutes}`;
     };
+
     updateClock();
-    setInterval(updateClock, 30000);
+    setInterval(updateClock, 5000);
+  };
+
+  initClock();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initClock);
   }
 
   // 5. 全局键盘快捷键：按 / 键直接唤起搜索

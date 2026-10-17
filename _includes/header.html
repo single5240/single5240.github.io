@@ -10,7 +10,7 @@
       </div>
       <div class="system-status" aria-label="系统运行状态与北京时间" title="硬件心跳与系统时间">
         <span class="status-pulse" aria-hidden="true"></span>
-        <span class="status-time" id="statusClock">--:--</span>
+        <span class="status-time" id="statusClock">{{ site.time | date: '%H:%M' }}</span>
         <span class="status-tag">BJT</span>
       </div>
       <a class="search-link" href="{{ '/articles/index.html' | relative_url }}#search" aria-label="搜索文章"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></a>
