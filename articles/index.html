@@ -7,6 +7,7 @@ permalink: /articles/index.html
 wide: true
 ---
 <header class="page-heading"><h1>文章归档</h1></header>
+{% include theme-spectrum.html %}
 <section id="search" class="archive-tools" aria-label="搜索与筛选文章" data-search data-index-url="{{ '/search.json' | relative_url }}">
 <div class="search-controls" hidden><label for="article-search">搜索标题、摘要或标签</label><div class="search-input-wrap"><input type="search" id="article-search" placeholder="试试 DMA、Qt 或 EtherCAT" autocomplete="off" aria-controls="article-results"><button type="button" class="clear-search" aria-label="清除搜索">清除</button></div></div>
 <div class="filter-controls" hidden><div class="filter-list" role="group" aria-label="按专题筛选"><button type="button" data-topic-filter="" aria-pressed="true">全部</button>{% for topic in site.data.topics %}<button type="button" data-topic-filter="{{ topic.id }}" aria-pressed="false">{{ topic.title }}</button>{% endfor %}</div></div>

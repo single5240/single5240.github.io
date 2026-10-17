@@ -1,6 +1,8 @@
 - id: mcu
   title: MCU 与驱动
   description: 外设配置、数据采集与固件调试。
+  color: "#0f818d"
+  color_end: "#16a085"
   articles:
     - nor-flash-powerfail-record-store
     - n32g455-lcd-strip-rendering
@@ -15,6 +17,8 @@
 - id: linux
   title: 嵌入式 Linux
   description: 从板子联网到服务部署，记录实际搭建过程。
+  color: "#d9822b"
+  color_end: "#e67e22"
   articles:
     - atk-imx6u-qt-ui-deployment-guide
     - atk-imx6u-systemui-autostart
@@ -23,11 +27,15 @@
 - id: qt
   title: Qt / QML
   description: 声明式界面、C++ 集成与设备端部署。
+  color: "#2ea44f"
+  color_end: "#238636"
   articles:
     - qml-syntax-and-practice-guide
     - atk-imx6u-qt-ui-deployment-guide
 - id: industrial
   title: 工业通信
   description: EtherCAT 从站与协议栈移植笔记。
+  color: "#8250df"
+  color_end: "#6639ba"
   articles:
     - ecat-porting-basic

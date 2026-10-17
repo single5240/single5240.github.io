@@ -1,0 +1,14 @@
+<div class="theme-spectrum-wrap" aria-label="专题色彩光谱">
+  <div class="theme-spectrum" id="themeSpectrum">
+    {% for topic in site.data.topics %}
+    <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}"
+       class="spectrum-item"
+       style="--item-color-1: {{ topic.color | default: 'var(--accent)' }}; --item-color-2: {{ topic.color_end | default: 'var(--accent-dark)' }};"
+       data-label="{{ topic.title }} · {{ topic.articles.size }}篇"
+       aria-label="{{ topic.title }}专题，共 {{ topic.articles.size }} 篇笔记">
+      <span class="spectrum-bar"></span>
+      <span class="spectrum-tooltip">{{ topic.title }} <small>{{ topic.articles.size }}篇</small></span>
+    </a>
+    {% endfor %}
+  </div>
+</div>

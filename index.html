@@ -11,6 +11,7 @@ section: home
       <h1 id="articles-title">笔记</h1>
       <a class="text-link" href="{{ '/articles/index.html' | relative_url }}">归档与搜索 ↗</a>
     </div>
+    {% include theme-spectrum.html %}
     <nav class="home-topic-links" aria-label="文章专题">
       {% for topic in site.data.topics %}
       <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}">{{ topic.title }} <span>{{ topic.articles.size }}</span></a>
