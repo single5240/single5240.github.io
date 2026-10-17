@@ -40,6 +40,7 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -506,11 +507,6 @@ samp {
   transition: transform 60ms linear;
 }
 
-/* 卡片 3D 视差微倾斜容器基础样式 */
-.tilt-card {
-  will-change: transform;
-  transform-style: preserve-3d;
-}
 
 /* 色谱指示条 */
 .theme-spectrum-wrap {

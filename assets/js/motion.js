@@ -79,35 +79,4 @@
   });
 
   updateScrollState();
-
-  // 4. 卡片 3D 视差微倾斜（CSS perspective + 鼠标坐标计算）
-  if (finePointer.matches && !reducedMotion.matches) {
-    const tiltSelector = ".article-item, .project-feature, .daily-links a, .daily-quote";
-    const cards = document.querySelectorAll(tiltSelector);
-    cards.forEach((card) => card.classList.add("tilt-card"));
-
-    document.addEventListener("pointermove", (e) => {
-      const card = e.target.closest(tiltSelector);
-      if (!card) return;
-
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-      const rotateX = (-y * 6.5).toFixed(2);
-      const rotateY = (x * 6.5).toFixed(2);
-
-      card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
-      card.style.transition = "transform 120ms ease-out";
-    }, { passive: true });
-
-    document.addEventListener("pointerout", (e) => {
-      const card = e.target.closest(tiltSelector);
-      if (!card) return;
-      if (!card.contains(e.relatedTarget)) {
-        card.style.transform = "";
-        card.style.transition = "transform 360ms cubic-bezier(0.22, 1, 0.36, 1)";
-      }
-    });
-  }
 })();
