@@ -48,6 +48,7 @@ h3 { font-size: 20px; line-height: 1.5; font-weight: 700; }
 .section-heading h2 { margin: 0; }
 .section-heading > a { padding-bottom: 5px; flex-shrink: 0; }
 .project-feature { display: grid; grid-template-columns: 1.15fr 1fr; gap: 45px; align-items: center; }
+.project-feature + .project-feature { margin-top: 44px; padding-top: 44px; border-top: 1px solid var(--line); }
 .project-visual { border-radius: 5px; overflow: hidden; background: var(--alt-bg); border: 1px solid var(--line); display: block; }
 .project-visual img { width: 100%; height: auto; display: block; }
 .project-copy h3 { font-size: 30px; margin-bottom: 7px; }
@@ -111,7 +112,21 @@ h3 { font-size: 20px; line-height: 1.5; font-weight: 700; }
 .pager a,.prose a,.study a { color: var(--accent-dark); text-decoration: underline; }
 .prose { font-size: 17px; line-height: 1.9; }
 .prose h2 { margin-top: 40px; font-size: 24px; }
+.skills-category { margin-top: 44px; scroll-margin-top: 110px; }
+.skills-category-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.skills-category-head h2 { margin: 0; font-size: 23px; }
+.skills-category-desc { margin: 10px 0 6px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+.skill-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+.skill-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px; border: 1px solid var(--line); background: var(--alt-bg); color: var(--ink); }
+.skill-badge.scope-global { border-color: var(--raised-border); background: var(--soft); color: var(--accent-dark); }
+.skill-badge.scope-vendor { border-color: rgba(217, 130, 43, 0.45); color: var(--warm); }
+.skill-badge.scope-project { color: var(--note); }
+.skills-arch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
+.skills-arch-card { padding: 20px 22px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); }
+.skills-arch-card h3 { font-size: 17px; margin-bottom: 8px; }
+.skills-arch-card p { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 12px; }
+.skills-arch-card pre { margin: 0; padding: 14px 16px; overflow-x: auto; border-radius: 4px; background: var(--code-bg); color: var(--code-ink); font-size: 12px; line-height: 1.7; }
 @media(min-width: 861px) { .nav .theme-picker { position: relative; top: auto; right: auto; } }
 @media(max-width: 1000px) { .brand-caption { display: none; } .nav-links { gap: 20px; } }
-@media(max-width: 860px) { .nav { flex-direction: row; align-items: center; padding: 15px 0 54px; min-height: 100px; } .nav-actions { width: auto; margin-left: auto; } .nav-links { position: absolute; bottom: 8px; left: 0; gap: 28px; } .nav .theme-picker { position: relative; top: auto; right: auto; } .project-feature { gap: 30px; } .daily-grid { gap: 35px; } }
+@media(max-width: 860px) { .nav { flex-direction: row; align-items: center; padding: 15px 0 54px; min-height: 100px; } .nav-actions { width: auto; margin-left: auto; } .nav-links { position: absolute; bottom: 8px; left: 0; gap: 28px; } .nav .theme-picker { position: relative; top: auto; right: auto; } .project-feature { gap: 30px; } .daily-grid { gap: 35px; } .skills-arch-grid { grid-template-columns: 1fr; } }
 @media(max-width: 620px) { .nav,.home,.page,.site-footer { width: calc(100% - 40px); } .nav { gap: 10px; } .nav-links { gap: 25px; font-size: 13px; } .nav-actions { gap: 6px; } .brand { font-size: 14px; } .section-heading { gap: 10px; margin-bottom: 22px; } .section-heading h2 { font-size: 23px; } .section-heading > a { font-size: 11px; } .home-section { padding: 28px 0 34px; } .project-feature { grid-template-columns: 1fr; gap: 25px; } .project-copy h3 { font-size: 27px; } .project-copy .text-link { margin-top: 18px; } .article-item { grid-template-columns: minmax(0,1fr) 16px; gap: 8px 12px; padding: 23px 0; } .item-date { grid-column: 1/-1; padding: 0; font-size: 10px; } .item-body h3 { font-size: 18px; } .item-body p { font-size: 13px; } .daily-grid { grid-template-columns: 1fr; gap: 30px; } .site-footer { flex-direction: column; gap: 22px; margin-top: 0; padding-top: 25px; } .page { padding: 38px 0 65px; } .page-heading { margin-bottom: 30px; } .page-heading h1 { font-size: 32px; } .lede { font-size: 15px; } .filter-list { gap: 6px; } .filter-list button { font-size: 11px; padding: 8px 10px; } .prose { font-size: 16px; } }

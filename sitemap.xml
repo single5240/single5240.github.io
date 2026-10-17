@@ -34,6 +34,15 @@ layout: null
     <loc>{{ '/projects/n32g455-tensile/index.html' | absolute_url }}</loc>
   </url>
   <url>
+    <loc>{{ '/projects/my-skills/index.html' | absolute_url }}</loc>
+  </url>
+  {% assign skill_pages = site.skills | sort: "order" %}
+  {% for item in skill_pages %}
+  <url>
+    <loc>{{ item.url | absolute_url }}</loc>
+  </url>
+  {% endfor %}
+  <url>
     <loc>{{ '/ai-news/index.html' | absolute_url }}</loc>
   </url>
   {% for week in site.data.ai_news.weeks %}

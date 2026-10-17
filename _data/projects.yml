@@ -4,7 +4,21 @@
   description: 在浏览器中体验 240×320 仪表界面，探索测试模式、按键操作、记录与双层校正。
   url: /projects/n32g455-tensile/
   image: /assets/images/tensile-preview.svg
+  image_alt: 数显式拉力计界面与采集流程示意图
+  cta: 打开演示
   tags: [N32G455, 数据采集, LCD / UI]
   articles:
     - n32g455-spi-dma-guide
   boundary: 力值由滑块模拟，不是真实计量结果。
+- id: my-skills
+  title: 嵌入式与研发 AI Skills 库
+  subtitle: 一级按技术方向划分、内部按 Scope 管理的 16 项实战 Agent 技能
+  description: 涵盖单片机裸机驱动（AD7190、ST7789 DMA 条带刷屏、NOR Flash 掉电安全存储、EEPROM 双槽标定、表驱动状态机）、通信联调（J-Link RTT HIL、串口 DMA 拆包、HardFault 解码）与通用工程基建，完整收录 SKILL.md、参考规范与可复用 C99/脚本源码。
+  url: /projects/my-skills/index.html
+  image: /assets/images/skills-preview.svg
+  image_alt: 嵌入式与通用研发 AI Skills 中心库目录架构示意图
+  cta: 浏览技能库
+  tags: [AI Skills, 单片机裸机, 协议联调, 工程基建]
+  articles:
+    - n32g455-spi-dma-guide
+  boundary: 全部 16 个 Skill 均含完整触发说明、检查清单与配套参考代码。

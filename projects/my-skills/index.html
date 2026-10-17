@@ -1,0 +1,251 @@
+---
+layout: frame
+title: 嵌入式与研发 AI Skills 中心库
+description: 面向通用软件工程与嵌入式系统开发（单片机裸机、RTOS、Linux 驱动、通信协议与硬件联调）的 16 项实战 AI Agent Skills 完整文档与参考源码。
+section: projects
+wide: true
+permalink: /projects/my-skills/index.html
+---
+<header class="page-heading">
+  <a class="eyebrow" href="{{ '/projects/index.html' | relative_url }}">← 返回项目实验室</a>
+  <h1>嵌入式与通用研发 AI Skills 中心库</h1>
+  <p class="lede">采用<strong>“一级按技术方向划分，内部通过标签与前缀区分使用范围（Scope）”</strong>的架构管理 AI Agent Skills，支持在 Claude Code、Cursor、Codex 与 Antigravity 中按需继承或挂载。点击任意 Skill 可查阅完整的 <code>SKILL.md</code> 指令、安全门禁清单及配套 C99 / 脚本源码。</p>
+</header>
+
+{% assign all_skills = site.skills | sort: 'order' %}
+{% assign common_skills = all_skills | where: 'category', 'common' %}
+{% assign mcu_skills = all_skills | where: 'category', 'mcu-baremetal' %}
+{% assign proto_skills = all_skills | where: 'category', 'protocols-debug' %}
+
+<section class="archive-tools" aria-label="搜索与筛选 Skill">
+  <div class="search-controls">
+    <label for="skill-search">搜索 Skill 名称、适用芯片/工具链、摘要或标签</label>
+    <div class="search-input-wrap">
+      <input type="search" id="skill-search" placeholder="试试 AD7190、W25Q128、EEPROM、RTT、HardFault 或 Keil" autocomplete="off" aria-controls="skill-results">
+      <button type="button" class="clear-search" id="clear-skill-search" aria-label="清除搜索">清除</button>
+    </div>
+  </div>
+  <div class="filter-controls">
+    <div class="filter-list" role="group" aria-label="按技术方向筛选">
+      <button type="button" data-cat-filter="" aria-pressed="true">全部方向 ({{ all_skills.size }})</button>
+      <button type="button" data-cat-filter="common" aria-pressed="false">common · 通用与工程基建 ({{ common_skills.size }})</button>
+      <button type="button" data-cat-filter="mcu-baremetal" aria-pressed="false">mcu-baremetal · 单片机裸机 ({{ mcu_skills.size }})</button>
+      <button type="button" data-cat-filter="protocols-debug" aria-pressed="false">protocols-debug · 协议与联调 ({{ proto_skills.size }})</button>
+    </div>
+    <div class="filter-list" role="group" aria-label="按使用范围 Scope 筛选">
+      <button type="button" data-scope-filter="" aria-pressed="true">全部 Scope</button>
+      <button type="button" data-scope-filter="global" aria-pressed="false">Scope: global (通用级)</button>
+      <button type="button" data-scope-filter="vendor" aria-pressed="false">Scope: vendor (芯片/架构级)</button>
+      <button type="button" data-scope-filter="project" aria-pressed="false">Scope: project (项目级)</button>
+    </div>
+  </div>
+  <p class="search-status" id="skill-search-status" role="status" aria-live="polite">共收录 {{ all_skills.size }} 个实战 Skill · 涵盖 3 个已发布方向与 2 个预留扩展方向</p>
+</section>
+
+<div id="skill-results">
+  <section class="skills-category" id="cat-common" data-category-section="common" aria-labelledby="title-common">
+    <div class="skills-category-head">
+      <h2 id="title-common">1. 通用与工程基建 (<code>common/</code>)</h2>
+      <span class="mono">共 {{ common_skills.size }} 项技能</span>
+    </div>
+    <p class="skills-category-desc">跨项目、跨平台的嵌入式软件研发六阶段门禁工作流、Keil MDK 命令行构建与 <code>.map</code> 内存审计、点阵屏固件 1:1 网页模拟器及可视化架构图解工具。</p>
+    {% for skill in common_skills %}
+    <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
+      <div class="item-date">{{ skill.category }}/</div>
+      <div class="item-body">
+        <div class="skill-badges">
+          <span class="skill-badge">{{ skill.skill_id }}</span>
+          <span class="skill-badge scope-{{ skill.scope }}">Scope: {{ skill.scope }}</span>
+          {% if skill.target %}<span class="mono">{{ skill.target | escape }}</span>{% endif %}
+        </div>
+        <h3><a href="{{ skill.url | relative_url }}">{{ skill.title | escape }}</a></h3>
+        <p>{{ skill.description | escape }}</p>
+        <div class="item-tags">{% for tag in skill.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+      </div>
+      <a class="item-arrow" href="{{ skill.url | relative_url }}" aria-label="查看 {{ skill.title | escape }}">↗</a>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="skills-category" id="cat-mcu-baremetal" data-category-section="mcu-baremetal" aria-labelledby="title-mcu">
+    <div class="skills-category-head">
+      <h2 id="title-mcu">2. 单片机裸机开发 (<code>mcu-baremetal/</code>)</h2>
+      <span class="mono">共 {{ mcu_skills.size }} 项技能</span>
+    </div>
+    <p class="skills-category-desc">面向无操作系统（Bare-Metal / 前后台系统）的微控制器底层外设驱动、AD7190 Σ-Δ ADC 高速 DMA 采样、ST7789 8 行条带异步刷屏、NOR Flash / EEPROM / 片内 Flash 掉电安全存储与 C99 表驱动状态机架构。</p>
+    {% for skill in mcu_skills %}
+    <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
+      <div class="item-date">{{ skill.category }}/</div>
+      <div class="item-body">
+        <div class="skill-badges">
+          <span class="skill-badge">{{ skill.skill_id }}</span>
+          <span class="skill-badge scope-{{ skill.scope }}">Scope: {{ skill.scope }}</span>
+          {% if skill.target %}<span class="mono">{{ skill.target | escape }}</span>{% endif %}
+        </div>
+        <h3><a href="{{ skill.url | relative_url }}">{{ skill.title | escape }}</a></h3>
+        <p>{{ skill.description | escape }}</p>
+        <div class="item-tags">{% for tag in skill.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+      </div>
+      <a class="item-arrow" href="{{ skill.url | relative_url }}" aria-label="查看 {{ skill.title | escape }}">↗</a>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="skills-category" id="cat-protocols-debug" data-category-section="protocols-debug" aria-labelledby="title-proto">
+    <div class="skills-category-head">
+      <h2 id="title-proto">3. 通信协议与硬件联调 (<code>protocols-debug/</code>)</h2>
+      <span class="mono">共 {{ proto_skills.size }} 项技能</span>
+    </div>
+    <p class="skills-category-desc">面向现场总线协议栈（UART / RS-485 / Modbus RTU / DMX512）、J-Link SEGGER RTT 表驱动交互式 CLI 与板级硬件在环（HIL）故障注入，以及 Cortex-M <code>HardFault</code> 栈帧与 <code>.map</code> 源码定位。</p>
+    {% for skill in proto_skills %}
+    <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
+      <div class="item-date">{{ skill.category }}/</div>
+      <div class="item-body">
+        <div class="skill-badges">
+          <span class="skill-badge">{{ skill.skill_id }}</span>
+          <span class="skill-badge scope-{{ skill.scope }}">Scope: {{ skill.scope }}</span>
+          {% if skill.target %}<span class="mono">{{ skill.target | escape }}</span>{% endif %}
+        </div>
+        <h3><a href="{{ skill.url | relative_url }}">{{ skill.title | escape }}</a></h3>
+        <p>{{ skill.description | escape }}</p>
+        <div class="item-tags">{% for tag in skill.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+      </div>
+      <a class="item-arrow" href="{{ skill.url | relative_url }}" aria-label="查看 {{ skill.title | escape }}">↗</a>
+    </article>
+    {% endfor %}
+  </section>
+</div>
+
+<p class="search-empty" id="skill-search-empty" hidden>没有找到匹配的 Skill。换一个关键词，或重置方向/Scope 筛选再试试。</p>
+
+<section class="skills-category" id="cat-architecture" aria-labelledby="title-arch">
+  <div class="skills-category-head">
+    <h2 id="title-arch">4. 仓库目录架构、预留方向与按需挂载配置</h2>
+    <span class="mono">AGENTS.md · skills.json · sync-skills.ps1</span>
+  </div>
+  <p class="skills-category-desc">除已上线的三大方向外，中心库还预留了 <code>rtos/</code>（FreeRTOS / ThreadX / RT-Thread / Zephyr）与 <code>linux-driver/</code>（设备树 DTS / 字符与总线驱动 / U-Boot / Yocto）两个一级方向，以及标准的 <code>_templates/skill-template</code> 模板与跨工具一键同步脚本。</p>
+
+  <div class="skills-arch-grid">
+    <div class="skills-arch-card">
+      <h3>目录树与五大技术方向</h3>
+      <p>一级目录按技术栈边界划分，内部通过 <code>global</code> / <code>vendor</code> / <code>project</code> / <code>experimental</code> 四个 Scope 区分复用层级：</p>
+      <pre><code>mySkills/
+├── AGENTS.md              # 全局规则与维护指南
+├── README.md              # 技能库总览与接入说明
+├── skills.json            # 根级技能注册清单
+├── sync-skills.ps1        # 多 Agent 目录联接同步脚本
+├── common/                # 通用与工程基建 (5 skills)
+├── mcu-baremetal/         # 单片机裸机开发 (8 skills)
+├── protocols-debug/       # 通信协议与硬件联调 (3 skills)
+├── rtos/                  # 实时操作系统 (FreeRTOS/ThreadX)
+├── linux-driver/          # Linux 驱动与设备树 (DTS/BSP)
+└── _templates/            # 新建 Skill 标准骨架模板</code></pre>
+    </div>
+
+    <div class="skills-arch-card">
+      <h3>在其他项目中按需挂载 (<code>skills.json</code>)</h3>
+      <p>支持全量继承或按项目类型（如 MCU 裸机项目 vs 嵌入式 Linux 项目）精准挂载指定目录，并自动过滤 <code>exp-*</code> 实验技能：</p>
+      <pre><code>{
+  "entries": [
+    { "path": "common", "exclude": ["exp-.*"] },
+    { "path": "mcu-baremetal", "exclude": ["exp-.*"] },
+    { "path": "rtos", "exclude": ["exp-.*"] },
+    { "path": "linux-driver", "exclude": ["exp-.*"] },
+    { "path": "protocols-debug", "exclude": ["exp-.*"] }
+  ]
+}</code></pre>
+    </div>
+
+    <div class="skills-arch-card">
+      <h3>新建 Skill 标准模板 (<code>_templates/skill-template</code>)</h3>
+      <p>每个 Skill 遵循渐进式披露原则：<code>SKILL.md</code> 聚焦触发条件、核心流程与安全门禁清单，长篇寄存器表与代码范例放入 <code>references/</code> 与 <code>examples/</code>：</p>
+      <pre><code>---
+name: template-skill-name
+description: >-
+  [Scope: global | vendor | project] 用第三人称简明描述该技能的用途与触发条件。
+---
+
+# &lt;Skill 标题名称&gt;
+## 1. 适用范围与背景 (Metadata)
+## 2. 核心执行流程 (Step-by-Step Workflow)
+## 3. 关键安全与并发约束检查清单
+## 4. 验证与调试方法 (Verification)</code></pre>
+    </div>
+
+    <div class="skills-arch-card">
+      <h3>多工具一键同步脚本 (<code>sync-skills.ps1</code>)</h3>
+      <p>利用 Windows 目录联接（Junction <code>mklink /J</code>）将五大目录下的所有 Skill 自动挂载到 Codex、Cursor、Claude Code 与 Antigravity：</p>
+      <pre><code>$Categories = @("common", "mcu-baremetal", "rtos", "linux-driver", "protocols-debug")
+$TargetToolDirs = @(
+  (Join-Path $env:USERPROFILE ".codex\skills"),
+  (Join-Path $env:USERPROFILE ".cursor\skills"),
+  (Join-Path $env:USERPROFILE ".agents\skills"),
+  (Join-Path $env:USERPROFILE ".claude\skills")
+)
+# 遍历包含 SKILL.md 的子目录并创建 Junction 联接
+cmd /c mklink /J "$linkPath" "$sourcePath" | Out-Null</code></pre>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  const input = document.getElementById('skill-search');
+  const clearBtn = document.getElementById('clear-skill-search');
+  const statusEl = document.getElementById('skill-search-status');
+  const emptyEl = document.getElementById('skill-search-empty');
+  const items = [...document.querySelectorAll('[data-skill-item]')];
+  const sections = [...document.querySelectorAll('[data-category-section]')];
+  const catButtons = [...document.querySelectorAll('[data-cat-filter]')];
+  const scopeButtons = [...document.querySelectorAll('[data-scope-filter]')];
+  let activeCat = '';
+  let activeScope = '';
+
+  function applyFilter() {
+    const query = (input.value || '').trim().toLowerCase();
+    let visibleCount = 0;
+
+    for (const item of items) {
+      const catMatch = !activeCat || item.dataset.category === activeCat;
+      const scopeMatch = !activeScope || item.dataset.scope === activeScope;
+      const textMatch = !query || (item.dataset.searchText || '').toLowerCase().includes(query);
+      const show = catMatch && scopeMatch && textMatch;
+      item.hidden = !show;
+      if (show) visibleCount += 1;
+    }
+
+    for (const section of sections) {
+      const hasVisible = [...section.querySelectorAll('[data-skill-item]')].some((el) => !el.hidden);
+      section.hidden = !hasVisible;
+    }
+
+    emptyEl.hidden = visibleCount > 0;
+    statusEl.textContent = (query || activeCat || activeScope)
+      ? `匹配到 ${visibleCount} / ${items.length} 个 Skill`
+      : `共收录 ${items.length} 个实战 Skill · 涵盖 3 个已发布方向与 2 个预留扩展方向`;
+  }
+
+  input.addEventListener('input', applyFilter);
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    applyFilter();
+    input.focus();
+  });
+
+  for (const btn of catButtons) {
+    btn.addEventListener('click', () => {
+      activeCat = btn.dataset.catFilter || '';
+      for (const b of catButtons) b.setAttribute('aria-pressed', String(b === btn));
+      applyFilter();
+    });
+  }
+
+  for (const btn of scopeButtons) {
+    btn.addEventListener('click', () => {
+      activeScope = btn.dataset.scopeFilter || '';
+      for (const b of scopeButtons) b.setAttribute('aria-pressed', String(b === btn));
+      applyFilter();
+    });
+  }
+})();
+</script>

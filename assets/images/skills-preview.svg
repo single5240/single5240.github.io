@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="460" viewBox="0 0 640 460">
+<defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#c4d3cf" stroke-width=".6"/></pattern></defs>
+<rect width="640" height="460" fill="#e9efeb"/><rect width="640" height="460" fill="url(#grid)"/>
+<g fill="none" stroke="#79948d" stroke-width="1"><path d="M36 92H148M36 230H148M36 368H148M492 138H604M492 322H604"/><circle cx="36" cy="92" r="3"/><circle cx="36" cy="230" r="3"/><circle cx="36" cy="368" r="3"/><circle cx="604" cy="138" r="3"/><circle cx="604" cy="322" r="3"/></g>
+<g font-family="monospace" font-size="11" fill="#41675d"><text x="36" y="78">common/ (5)</text><text x="36" y="216">mcu-baremetal/ (8)</text><text x="36" y="354">protocols-debug/ (3)</text><text x="502" y="124">SKILL.md</text><text x="502" y="308">C99 / Scripts</text></g>
+<rect x="148" y="36" width="344" height="376" rx="16" fill="#283d38"/><rect x="158" y="46" width="324" height="356" rx="12" fill="#172826" stroke="#688277"/>
+<g font-family="monospace" fill="#d7e7d8">
+  <text x="178" y="74" font-size="11" fill="#80c7a7">mySkills / skills.json · 16 SKILLS</text>
+  <path d="M176 86H462" stroke="#3c5d53"/>
+  <rect x="176" y="100" width="286" height="54" rx="6" fill="#213833" stroke="#4b6e63"/>
+  <text x="190" y="121" font-size="11" font-weight="bold">mcu-baremetal / 8 skills</text>
+  <text x="190" y="140" font-size="9.5" fill="#9fb5aa">AD7190 DMA · ST7789 Strip · W25Q128 · M24C02 · FSM</text>
+  <rect x="176" y="166" width="286" height="54" rx="6" fill="#213833" stroke="#4b6e63"/>
+  <text x="190" y="187" font-size="11" font-weight="bold">common / 5 skills</text>
+  <text x="190" y="206" font-size="9.5" fill="#9fb5aa">6-Stage Gate · Keil Map Audit · LCD Web Sim · HTML</text>
+  <rect x="176" y="232" width="286" height="54" rx="6" fill="#213833" stroke="#4b6e63"/>
+  <text x="190" y="253" font-size="11" font-weight="bold">protocols-debug / 3 skills</text>
+  <text x="190" y="272" font-size="9.5" fill="#9fb5aa">J-Link RTT HIL · UART IDLE+DMA · HardFault Decoder</text>
+  <rect x="176" y="298" width="138" height="44" rx="6" fill="#1b2f2b" stroke="#3c5d53" stroke-dasharray="3 3"/>
+  <text x="190" y="318" font-size="10" fill="#9fb5aa">rtos/</text>
+  <text x="190" y="333" font-size="8.5" fill="#6f8f84">FreeRTOS · ThreadX</text>
+  <rect x="324" y="298" width="138" height="44" rx="6" fill="#1b2f2b" stroke="#3c5d53" stroke-dasharray="3 3"/>
+  <text x="338" y="318" font-size="10" fill="#9fb5aa">linux-driver/</text>
+  <text x="338" y="333" font-size="8.5" fill="#6f8f84">DTS · Kernel · BSP</text>
+  <text x="178" y="376" font-size="10" fill="#80c7a7">Scope: global | vendor | project  →  Codex / Cursor / Claude</text>
+</g>
+<text x="25" y="438" fill="#55776b" font-family="monospace" font-size="10">EMBEDDED &amp; R&amp;D AI SKILLS REPOSITORY / 技能知识库</text>
+</svg>

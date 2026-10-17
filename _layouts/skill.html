@@ -1,0 +1,35 @@
+---
+layout: default
+---
+<div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
+<main class="reading-layout" id="main-content">
+  <header class="article-header">
+    <a class="eyebrow" href="{{ '/projects/my-skills/index.html' | relative_url }}">← 返回 AI Skills 中心库</a>
+    <h1>{{ page.title | escape }}</h1>
+    <p class="description">{{ page.description | escape }}</p>
+    <div class="article-meta">
+      <span>目录：<code>{{ page.category }}/{{ page.skill_id }}/</code></span>
+      <span>范围：<code>Scope: {{ page.scope }}</code></span>
+      <span>分类：<a href="{{ '/projects/my-skills/index.html#cat-' | append: page.category | relative_url }}">{{ page.category_label }}</a></span>
+      {% if page.target %}<span>适用：{{ page.target | escape }}</span>{% endif %}
+    </div>
+  </header>
+  <div class="reading-grid">
+    <details class="toc" id="article-toc" open hidden><summary>本页目录</summary><ol></ol></details>
+    <div class="reading-main">
+      <article class="content">{{ content }}</article>
+      <aside class="article-context" aria-label="相关内容">
+        <p>相关入口</p>
+        <a href="{{ '/projects/my-skills/index.html#cat-' | append: page.category | relative_url }}">{{ page.category_label }}（{{ page.category }}/） ↗</a>
+        <a href="{{ '/projects/my-skills/index.html' | relative_url }}">全部 16 个 AI Skills 索引 ↗</a>
+        {% if page.related_article %}<a href="{{ '/articles/' | append: page.related_article | append: '.html' | relative_url }}">关联技术笔记 ↗</a>{% endif %}
+        {% if page.related_demo %}<a href="{{ page.related_demo | relative_url }}">数显式拉力计交互演示 ↗</a>{% endif %}
+      </aside>
+      {% assign skill_pages = site.skills | sort: 'order' %}{% assign current_index = nil %}{% for item in skill_pages %}{% if item.url == page.url %}{% assign current_index = forloop.index0 %}{% endif %}{% endfor %}
+      {% if current_index != nil %}{% assign previous_index = current_index | minus: 1 %}{% assign next_index = current_index | plus: 1 %}<nav class="article-navigation" aria-label="相邻 Skill">{% if current_index > 0 %}{% assign previous_skill = skill_pages[previous_index] %}<a href="{{ previous_skill.url | relative_url }}"><small>上一个 Skill · {{ previous_skill.category }}</small>{{ previous_skill.title }}</a>{% else %}<span></span>{% endif %}{% if next_index < skill_pages.size %}{% assign next_skill = skill_pages[next_index] %}<a href="{{ next_skill.url | relative_url }}"><small>下一个 Skill · {{ next_skill.category }}</small>{{ next_skill.title }}</a>{% endif %}</nav>{% endif %}
+      <a class="back" href="{{ '/projects/my-skills/index.html' | relative_url }}">← 返回 AI Skills 中心库</a>
+    </div>
+  </div>
+</main>
+<script src="{{ '/assets/js/article.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":{{ page.title | jsonify }},"description":{{ page.description | default: page.title | jsonify }},"mainEntityOfPage":{{ page.url | absolute_url | jsonify }},"inLanguage":"zh-CN"}</script>

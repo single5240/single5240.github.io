@@ -17,6 +17,12 @@ defaults:
       path: ai-news
     values:
       section: daily
+  - scope:
+      path: ""
+      type: skills
+    values:
+      layout: skill
+      section: projects
 collections:
   articles:
     output: true
@@ -24,6 +30,9 @@ collections:
   english:
     output: true
     permalink: /english/:name.html
+  skills:
+    output: true
+    permalink: /projects/my-skills/:name.html
 plugins:
   - jekyll-feed
 feed:
