@@ -79,4 +79,41 @@
   });
 
   updateScrollState();
+
+  // 4. 嵌入式心跳时钟（本地/北京时间）
+  const clockEl = document.querySelector("#statusClock");
+  if (clockEl) {
+    const updateClock = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      clockEl.textContent = `${hours}:${minutes}`;
+    };
+    updateClock();
+    setInterval(updateClock, 30000);
+  }
+
+  // 5. 全局键盘快捷键：按 / 键直接唤起搜索
+  document.addEventListener("keydown", (e) => {
+    const active = document.activeElement;
+    const tag = active ? active.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || (active && active.isContentEditable)) {
+      return;
+    }
+
+    if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const searchInput = document.querySelector("#article-search");
+      if (searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      } else {
+        const searchLink = document.querySelector(".search-link");
+        if (searchLink) {
+          e.preventDefault();
+          window.location.href = searchLink.href;
+        }
+      }
+    }
+  });
 })();

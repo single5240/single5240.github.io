@@ -31,6 +31,14 @@
   root.querySelector('.search-controls').hidden = false;
   root.querySelector('.filter-controls').hidden = false;
   input.addEventListener('input', render);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      input.value = '';
+      topic = '';
+      render();
+      input.blur();
+    }
+  });
   root.querySelector('.clear-search').addEventListener('click', () => { input.value = ''; topic = ''; render(); input.focus(); });
   buttons.forEach(button => button.addEventListener('click', () => { topic = button.dataset.topicFilter; render(); }));
   render();
