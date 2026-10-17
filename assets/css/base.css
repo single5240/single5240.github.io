@@ -112,6 +112,105 @@ html {
   color-scheme: light;
 }
 
+/* 瑞士国际网格风格 (Swiss Grid) */
+:root[data-theme="swiss"] {
+  color-scheme: light;
+  --ink: #111111;
+  --muted: #595959;
+  --line: #dedcd5;
+  --paper: #f5f5f2;
+  --panel: #ffffff;
+  --accent: #e63329;
+  --accent-dark: #cc251b;
+  --warm: #d84333;
+  --soft: #fdeeee;
+  --deep: #111111;
+  --header-bg: rgba(245, 245, 242, 0.94);
+  --header-line: rgba(222, 220, 213, 0.9);
+  --raised-bg: rgba(255, 255, 255, 0.95);
+  --raised-border: rgba(230, 51, 41, 0.28);
+  --alt-bg: #eceae3;
+  --subtle-bg: #f0ede6;
+  --body-copy: #222222;
+  --content-copy: #141414;
+  --tag-ink: #333333;
+  --code-bg: #111111;
+  --code-ink: #f5f5f2;
+  --inline-code: #cc251b;
+  --contact-copy: #cbd7dd;
+  --note: #cc251b;
+  --shadow: 0 16px 40px rgba(17, 17, 17, 0.08);
+  --shadow-small: 0 6px 18px rgba(17, 17, 17, 0.06);
+  --shadow-hover: 0 12px 28px rgba(230, 51, 41, 0.15);
+  --focus-ring: #e63329;
+}
+
+/* 深空科技终端风格 (Orbital HUD) */
+:root[data-theme="hud"] {
+  color-scheme: dark;
+  --ink: #d8f3fe;
+  --muted: #6f95ad;
+  --line: #16334f;
+  --paper: #040b15;
+  --panel: #071526;
+  --accent: #52d8e8;
+  --accent-dark: #7be4f0;
+  --warm: #ffd166;
+  --soft: #0c253d;
+  --deep: #02070e;
+  --header-bg: rgba(4, 11, 21, 0.92);
+  --header-line: rgba(22, 51, 79, 0.85);
+  --raised-bg: rgba(7, 21, 38, 0.95);
+  --raised-border: rgba(82, 216, 232, 0.38);
+  --alt-bg: #091a2e;
+  --subtle-bg: #0c223a;
+  --body-copy: #bfe3f2;
+  --content-copy: #cce9f5;
+  --tag-ink: #70c9d6;
+  --code-bg: #02060c;
+  --code-ink: #52d8e8;
+  --inline-code: #52d8e8;
+  --contact-copy: #cbd7dd;
+  --note: #ffd166;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.65);
+  --shadow-small: 0 10px 28px rgba(0, 0, 0, 0.55);
+  --shadow-hover: 0 14px 32px rgba(82, 216, 232, 0.25);
+  --focus-ring: #52d8e8;
+}
+
+/* 极简单色建筑风格 (Minimal Monochrome) */
+:root[data-theme="mono"] {
+  color-scheme: light;
+  --ink: #141414;
+  --muted: #737373;
+  --line: #e3ded5;
+  --paper: #faf9f6;
+  --panel: #ffffff;
+  --accent: #141414;
+  --accent-dark: #000000;
+  --warm: #4a4a4a;
+  --soft: #eeebe3;
+  --deep: #0a0a0a;
+  --header-bg: rgba(250, 249, 246, 0.94);
+  --header-line: rgba(227, 222, 213, 0.9);
+  --raised-bg: #ffffff;
+  --raised-border: rgba(20, 20, 20, 0.22);
+  --alt-bg: #f2efe8;
+  --subtle-bg: #f5f3ec;
+  --body-copy: #262626;
+  --content-copy: #141414;
+  --tag-ink: #525252;
+  --code-bg: #141414;
+  --code-ink: #faf9f6;
+  --inline-code: #141414;
+  --contact-copy: #cbd7dd;
+  --note: #4a4a4a;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.05);
+  --shadow-small: 0 6px 20px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 10px 26px rgba(0, 0, 0, 0.1);
+  --focus-ring: #141414;
+}
+
 .motion-reveal {
   opacity: 0;
   transform: translateY(16px);
@@ -531,4 +630,52 @@ samp {
   background: rgba(0, 0, 0, 0.3);
   padding: 1px 5px;
   border-radius: 8px;
+}
+
+/* 主题专属微交互调色 */
+:root[data-theme="swiss"] .cursor-dot {
+  background: #e63329;
+  box-shadow: 0 0 8px rgba(230, 51, 41, 0.7);
+}
+:root[data-theme="swiss"] .cursor-ring {
+  border-color: rgba(230, 51, 41, 0.45);
+}
+:root[data-theme="swiss"] .cursor-ring.is-hover {
+  background: rgba(230, 51, 41, 0.12);
+  border-color: #e63329;
+}
+:root[data-theme="swiss"] .reading-progress {
+  background: linear-gradient(90deg, #e63329, #111111);
+}
+
+:root[data-theme="hud"] .cursor-dot {
+  background: #52d8e8;
+  box-shadow: 0 0 10px rgba(82, 216, 232, 0.85);
+}
+:root[data-theme="hud"] .cursor-ring {
+  border-color: rgba(82, 216, 232, 0.45);
+}
+:root[data-theme="hud"] .cursor-ring.is-hover {
+  background: rgba(82, 216, 232, 0.15);
+  border-color: #52d8e8;
+  box-shadow: 0 0 20px rgba(82, 216, 232, 0.35);
+}
+:root[data-theme="hud"] .reading-progress {
+  background: linear-gradient(90deg, #52d8e8, #ffd166);
+  box-shadow: 0 1px 8px rgba(82, 216, 232, 0.5);
+}
+
+:root[data-theme="mono"] .cursor-dot {
+  background: #141414;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+}
+:root[data-theme="mono"] .cursor-ring {
+  border-color: rgba(20, 20, 20, 0.45);
+}
+:root[data-theme="mono"] .cursor-ring.is-hover {
+  background: rgba(20, 20, 20, 0.08);
+  border-color: #141414;
+}
+:root[data-theme="mono"] .reading-progress {
+  background: linear-gradient(90deg, #141414, #737373);
 }
