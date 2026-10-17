@@ -651,3 +651,353 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   EEPROM Page Wrap-around & A/B Dual Slot Widget Styles
+   ========================================================================== */
+.eeprom-matrix-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--subtle-bg);
+  padding: 10px 12px;
+}
+
+.eeprom-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 530px;
+}
+
+.eeprom-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.eeprom-page-label {
+  font-size: 10.5px;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--muted);
+  width: 68px;
+  flex-shrink: 0;
+}
+
+.eeprom-cell {
+  width: 25px;
+  height: 23px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  font-family: ui-monospace, Consolas, monospace;
+  cursor: pointer;
+  transition: all 120ms ease;
+  user-select: none;
+}
+
+.eeprom-cell:hover,
+.eeprom-cell.is-selected {
+  outline: 2px solid var(--accent);
+  z-index: 2;
+}
+
+.eeprom-cell.is-slot-a {
+  border-left: 2px solid var(--accent);
+}
+
+.eeprom-cell.is-slot-b {
+  border-left: 2px solid var(--warm);
+}
+
+.eeprom-cell.is-written {
+  background: var(--soft);
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.eeprom-cell.is-corrupted {
+  background: rgba(211, 47, 47, 0.15);
+  color: #d32f2f;
+  border-color: #d32f2f;
+  font-weight: 750;
+  animation: pulse-corrupt 1s infinite alternate;
+}
+
+@keyframes pulse-corrupt {
+  from { background: rgba(211, 47, 47, 0.15); }
+  to { background: rgba(211, 47, 47, 0.35); }
+}
+
+.eeprom-slot-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.eeprom-slot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.eeprom-slot-badge.slot-a {
+  border: 1px solid var(--accent);
+  background: var(--soft);
+  color: var(--accent-dark);
+}
+
+.eeprom-slot-badge.slot-b {
+  border: 1px solid var(--warm);
+  background: rgba(217, 130, 43, 0.1);
+  color: var(--warm);
+}
+
+.eeprom-slot-badge.active-indicator {
+  box-shadow: 0 0 0 2px var(--accent);
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   RGB565 Diagnostic Laboratory Widget Styles
+   ========================================================================== */
+.rgb-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.rgb-color-boxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rgb-color-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.rgb-swatch {
+  width: 100%;
+  height: 68px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  margin: 8px 0;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  transition: background-color 150ms ease;
+}
+
+.rgb-bits-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  margin: 6px 0;
+  flex-wrap: wrap;
+}
+
+.rgb-bit-pill {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.rgb-bit-r { background: rgba(235, 77, 75, 0.15); color: #d63031; }
+.rgb-bit-g { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.rgb-bit-b { background: rgba(9, 132, 227, 0.15); color: #0984e3; }
+
+.rgb-diag-box {
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--subtle-bg);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.rgb-diag-box.alert {
+  border-left: 4px solid var(--warm);
+}
+
+.rgb-fault-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rgb-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ==========================================================================
+   LCD Strip Rendering & Frame Snapshot Widget Styles
+   ========================================================================== */
+.strip-sim-container {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.strip-screen {
+  width: 240px;
+  height: 320px;
+  border: 2px solid var(--deep);
+  border-radius: 6px;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.strip-band {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: rgba(15, 129, 141, 0.45);
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  pointer-events: none;
+  transition: top 40ms linear;
+  box-shadow: 0 0 6px rgba(15, 129, 141, 0.6);
+  z-index: 5;
+}
+
+.strip-screen-ui {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  color: #ffffff;
+  font-family: ui-monospace, Consolas, sans-serif;
+  z-index: 2;
+}
+
+.strip-screen-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #a8b4bb;
+  border-bottom: 1px solid #222222;
+  padding-bottom: 4px;
+}
+
+.strip-screen-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.strip-screen-val {
+  font-size: 38px;
+  font-weight: 800;
+  font-family: ui-monospace, Consolas, monospace;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  color: #5fdba7;
+  transition: color 120ms ease;
+}
+
+.strip-screen-val.is-torn {
+  background: linear-gradient(to bottom, #5fdba7 50%, #f39c12 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.strip-screen-unit {
+  font-size: 13px;
+  color: #78d5dc;
+  margin-top: 2px;
+}
+
+.strip-screen-waveform {
+  width: 100%;
+  height: 70px;
+  border: 1px solid #222222;
+  border-radius: 3px;
+  background: #080d10;
+  margin: 6px 0;
+  display: block;
+}
+
+.strip-screen-bot {
+  display: flex;
+  justify-content: space-around;
+  font-size: 9.5px;
+  color: #888888;
+  border-top: 1px solid #222222;
+  padding-top: 6px;
+}
+
+.strip-memory-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.strip-mem-card {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.strip-mem-card.bad {
+  border-color: rgba(211, 47, 47, 0.4);
+  background: rgba(211, 47, 47, 0.05);
+}
+
+.strip-mem-card.good {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+.strip-mem-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: ui-monospace, Consolas, monospace;
+  margin: 4px 0 2px;
+}
+
+.strip-mem-card.bad .strip-mem-val { color: #d32f2f; }
+.strip-mem-card.good .strip-mem-val { color: var(--accent-dark); }
+
+@media(max-width: 768px) {
+  .rgb-lab-grid,
+  .strip-sim-container {
+    grid-template-columns: 1fr;
+  }
+  .strip-screen {
+    margin: 0 auto;
+  }
+}

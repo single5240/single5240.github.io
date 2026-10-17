@@ -231,6 +231,110 @@ nextY += stripHeight
 - 同一时刻连续发生多次数据变化，只合并为“需要再画一帧”；
 - 当前帧传输期间若有新变化，`pending` 标志保留，待当前帧第 40 条带结束后抓取最新快照开始下一帧。
 
+### 交互式在线演示：240×8 条带渲染与帧快照防撕裂模拟
+
+为直观理解嵌入式微控制器如何在极小 SRAM 限制下驱动彩屏、以及帧快照如何消除画面撕裂（Tearing），下方提供了一个纯前端条带渲染模拟沙箱。你可以观察 8 行条带高亮光带如何从第 0 条带（`y=0..7`）逐步扫描至第 39 条带（`y=312..319`），对比整屏 153.6 KB 显存与 3.84 KB 条带画布的显存落差，并通过开关“帧快照”模拟中途中断导致数字断裂的经典翻车现象：
+
+<div class="article-interactive-widget" id="strip-demo-app" aria-label="LCD 条带渲染与帧快照防撕裂交互演示">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE WIDGET · 渲染管线仿真</span>
+    <h3 class="aiw-title">240×8 像素条带渲染与帧快照防撕裂模拟器</h3>
+    <p class="aiw-desc">仿真极低内存 MCU（SRAM 144 KB）驱动 240×320 彩屏方案：8 行局部条带画布（仅 3.84 KB，节省 97.5% 显存）、全屏坐标动态裁剪与 <code>AppUiRenderer</code> 帧快照一致性保证。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="strip-memory-compare">
+      <div class="strip-mem-card bad">
+        <span class="aiw-stat-label">方案一：传统整屏全帧缓冲 (Full Framebuffer)</span>
+        <div class="strip-mem-val">153.60 KiB</div>
+        <small style="color: #d32f2f; font-size: 11px;">240×320×2 字节 ➔ 超过 N32G455 144 KiB 总 SRAM 硬件上限，无法分配！❌</small>
+      </div>
+
+      <div class="strip-mem-card good">
+        <span class="aiw-stat-label">方案二：HW1.4 8 行局部条带画布 (Strip Canvas)</span>
+        <div class="strip-mem-val">3.84 KiB</div>
+        <small style="color: var(--accent-dark); font-size: 11px;">240×8×2 字节 ➔ 仅占 MCU SRAM 2.6%，留足内存给算法与协议栈！✅</small>
+      </div>
+    </div>
+
+    <div class="aiw-stats" aria-label="当前条带状态">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">当前渲染条带 (Strip Index)</span>
+        <span class="aiw-stat-value accent" id="strip-stat-strip">条带 0 / 39 (总计 40 条带)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">条带物理行坐标跨度</span>
+        <span class="aiw-stat-value" id="strip-stat-y">y = 0 .. 7 px</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">逻辑画面完整性判定</span>
+        <span class="aiw-stat-value accent" id="strip-stat-tear">画面原子一致 (无撕裂)</span>
+      </div>
+    </div>
+
+    <div class="strip-sim-container">
+      <div>
+        <div class="strip-screen" id="strip-screen">
+          <div class="strip-band" id="strip-band" style="top: 0px;"></div>
+          <div class="strip-screen-ui">
+            <div class="strip-screen-top">
+              <span>BAT: 88%</span>
+              <span>240×320 ST7789</span>
+              <span>PEAK: 92.4N</span>
+            </div>
+            <div class="strip-screen-main">
+              <div>
+                <span class="strip-screen-val" id="strip-screen-val">45.20</span>
+                <span class="strip-screen-unit">N</span>
+              </div>
+              <small style="color: #63707a; font-size: 9px; margin-top: 2px;">实时拉力测量读数</small>
+            </div>
+            <canvas class="strip-screen-waveform" id="strip-canvas" width="220" height="70"></canvas>
+            <div class="strip-screen-bot">
+              <span>[F1: 清零]</span>
+              <span>[F2: 峰值]</span>
+              <span>[F3: 存盘]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <div class="aiw-section-title">
+            <span>帧快照机制开关 (AppUiRenderer Snapshot)</span>
+            <span class="aiw-hint">对比有无快照时的画面防撕裂效果</span>
+          </div>
+          <label class="rgb-toggle-label">
+            <input type="checkbox" id="strip-chk-snapshot" checked>
+            <span><strong>开启帧快照机制 (推荐)</strong>：条带 0 开始时锁定当前数据快照，整帧 40 个条带未绘制完毕前禁止数据突变，杜绝上下半屏脱节。</span>
+          </label>
+        </div>
+
+        <div>
+          <div class="aiw-section-title">
+            <span>渲染与故障测试控制台</span>
+            <span class="aiw-hint">测试在刷屏中途注入突发力值跳变</span>
+          </div>
+          <div class="aiw-controls">
+            <button type="button" class="aiw-btn primary" id="strip-btn-step">单步推进 1 条带 (8 行)</button>
+            <button type="button" class="aiw-btn" id="strip-btn-run">连续刷屏</button>
+            <button type="button" class="aiw-btn warn" id="strip-btn-jump">模拟传感器力值跳变 (45.20N ➔ 89.60N)</button>
+            <button type="button" class="aiw-btn" id="strip-btn-reset">复位重置</button>
+          </div>
+        </div>
+
+        <div class="aiw-log-panel">
+          <div class="aiw-section-title">
+            <span>渲染条带流转与裁剪日志</span>
+            <span class="aiw-hint">观察 Strip 0 快照锁定与撕裂捕获</span>
+          </div>
+          <div class="aiw-log" id="strip-log" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 ## SPI1 全双工 DMA 与三态异步状态机
 
 ### TX DMA 与 RX DMA 协同配置

@@ -54,6 +54,95 @@ tags:
 
 重新编译烧录后，实机上电三色测试依次正常显示红、蓝、绿。
 
+## 交互式在线排障实验室：RGB565 颜色反相、通道对调与字节错序仿真
+
+遇到屏幕颜色异样时，常常难以直接断定是初始化命令发反、寄存器位域对调，还是字节序错误。下方提供了一个可交互的纯前端 RGB565 硬件色彩排障实验室。你可以选择不同的基准测试颜色，自由勾选开启或关闭各项硬件故障开关，实时对照**理论预期颜色**、**SPI 总线实际传输的两个字节**与**屏幕 GRAM 最终呈现的成像视觉**，并查看自动输出的诊断分析：
+
+<div class="article-interactive-widget" id="rgb-demo-app" aria-label="RGB565 颜色排障交互实验室">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE LAB · 颜色故障仿真</span>
+    <h3 class="aiw-title">RGB565 LCD 颜色反相、通道对调与字节错序交互实验室</h3>
+    <p class="aiw-desc">仿真 ST7789 驱动关键配置：常黑反相控制（<code>INVON 0x21</code> / <code>INVOFF 0x20</code> 取反 <code>~color</code>）、<code>MADCTL</code> Bit 3（RGB/BGR 互换）与 SPI DMA 高低字节传输错位。</p>
+  </div>
+  <div class="aiw-body">
+    <div>
+      <div class="aiw-section-title">
+        <span>1. 选择基准测试颜色 (Target Color Preset)</span>
+        <span class="aiw-hint">依次点击纯红、纯绿、纯蓝复现真实故障</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn" data-rgb-preset="red" style="border-left: 3px solid #d63031;">纯红 (0xF800)</button>
+        <button type="button" class="aiw-btn" data-rgb-preset="green" style="border-left: 3px solid #27ae60;">纯绿 (0x07E0)</button>
+        <button type="button" class="aiw-btn" data-rgb-preset="blue" style="border-left: 3px solid #0984e3;">纯蓝 (0x001F)</button>
+        <button type="button" class="aiw-btn" data-rgb-preset="yellow" style="border-left: 3px solid #f1c40f;">明黄 (0xFFE0)</button>
+        <button type="button" class="aiw-btn" data-rgb-preset="cyan" style="border-left: 3px solid #00cec9;">青色 (0x07FF)</button>
+        <button type="button" class="aiw-btn" data-rgb-preset="magenta" style="border-left: 3px solid #e056fd;">品红 (0xF81F)</button>
+        <button type="button" class="aiw-btn" data-rgb-preset="white" style="border-left: 3px solid #636e72;">纯白 (0xFFFF)</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>2. 硬件故障注入开关 (Fault Injection Switches)</span>
+        <span class="aiw-hint">勾选下列复选框模拟寄存器配置失误</span>
+      </div>
+      <div class="rgb-fault-toggles">
+        <label class="rgb-toggle-label">
+          <input type="checkbox" id="rgb-chk-invert">
+          <span><strong>显示反相配置错误 (INVON/INVOFF 互斥命令发反)</strong>：驱动发送 0x20 而非 0x21，光学成像按位取反 <code>~color</code></span>
+        </label>
+        <label class="rgb-toggle-label">
+          <input type="checkbox" id="rgb-chk-swap-channels">
+          <span><strong>MADCTL 寄存器 Bit 3 翻转 (RGB / BGR 通道互换)</strong>：红蓝通道对调，绿色通道保持不变</span>
+        </label>
+        <label class="rgb-toggle-label">
+          <input type="checkbox" id="rgb-chk-byte-swap">
+          <span><strong>高低字节错序 (SPI DMA 传输缺少 <code>__REV16</code> 字节翻转)</strong>：高 8 位与低 8 位颠倒发送</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="rgb-lab-grid">
+      <div class="rgb-color-card">
+        <span class="aiw-stat-label">理论预期颜色 (Expected Color)</span>
+        <div class="rgb-swatch" id="rgb-swatch-expected"></div>
+        <div class="aiw-stat-value" id="rgb-hex-expected">0xF800</div>
+        <div class="rgb-bits-row" id="rgb-bits-expected"></div>
+        <small style="color: var(--muted); font-size: 11px;">算法层预期的原始 RGB565 像素</small>
+      </div>
+
+      <div class="rgb-color-card">
+        <span class="aiw-stat-label">屏幕实际成像 (Screen GRAM Display)</span>
+        <div class="rgb-swatch" id="rgb-swatch-actual"></div>
+        <div class="aiw-stat-value accent" id="rgb-hex-actual">0xF800</div>
+        <div class="rgb-bits-row" id="rgb-bits-actual"></div>
+        <small style="color: var(--muted); font-size: 11px;">经总线传输与面板解码后的物理视觉</small>
+      </div>
+    </div>
+
+    <div class="aiw-stats" aria-label="总线字节流">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">SPI 总线先发字节 (Byte 0 · MSB)</span>
+        <span class="aiw-stat-value accent" id="rgb-byte-0">0xF8</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">SPI 总线后发字节 (Byte 1 · LSB)</span>
+        <span class="aiw-stat-value accent" id="rgb-byte-1">0x00</span>
+      </div>
+    </div>
+
+    <div class="rgb-diag-box alert" id="rgb-diag-box">
+      <div id="rgb-diag-text">
+        <strong>当前状态正常</strong>：无任何硬件故障注入，屏幕成像与理论预期完全一致。
+      </div>
+    </div>
+
+    <div class="aiw-controls">
+      <button type="button" class="aiw-btn" id="rgb-btn-reset">清除全部故障注入并重置</button>
+    </div>
+  </div>
+</div>
+
 ## 按现象快速定位根因
 
 遇到 LCD 颜色或画面异常时，先对照下表区分是**初始化寄存器问题、字节/通道序问题，还是 DMA 与时序并发问题**：

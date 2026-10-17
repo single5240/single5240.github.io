@@ -82,6 +82,83 @@ M24C02 共有 16 页，每页 16 字节，页起始地址依次为 `0x00, 0x10, 
 
 例如从 `0x0E` 写 4 字节时，驱动自动拆成两笔独立事务：第一笔写 `0x0E..0x0F`（2 字节）并等待编程完成；第二笔再写 `0x10..0x11`（2 字节）并等待编程完成，彻底杜绝页内回绕覆盖。
 
+### 交互式在线演示：16 字节页回绕陷阱与 A/B 双槽乒乓存储
+
+为直观体验 EEPROM 芯片物理页回绕 Bug 以及上层 A/B 双槽掉电安全机制，下方提供了一个 256 字节纯前端交互模拟沙箱。你可以点击任意单元格检视其所属页与槽位，模拟向 `0x0E` 写入 4 字节观察“无拆分硬件回绕覆盖 `0x00..0x01`”与“驱动安全拆包”的截然不同结果，并测试 A/B 双槽乒乓参数更新与断电回退保护：
+
+<div class="article-interactive-widget" id="eeprom-demo-app" aria-label="M24C02 EEPROM 页回绕与双槽存储交互演示">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE WIDGET · 硬件物理层仿真</span>
+    <h3 class="aiw-title">M24C02 EEPROM 16 字节页回绕陷阱与 A/B 双槽乒乓存储模拟器</h3>
+    <p class="aiw-desc">仿真 256 字节（16 页 × 16B）物理特性：字地址低 4 位硬件回绕、驱动层 <code>min(length, 16 - (addr % 16))</code> 自动拆包、以及 128B+128B 双槽乒乓镜像与掉电安全回退。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="aiw-stats" aria-label="EEPROM 当前状态">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">当前活动参数镜像</span>
+        <span class="aiw-stat-value accent" id="eeprom-stat-slot">当前活动: Slot A (0x00..0x7F)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">活动槽 CRC-16 状态</span>
+        <span class="aiw-stat-value" id="eeprom-stat-crc">0x4A1B (合法)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">选定字节地址与值</span>
+        <span class="aiw-stat-value" id="eeprom-stat-addr">0x0E (值: 0xAA)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">选定字节所属物理页</span>
+        <span class="aiw-stat-value warn" id="eeprom-stat-page">Page 0 (页首: 0x00)</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>256 字节物理内存映射矩阵 (16 页 × 16 字节)</span>
+        <span class="aiw-hint">青边: Slot A (0x00~0x7F) · 橙边: Slot B (0x80~0xFF) · 红格: 回绕污染</span>
+      </div>
+      <div class="eeprom-slot-badges">
+        <span class="eeprom-slot-badge slot-a active-indicator" id="eeprom-badge-slot-a">Slot A [当前生效镜像 · 128B]</span>
+        <span class="eeprom-slot-badge slot-b" id="eeprom-badge-slot-b">Slot B [备用写入槽 · 128B]</span>
+      </div>
+      <div class="eeprom-matrix-wrap">
+        <div class="eeprom-grid" id="eeprom-grid"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>实验一：16 字节页写边界回绕陷阱对比测试</span>
+        <span class="aiw-hint">测试从 0x0E 连续写入 4 字节 [0x11, 0x22, 0x33, 0x44]</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn danger" id="eeprom-btn-raw-bug">原生裸写 (无页拆分，触发回绕篡改Bug)</button>
+        <button type="button" class="aiw-btn primary" id="eeprom-btn-driver-safe">驱动智能拆分写入 (Page Chunking)</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="aiw-section-title">
+        <span>实验二：A/B 双槽掉电安全乒乓参数存储实验</span>
+        <span class="aiw-hint">演示交替写入非活动槽与断电 CRC 自动回滚</span>
+      </div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" id="eeprom-btn-pingpong">正常更新参数 (乒乓切换写入非活动槽)</button>
+        <button type="button" class="aiw-btn warn" id="eeprom-btn-fail">故障注入: 写入中途断电 (模拟开机自动回退)</button>
+        <button type="button" class="aiw-btn" id="eeprom-btn-reset">恢复出厂配置</button>
+      </div>
+    </div>
+
+    <div class="aiw-log-panel">
+      <div class="aiw-section-title">
+        <span>I2C 事务时序与驱动安全追踪日志</span>
+        <span class="aiw-hint">注意观察硬件回绕覆盖警报与 ACK 轮询时序</span>
+      </div>
+      <div class="aiw-log" id="eeprom-log" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
 ## I2C 事务帧格式与 ACK 轮询
 
 ### 随机读单字节
