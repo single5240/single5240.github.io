@@ -1,7 +1,7 @@
 ---
 layout: article
-title: ECAT 移植及基础
-description: EtherCAT 从站协议栈移植、硬件适配、动态 PDO、Slot/Module 和状态机相关学习笔记。
+title: EtherCAT 从站协议栈移植、动态 PDO 与状态机基础
+description: 基于 STM32F407 + LAN9252 的 EtherCAT 从站（SSC）移植笔记，涵盖硬件与中断适配、CoE 对象字典、动态 PDO、ETG.5001 模块化设备（Slot/Module）及状态机故障排查。
 date: 2026-05-18
 category: 嵌入式
 tags:
@@ -11,53 +11,91 @@ tags:
   - 协议栈移植
 ---
 
+> 本文整理自 STM32F407 + LAN9252（或 ET1100/ET1200）平台的 Beckhoff SSC（Slave Stack Code）从站协议栈移植笔记，重点梳理硬件抽象层适配、CoE 对象字典与动态 PDO 映射机制、ETG.5001 模块化设备（Slot/Module）地址偏移规则，以及 EtherCAT 状态机（ESM）转换条件与常见 `AL Status Code` 报错排查。
+
 ## 从站协议栈移植
 
-### 参考链接
+### 参考资料
 
 - [基于 STM32F407-LAN9252 的 EtherCAT 从站协议移植过程 - CSDN 博客](https://blog.csdn.net/qq_41580996/article/details/130291788)
 - [STM32F407 与 LAN9252 EtherCAT HBI 资源文件介绍 - CSDN 博客](https://blog.csdn.net/gitblog_09761/article/details/143404001)
 - [EtherCAT 之 TwinCAT3 安装、使用 - CSDN 博客](https://blog.csdn.net/LclLsh/article/details/122863502)
 - [STM32 + LAN9252 + HAL 库 EtherCAT 从站搭建教程 - CSDN 博客](https://blog.csdn.net/a1547998353/article/details/146331849)
 - [从零搭建 EtherCAT 从站（STM32F407 + ET1200）学习记录 - CSDN 博客](https://blog.csdn.net/xuexidexiaohai/article/details/138668675)
-- `EtherCAT从站学习板参考资料V 2.1\00_必读`
+- 本地参考资料：`EtherCAT从站学习板参考资料V 2.1\00_必读`
 
-### 硬件适配
+### 硬件资源适配
 
-1. 三个中断：IRQ、SYNC0、SYNC1。
-2. 1 ms 定时器。
-3. SPI 接口或者并行总线接口。
+将 MCU（如 STM32F407）与 ESC 芯片（如 Microchip LAN9252）对接时，MCU 侧需要适配以下三类外设资源：
 
-### 驱动适配
+| 硬件资源 | 信号 / 外设 | 核心职责与注意事项 |
+| --- | --- | --- |
+| **PDI 通信总线** | SPI 接口或并行总线（HBI/FSMC） | 用于 MCU 读写 ESC 内部寄存器与 Process RAM。SPI 模式接线简单，HBI 并行总线吞吐量更高、延迟更低。 |
+| **3 个外部中断（EXTI）** | `ESC_IRQ`、`SYNC0`、`SYNC1` | `IRQ` 通知 MCU 处理 AL Event（邮箱、SM2 输出事件、状态切换）；`SYNC0` / `SYNC1` 在分布式时钟（DC）模式下提供周期性高精度硬件同步触发。注意确认中断有效边沿（通常为下降沿触发）及引脚上拉配置。 |
+| **1 ms 硬件定时器** | 基础定时器（如 `TIM2` / `TIM6`） | 为 SSC 协议栈提供 1 ms 周期时基，用于状态机切换超时检测、邮箱超时和看门狗计时。 |
 
-使用 TwinCAT3 做主站进行测试。
+### 驱动层与协议栈接口适配
 
-通信关键函数：
+工程通常使用 **TwinCAT 3** 作为主站配合测试。在软件层面，移植工作主要分为 **底层 ESC 读写封装**、**中断与临界区适配** 以及 **SSC 应用层回调实现** 三部分。
 
-1. `PMPReadWord`
-2. `PMPReadDWord`
-3. `PMPWriteWord`
-4. `PMPWriteDWord`
+#### 1. 底层寄存器与内存访问函数
 
-ECAT 协议栈回调函数：
+在 Microchip LAN9252 官方 SDK 中，底层总线访问函数沿用了 `PMP`（Parallel Master Port）前缀命名（即使底层走的是 SPI 接口也常保留该封装）：
 
-1. `APPL_InputMapping`：输入映射。
-2. `APPL_OutputMapping`：输出映射。
-3. `APPL_Application`：自定义应用。
+1. `PMPReadWord` / `PMPWriteWord`：16 位字读写。
+2. `PMPReadDWord` / `PMPWriteDWord`：32 位双字读写（LAN9252 的系统控制状态寄存器 CSR 均为 32 位对齐访问）。
+3. `PMPReadRegUsingCSR` / `PMPWriteRegUsingCSR`：通过 LAN9252 的 CSR 接口（`0x0304 ECAT_CSR_DATA` 与 `0x0300 ECAT_CSR_CMD`）间接读写内部 EtherCAT Core 寄存器。
 
-## Slot 和 Module
+这些底层读写最终要对接到 Beckhoff SSC 硬件抽象层（如 `el9800hw.c` 或 `lan9252_hw.c`）要求的标准接口：
 
-### 参考链接
+- `HW_Init()` / `HW_Release()`：初始化 PDI 接口、外部中断与定时器，等待 ESC 芯片 EEPROM 加载就绪（检测 `0x0064 BYTE_TEST` 寄存器返回 `0x87654321` 及 `READY` 标志位）。
+- `HW_GetALEventRegister()` / `HW_GetALEventRegister_Isr()`：读取 ESC 的 AL Event 请求寄存器（`0x0220`），分别供主循环和中断上下文调用。
+- `HW_EscRead()` / `HW_EscWrite()` 及 `_Isr` 版本：访问 ESC 寄存器与过程数据 RAM（Process RAM FIFO）。
+- `HW_EscReadMbxMem()` / `HW_EscWriteMbxMem()`：读写邮箱（Mailbox）缓冲区。
 
-- [Beckhoff Information System - English](https://infosys.beckhoff.com/english.php?content=../content/1033/el6695/1317558667.html&id=)
+#### 2. 中断服务函数与临界区保护（关键易错点）
+
+协议栈运行依赖以下入口函数的协同调用：
+
+- **主循环**：在 `while (1)` 中周期性调用 `MainLoop()`，处理非实时邮箱通信（SDO/CoE）、状态机后台任务以及自由运行（FreeRun）模式下的周期性数据更新。
+- **PDI 中断（`EXTI` → `PDI_Isr()`）**：当 ESC 产生 `IRQ` 信号（如主站写入了 SM2 输出数据或下发了邮箱帧）时触发。
+- **DC 同步中断（`EXTI` → `Sync0_Isr()` / `Sync1_Isr()`）**：在启用分布式时钟（DC Synchron）时触发高精度周期控制。
+- **1 ms 定时器中断（`TIM` → `ECAT_CheckTimer()`）**：每 1 ms 调用一次协议栈定时检查函数（或递增 `u16LocalTimer`）。
+
+**必须注意 SPI/HBI 总线重入冲突**：如果主循环 `MainLoop()` 正在通过 SPI 读写 LAN9252，此时若触发 `PDI_Isr()` 或 `Sync0_Isr()` 并在中断里发起新的 SPI 读写，会导致 SPI 时序错乱与芯片状态机死锁。因此必须正确实现 `DISABLE_ESC_INT()` 与 `ENABLE_ESC_INT()` 宏，在主循环访问 ESC 期间屏蔽 `IRQ`/`SYNC0`/`SYNC1` 及定时器中断，并将这几个中断配置为**相同抢占优先级**（禁止互相抢占嵌套）。
+
+#### 3. SSC 应用层回调函数
+
+SSC 协议栈将与具体业务强相关的逻辑留给应用层回调实现，按职责分为两类：
+
+**周期性过程数据与业务回调**（在每个通信周期内按 `OutputMapping → Application → InputMapping` 顺序执行）：
+
+1. `APPL_OutputMapping(UINT16 *pData)`：**输出映射（RxPDO，主站 → 从站）**。将主站下发到 SM2 缓冲区的数据解包并拷贝到本地输出结构体（如 `0x7000` 关联变量）。
+2. `APPL_Application(void)`：**自定义应用逻辑**。根据接收到的主站控制字/目标值执行控制算法或驱动外设，并采集本地传感器/状态数据写入输入结构体。
+3. `APPL_InputMapping(UINT16 *pData)`：**输入映射（TxPDO，从站 → 主站）**。将本地输入结构体（如 `0x6000` 关联变量）打包写入 SM3 缓冲区供主站读取。
+
+**状态转换与映射计算回调**（在状态机切换阶段由 `AL_ControlInd` 调用）：
+
+1. `APPL_GenerateMapping(UINT16 *pInputSize, UINT16 *pOutputSize)`：根据当前 `0x1C12`（RxPDO 分配）和 `0x1C13`（TxPDO 分配）以及对应的 `0x16xx`/`0x1Axx` 映射表，动态计算当前激活的输入、输出过程数据总字节数。**这是实现动态 PDO 和模块化设备的核心函数**。
+2. `APPL_StartMailboxHandler()` / `APPL_StopMailboxHandler()`：`Init ↔ Pre-Op` 切换时启停邮箱处理。
+3. `APPL_StartInputHandler()` / `APPL_StopInputHandler()`：`Pre-Op ↔ Safe-Op` 切换时启停输入数据更新。
+4. `APPL_StartOutputHandler()` / `APPL_StopOutputHandler()`：`Safe-Op ↔ Op` 切换时启停输出驱动；当从站退出 `Op` 状态时，应在 `APPL_StopOutputHandler()` 中将硬件输出置于安全状态（如关闭电机使能、断开输出继电器）。
+
+---
+
+## 动态 PDO 与模块化设备（Slot / Module）
+
+### 参考资料
+
+- [Beckhoff Information System - EL6695 Modular Device](https://infosys.beckhoff.com/english.php?content=../content/1033/el6695/1317558667.html&id=)
 - [EtherCAT PDO 映射概述 - CSDN 博客](https://blog.csdn.net/m0_74823933/article/details/146030778)
 - [EtherCAT 从站实现动态 PDO 功能 - HPMicro 知识库](https://kb.hpmicro.com/2025/08/26/ethercat%e4%bb%8e%e7%ab%99%e5%ae%9e%e7%8e%b0%e5%8a%a8%e6%80%81pdo%e5%8a%9f%e8%83%bd/)
 - [EtherCAT Module and Slot - CSDN 博客](https://blog.csdn.net/qq_42039294/article/details/148441210)
-- 定义模块化设备的核心文档是 **ETG.5001 (Modular Device Profile Specification)**。
+- 核心协议规范：**ETG.5001 (Modular Device Profile Specification)**。
 
-### 动态 PDO
+### CoE 对象字典与 `TOBJECT` 结构
 
-#### COE 字典
+在 CANopen over EtherCAT（CoE）中，从站的所有参数、配置与过程数据都组织在**对象字典（Object Dictionary, OD）**中。SSC 代码里通过双向链表管理对象字典，核心节点结构体为 `TOBJECT`：
 
 ```c
 /**
@@ -65,123 +103,173 @@ ECAT 协议栈回调函数：
  */
 typedef struct OBJ_ENTRY
 {
-    struct OBJ_ENTRY                      *pPrev;
-    struct OBJ_ENTRY                      *pNext;
+    struct OBJ_ENTRY                      *pPrev;             /** 链表前驱指针 **/
+    struct OBJ_ENTRY                      *pNext;             /** 链表后继指针 **/
 
-    UINT16                                Index;       /** 对象地址 **/
-    TSDOINFOOBJDESC                       ObjDesc;     /** 对象特征，包括对象类型、对象索引最大值等 **/
-    OBJCONST TSDOINFOENTRYDESC OBJMEM     *pEntryDesc; /** 子索引描述符 **/
-    OBJCONST UCHAR OBJMEM                 *pName;      /** 子索引名称 **/
-    void MBXMEM                           *pVarPtr;    /** 实际变量的数据指针 **/
-    UINT8 (* Read)( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess );
-    UINT8 (* Write)( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess );
-    UINT16                                NonVolatileOffset;
+    UINT16                                Index;              /** 对象索引（如 0x1C12, 0x1600, 0x6000） **/
+    TSDOINFOOBJDESC                       ObjDesc;            /** 对象描述符：数据类型、对象类型(VAR/ARRAY/RECORD)、最大子索引数等 **/
+    OBJCONST TSDOINFOENTRYDESC OBJMEM     *pEntryDesc;        /** 子索引描述符数组：位长、读写权限、PDO 映射属性等 **/
+    OBJCONST UCHAR OBJMEM                 *pName;             /** 对象及各子索引的名称字符串序列 **/
+    void MBXMEM                           *pVarPtr;           /** 指向实际 C 语言变量/结构体的内存指针 **/
+    UINT8 (* Read)( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess );  /** SDO 读钩子函数 **/
+    UINT8 (* Write)( UINT16 Index, UINT8 Subindex, UINT32 Size, UINT16 MBXMEM * pData, UINT8 bCompleteAccess ); /** SDO 写钩子函数 **/
+    UINT16                                NonVolatileOffset;  /** 非易失性存储偏移量 **/
 }
 TOBJECT;
 ```
 
-先理解 COE 字典。代码里面的核心就是 `TOBJECT` 这个结构体，后续 Slot 和 Module 也是围绕这个结构体操作。
+理解动态 PDO 与 Slot/Module 的前提，是先理解 SSC 如何通过遍历和修改 `TOBJECT` 链表来响应主站 SDO 读写请求。
 
-#### SDO 和 PDO
+### SDO 配置与 PDO 三级映射关系
 
-理解动态 PDO 的关键，是理解 SDO 和 PDO 的关系，也就是 `0x1C12/0x1C13`、`0x16xx/0x1Axx`、`0x6000/0x7000` 之间的关系：
+许多初学者容易混淆 SDO 和 PDO 的关系：
 
-1. **`0x1C12/0x1C13`** 决定哪些 PDO 生效。
-2. **`0x16xx/0x1Axx`** 决定 PDO 里有哪些数据。
-3. **`0x6000/0x7000`** 是数据的源头或终点。
+- **SDO（Service Data Object）** 是走邮箱（SM0/SM1）的**非周期性配置通道**，用于在 `Pre-Op` 阶段按 `Index:SubIndex` 读写对象字典中的任意条目。
+- **PDO（Process Data Object）** 是走过程数据 RAM（SM2/SM3）的**周期性实时数据通道**，传输时不携带索引头，主从站直接按事先约定好的字节排布解析数据。
 
-先完全理解动态 PDO，再学习 Slot 和 Module。
+这个“事先约定好的字节排布”，正是由主站在 `Pre-Op` 阶段通过 **SDO 写入 CoE 对象字典中的三级映射对象** 来完成的：
 
-### XML 文件
+```text
+[第一级：SM 通道分配对象]
+  0x1C12 (SM2 RxPDO Assign) ──► 包含若干子索引，指向被激活的 0x16xx 索引
+  0x1C13 (SM3 TxPDO Assign) ──► 包含若干子索引，指向被激活的 0x1Axx 索引
+        │
+        ▼
+[第二级：PDO 映射参数对象]
+  0x1600 ~ 0x17FF (RxPDO Mapping) ──► 每个子索引为 32 位值：[Index(16b) | SubIndex(8b) | BitLen(8b)]
+  0x1A00 ~ 0x1BFF (TxPDO Mapping) ──► 描述该 PDO 内部依次打包了哪些应用数据条目及位宽
+        │
+        ▼
+[第三级：应用数据对象]
+  0x7000 ~ 0x7FFF (Outputs) ──► 主站下发给从站的控制变量（对应 APPL_OutputMapping）
+  0x6000 ~ 0x6FFF (Inputs)  ──► 从站上报给主站的状态变量（对应 APPL_InputMapping）
+```
 
-- `xml` 文件是连接从站硬件开发与主站工程配置的桥梁和说明书。
-- 它会把物理上的从站变成主站可以解析的文件对象。
-- XML 文件必须和代码保持一致，下面的代码适配就是围绕这个关系展开。
+工程中常说的“动态 PDO”细分为两个层次：
 
-### 代码适配
+1. **可选择 PDO 映射（Selectable PDO Mapping）**：`0x16xx` / `0x1Axx` 内部包含哪些子条目是固定的（只读），但 `0x1C12` / `0x1C13` 可写。主站在 `Pre-Op` 阶段通过 SDO 修改 `0x1C12` / `0x1C13`，选择将哪些 `0x16xx` / `0x1Axx` 挂载到 SM2 / SM3 上。
+2. **完全动态 PDO 映射（Dynamic PDO Mapping）**：不仅 `0x1C12` / `0x1C13` 可写，连 `0x16xx` / `0x1Axx` 本身也支持 SDO 改写。主站先将 `0x16xx:00`（SubIndex 0）写为 `0` 清空映射，接着往 `0x16xx:01..0n` 写入自定义的 `0x70xx` 映射项，最后将条目总数写回 `0x16xx:00` 生效。
 
-#### `ecat_def.h`
+无论是哪一种，当从站收到 `Pre-Op → Safe-Op` 转换请求时，都会调用 `APPL_GenerateMapping()` 顺着 `0x1C12/0x1C13 → 0x16xx/0x1Axx` 计算出总位长并换算成字节数，交给协议栈去和主站配置的 SM2/SM3 长度做严格比对。
 
-以下定义必须和 XML 中对应项保持一致：
+### ETG.5001 模块化设备（Slot 与 Module）工作原理
 
-- `VENDOR_ID`：厂商 ID，在 XML 的 `Vendor` 标签下。
-- `PRODUCT_CODE`：产品代码，在 XML 的 `Device` / `Type` 标签下。
-- `REVISION_NUMBER`：版本号，在 XML 的 `Device` / `Type` 标签下。
-- `DEVICE_PROFILE_TYPE`：这里设为 `0x1389`，也就是 `5001`，对应模块化设备，在 XML 的 `Device-profile-channelinfo` 下。
+先完全掌握上面的三级 PDO 映射，再看 **ETG.5001 模块化设备（Modular Device Profile）** 就会非常清晰。
 
-其他重要定义可以参考 SSC Tool 中的注释及操作教程。
+在网关、耦合器或多轴/多通道 IO 从站中，一个从站下包含多个**插槽（Slot）**，每个插槽可以灵活挂载不同类型的功能**模块（Module）**。为了避免为每个插槽手动静态定义几十个重复的对象字典条目，ETG.5001 规定了基于**步进偏移（Increment）**的动态地址分配机制：
 
-#### `SSC-9252` 相关
+#### 1. 模块化设备专属字典对象（`0xF0xx`）
 
-1. `ssc-9252.c`、`ssc-9252.h` 和 `SSC-9252Objects.h` 必须完全理解，它们是模块化设备功能实现的关键代码。
-2. `SlotIndexIncrement` 和 `SlotPdoIncrement` 需要与 XML 中对应参数保持一致，否则会导致从第二个插槽开始 PDO 出现错位。
+- **`0xF000`（Modular Device Profile）**：定义模块化设备的基本信息，包括设备上所有模块共享的索引步进（Index Distance）和最大插槽数量。
+- **`0xF030`（Configured Module Ident List）**：**已配置模块标识列表**。主站在 `Pre-Op` 阶段通过 SDO 将用户在 TwinCAT 界面中为各个 Slot 选择的 `Module Ident` 写入 `0xF030` 的对应子索引。
+- **`0xF050`（Detected Module Ident List，可选）**：**实际检测到的模块标识列表**。从站根据物理插槽上实际插入的硬件模块上报 Module ID，供主站与 `0xF030` 进行一致性校验。
 
-## 状态机
+#### 2. Slot 索引偏移计算规则
 
-### 所有状态
+假设某类 Module 的模板数据对象基地址为 `0x6000`（输入）和 `0x7000`（输出），模板 PDO 映射对象基地址为 `0x1600`（RxPDO）和 `0x1A00`（TxPDO）。当该 Module 被挂载到第 `n` 个插槽（`n = 0, 1, 2, ...`，即 Slot 1 对应 `n = 0`，Slot 2 对应 `n = 1`）时：
 
-1. **Init (I - 初始化)**：无应用层通信，仅能读写基础寄存器。
-2. **Pre-Operational (P - 预运行)**：开启邮箱通信（Mailbox，用于 SDO 配置），无过程数据（Process Data）。
-3. **Safe-Operational (S - 安全运行)**：开启过程数据输入（Inputs，从站到主站），输出保持安全状态，不驱动硬件。
-4. **Operational (O - 运行)**：全功能开启，过程数据输入与输出（Outputs）完全激活。
-5. **Bootstrap (B - 引导，可选)**：仅用于固件升级（FoE），当前未实现。
+- **数据对象索引**：`ObjectIndex(n) = BaseObjectIndex + n * SlotIndexIncrement`
+- **PDO 映射对象索引**：`PdoIndex(n) = BasePdoIndex + n * SlotPdoIncrement`
 
-### 状态转换
+例如当 `SlotIndexIncrement = 0x0010`、`SlotPdoIncrement = 0x0001` 时：
+- **Slot 1（`n = 0`）**：使用 `0x1600` / `0x1A00`，映射的数据对象为 `0x7000` / `0x6000`；
+- **Slot 2（`n = 1`）**：自动偏移为 `0x1601` / `0x1A01`，其内部映射的数据对象自动偏移为 `0x7010` / `0x6010`；
+- 主站在启动时会将 `0x1600`、`0x1601` 依次写入 `0x1C12` 的子索引 `1`、`2`，从而把所有已挂载 Slot 的 PDO 串联进同一个 SM2/SM3 过程数据帧中。
 
-相关代码在函数 `AL_ControlInd`。
+### ESI XML 文件与 EEPROM（SII）一致性
 
-#### Init (I) → Pre-Operational (P)
+- **ESI（EtherCAT Slave Information）XML 文件**是连接从站固件开发与主站工程组态的桥梁。
+- **双重作用**：
+  1. 放入主站配置目录（如 `C:\TwinCAT\3.1\Config\Io\EtherCAT`），供 TwinCAT 解析从站的身份信息、SM0~SM3 参数、对象字典以及 Slot/Module 组合规则。
+  2. 用于生成并烧写从站板载 **EEPROM（SII，Slave Information Interface）** 二进制镜像。LAN9252 上电复位时会首先读取外部 I2C EEPROM 来初始化 PDI 接口模式（如 SPI 或 HBI）、Vendor ID 和 Product Code。
+- **注意**：每次修改 XML 中的关键硬件或身份参数后，不仅要同步修改 MCU 代码，还必须**在 TwinCAT 中重新烧写从站 EEPROM 并对从站断电重启**，同时重新加载 TwinCAT 的 ESI 缓存。
 
-**目标**：建立非周期性的邮箱（Mailbox）通信通道，以便后续发送 SDO 进行参数配置。
+### 关键代码适配检查点
 
-主站必须完成的配置条件：
+#### 1. `ecat_def.h`
 
-- 为主站发送 / 从站接收（Mailbox Out）配置 **SyncManager 0 (SM0)**。
-- 为主站接收 / 从站发送（Mailbox In）配置 **SyncManager 1 (SM1)**。
-- 通过写入 AL Control 寄存器请求 `Pre-Op` 状态。
+以下宏定义必须与 ESI XML 文件中的字段完全一致：
 
-从站内部的校验条件：
+- `VENDOR_ID`：厂商 ID，对应 XML 的 `<Vendor><Id>`。
+- `PRODUCT_CODE`：产品代码，对应 XML 的 `<Device><Type ProductCode="...">`。
+- `REVISION_NUMBER`：修订版本号，对应 XML 的 `<Device><Type RevisionNo="...">`。
+- `DEVICE_PROFILE_TYPE`：对于 ETG.5001 模块化设备设为 `0x00001389`（十进制 `5001`），对应 XML 中的 `<Profile><ProfileNo>5001</ProfileNo>`。
 
-- 验证 SM0 和 SM1 的基地址、大小和控制寄存器设置是否符合设备描述文件（ESI/XML）的要求。
-- 成功初始化内部的邮箱处理机制。
+其他协议栈裁剪宏（如 `COE_SUPPORTED`、`MAX_RX_PDOS`、`MAX_TX_PDOS`、`DC_SUPPORTED` 等）可参考 SSC Tool 中的描述与生成配置。
 
-#### Pre-Operational (P) → Safe-Operational (S)
+#### 2. `SSC-9252` 模块化设备实现文件
 
-**目标**：配置周期性过程数据（Process Data）通道，并启动从站的数据采集。这是最复杂且最容易报错的转换阶段，特别是涉及动态 PDO 和模块化设备时。
+1. `ssc-9252.c`、`ssc-9252.h` 和 `SSC-9252Objects.h` 是实现模块化对象字典动态挂载与 PDO 映射解析的核心文件。
+2. 代码中的 `SlotIndexIncrement` 和 `SlotPdoIncrement` **必须与 XML `<Slots>` 标签下的 `<SlotIndexIncrement>` 和 `<SlotPdoIncrement>` 严格一致**。一旦两边步进值不一致，Slot 1（`n = 0`，偏移量为 0）看起来仍然正常，但**从第二个插槽（Slot 2，`n >= 1`）开始，主站按 XML 计算出的索引与从站内部生成的 `TOBJECT` 索引就会错位**，导致 SDO 配置失败或 PDO 数据错位。
 
-主站必须完成的配置条件：
+---
 
-- 通过 SDO（邮箱通信）完成对象字典（OD）的参数配置，包括动态 PDO 映射。
-- 为过程数据输出（Outputs）配置 **SyncManager 2 (SM2)**。
-- 为过程数据输入（Inputs）配置 **SyncManager 3 (SM3)**。
-- 配置 **FMMU**（现场总线内存管理单元），将逻辑地址映射到物理地址。
-- 如果使用分布式时钟（DC），配置 DC 相关寄存器，如同步周期和偏移量。
-- 写入 AL Control 寄存器请求 `Safe-Op` 状态。
+## EtherCAT 状态机（ESM）与报错排查
 
-从站内部的校验条件：
+### 五种运行状态
 
-- 校验 SM2 和 SM3 的长度是否与当前 PDO 映射的总长度完全一致。
-- 校验 FMMU 的映射设置是否合法。
-- 校验 DC 同步设置是否正确，如果启用了 DC。
-- 成功分配内部内存并准备好更新输入数据。
+EtherCAT 从站状态机（EtherCAT State Machine, ESM）由主站通过读写 AL Control（`0x0120`）与 AL Status（`0x0130`）寄存器驱动，共包含 5 种状态：
 
-#### Safe-Operational (S) → Operational (O)
+| 状态名称 | 缩写 | 邮箱通信（SDO） | 过程数据输入（Inputs / SM3） | 过程数据输出（Outputs / SM2） | 说明 |
+| --- | :---: | :---: | :---: | :---: | --- |
+| **Init** | `I` | 关闭 | 关闭 | 关闭 | 链路初始化，仅允许主站直接读写 ESC 寄存器与 EEPROM |
+| **Pre-Operational** | `P` | **开启** | 关闭 | 关闭 | 开启 SM0/SM1 邮箱通道，主站通过 SDO 配置参数、下发 `0xF030` 模块列表与 `0x1C12/0x1C13` 动态 PDO 映射 |
+| **Safe-Operational** | `S` | **开启** | **开启** | 保持安全状态 | 开启 SM3 输入数据上传（从站 → 主站），硬件输出仍处于安全锁定状态，不实际驱动外部执行器 |
+| **Operational** | `O` | **开启** | **开启** | **开启** | 全功能闭环运行，主站通过 SM2 下发的输出数据正式驱动从站物理硬件 |
+| **Bootstrap** | `B` | 仅 FoE | 关闭 | 关闭 | 可选状态，专用于通过 FoE（File Access over EtherCAT）进行固件升级 |
 
-**目标**：建立完整的闭环控制，允许主站的输出数据实际驱动从站的物理硬件，例如电机转动或继电器闭合。
+### 状态转换流程与校验条件
 
-主站必须完成的配置条件：
+SSC 协议栈中处理状态转换请求的核心入口函数是 `AL_ControlInd()`（位于 `ecatslv.c`）。每次状态跃迁都必须由主站完成前置寄存器配置，并通过从站内部校验后才会置位新状态；若校验失败，从站会置位错误标志（Error Ind）并将错误原因写入 **AL Status Code（`0x0134`）** 寄存器。
 
-- 主站必须在请求 `Op` 状态之前，发送有效的、工作计数器（WKC）正确的输出过程数据。
-- 写入 AL Control 寄存器请求 `Op` 状态。
+#### 1. Init (`I`) → Pre-Operational (`P`)
 
-从站内部的校验条件：
+**目标**：建立非周期性的邮箱（Mailbox）通信通道，以便后续通过 SDO 配置对象字典。
 
-- 确认接收到了有效的主站输出数据，也就是 SM2 缓冲区被成功写入。
-- 如果启用了分布式时钟（DC），从站的本地时钟必须已经与主站时钟实现同步锁定（Sync Locked）。
-- 确认应用层准备就绪，释放输出硬件的安全锁。
+- **主站完成的配置**：
+  - 配置 **SyncManager 0（SM0）**：Mailbox Out（主站发送 → 从站接收）。
+  - 配置 **SyncManager 1（SM1）**：Mailbox In（从站发送 → 主站接收）。
+  - 向 AL Control 寄存器写入 `STATE_PREOP` 请求。
+- **从站内部校验（`CheckSmSettings` & `APPL_StartMailboxHandler`）**：
+  - 校验 SM0 和 SM1 的物理起始地址、长度和控制字是否与协议栈宏定义（及 ESI XML）一致。
+  - 初始化从站内部邮箱收发缓冲区。
 
-### 常见错误码
+#### 2. Pre-Operational (`P`) → Safe-Operational (`S`)
 
-- `0x001E`：Invalid SM IN Configuration，通常是 SM3 长度与 PDO 映射不符。
-- `0x001D`：Invalid SM OUT Configuration，通常是 SM2 长度问题。
-- `0x001B`：SM Latch Process Informed，通常是同步触发问题。
+**目标**：锁定周期性过程数据（Process Data）映射长度，配置 SM2/SM3 与 FMMU，启动从站输入采集。**这是涉及动态 PDO 和 Slot/Module 时最容易报错的阶段。**
+
+- **主站完成的配置**：
+  - 通过 SDO 完成对象字典配置（如写入 `0xF030` 模块列表、写入 `0x1C12`/`0x1C13` 及 `0x16xx`/`0x1Axx` 动态 PDO 映射）。
+  - 根据当前 PDO 映射结果配置 **SyncManager 2（SM2，Outputs）** 和 **SyncManager 3（SM3，Inputs）** 的起始地址、长度与控制字。
+  - 配置 **FMMU（Fieldbus Memory Management Unit）**，建立逻辑地址到从站物理地址的映射。
+  - 若启用分布式时钟（DC），配置 DC 同步周期（`SYNC0` / `SYNC1` Cycle Time）与启动偏移。
+  - 向 AL Control 寄存器写入 `STATE_SAFEOP` 请求。
+- **从站内部校验（`APPL_GenerateMapping` → `CheckSmSettings` → `APPL_StartInputHandler`）**：
+  - 调用 `APPL_GenerateMapping(&u16InputSize, &u16OutputSize)` 计算从站当前认为生效的输入/输出字节总长。
+  - **严格比对**：主站写入 SM2 寄存器的长度必须等于 `u16OutputSize`，写入 SM3 寄存器的长度必须等于 `u16InputSize`；若不一致，直接拒绝进入 `Safe-Op` 并报 `0x001D` 或 `0x001E`。
+  - 校验 DC 同步配置并启动输入数据首次打包更新（`APPL_InputMapping`）。
+
+#### 3. Safe-Operational (`S`) → Operational (`O`)
+
+**目标**：建立完整闭环控制，释放硬件安全锁，允许主站输出数据驱动从站执行机构。
+
+- **主站完成的配置**：
+  - 持续发送周期性过程数据帧，确保输出数据有效且工作计数器（WKC）正常。
+  - 向 AL Control 寄存器写入 `STATE_OP` 请求。
+- **从站内部校验（`APPL_StartOutputHandler`）**：
+  - 确认已收到有效的 SM2 输出过程数据事件（或在自由运行/同步模式下已完成首次输出更新）。
+  - 若启用了分布式时钟（DC），确认本地时钟已与主站参考时钟完成同步锁定，且正常接收到 `SYNC0` 中断。
+  - 调用 `APPL_StartOutputHandler()`，激活硬件输出。
+
+### 常见 AL Status Code 错误码速查
+
+当 TwinCAT 报状态切换失败（如卡在 `INIT to PREOP`、`PREOP to SAFEOP` 或从 `OP` 掉回 `SAFEOP + ERROR`）时，优先查看 TwinCAT Logger 中的 **AL Status Code（`0x0134`）**：
+
+| 错误码 | 标准名称 | 常见触发阶段 | 根因分析与排查方向 |
+| :---: | --- | :---: | --- |
+| `0x0016` | **Invalid mailbox configuration** | `I → P` | SM0/SM1 邮箱起始地址或长度不匹配。检查 `ecat_def.h` 中的 `MIN_MBX_SIZE` / `MAX_MBX_SIZE`、`MBX_WRITE_START_ADDR` 是否与 ESI XML `<Sm>` 配置及 EEPROM 内容一致。 |
+| `0x001D` | **Invalid output configuration** | `P → S` | **SM2（Outputs）配置错误**。最常见原因是主站配置的 RxPDO 总字节数与从站 `APPL_GenerateMapping()` 算出的 `u16OutputSize` 不相等（如 `0x1C12` / `0x16xx` 动态映射未正确生效、Slot 偏移步进不一致、或未对齐到偶数字节/位填充缺失）。 |
+| `0x001E` | **Invalid input configuration** | `P → S` | **SM3（Inputs）配置错误**。原因同上，主站配置的 TxPDO 总字节数与从站算出的 `u16InputSize`（`0x1C13` / `0x1Axx`）不一致。 |
+| `0x001B` | **Sync manager watchdog** | `S` / `O` 运行中掉线 | **SM2 过程数据看门狗超时**。从站在看门狗超时期限内未检测到主站更新 SM2 数据。常见于：主站断线/停止发帧、MCU 的 `ESC_IRQ` 中断丢失、或 SPI 总线因中断抢占发生死锁导致无法读取 AL Event。 |
+| `0x002C` / `0x002D` | **Fatal sync error / No sync error** | `S → O` 或 `O` 运行中 | **DC 分布式时钟同步错误 / 未收到 SYNC 信号**。检查 LAN9252 的 `SYNC0`/`SYNC1` 引脚是否已正确配置并输出脉冲、MCU 对应 `EXTI` 中断是否正常触发 `Sync0_Isr()`。 |
+| `0x0030` | **Invalid DC SYNCH configuration** | `P → S` | DC 同步周期或激活配置不合法。检查 XML 中 `<Dc><OpMode>` 配置与代码中 `DC_SUPPORTED` 相关宏是否匹配。 |
