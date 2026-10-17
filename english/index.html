@@ -4,8 +4,7 @@ title: 每日英语
 description: 每天一句有出处的英文，附译文、语法和词汇。
 permalink: /english/index.html
 ---
-<h1>每日英语</h1>
-<p class="lede">每天一句有出处的英文，附译文、语法和词汇。新的条目排在前面。</p>
+<header class="page-heading"><h1>每日英语</h1></header>
 {% assign days = site.english | sort: "day" | reverse %}
 {% if days.size == 0 %}
 <p>还没有发布的句子。</p>

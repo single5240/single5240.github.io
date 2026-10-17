@@ -1,6 +1,6 @@
 {% include daily-quote-select.html %}
 <figure class="daily-quote" data-daily-quote data-quote-index="{{ quote_index }}" data-quote-step="{{ quote_step }}" aria-label="每日一句">
-  <p class="eyebrow">每日一句 / 慢慢积累</p>
+  <p class="eyebrow">每日一句</p>
   <blockquote><p class="daily-quote-zh" lang="zh-CN">{{ daily.zh | escape }}</p><p class="daily-quote-en" lang="en">{{ daily.en | escape }}</p></blockquote>
   <figcaption class="daily-quote-meta"><span class="daily-quote-author">{{ daily.author | escape }}</span><span class="daily-quote-source"{% unless daily.source %} hidden{% endunless %}>{{ daily.source | escape }}</span></figcaption>
 </figure>

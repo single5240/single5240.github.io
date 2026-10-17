@@ -6,4 +6,4 @@ section: projects
 wide: true
 permalink: /projects/index.html
 ---
-<header class="page-heading"><p class="eyebrow">THE LAB</p><h1>让想法，运行起来<span class="accent">。</span></h1><p class="lede">从界面到逻辑，可以亲手试一试的工程实践。</p></header><h2 class="visually-hidden">项目列表</h2>{% for project in site.data.projects %}{% include project-card.html project=project %}{% endfor %}<div class="end-note">这里展示项目的交互与设计思路。涉及硬件的结果，以相应实测条件和记录为准。</div>
+<header class="page-heading"><h1>项目</h1></header><h2 class="visually-hidden">项目列表</h2>{% for project in site.data.projects %}{% include project-card.html project=project %}{% endfor %}

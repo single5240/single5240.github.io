@@ -4,8 +4,7 @@ title: AI 资讯
 description: 按日收录的 AI 资讯日报，每天一篇。
 permalink: /ai-news/index.html
 ---
-<h1>AI 资讯</h1>
-<p class="lede">每天一篇日报，列表按周归档，同一周里按日期从早到晚排列。</p>
+<header class="page-heading"><h1>AI 资讯</h1></header>
 {% if site.data.ai_news and site.data.ai_news.weeks.size > 0 %}
   {% for week in site.data.ai_news.weeks %}
   <section class="week" id="week-{{ week.id }}" aria-labelledby="week-{{ week.id }}-title">
