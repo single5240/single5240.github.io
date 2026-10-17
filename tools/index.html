@@ -1,0 +1,548 @@
+---
+layout: frame
+title: 嵌入式开发在线工具箱
+description: 纯前端零依赖的嵌入式联调工作台：进制/字节序/IEEE-754 浮点转换、CRC8/16/32 与 Modbus RTU 帧拆包、32-bit 寄存器位域与 HardFault 解码、24-bit ADC 换算与定时器分频、RGB565 调色与 1-bit 字模预览。
+section: tools
+wide: true
+permalink: /tools/index.html
+---
+<header class="page-heading">
+  <p class="eyebrow">EMBEDDED WORKBENCH · OFFLINE-READY</p>
+  <h1>嵌入式开发在线工具箱</h1>
+  <p class="lede">将单片机裸机开发、串口/Modbus 联调、Cortex-M 异常排障与 LCD 显示驱动中最常用的计算器整合在同一工作台。所有运算均在浏览器本地实时完成，不上传任何报文或工程数据，并可直接一键复制 C99 宏定义与数组字面量。</p>
+</header>
+
+<nav class="tools-nav" aria-label="工具模块快速跳转">
+  <button type="button" class="tools-tab-btn" data-tool-jump="radix" aria-selected="true"><span class="tools-tab-num">01</span>进制 / 字节序 / 浮点</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="crc-modbus" aria-selected="false"><span class="tools-tab-num">02</span>CRC 校验 &amp; Modbus 帧</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="register-fault" aria-selected="false"><span class="tools-tab-num">03</span>寄存器位域 &amp; HardFault</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="adc-timer" aria-selected="false"><span class="tools-tab-num">04</span>ADC 换算 &amp; 定时器分频</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="display-font" aria-selected="false"><span class="tools-tab-num">05</span>RGB565 色彩 &amp; 点阵字模</button>
+</nav>
+
+<!-- 01. 进制、字节序与 IEEE-754 浮点转换 -->
+<section class="tool-section" id="radix" aria-labelledby="title-radix">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">01 · RADIX / ENDIANNESS / IEEE-754 FLOAT</p>
+      <h2 id="title-radix">进制、字节序与 IEEE-754 浮点/定点转换器</h2>
+      <p>支持 32-bit 无符号/有符号整数、十六进制、二进制（4-bit 分组）、八进制与 IEEE-754 单精度 <code>float</code> 任意框输入实时双向同步。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>多进制与 IEEE-754 实时互转</span>
+        <span class="tool-hint">32-bit 寄存器字宽</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <div class="tool-label-row">
+            <label class="tool-label" for="radix-hex">HEX (十六进制)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="radix-hex">复制</button>
+          </div>
+          <input type="text" id="radix-hex" class="tool-input" value="0x40490FDB" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <div class="tool-label-row">
+            <label class="tool-label" for="radix-float">IEEE-754 Float (单精度)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="radix-float">复制</button>
+          </div>
+          <input type="text" id="radix-float" class="tool-input" value="3.1415927" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <div class="tool-label-row">
+            <label class="tool-label" for="radix-dec-u">DEC (uint32_t 无符号)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="radix-dec-u">复制</button>
+          </div>
+          <input type="text" id="radix-dec-u" class="tool-input" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <div class="tool-label-row">
+            <label class="tool-label" for="radix-dec-s">DEC (int32_t 补码有符号)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="radix-dec-s">复制</button>
+          </div>
+          <input type="text" id="radix-dec-s" class="tool-input" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="tool-field">
+        <div class="tool-label-row">
+          <label class="tool-label" for="radix-bin">BIN (32-bit 二进制，每 4 位分组)</label>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="radix-bin">复制</button>
+        </div>
+        <input type="text" id="radix-bin" class="tool-input" spellcheck="false">
+      </div>
+
+      <div class="tool-field">
+        <div class="tool-label-row">
+          <label class="tool-label" for="radix-oct">OCT (八进制)</label>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="radix-oct">复制</button>
+        </div>
+        <input type="text" id="radix-oct" class="tool-input" spellcheck="false">
+      </div>
+
+      <div class="tool-btn-row" aria-label="快捷位运算与预设">
+        <button type="button" class="tool-btn" data-radix-op="shl">左移 &lt;&lt; 1</button>
+        <button type="button" class="tool-btn" data-radix-op="shr">无符号右移 &gt;&gt; 1</button>
+        <button type="button" class="tool-btn" data-radix-op="not">按位取反 ~</button>
+        <button type="button" class="tool-btn" data-radix-op="bswap">字节序翻转 (__REV)</button>
+        <button type="button" class="tool-btn" data-radix-op="pi">预设: π (3.1415927f)</button>
+        <button type="button" class="tool-btn" data-radix-op="stm32base">预设: 0x08000000</button>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>字节序 (Endianness) 与浮点/定点拆解</span>
+        <span class="tool-hint">Cortex-M / Modbus</span>
+      </h3>
+      <table class="kv-table" aria-label="字节序与浮点定点详情">
+        <tbody>
+          <tr>
+            <th>大端序 (Big-Endian / 网络序)</th>
+            <td><span id="radix-be">40 49 0F DB</span></td>
+          </tr>
+          <tr>
+            <th>小端序 (Little-Endian / ARM 内存)</th>
+            <td><span id="radix-le">DB 0F 49 40</span></td>
+          </tr>
+          <tr>
+            <th>半字内交换 (<code>__REV16</code>)</th>
+            <td id="radix-rev16">0x4940DB0F</td>
+          </tr>
+          <tr>
+            <th>Modbus 32-bit 双字序</th>
+            <td id="radix-cdab">ABCD / CDAB / BADC</td>
+          </tr>
+          <tr>
+            <th>ASCII 四字节预览</th>
+            <td id="radix-ascii">"@I··"</td>
+          </tr>
+          <tr>
+            <th>IEEE-754 字段拆解</th>
+            <td id="radix-ieee-detail">Sign=0 | Exp=0x80 | Mant=0x490FDB</td>
+          </tr>
+          <tr>
+            <th>Q15 定点数 (低 16 位 / 32768)</th>
+            <td id="radix-q15">0.123871</td>
+          </tr>
+          <tr>
+            <th>Q31 定点数 (32 位 / 2^31)</th>
+            <td id="radix-q31">0.50222742</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 02. CRC 全家桶与 Modbus RTU 帧构造/拆包校验器 -->
+<section class="tool-section" id="crc-modbus" aria-labelledby="title-crc">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">02 · CRC SUITE &amp; MODBUS RTU INSPECTOR</p>
+      <h2 id="title-crc">CRC8/16/32 计算器与 Modbus RTU 帧构造/拆包校验器</h2>
+      <p>输入十六进制字节流或 ASCII 字符串，同步计算 7 种嵌入式常用校验值，支持一键构造 Modbus RTU 读写请求帧或对抓包报文做 CRC 诊断。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>多算法 CRC / Checksum 批量计算</span>
+        <span id="crc-status" class="status-pill ok">共 6 字节</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field" style="grid-column: span 2;">
+          <div class="tool-label-row">
+            <label class="tool-label" for="crc-input">输入报文负载 (不含尾部 CRC，支持空格/逗号/0x 分隔)</label>
+            <select id="crc-mode" class="tool-select" style="width: auto; padding: 3px 8px; font-size: 12px;" aria-label="输入编码格式">
+              <option value="hex" selected>HEX 十六进制字节</option>
+              <option value="ascii">ASCII 文本字符</option>
+            </select>
+          </div>
+          <textarea id="crc-input" class="tool-textarea" spellcheck="false">01 03 00 00 00 02</textarea>
+        </div>
+      </div>
+
+      <div class="tool-btn-row" style="margin-bottom: 12px;">
+        <button type="button" class="tool-btn" data-crc-preset="01 03 00 00 00 02">03H 读保持寄存器</button>
+        <button type="button" class="tool-btn" data-crc-preset="01 06 00 01 00 17">06H 写单寄存器</button>
+        <button type="button" class="tool-btn" data-crc-preset="31 32 33 34 35 36 37 38 39">标准测试串 "123456789"</button>
+      </div>
+
+      <table class="kv-table" aria-label="CRC 计算结果列表">
+        <tbody id="crc-results-body"></tbody>
+      </table>
+
+      <div class="tool-field" style="margin-top: 14px;">
+        <div class="tool-label-row">
+          <span class="tool-label">追加 Modbus CRC-16 后的完整发送帧 &amp; C 数组</span>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="tool-btn copy-mini" data-copy-target="crc-modbus-frame">复制 Hex 帧</button>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="crc-c-array">复制 C 数组</button>
+          </div>
+        </div>
+        <pre id="crc-modbus-frame" class="code-output">01 03 00 00 00 02 C4 0B</pre>
+        <pre id="crc-c-array" class="code-output">const uint8_t frame[8] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B };</pre>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>Modbus RTU 帧构造器 &amp; 抓包解析诊断</span>
+        <span class="tool-hint">RS-485 联调</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="mb-slave">从站地址 (Slave ID)</label>
+          <input type="number" id="mb-slave" class="tool-input" value="1" min="0" max="247">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="mb-func">功能码 (Function)</label>
+          <select id="mb-func" class="tool-select">
+            <option value="3" selected>0x03 读保持寄存器</option>
+            <option value="4">0x04 读输入寄存器</option>
+            <option value="6">0x06 写单个寄存器</option>
+            <option value="16">0x10 写多个寄存器</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="mb-addr">起始寄存器地址 (DEC)</label>
+          <input type="number" id="mb-addr" class="tool-input" value="0" min="0" max="65535">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="mb-val">寄存器数量 / 写入值 (10H 可空格分隔多个)</label>
+          <input type="text" id="mb-val" class="tool-input" value="2" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="tool-btn-row" style="margin-bottom: 18px;">
+        <button type="button" id="mb-build-btn" class="tool-btn primary">生成 Modbus 帧并同步校验 ↓</button>
+      </div>
+
+      <div class="tool-field">
+        <div class="tool-label-row">
+          <label class="tool-label" for="mb-inspect-input">粘贴完整抓包 Hex 帧（自动校验尾部 CRC 并解析语义）</label>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="mb-inspect-input">复制</button>
+        </div>
+        <input type="text" id="mb-inspect-input" class="tool-input" value="01 03 00 00 00 02 C4 0B" spellcheck="false">
+      </div>
+
+      <div id="mb-inspect-result" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 03. 32-bit 寄存器位域编辑器与 Cortex-M HardFault 解码器 -->
+<section class="tool-section" id="register-fault" aria-labelledby="title-reg">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">03 · 32-BIT REGISTER BITFIELD &amp; CORTEX-M HARDFAULT DECODER</p>
+      <h2 id="title-reg">32-bit 寄存器位域可视化编辑器 &amp; HardFault 状态解码</h2>
+      <p>点击任意 Bit 位翻转 0/1，实时生成无副作用的 C99 掩码与置位代码；下方支持一键解码 Cortex-M3/M4/M7 的 <code>SCB-&gt;CFSR</code> 与 <code>SCB-&gt;HFSR</code> 崩溃原因。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card tool-card-full">
+      <h3>
+        <span>32-bit 寄存器位域交互面板 (点击格子切换 0 / 1，橙色下划线为当前选中位域)</span>
+        <div class="tool-btn-row" style="margin:0;">
+          <button type="button" class="tool-btn copy-mini" data-reg-op="clear">全清 0x00000000</button>
+          <button type="button" class="tool-btn copy-mini" data-reg-op="fill">全置 0xFFFFFFFF</button>
+          <button type="button" class="tool-btn copy-mini" data-reg-op="invert">按位取反</button>
+        </div>
+      </h3>
+
+      <div id="bitfield-grid" class="bit-grid-wrap" role="group" aria-label="32位寄存器位域按钮组"></div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="reg-val-hex">寄存器 32-bit 值 (HEX)</label>
+          <input type="text" id="reg-val-hex" class="tool-input" value="0x00008200" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="reg-name">宏/位域名称前缀</label>
+          <input type="text" id="reg-name" class="tool-input" value="SPI_CTRL_BAUD" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="slice-msb">位域高位 MSB (0..31)</label>
+          <input type="number" id="slice-msb" class="tool-input" value="15" min="0" max="31">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="slice-lsb">位域低位 LSB (0..31)</label>
+          <input type="number" id="slice-lsb" class="tool-input" value="8" min="0" max="31">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="slice-val">当前位域切片值 [MSB:LSB]</label>
+          <input type="text" id="slice-val" class="tool-input" readonly>
+        </div>
+      </div>
+
+      <div class="tool-field">
+        <div class="tool-label-row">
+          <span class="tool-label">自动生成的 C99 位域掩码与安全读写代码</span>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="bitfield-c-code">复制代码</button>
+        </div>
+        <pre id="bitfield-c-code" class="code-output"></pre>
+      </div>
+    </div>
+
+    <div class="tool-card tool-card-full">
+      <h3>
+        <span>Cortex-M3 / M4 / M7 HardFault 故障寄存器 (CFSR / HFSR / BFAR) 解码器</span>
+        <span class="tool-hint">SCB @ 0xE000ED28</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="fault-cfsr">SCB-&gt;CFSR (0xE000ED28: UFSR|BFSR|MMFSR)</label>
+          <input type="text" id="fault-cfsr" class="tool-input" value="0x00008200" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="fault-hfsr">SCB-&gt;HFSR (0xE000ED2C: 高级故障状态)</label>
+          <input type="text" id="fault-hfsr" class="tool-input" value="0x40000000" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="fault-bfar">SCB-&gt;BFAR / MMFAR (0xE000ED38 / 34)</label>
+          <input type="text" id="fault-bfar" class="tool-input" value="0x0000000C" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="tool-btn-row">
+        <button type="button" class="tool-btn" data-fault-preset="precis" data-cfsr="0x00008200" data-hfsr="0x40000000" data-bfar="0x0000000C">典型案例 1: 空指针结构体解引用 (PRECISERR+BFARVALID)</button>
+        <button type="button" class="tool-btn" data-fault-preset="invstate" data-cfsr="0x00020000" data-hfsr="0x40000000" data-bfar="0x00000000">典型案例 2: 毁栈/偶地址函数指针 (INVSTATE)</button>
+        <button type="button" class="tool-btn" data-fault-preset="nocp" data-cfsr="0x00080000" data-hfsr="0x40000000" data-bfar="0x00000000">典型案例 3: 未开 FPU 执行浮点指令 (NOCP)</button>
+        <button type="button" class="tool-btn" data-fault-preset="stkerr" data-cfsr="0x00001000" data-hfsr="0x40000000" data-bfar="0x00000000">典型案例 4: 栈溢出击穿 RAM 下界 (STKERR)</button>
+      </div>
+
+      <ul id="fault-results" class="fault-list" aria-live="polite"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- 04. ADC 码值换算与定时器/PWM/波特率分频计算器 -->
+<section class="tool-section" id="adc-timer" aria-labelledby="title-adc">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">04 · PRECISION ADC &amp; MCU TIMER / UART CALCULATOR</p>
+      <h2 id="title-adc">24-bit/12-bit ADC 码值换算 &amp; 定时器 PWM / 串口分频计算器</h2>
+      <p>支持 AD7190/ADS1256 等 Σ-Δ ADC 的双极性偏移二进制（<code>0x800000 = 0V</code>）、补码与单极性码值双向换算，以及定时器 <code>PSC/ARR</code> 零误差整数配参。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>高精度 ADC 码值 ↔ 差分电压双向换算</span>
+        <span class="tool-hint">AD7190 / STM32 ADC</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="adc-bits">分辨率位数</label>
+          <select id="adc-bits" class="tool-select">
+            <option value="12">12-bit (0..4095, 片内 SAR)</option>
+            <option value="16">16-bit (0..65535)</option>
+            <option value="24" selected>24-bit (0..16777215, AD7190)</option>
+          </select>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="adc-vref">基准电压 Vref (V)</label>
+          <input type="number" id="adc-vref" class="tool-input" value="5.0" step="0.01" min="0.1">
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="adc-pga">PGA 增益倍数</label>
+          <select id="adc-pga" class="tool-select">
+            <option value="1">1× (无增益)</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+            <option value="8">8×</option>
+            <option value="16">16×</option>
+            <option value="32">32×</option>
+            <option value="64">64×</option>
+            <option value="128" selected>128× (称重传感器常用)</option>
+          </select>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="adc-mode">编码极性模式</label>
+          <select id="adc-mode" class="tool-select">
+            <option value="unipolar">单极性 (Unipolar: 0 ~ +FSR)</option>
+            <option value="bipolar_offset" selected>双极性偏移二进制 (0x800000 = 0V)</option>
+            <option value="twos_comp">双极性补码 (Two's Complement)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="adc-code">输入 ADC 原始码值 (支持 0x 十六进制或十进制)</label>
+          <input type="text" id="adc-code" class="tool-input" value="0x834500" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="adc-volt-mv">输入差分电压 (mV，反向求码值)</label>
+          <input type="number" id="adc-volt-mv" class="tool-input" step="0.01">
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="ADC 换算结果摘要">
+        <tbody id="adc-summary"></tbody>
+      </table>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>16-bit 定时器 (PSC / ARR / CCR) &amp; UART 分频计算</span>
+        <span class="tool-hint">N32G455 / STM32</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="tim-clk-mhz">定时器/外设时钟 (MHz)</label>
+          <input type="number" id="tim-clk-mhz" class="tool-input" value="144" step="1" min="1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="tim-target-hz">目标频率 (Hz)</label>
+          <input type="number" id="tim-target-hz" class="tool-input" value="1000" step="1" min="0.1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="tim-duty">PWM 占空比 (%)</label>
+          <input type="number" id="tim-duty" class="tool-input" value="50" step="1" min="0" max="100">
+        </div>
+      </div>
+
+      <p class="tool-label" style="margin: 4px 0 8px;">最优 16-bit 分频组合推荐 (f = f_clk / ((PSC + 1) × (ARR + 1)))</p>
+      <table class="kv-table" aria-label="定时器分频候选解">
+        <tbody id="tim-results-body"></tbody>
+      </table>
+
+      <p class="tool-label" style="margin: 16px 0 8px;">当前外设时钟下的 UART 波特率分频与误差 (16× 过采样)</p>
+      <table class="kv-table" aria-label="UART 波特率误差表">
+        <tbody id="uart-results-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 05. RGB888 <-> RGB565 调色板与 1-bit 点阵字模预览/编辑器 -->
+<section class="tool-section" id="display-font" aria-labelledby="title-display">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">05 · RGB565 COLOR &amp; 1-BIT BITMAP FONT INSPECTOR</p>
+      <h2 id="title-display">RGB888 ↔ RGB565 调色板（含 DMA 字节序交换）与 1-bit 字模预览器</h2>
+      <p>直观对比 ST7789/ILI9341 屏幕在 8-bit SPI DMA 发送时未交换高低字节导致的偏色现象；右侧支持手绘或粘贴 C 语言数组反查 1-bit 单色字模点阵。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>RGB888 ↔ RGB565 双向转换与 SPI 字节序对比</span>
+        <span class="tool-hint">ST7789 / ILI9341</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="rgb-picker">取色器</label>
+          <input type="color" id="rgb-picker" class="tool-input" value="#0f818d" style="height: 40px; padding: 3px 6px; cursor: pointer;">
+        </div>
+        <div class="tool-field">
+          <div class="tool-label-row">
+            <label class="tool-label" for="rgb888-hex">RGB888 (#RRGGBB)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="rgb888-hex">复制</button>
+          </div>
+          <input type="text" id="rgb888-hex" class="tool-input" value="#0F818D" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <div class="tool-label-row">
+            <label class="tool-label" for="rgb565-hex">RGB565 (16-bit HEX)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="rgb565-hex">复制</button>
+          </div>
+          <input type="text" id="rgb565-hex" class="tool-input" value="0x0C11" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="swatch-grid">
+        <div class="swatch-box">
+          <div id="swatch-orig" class="swatch-color"></div>
+          <div id="swatch-orig-meta" class="swatch-meta"></div>
+        </div>
+        <div class="swatch-box">
+          <div id="swatch-565" class="swatch-color"></div>
+          <div id="swatch-565-meta" class="swatch-meta"></div>
+        </div>
+        <div class="swatch-box">
+          <div id="swatch-swap" class="swatch-color"></div>
+          <div id="swatch-swap-meta" class="swatch-meta"></div>
+        </div>
+      </div>
+
+      <div class="tool-field">
+        <div class="tool-label-row">
+          <span class="tool-label">C99 颜色宏定义 (标准 / SPI 8-bit 高低字节交换 / BGR565)</span>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="rgb-c-code">复制宏</button>
+        </div>
+        <pre id="rgb-c-code" class="code-output"></pre>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>1-bit 单色点阵字模/图标预览与互转编辑器</span>
+        <span class="tool-hint">支持粘贴 C 数组反查</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="font-size-select">点阵尺寸 (宽 × 高)</label>
+          <select id="font-size-select" class="tool-select">
+            <option value="8x16" selected>8 × 16 (ASCII 半角标准)</option>
+            <option value="12x12">12 × 12 (紧凑汉字/符号)</option>
+            <option value="16x16">16 × 16 (标准汉字/图标)</option>
+          </select>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="font-order-select">取模走向与位序</label>
+          <select id="font-order-select" class="tool-select">
+            <option value="row_msb" selected>逐行式 · 高位在前 (Row-Major MSB First)</option>
+            <option value="row_lsb">逐行式 · 低位在前 (Row-Major LSB First)</option>
+            <option value="col_lsb">逐列页式 · 低位在上 (SSD1306 OLED 页模式)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tool-btn-row" style="margin-bottom: 12px;">
+        <button type="button" class="tool-btn" data-font-preset="8x16_A">示例: 8×16 'A'</button>
+        <button type="button" class="tool-btn" data-font-preset="12x12_degC">示例: 12×12 '℃'</button>
+        <button type="button" class="tool-btn" data-font-preset="16x16_warn">示例: 16×16 告警图标</button>
+        <button type="button" class="tool-btn" data-font-preset="invert">反相</button>
+        <button type="button" class="tool-btn" data-font-preset="clear">清空画布</button>
+      </div>
+
+      <div class="tool-row" style="align-items: start;">
+        <div class="pixel-canvas-wrap">
+          <span class="tool-label">点击或按住拖拽绘制像素：</span>
+          <div id="font-pixel-grid" class="pixel-grid" role="group" aria-label="1-bit 点阵像素画布"></div>
+        </div>
+        <div class="tool-field" style="margin:0;">
+          <div class="tool-label-row">
+            <label class="tool-label" for="font-hex-textarea">C 语言字模数组 (修改数组可反向刷新左侧点阵)</label>
+            <button type="button" class="tool-btn copy-mini" data-copy-target="font-hex-textarea">复制</button>
+          </div>
+          <textarea id="font-hex-textarea" class="tool-textarea" style="min-height: 220px;" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<p class="end-note">关联实战笔记：<a class="text-link" href="{{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }}">ST7789 RGB565 色彩异常与字节序排查</a> · <a class="text-link" href="{{ '/articles/embedded-1bit-bitmap-font-pipeline.html' | relative_url }}">嵌入式 1-bit 点阵字库生成与基线对齐管线</a> · <a class="text-link" href="{{ '/articles/n32g455-spi-dma-guide.html' | relative_url }}">N32G455 SPI + DMA 采集与刷屏工程指南</a></p>
+
+<script src="{{ '/assets/js/embedded-tools.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>

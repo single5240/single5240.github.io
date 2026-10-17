@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="460" viewBox="0 0 640 460">
+<defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#c4d3cf" stroke-width=".6"/></pattern></defs>
+<rect width="640" height="460" fill="#e9efeb"/><rect width="640" height="460" fill="url(#grid)"/>
+<g fill="none" stroke="#79948d" stroke-width="1">
+  <path d="M34 96H134M34 230H134M34 364H134M506 136H606M506 324H606"/>
+  <circle cx="34" cy="96" r="3"/><circle cx="34" cy="230" r="3"/><circle cx="34" cy="364" r="3"/>
+  <circle cx="606" cy="136" r="3"/><circle cx="606" cy="324" r="3"/>
+</g>
+<g font-family="monospace" font-size="10.5" fill="#41675d">
+  <text x="34" y="82">HEX / IEEE754</text>
+  <text x="34" y="216">CRC / MODBUS</text>
+  <text x="34" y="350">CFSR / BITFIELD</text>
+  <text x="514" y="122">24-bit ADC</text>
+  <text x="514" y="310">RGB565 / 1BPP</text>
+</g>
+<rect x="134" y="32" width="372" height="384" rx="16" fill="#283d38"/>
+<rect x="144" y="42" width="352" height="364" rx="12" fill="#172826" stroke="#688277"/>
+<g font-family="monospace" fill="#d7e7d8">
+  <text x="164" y="68" font-size="11" fill="#80c7a7">EMBEDDED WORKBENCH · 5 IN 1 TOOLS</text>
+  <path d="M164 80H476" stroke="#3c5d53"/>
+  <rect x="164" y="92" width="312" height="52" rx="6" fill="#213833" stroke="#4b6e63"/>
+  <text x="178" y="112" font-size="11" font-weight="bold">01 · 进制 / 字节序 / IEEE-754 Float</text>
+  <text x="178" y="131" font-size="9.5" fill="#9fb5aa">0x40490FDB ↔ 3.1415927f · Little/Big Endian · Q15/Q31</text>
+  <rect x="164" y="154" width="312" height="52" rx="6" fill="#213833" stroke="#4b6e63"/>
+  <text x="178" y="174" font-size="11" font-weight="bold">02 · CRC 全家桶 &amp; Modbus RTU 帧拆包</text>
+  <text x="178" y="193" font-size="9.5" fill="#9fb5aa">01 03 00 00 00 02 [C4 0B] · CRC8/16/32 · LRC/XOR</text>
+  <rect x="164" y="216" width="312" height="52" rx="6" fill="#213833" stroke="#4b6e63"/>
+  <text x="178" y="236" font-size="11" font-weight="bold">03 · 32-bit 寄存器位域 &amp; HardFault 解码</text>
+  <text x="178" y="255" font-size="9.5" fill="#9fb5aa">SCB-&gt;CFSR / HFSR 根因诊断 · C99 掩码与置位宏生成</text>
+  <rect x="164" y="278" width="150" height="58" rx="6" fill="#1d322e" stroke="#4b6e63"/>
+  <text x="176" y="298" font-size="10.5" font-weight="bold">04 · ADC &amp; 定时器</text>
+  <text x="176" y="314" font-size="8.5" fill="#9fb5aa">AD7190 24b 码值换算</text>
+  <text x="176" y="327" font-size="8.5" fill="#80c7a7">TIM PSC/ARR 零误差配参</text>
+  <rect x="326" y="278" width="150" height="58" rx="6" fill="#1d322e" stroke="#4b6e63"/>
+  <text x="338" y="298" font-size="10.5" font-weight="bold">05 · RGB565 &amp; 字模</text>
+  <text x="338" y="314" font-size="8.5" fill="#9fb5aa">DMA 高低字节交换预览</text>
+  <text x="338" y="327" font-size="8.5" fill="#80c7a7">1-bit 点阵取模与反查</text>
+  <text x="164" y="366" font-size="9.5" fill="#9fb5aa">Pure Client-Side · Offline Ready · Zero Dependencies</text>
+  <text x="164" y="386" font-size="10" fill="#80c7a7">/tools/index.html  →  C99 Code Snippet Ready</text>
+</g>
+<text x="25" y="438" fill="#55776b" font-family="monospace" font-size="10">EMBEDDED ENGINEERING TOOLBOX / 嵌入式在线工具箱</text>
+</svg>

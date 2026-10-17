@@ -7,6 +7,9 @@
 - label: 项目
   url: /projects/index.html
   section: projects
+- label: 工具
+  url: /tools/index.html
+  section: tools
 - label: 日常
   url: /daily/index.html
   section: daily

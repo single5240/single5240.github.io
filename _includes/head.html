@@ -30,3 +30,6 @@
 <link rel="stylesheet" href="{{ '/assets/css/syntax.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/article.css' | relative_url }}?v={{ site.time | date: '%s' }}">
 {% endif %}
+{% if page.section == 'tools' %}
+<link rel="stylesheet" href="{{ '/assets/css/tools.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+{% endif %}

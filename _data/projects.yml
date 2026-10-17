@@ -31,3 +31,17 @@
   articles:
     - n32g455-spi-dma-guide
   boundary: 全部 16 个 Skill 均含完整触发说明、检查清单与配套参考代码。
+- id: embedded-tools
+  title: 嵌入式开发在线工具箱
+  subtitle: 零依赖纯前端的五合一硬件与协议联调工作台
+  description: 集成 32-bit 进制/字节序/IEEE-754 浮点与 Q15/Q31 定点转换、CRC8/16/32 全家桶与 Modbus RTU 帧构造/拆包、32-bit 寄存器位域可视化与 Cortex-M HardFault (CFSR/HFSR) 解码、24-bit ADC 换算与定时器分频、RGB565 调色板与 1-bit 字模预览编辑器。
+  url: /tools/index.html
+  image: /assets/images/tools-preview.svg
+  image_alt: 嵌入式开发在线工具箱五合一模块示意图
+  cta: 打开工具箱
+  tags: [在线工具, Modbus / CRC, HardFault, RGB565 / 字模]
+  articles:
+    - lcd-rgb565-color-troubleshooting
+    - embedded-1bit-bitmap-font-pipeline
+    - n32g455-spi-dma-guide
+  boundary: 纯浏览器本地计算，不上传任何报文或工程数据，支持一键复制 C99 代码。
