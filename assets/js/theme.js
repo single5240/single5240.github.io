@@ -48,14 +48,14 @@
   };
 
   const pickers = [];
-  let preference = "system";
+  let preference = "dark";
   let skinPreference = "grid";
 
   try {
     const stored = localStorage.getItem(storageKey);
     if (validThemes.includes(stored)) preference = stored;
   } catch {
-    // Storage can be unavailable in privacy modes; system mode still works.
+    // Storage can be unavailable in privacy modes; default dark mode still works.
   }
 
   try {
@@ -77,8 +77,8 @@
 
   const updatePickers = () => {
     pickers.forEach((picker) => {
-      picker.icon.innerHTML = icons[preference] || icons.system;
-      picker.toggle.setAttribute("aria-label", `外观设置：${labels[preference] || labels.system} · ${skinLabels[skinPreference] || skinLabels.grid}`);
+      picker.icon.innerHTML = icons[preference] || icons.dark;
+      picker.toggle.setAttribute("aria-label", `外观设置：${labels[preference] || labels.dark} · ${skinLabels[skinPreference] || skinLabels.grid}`);
       picker.themeOptions.forEach((option) => {
         option.setAttribute("aria-checked", String(option.dataset.themeValue === preference));
       });
@@ -113,10 +113,9 @@
   };
 
   const savePreference = (value) => {
-    preference = validThemes.includes(value) ? value : "system";
+    preference = validThemes.includes(value) ? value : "dark";
     try {
-      if (preference === "system") localStorage.removeItem(storageKey);
-      else localStorage.setItem(storageKey, preference);
+      localStorage.setItem(storageKey, preference);
     } catch {
       // Keep current page usable even when storage is blocked.
     }
@@ -126,8 +125,7 @@
   const saveSkinPreference = (value) => {
     skinPreference = validSkins.includes(value) ? value : "grid";
     try {
-      if (skinPreference === "default") localStorage.removeItem(skinStorageKey);
-      else localStorage.setItem(skinStorageKey, skinPreference);
+      localStorage.setItem(skinStorageKey, skinPreference);
     } catch {
       // Keep current page usable
     }
@@ -142,7 +140,7 @@
       const menuId = `theme-menu-${index + 1}`;
       element.innerHTML = `
         <button class="theme-toggle" type="button" aria-label="外观设置" aria-haspopup="menu" aria-expanded="false" aria-controls="${menuId}">
-          <span data-theme-current-icon>${icons[preference] || icons.system}</span>
+          <span data-theme-current-icon>${icons[preference] || icons.dark}</span>
           <span class="theme-toggle-label">外观</span>
         </button>
         <div class="theme-menu" id="${menuId}" role="menu" aria-label="选择色彩与复古硬件质感" hidden>
@@ -258,7 +256,7 @@
 
   window.addEventListener("storage", (event) => {
     if (event.key === storageKey) {
-      preference = validThemes.includes(event.newValue) ? event.newValue : "system";
+      preference = validThemes.includes(event.newValue) ? event.newValue : "dark";
       applyTheme();
     } else if (event.key === skinStorageKey) {
       skinPreference = validSkins.includes(event.newValue) ? event.newValue : "grid";
