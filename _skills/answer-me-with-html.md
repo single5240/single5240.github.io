@@ -80,6 +80,16 @@ AM_EOF
 - **主题**：`auto`（默认）、`blueprint`、`shadcn`、`paper`、`3b1b`。
 - **模板**：`sheet`（一屏总览，默认）、`doc`（线性阅读）。
 
+### 在本博客中导入与统一 AI 日报风格
+
+本站的「AI 资讯日报」基于 answer-me-with-html 生成，并通过站点脚本深度融入主站复古工程质感：
+
+1. **生成看板**：使用 `am.mjs` 渲染出基础 HTML 文件（如 `ai-news/YYYY-MM-DD.html`）。
+2. **导入与样式桥接**：执行 `node scripts/import-ai-news.mjs ai-news`。
+   - 自动注入全局顶栏（`site-header`，含时钟与外观切换器）、全局底栏（`site-footer`）与路径导航。
+   - 自动通过 `assets/css/ai-news.css` 桥接深色模式、网格/洞洞板/机箱纹理与毛玻璃卡片风格。
+   - 自动重建 `_data/ai_news.json` 索引供首页与归档使用。
+
 ### 设置、维护与安装位置
 
 - `am config` 查看设置；`am config set <key> <value>` 修改（`open`、`theme`、`mode`、`style`、`voice`、`update_check`）

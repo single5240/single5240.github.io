@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="blueprint" data-mode="auto" data-style="80">
+<html lang="zh-CN" data-theme="dark" data-skin="grid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -532,6 +532,7 @@ html[data-theme="paper"] .am-md table { font-family: var(--font-sans); }
 </style>
 <!-- s5-news-chrome:start -->
 <meta name="description" content="Codex 第 5 天上线 Composer predictions。手机 App 可创建并对话 Dot。Anthropic 切断全部内部评估的实时联网。GPT-5.5 仍在 10/14 下线。">
+<meta name="theme-color" content="#11191d">
 <link rel="canonical" href="https://single5240.github.io/ai-news/2026-10-10.html">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
@@ -539,79 +540,70 @@ html[data-theme="paper"] .am-md table { font-family: var(--font-sans); }
 <meta property="og:description" content="Codex 第 5 天上线 Composer predictions。手机 App 可创建并对话 Dot。Anthropic 切断全部内部评估的实时联网。GPT-5.5 仍在 10/14 下线。">
 <meta property="og:url" content="https://single5240.github.io/ai-news/2026-10-10.html">
 <meta property="og:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
+<meta property="og:image:alt" content="嵌入式开发工作台插画">
 <meta property="og:site_name" content="single5240 笔记分享">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AI 资讯日报 · 10月10日（周六）">
 <meta name="twitter:description" content="Codex 第 5 天上线 Composer predictions。手机 App 可创建并对话 Dot。Anthropic 切断全部内部评估的实时联网。GPT-5.5 仍在 10/14 下线。">
 <meta name="twitter:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
-<script src="/assets/js/news-theme.js?v=20261017"></script>
-<style>
-.s5-news-bar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  align-items: center;
-  padding: 12px 20px;
-  background: var(--paper, #fff);
-  color: var(--ink, #16181d);
-  border-bottom: 1px solid var(--line-2, #d6dae1);
-  font: 13px/1.4 var(--font-sans, system-ui, sans-serif);
-}
-.s5-news-bar a { color: var(--accent, #1d5fbf); text-decoration: none; }
-.s5-news-bar a:hover { text-decoration: underline; }
-.s5-news-bar a:focus-visible { outline: 2px solid var(--accent, #1d5fbf); outline-offset: 2px; }
-.am-toolbar { position: static !important; top: auto !important; right: auto !important; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 24px); margin: 12px 12px 0; }
-.s5-news-sources {
-  margin: 28px 0 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line-2, #d6dae1);
-  color: var(--ink, #16181d);
-}
-.s5-news-sources h2 { margin: 0 0 10px; font-size: 16px; }
-.s5-news-sources ol { margin: 0; padding-left: 1.2em; }
-.s5-news-sources a { color: var(--accent, #1d5fbf); overflow-wrap: anywhere; }
-@media (max-width: 760px) {
-  .s5-news-bar { padding-right: 14px; }
-  .am-toolbar {
-    position: static !important;
-    top: auto !important;
-    right: auto !important;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    max-width: calc(100% - 24px);
-    margin: 8px 12px 0;
-  }
-  .am-sheet,
-  .am-doc { padding-top: 16px !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .s5-news-bar, .s5-news-bar a { transition: none; scroll-behavior: auto; }
-}
-@media print {
-  .s5-news-bar { display: none !important; }
-}
-</style>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/atom+xml" title="技术笔记 RSS" href="/feed.xml">
+<script src="/assets/js/theme.js?v=20261018"></script>
+<link rel="stylesheet" href="/assets/css/base.css?v=20261018">
+<link rel="stylesheet" href="/assets/css/site.css?v=20261018">
+<link rel="stylesheet" href="/assets/css/ai-news.css?v=20261018">
 <!-- s5-news-chrome:end -->
 </head>
 <body>
-<!-- s5-news-bar:start -->
-<div class="s5-news-bar">
-  <a href="/">single5240 / 工程笔记</a>
-  <a href="/articles/index.html">文章</a>
-  <a href="/projects/index.html">项目</a>
-  <a href="/daily/index.html">日常</a>
-  <a href="/ai-news/index.html#week-2026-10-05">本周 AI 资讯</a>
+<!-- s5-news-header:start -->
+<div class="site-ambience" aria-hidden="true"></div>
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+<header class="site-header">
+  <nav class="nav" aria-label="主导航">
+    <a class="brand" href="/" aria-label="single5240 首页"><span class="brand-mark" aria-hidden="true">s5<span>.</span></span><span>single5240<span class="brand-caption"> / 工程笔记</span></span></a>
+    <div class="nav-actions">
+      <div class="nav-links">
+        <a href="/">首页</a>
+        <a href="/articles/index.html">文章</a>
+        <a href="/projects/index.html">项目</a>
+        <a href="/tools/index.html">工具</a>
+        <a href="/daily/index.html" aria-current="page">日常</a>
+        <a href="/about/index.html">关于</a>
+      </div>
+      <div class="system-status" aria-label="系统运行状态与北京时间" title="硬件心跳与系统时间">
+        <span class="status-pulse" aria-hidden="true"></span>
+        <span class="status-time" id="statusClock">--:--</span>
+        <span class="status-tag">BJT</span>
+      </div>
+      <a class="search-link" href="/articles/index.html#search" aria-label="搜索文章"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></a>
+      <div class="theme-picker" data-theme-picker></div>
+    </div>
+  </nav>
+</header>
+<!-- s5-news-header:end -->
+<!-- s5-news-subbar:start -->
+<div class="ai-news-subbar-wrap">
+  <div class="ai-news-subbar">
+    <nav class="ai-news-breadcrumb" aria-label="路径导航">
+      <a href="/daily/index.html">日常</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="/ai-news/index.html">AI 资讯</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="/ai-news/index.html#week-2026-10-05">周汇总 (2026-10-05)</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <span class="current">2026-10-10</span>
+    </nav>
+  </div>
 </div>
-<!-- s5-news-bar:end -->
+<!-- s5-news-subbar:end -->
 <div class="am-toolbar">
 <label class="am-pick">主题<select data-am="theme"><option value="blueprint" selected>图纸</option><option value="shadcn">卡片</option><option value="paper">纸张</option></select></label>
 <label class="am-pick">明暗<select data-am="mode"><option value="auto" selected>跟随系统</option><option value="light">亮</option><option value="dark">暗</option></select></label>
 <button class="am-btn" type="button" data-am="copy" data-done="已复制 ✓">复制源稿</button>
 </div>
-<main class="am-sheet">
+<main class="am-sheet" id="main-content">
 <header class="am-head"><h1>AI 资讯日报 · 10月10日（周六）</h1><p class="am-sub">覆盖 10/9 早上至 10/10 早上（北京时间）</p><div class="am-head-meta"><span><b>source</b>AI资讯整理，来源链接见文字版日报</span></div><div class="am-intro am-md"><div class="am-md"><p>Codex 第 5 天上线 Composer predictions。手机 App 可创建并对话 Dot。Anthropic 切断全部内部评估的实时联网。GPT-5.5 仍在 10/14 下线。</p>
 </div></div></header>
 <div class="am-frame">
@@ -749,33 +741,7 @@ html[data-theme="paper"] .am-md table { font-family: var(--font-sans); }
 </section>
 </div>
 </div>
-<!-- s5-news-sources:start -->
-<section class="s5-news-sources" aria-label="来源">
-  <h2>来源</h2>
-  <ol>
-  <li><a href="https://learn.chatgpt.com/docs/whats-new">ChatGPT Learn What’s new</a></li>
-  <li><a href="https://x.com/thsottiaux/status/2108646052178092403">Sottiaux Day 5 dots 帖</a></li>
-  <li><a href="https://x.com/ChatGPT/status/2108636745915052037">ChatGPT 官方帖</a></li>
-  <li><a href="https://status.openai.com/history">OpenAI Status 历史</a></li>
-  <li><a href="https://developers.openai.com/codex/changelog">Codex changelog</a></li>
-  <li><a href="https://x.com/thsottiaux/status/2108645667451318747">Sottiaux Day 5 帖</a></li>
-  <li><a href="https://x.com/OpenAIDevs/status/2108624138369929725">OpenAIDevs 公告</a></li>
-  <li><a href="https://help.openai.com/en/articles/20001601-composer-predictions-in-codex">Help Center</a></li>
-  <li><a href="https://community.openai.com/t/codex-can-now-suggest-your-next-message-composer-predictions-beta/1404842">开发者社区</a></li>
-  <li><a href="https://resets.pro/en/codex-28-days">resets.pro</a></li>
-  <li><a href="https://x.com/thsottiaux">Sottiaux 时间线</a></li>
-  <li><a href="https://cursor.com/changelog">Cursor Changelog</a></li>
-  <li><a href="https://status.cursor.com/">Cursor Status</a></li>
-  <li><a href="https://www.anthropic.com/research/investigating-unintended-model-actions">Anthropic 报告</a></li>
-  <li><a href="https://techcrunch.com/2026/10/09/anthropic-cant-reliably-control-its-ai-agents-its-cutting-off-its-internal-evals-from-the-live-internet-instead/">TechCrunch</a></li>
-  <li><a href="https://techcrunch.com/2026/10/09/an-anthropic-ai-model-sent-a-false-homicide-tip-to-philadelphia-police/">TechCrunch 费城线索篇</a></li>
-  <li><a href="https://www.theverge.com/ai-artificial-intelligence/1008604/openai-defends-decision-fire-safety-researchers">The Verge</a></li>
-  <li><a href="https://www.aljazeera.com/economy/2026/10/9/ex-openai-staff-say-they-were-fired-for-raising-safety-concerns">Al Jazeera</a></li>
-  <li><a href="https://www.theverge.com/ai-artificial-intelligence/1009190/microsoft-ai-decision-model">The Verge</a></li>
-  <li><a href="https://anil.recoil.org/papers/2026-benchmarking-npus.pdf">Benchmarking Ultra-Low-Power μNPUs 论文 PDF</a></li>
-  </ol>
-</section>
-<!-- s5-news-sources:end -->
+
 </main>
 <footer class="am-colophon">Generated by Answer me with HTML 0.4.12 · 2026-10-10 08:40</footer>
 <textarea id="am-source" hidden readonly aria-hidden="true">---
@@ -1249,5 +1215,12 @@ if (panels.length > 1) {
 }
 })();
 </script>
+<!-- s5-news-footer:start -->
+<footer class="site-footer" id="contact">
+  <div><a class="footer-brand" href="/">single5240</a><p>© 2026 · Jekyll &amp; GitHub Pages</p></div>
+  <nav aria-label="辅助导航"><a href="/about/index.html">关于与联系</a><a href="/feed.xml">RSS</a><a href="https://github.com/single5240" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="/board.html">板子项目</a></nav>
+</footer>
+<script src="/assets/js/motion.js?v=20261018" defer></script>
+<!-- s5-news-footer:end -->
 </body>
 </html>

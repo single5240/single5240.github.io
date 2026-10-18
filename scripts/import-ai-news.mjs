@@ -110,12 +110,12 @@ export function extractSources(markdown) {
   return links;
 }
 
-function chromeBlock({ title, description, canonical, weekId }) {
+function chromeBlock({ title, description, canonical }) {
   const origin = siteOrigin();
   const image = `${origin}/assets/images/engineer-computer-lineart.jpg`;
-  const weekHref = `/ai-news/index.html#week-${weekId}`;
   return `<!-- s5-news-chrome:start -->
 <meta name="description" content="${escapeHtml(description)}">
+<meta name="theme-color" content="#11191d">
 <link rel="canonical" href="${escapeHtml(canonical)}">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
@@ -123,84 +123,76 @@ function chromeBlock({ title, description, canonical, weekId }) {
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <meta property="og:image" content="${escapeHtml(image)}">
+<meta property="og:image:alt" content="嵌入式开发工作台插画">
 <meta property="og:site_name" content="single5240 笔记分享">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${escapeHtml(image)}">
-<script src="/assets/js/news-theme.js?v=20261017"></script>
-<style>
-.s5-news-bar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  align-items: center;
-  padding: 12px 20px;
-  background: var(--paper, #fff);
-  color: var(--ink, #16181d);
-  border-bottom: 1px solid var(--line-2, #d6dae1);
-  font: 13px/1.4 var(--font-sans, system-ui, sans-serif);
-}
-.s5-news-bar a { color: var(--accent, #1d5fbf); text-decoration: none; }
-.s5-news-bar a:hover { text-decoration: underline; }
-.s5-news-bar a:focus-visible { outline: 2px solid var(--accent, #1d5fbf); outline-offset: 2px; }
-.am-toolbar { position: static !important; top: auto !important; right: auto !important; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 24px); margin: 12px 12px 0; }
-.s5-news-sources {
-  margin: 28px 0 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line-2, #d6dae1);
-  color: var(--ink, #16181d);
-}
-.s5-news-sources h2 { margin: 0 0 10px; font-size: 16px; }
-.s5-news-sources ol { margin: 0; padding-left: 1.2em; }
-.s5-news-sources a { color: var(--accent, #1d5fbf); overflow-wrap: anywhere; }
-@media (max-width: 760px) {
-  .s5-news-bar { padding-right: 14px; }
-  .am-toolbar {
-    position: static !important;
-    top: auto !important;
-    right: auto !important;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    max-width: calc(100% - 24px);
-    margin: 8px 12px 0;
-  }
-  .am-sheet,
-  .am-doc { padding-top: 16px !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .s5-news-bar, .s5-news-bar a { transition: none; scroll-behavior: auto; }
-}
-@media print {
-  .s5-news-bar { display: none !important; }
-}
-</style>
-<!-- s5-news-chrome:end -->
-`;
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/atom+xml" title="技术笔记 RSS" href="/feed.xml">
+<script src="/assets/js/theme.js?v=20261018"></script>
+<link rel="stylesheet" href="/assets/css/base.css?v=20261018">
+<link rel="stylesheet" href="/assets/css/site.css?v=20261018">
+<link rel="stylesheet" href="/assets/css/ai-news.css?v=20261018">
+<!-- s5-news-chrome:end -->`;
 }
 
-function barBlock(weekId) {
-  return `<!-- s5-news-bar:start -->
-<div class="s5-news-bar">
-  <a href="/">single5240 / 工程笔记</a>
-  <a href="/articles/index.html">文章</a>
-  <a href="/projects/index.html">项目</a>
-  <a href="/daily/index.html">日常</a>
-  <a href="/ai-news/index.html#week-${weekId}">本周 AI 资讯</a>
+function headerBlock() {
+  return `<!-- s5-news-header:start -->
+<div class="site-ambience" aria-hidden="true"></div>
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+<header class="site-header">
+  <nav class="nav" aria-label="主导航">
+    <a class="brand" href="/" aria-label="single5240 首页"><span class="brand-mark" aria-hidden="true">s5<span>.</span></span><span>single5240<span class="brand-caption"> / 工程笔记</span></span></a>
+    <div class="nav-actions">
+      <div class="nav-links">
+        <a href="/">首页</a>
+        <a href="/articles/index.html">文章</a>
+        <a href="/projects/index.html">项目</a>
+        <a href="/tools/index.html">工具</a>
+        <a href="/daily/index.html" aria-current="page">日常</a>
+        <a href="/about/index.html">关于</a>
+      </div>
+      <div class="system-status" aria-label="系统运行状态与北京时间" title="硬件心跳与系统时间">
+        <span class="status-pulse" aria-hidden="true"></span>
+        <span class="status-time" id="statusClock">--:--</span>
+        <span class="status-tag">BJT</span>
+      </div>
+      <a class="search-link" href="/articles/index.html#search" aria-label="搜索文章"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></a>
+      <div class="theme-picker" data-theme-picker></div>
+    </div>
+  </nav>
+</header>
+<!-- s5-news-header:end -->`;
+}
+
+function subbarBlock(weekId, date) {
+  return `<!-- s5-news-subbar:start -->
+<div class="ai-news-subbar-wrap">
+  <div class="ai-news-subbar">
+    <nav class="ai-news-breadcrumb" aria-label="路径导航">
+      <a href="/daily/index.html">日常</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="/ai-news/index.html">AI 资讯</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="/ai-news/index.html#week-${weekId}">周汇总 (${weekId})</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <span class="current">${date}</span>
+    </nav>
+  </div>
 </div>
-<!-- s5-news-bar:end -->
-`;
+<!-- s5-news-subbar:end -->`;
 }
 
 function sourcesBlock(links) {
   if (!links.length) return "";
-  const items = links.map((link) => `  <li><a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a></li>`).join("\n");
+  const items = links.map((link) => `    <li><a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)} ↗</a></li>`).join("\n");
   return `<!-- s5-news-sources:start -->
-<section class="s5-news-sources" aria-label="来源">
-  <h2>来源</h2>
+<section class="s5-news-sources" aria-label="参考来源">
+  <h2>参考来源</h2>
   <ol>
 ${items}
   </ol>
@@ -209,26 +201,61 @@ ${items}
 `;
 }
 
+function footerBlock() {
+  return `<!-- s5-news-footer:start -->
+<footer class="site-footer" id="contact">
+  <div><a class="footer-brand" href="/">single5240</a><p>© 2026 · Jekyll &amp; GitHub Pages</p></div>
+  <nav aria-label="辅助导航"><a href="/about/index.html">关于与联系</a><a href="/feed.xml">RSS</a><a href="https://github.com/single5240" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="/board.html">板子项目</a></nav>
+</footer>
+<script src="/assets/js/motion.js?v=20261018" defer></script>
+<!-- s5-news-footer:end -->`;
+}
+
 export function prepareNewsHtml(html, { date, sources }) {
   if (/^\uFEFF?---\r?\n/.test(html)) {
     throw new Error(`${date}: HTML starts with front matter; leave it as a static page so Liquid is not executed`);
   }
-  let next = stripMarker(stripMarker(stripMarker(html, "s5-news-chrome"), "s5-news-bar"), "s5-news-sources");
+  let next = html;
+  const markers = [
+    "s5-news-chrome",
+    "s5-news-header",
+    "s5-news-subbar",
+    "s5-news-bar",
+    "s5-news-sources",
+    "s5-news-footer",
+  ];
+  for (const marker of markers) {
+    next = stripMarker(next, marker);
+  }
   next = stripUnmanagedMeta(next);
+
+  next = next.replace(/<html\b[^>]*>/i, '<html lang="zh-CN" data-theme="dark" data-skin="grid">');
+
   const title = pageTitle(next);
   const description = pageSummary(next, title) || title;
   const canonical = `${siteOrigin()}/ai-news/${date}.html`;
   const weekId = mondayOf(date);
+
   if (!next.includes("</head>") || !next.includes("<body") || !next.includes("</main>")) {
     throw new Error(`${date}: expected </head>, <body>, and </main>`);
   }
+
   next = next.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)} | single5240</title>`);
-  next = next.replace(/\s*<\/head>/i, `\n${chromeBlock({ title, description, canonical, weekId })}</head>`);
-  next = next.replace(/<body([^>]*)>\s*/i, `<body$1>\n${barBlock(weekId)}`);
+  next = next.replace(/\s*<\/head>/i, `\n${chromeBlock({ title, description, canonical, weekId })}\n</head>`);
+  next = next.replace(/<body([^>]*)>\s*/i, `<body$1>\n${headerBlock()}\n${subbarBlock(weekId, date)}\n`);
+
+  next = next.replace(/<main\s+class="am-sheet"([^>]*)>/i, (match, rest) => {
+    if (rest.includes("id=")) return match;
+    return `<main class="am-sheet"${rest} id="main-content">`;
+  });
+
   const sourceHtml = sourcesBlock(sources);
   if (sourceHtml) {
     next = next.replace(/\s*<\/main>/i, `\n${sourceHtml}</main>`);
   }
+
+  next = next.replace(/\s*<\/body>/i, `\n${footerBlock()}\n</body>`);
+
   return { html: next, title, description, weekId };
 }
 
@@ -263,11 +290,16 @@ function htmlInputs(args) {
   return [...htmls].sort();
 }
 
-function companionMarkdown(htmlPath) {
+function companionMarkdown(htmlPath, rawHtml = "") {
   const markdownPath = htmlPath.replace(/\.html$/, ".md");
   try {
     return readFileSync(markdownPath, "utf8");
   } catch {
+    const match = rawHtml.match(/<textarea[^>]*\bid=["']am-source["'][^>]*>([\s\S]*?)<\/textarea>/i)
+      || rawHtml.match(/<script[^>]*\bid=["']am-source["'][^>]*>([\s\S]*?)<\/script>/i);
+    if (match) {
+      return unescapeHtml(match[1]);
+    }
     return "";
   }
 }
@@ -313,9 +345,10 @@ function importOne(htmlPath) {
   const match = datePattern.exec(name);
   if (!match || !isRealDate(match[1])) throw new Error(`${htmlPath}: filename must be YYYY-MM-DD.html`);
   const date = match[1];
-  const markdown = companionMarkdown(htmlPath);
+  const rawHtml = readFileSync(htmlPath, "utf8");
+  const markdown = companionMarkdown(htmlPath, rawHtml);
   const sources = markdown ? extractSources(markdown) : [];
-  const prepared = prepareNewsHtml(readFileSync(htmlPath, "utf8"), { date, sources });
+  const prepared = prepareNewsHtml(rawHtml, { date, sources });
   mkdirSync(newsDir, { recursive: true });
   const target = join(newsDir, `${date}.html`);
   writeFileSync(target, prepared.html);

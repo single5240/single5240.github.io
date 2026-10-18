@@ -1,0 +1,464 @@
+/* ==========================================================================
+   AI 日报与站点设计系统统一桥接样式 (ai-news.css)
+   将 answer-me-with-html 面板排版系统全面接入 single5240 设计语言：
+   - 颜色与质感：深色模式、网格/洞洞板/机箱纹理与毛玻璃面板
+   - 统一外壳：全局顶栏 (site-header)、底栏 (site-footer) 与路径导航
+   - 响应式与打印支持
+   ========================================================================== */
+
+/* 1. 变量桥接：将 am 变量映射到站点基础设计变量 */
+:root {
+  --bg: transparent;
+  --paper: var(--panel);
+  --fill: var(--subtle-bg);
+  --ink-2: var(--muted);
+  --ink-3: var(--tag-ink);
+  --line-2: var(--line);
+  --accent-bg: var(--soft);
+  --radius: 10px;
+  --bw: 1px;
+  --shadow: var(--shadow-small);
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+  --head-font: var(--font-sans);
+}
+
+:root:not([data-theme]),
+:root[data-theme="light"] {
+  --bg: transparent;
+  --paper: var(--panel);
+  --head-bg: var(--paper);
+  --head-fg: var(--ink);
+  --ok: var(--accent);
+  --ok-bg: var(--soft);
+  --err: var(--note);
+  --err-bg: rgba(188, 88, 39, 0.12);
+  --warn: var(--warm);
+  --warn-bg: rgba(217, 130, 43, 0.12);
+}
+
+:root[data-theme="dark"] {
+  --bg: transparent;
+  --paper: var(--panel);
+  --head-bg: var(--paper);
+  --head-fg: var(--ink);
+  --ok: var(--accent);
+  --ok-bg: var(--soft);
+  --err: var(--note);
+  --err-bg: rgba(241, 160, 111, 0.12);
+  --warn: var(--warm);
+  --warn-bg: rgba(241, 166, 90, 0.12);
+}
+
+:root[data-theme="hud"] {
+  --bg: transparent;
+  --paper: var(--panel);
+  --head-bg: var(--paper);
+  --head-fg: var(--ink);
+  --ok: var(--accent);
+  --ok-bg: var(--soft);
+}
+
+:root[data-theme="swiss"],
+:root[data-theme="mono"] {
+  --bg: transparent;
+  --paper: var(--panel);
+  --head-bg: var(--paper);
+  --head-fg: var(--ink);
+}
+
+/* 2. 页面基础重置与背景层 */
+body {
+  background-color: var(--paper) !important;
+  color: var(--body-copy) !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+/* 3. 日报专用二级导航 (Breadcrumbs) */
+.ai-news-subbar-wrap {
+  width: min(var(--site-width), calc(100% - 48px));
+  max-width: 1200px;
+  margin: 20px auto 0;
+}
+
+.ai-news-subbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: var(--raised-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.ai-news-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.ai-news-breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.ai-news-breadcrumb a:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+.ai-news-breadcrumb .sep {
+  color: var(--line);
+  font-size: 11px;
+}
+
+.ai-news-breadcrumb .current {
+  color: var(--ink);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* 4. 主画布与头部排版 */
+.am-sheet {
+  flex: 1;
+  width: min(var(--site-width), calc(100% - 48px)) !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 24px 0 60px !important;
+}
+
+.am-head {
+  margin: 0 0 28px !important;
+  padding-right: 0 !important;
+}
+
+.am-head h1 {
+  font-size: clamp(26px, 3.5vw, 36px) !important;
+  font-weight: 750 !important;
+  color: var(--ink) !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.03em !important;
+  margin: 0 0 8px !important;
+}
+
+.am-sub {
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  color: var(--muted) !important;
+  margin: 0 0 16px !important;
+}
+
+.am-intro {
+  background: var(--raised-bg) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line) !important;
+  border-left: 4px solid var(--accent) !important;
+  border-radius: 8px !important;
+  padding: 16px 20px !important;
+  color: var(--content-copy) !important;
+  font-size: 15px !important;
+  line-height: 1.8 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02) !important;
+}
+
+.am-intro p {
+  margin: 0 !important;
+}
+
+/* 5. 工具栏精简：隐藏重复明暗选择器，美化复制按钮 */
+.am-toolbar {
+  position: static !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 0 16px !important;
+  max-width: 100% !important;
+}
+
+.am-toolbar .am-pick {
+  display: none !important;
+}
+
+.am-toolbar .am-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: var(--raised-bg) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 6px !important;
+  padding: 7px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.18s ease !important;
+  backdrop-filter: blur(10px);
+}
+
+.am-toolbar .am-btn:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent-dark) !important;
+  background: var(--soft) !important;
+}
+
+/* 6. 图纸外框与网格 */
+.am-frame {
+  position: relative !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  background: rgba(0, 0, 0, 0.015) !important;
+}
+
+:root[data-theme="dark"] .am-frame {
+  background: rgba(255, 255, 255, 0.015) !important;
+}
+
+.am-frame::before {
+  border-color: var(--line) !important;
+  opacity: 0.35 !important;
+  border-radius: 8px !important;
+}
+
+.am-ruler {
+  color: var(--muted) !important;
+  font-family: var(--font-mono) !important;
+  opacity: 0.65 !important;
+}
+
+/* 7. 卡片面板 (am-panel) 毛玻璃与交互 */
+.am-panel {
+  background: var(--raised-bg) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02) !important;
+  overflow: hidden !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.am-panel:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+.am-panel-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px 16px !important;
+  background: var(--subtle-bg) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.am-panel-id {
+  background: var(--soft) !important;
+  color: var(--accent-dark) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 5px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  font-family: var(--font-mono) !important;
+  margin: 0 !important;
+}
+
+.am-panel-head h2 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--ink) !important;
+  margin: 0 !important;
+}
+
+.am-panel-meta {
+  margin-left: auto !important;
+  font-size: 11px !important;
+  color: var(--muted) !important;
+  font-family: var(--font-mono) !important;
+}
+
+.am-panel-body {
+  padding: 16px 18px !important;
+  color: var(--body-copy) !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+}
+
+.am-panel-body ul {
+  margin: 0 !important;
+  padding-left: 18px !important;
+}
+
+.am-panel-body li {
+  margin-bottom: 8px !important;
+}
+
+.am-panel-body li:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* 机箱纹理下的螺丝装配孔细节 */
+:root[data-skin="chassis"] .am-panel {
+  position: relative;
+}
+
+:root[data-skin="chassis"] .am-panel::before,
+:root[data-skin="chassis"] .am-panel::after {
+  content: "+";
+  position: absolute;
+  top: 4px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  color: var(--line);
+  line-height: 1;
+  pointer-events: none;
+}
+
+:root[data-skin="chassis"] .am-panel::before {
+  left: 6px;
+}
+
+:root[data-skin="chassis"] .am-panel::after {
+  right: 6px;
+}
+
+/* 8. 表格与数据项适配 */
+.am-table-wrap table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  font-size: 13px !important;
+}
+
+.am-table-wrap th {
+  background: var(--subtle-bg) !important;
+  color: var(--ink) !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.am-table-wrap td {
+  padding: 8px 12px !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--body-copy) !important;
+}
+
+.am-table-wrap tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.am-table-wrap tr:hover td {
+  background: var(--alt-bg) !important;
+}
+
+.am-kv {
+  background: var(--subtle-bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+}
+
+/* 9. 参考来源区域 */
+.s5-news-sources {
+  margin-top: 36px !important;
+  padding: 24px 28px !important;
+  background: var(--raised-bg) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02) !important;
+}
+
+.s5-news-sources h2 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--ink) !important;
+  margin: 0 0 12px !important;
+}
+
+.s5-news-sources ol {
+  margin: 0 !important;
+  padding-left: 20px !important;
+}
+
+.s5-news-sources li {
+  margin-bottom: 8px !important;
+}
+
+.s5-news-sources a {
+  color: var(--accent-dark) !important;
+  text-decoration: none !important;
+  word-break: break-all !important;
+}
+
+.s5-news-sources a:hover {
+  text-decoration: underline !important;
+}
+
+/* 10. 响应式与打印媒体查询 */
+@media (max-width: 760px) {
+  .ai-news-subbar-wrap,
+  .am-sheet {
+    width: calc(100% - 24px) !important;
+  }
+
+  .am-sheet {
+    padding: 16px 0 40px !important;
+  }
+
+  .am-head h1 {
+    font-size: 24px !important;
+  }
+
+  .am-frame {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .am-frame::before,
+  .am-ruler {
+    display: none !important;
+  }
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .ai-news-subbar-wrap,
+  .am-toolbar,
+  .site-ambience {
+    display: none !important;
+  }
+
+  .am-sheet {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

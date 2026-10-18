@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="blueprint" data-mode="auto" data-style="80">
+<html lang="zh-CN" data-theme="dark" data-skin="grid">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -532,6 +532,7 @@ html[data-theme="paper"] .am-md table { font-family: var(--font-sans); }
 </style>
 <!-- s5-news-chrome:start -->
 <meta name="description" content="ChatGPT 的 Chat 已换成 GPT-6 Sol。Codex 第 2 天补发了全额重置，第 3 天又给付费账户一次 banked reset。Cursor 上架 Claude Haiku 5.5。">
+<meta name="theme-color" content="#11191d">
 <link rel="canonical" href="https://single5240.github.io/ai-news/2026-10-08.html">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
@@ -539,79 +540,70 @@ html[data-theme="paper"] .am-md table { font-family: var(--font-sans); }
 <meta property="og:description" content="ChatGPT 的 Chat 已换成 GPT-6 Sol。Codex 第 2 天补发了全额重置，第 3 天又给付费账户一次 banked reset。Cursor 上架 Claude Haiku 5.5。">
 <meta property="og:url" content="https://single5240.github.io/ai-news/2026-10-08.html">
 <meta property="og:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
+<meta property="og:image:alt" content="嵌入式开发工作台插画">
 <meta property="og:site_name" content="single5240 笔记分享">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AI 资讯日报 · 10月8日（周四）">
 <meta name="twitter:description" content="ChatGPT 的 Chat 已换成 GPT-6 Sol。Codex 第 2 天补发了全额重置，第 3 天又给付费账户一次 banked reset。Cursor 上架 Claude Haiku 5.5。">
 <meta name="twitter:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
-<script src="/assets/js/news-theme.js?v=20261017"></script>
-<style>
-.s5-news-bar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  align-items: center;
-  padding: 12px 20px;
-  background: var(--paper, #fff);
-  color: var(--ink, #16181d);
-  border-bottom: 1px solid var(--line-2, #d6dae1);
-  font: 13px/1.4 var(--font-sans, system-ui, sans-serif);
-}
-.s5-news-bar a { color: var(--accent, #1d5fbf); text-decoration: none; }
-.s5-news-bar a:hover { text-decoration: underline; }
-.s5-news-bar a:focus-visible { outline: 2px solid var(--accent, #1d5fbf); outline-offset: 2px; }
-.am-toolbar { position: static !important; top: auto !important; right: auto !important; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 24px); margin: 12px 12px 0; }
-.s5-news-sources {
-  margin: 28px 0 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line-2, #d6dae1);
-  color: var(--ink, #16181d);
-}
-.s5-news-sources h2 { margin: 0 0 10px; font-size: 16px; }
-.s5-news-sources ol { margin: 0; padding-left: 1.2em; }
-.s5-news-sources a { color: var(--accent, #1d5fbf); overflow-wrap: anywhere; }
-@media (max-width: 760px) {
-  .s5-news-bar { padding-right: 14px; }
-  .am-toolbar {
-    position: static !important;
-    top: auto !important;
-    right: auto !important;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    max-width: calc(100% - 24px);
-    margin: 8px 12px 0;
-  }
-  .am-sheet,
-  .am-doc { padding-top: 16px !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .s5-news-bar, .s5-news-bar a { transition: none; scroll-behavior: auto; }
-}
-@media print {
-  .s5-news-bar { display: none !important; }
-}
-</style>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/atom+xml" title="技术笔记 RSS" href="/feed.xml">
+<script src="/assets/js/theme.js?v=20261018"></script>
+<link rel="stylesheet" href="/assets/css/base.css?v=20261018">
+<link rel="stylesheet" href="/assets/css/site.css?v=20261018">
+<link rel="stylesheet" href="/assets/css/ai-news.css?v=20261018">
 <!-- s5-news-chrome:end -->
 </head>
 <body>
-<!-- s5-news-bar:start -->
-<div class="s5-news-bar">
-  <a href="/">single5240 / 工程笔记</a>
-  <a href="/articles/index.html">文章</a>
-  <a href="/projects/index.html">项目</a>
-  <a href="/daily/index.html">日常</a>
-  <a href="/ai-news/index.html#week-2026-10-05">本周 AI 资讯</a>
+<!-- s5-news-header:start -->
+<div class="site-ambience" aria-hidden="true"></div>
+<a class="skip-link" href="#main-content">跳到主要内容</a>
+<header class="site-header">
+  <nav class="nav" aria-label="主导航">
+    <a class="brand" href="/" aria-label="single5240 首页"><span class="brand-mark" aria-hidden="true">s5<span>.</span></span><span>single5240<span class="brand-caption"> / 工程笔记</span></span></a>
+    <div class="nav-actions">
+      <div class="nav-links">
+        <a href="/">首页</a>
+        <a href="/articles/index.html">文章</a>
+        <a href="/projects/index.html">项目</a>
+        <a href="/tools/index.html">工具</a>
+        <a href="/daily/index.html" aria-current="page">日常</a>
+        <a href="/about/index.html">关于</a>
+      </div>
+      <div class="system-status" aria-label="系统运行状态与北京时间" title="硬件心跳与系统时间">
+        <span class="status-pulse" aria-hidden="true"></span>
+        <span class="status-time" id="statusClock">--:--</span>
+        <span class="status-tag">BJT</span>
+      </div>
+      <a class="search-link" href="/articles/index.html#search" aria-label="搜索文章"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></a>
+      <div class="theme-picker" data-theme-picker></div>
+    </div>
+  </nav>
+</header>
+<!-- s5-news-header:end -->
+<!-- s5-news-subbar:start -->
+<div class="ai-news-subbar-wrap">
+  <div class="ai-news-subbar">
+    <nav class="ai-news-breadcrumb" aria-label="路径导航">
+      <a href="/daily/index.html">日常</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="/ai-news/index.html">AI 资讯</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <a href="/ai-news/index.html#week-2026-10-05">周汇总 (2026-10-05)</a>
+      <span class="sep" aria-hidden="true">/</span>
+      <span class="current">2026-10-08</span>
+    </nav>
+  </div>
 </div>
-<!-- s5-news-bar:end -->
+<!-- s5-news-subbar:end -->
 <div class="am-toolbar">
 <label class="am-pick">主题<select data-am="theme"><option value="blueprint" selected>图纸</option><option value="shadcn">卡片</option><option value="paper">纸张</option></select></label>
 <label class="am-pick">明暗<select data-am="mode"><option value="auto" selected>跟随系统</option><option value="light">亮</option><option value="dark">暗</option></select></label>
 <button class="am-btn" type="button" data-am="copy" data-done="已复制 ✓">复制源稿</button>
 </div>
-<main class="am-sheet">
+<main class="am-sheet" id="main-content">
 <header class="am-head"><h1>AI 资讯日报 · 10月8日（周四）</h1><p class="am-sub">覆盖 10/7 早上至 10/8 早上（北京时间）</p><div class="am-head-meta"><span><b>source</b>AI资讯整理，来源链接见文字版日报</span></div><div class="am-intro am-md"><div class="am-md"><p>ChatGPT 的 Chat 已换成 GPT-6 Sol。Codex 第 2 天补发了全额重置，第 3 天又给付费账户一次 banked reset。Cursor 上架 Claude Haiku 5.5。</p>
 </div></div></header>
 <div class="am-frame">
@@ -790,43 +782,7 @@ html[data-theme="paper"] .am-md table { font-family: var(--font-sans); }
 </section>
 </div>
 </div>
-<!-- s5-news-sources:start -->
-<section class="s5-news-sources" aria-label="来源">
-  <h2>来源</h2>
-  <ol>
-  <li><a href="https://openai.com/index/gpt-6-for-everyone">OpenAI 发布页</a></li>
-  <li><a href="https://help.openai.com/en/articles/6825453-chatgpt-release-notes">ChatGPT release notes</a></li>
-  <li><a href="https://help.openai.com/en/articles/20001354-gpt-6-and-other-models-in-chatgpt">GPT-6 帮助文档</a></li>
-  <li><a href="https://www.theverge.com/ai-artificial-intelligence/1007276/openai-chatgpt-intelligent-ui-gpt-6">The Verge 报道</a></li>
-  <li><a href="https://www.iclarified.com/102657/openai-rolls-out-gpt-6-and-intelligent-ui-in-chatgpt">iClarified 报道</a></li>
-  <li><a href="https://developers.openai.com/codex/changelog">ChatGPT &amp; Codex changelog</a></li>
-  <li><a href="https://status.openai.com/history">OpenAI Status</a></li>
-  <li><a href="https://x.com/thsottiaux/status/2107676072871600470">Sottiaux 宣布重置</a></li>
-  <li><a href="https://x.com/thsottiaux/status/2107676261099426030">改进不撤回</a></li>
-  <li><a href="https://x.com/thsottiaux/status/2107913674593644711">Day 3 帖子</a></li>
-  <li><a href="https://x.com/thsottiaux/status/2107913738791596286">到账时间</a></li>
-  <li><a href="https://blogs.windows.com/windowsexperience/2026/10/07/building-windows-for-hybrid-intelligence/">Windows 博客</a></li>
-  <li><a href="https://cursor.com/docs/models/claude-haiku-5-5">Cursor 的 Haiku 5.5 文档</a></li>
-  <li><a href="https://cursor.com/docs/models">Cursor Models &amp; Pricing</a></li>
-  <li><a href="https://status.cursor.com/">Cursor Status</a></li>
-  <li><a href="https://www.anthropic.com/claude-haiku-5-5">Anthropic</a></li>
-  <li><a href="https://siliconangle.com/2026/10/07/anthropic-releases-claude-haiku-5-5-small-model-and-halves-sonnet-5-5-cache-read-prices/">SiliconANGLE</a></li>
-  <li><a href="https://blogs.nvidia.com/blog/local-ai-rtx-spark-microsoft-windows-event/">NVIDIA 博客</a></li>
-  <li><a href="https://techcrunch.com/2026/10/07/nous-research-confirms-it-hit-1-5b-valuation-launches-ai-agents-for-business-users/">TechCrunch</a></li>
-  <li><a href="https://techcrunch.com/2026/10/07/robot-data-startup-mecka-ai-nabs-60m-from-sequoia/">TechCrunch</a></li>
-  <li><a href="https://www.mecka.ai/news/series-b">Mecka 公告</a></li>
-  <li><a href="https://techcrunch.com/2026/10/07/googles-new-synthid-website-can-identify-ai-generated-media/">TechCrunch</a></li>
-  <li><a href="https://blog.google/innovation-and-ai/models-and-research/google-deepmind/synth-id-ai-content/">Google 博客</a></li>
-  <li><a href="https://techcrunch.com/2026/10/07/chatgpt-for-teens-keeps-teens-talking-even-during-mental-health-crises/">TechCrunch</a></li>
-  <li><a href="https://www.seattletimes.com/seattle-news/politics/cantwell-unveils-ai-safety-framework-as-congress-stalls-ahead-of-election/">Seattle Times</a></li>
-  <li><a href="https://www.prnewswire.com/news-releases/conversational-ai-is-finally-connected-to-the-work-automation-anywhere-to-acquire-boostai-302900644.html">PR Newswire</a></li>
-  <li><a href="https://blog.google/security/enabling-the-next-gen-enclave-architecture-for-on-device-ai-on-android/">Google 博客</a></li>
-  <li><a href="https://www.electropages.com/2026/10/discrete-neural-processing-unit-ai-edge-industrial-and-robotics-applications">Electropages</a></li>
-  <li><a href="https://huggingface.co/CohereLabs/tiny-aya-l2-thinker">Hugging Face 模型页</a></li>
-  <li><a href="https://openmodelweights.com/news/cohere-tiny-aya-l2-thinker-in-language-reasoning/">Open Model Weights</a></li>
-  </ol>
-</section>
-<!-- s5-news-sources:end -->
+
 </main>
 <footer class="am-colophon">Generated by Answer me with HTML 0.4.12 · 2026-10-08 08:44</footer>
 <textarea id="am-source" hidden readonly aria-hidden="true">---
@@ -1305,5 +1261,12 @@ if (panels.length > 1) {
 }
 })();
 </script>
+<!-- s5-news-footer:start -->
+<footer class="site-footer" id="contact">
+  <div><a class="footer-brand" href="/">single5240</a><p>© 2026 · Jekyll &amp; GitHub Pages</p></div>
+  <nav aria-label="辅助导航"><a href="/about/index.html">关于与联系</a><a href="/feed.xml">RSS</a><a href="https://github.com/single5240" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="/board.html">板子项目</a></nav>
+</footer>
+<script src="/assets/js/motion.js?v=20261018" defer></script>
+<!-- s5-news-footer:end -->
 </body>
 </html>
