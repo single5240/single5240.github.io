@@ -12,8 +12,6 @@
   const readoutEl = document.querySelector("#scopeReadout");
   const dock = document.querySelector("#robotDock");
   const toTopBtn = document.querySelector("#dockToTop");
-  const miniCanvas = document.querySelector("#scopeCanvasMini");
-  const miniCtx = miniCanvas ? miniCanvas.getContext("2d") : null;
 
   if (!stage || !canvas) return;
 
@@ -562,39 +560,6 @@
       ctx.stroke();
     }
     ctx.restore();
-
-    // 5. 若处于右下角悬浮模式，在微型底座画布上同步渲染微缩示波器波形
-    if (isFloating && miniCtx && miniCanvas) {
-      const mw = miniCanvas.clientWidth || 96;
-      const mh = miniCanvas.clientHeight || 78;
-      miniCtx.clearRect(0, 0, mw, mh);
-
-      const mCenterY = mh * 0.52;
-      const mAmp = Math.min(18, mh * 0.22);
-      const mSteps = 42;
-
-      miniCtx.save();
-      miniCtx.beginPath();
-      miniCtx.lineWidth = 1.6;
-      miniCtx.lineCap = "round";
-      miniCtx.lineJoin = "round";
-      miniCtx.strokeStyle = palette.trace;
-      if (palette.glow > 0) {
-        miniCtx.shadowColor = palette.trace;
-        miniCtx.shadowBlur = palette.glow;
-      }
-
-      for (let i = 0; i <= mSteps; i += 1) {
-        const u = i / mSteps;
-        const x = u * mw;
-        const theta = u * Math.PI * 2 * cycles - phase;
-        const y = mCenterY - sampleBlended(theta) * mAmp;
-        if (i === 0) miniCtx.moveTo(x, y);
-        else miniCtx.lineTo(x, y);
-      }
-      miniCtx.stroke();
-      miniCtx.restore();
-    }
   };
 
   const applyRobotTransforms = () => {
@@ -808,19 +773,6 @@
     }, 10000);
   };
 
-  const resizeMiniCanvas = () => {
-    if (!miniCanvas || !miniCtx || !dock) return;
-    const rect = dock.getBoundingClientRect();
-    const w = Math.max(90, Math.floor(rect.width));
-    const h = Math.max(76, Math.floor(rect.height));
-    miniCanvas.width = Math.floor(w * dpr);
-    miniCanvas.height = Math.floor(h * dpr);
-    miniCanvas.style.width = `${w}px`;
-    miniCanvas.style.height = `${h}px`;
-    miniCtx.setTransform(1, 0, 0, 1, 0, 0);
-    miniCtx.scale(dpr, dpr);
-  };
-
   const updateFloatingDock = () => {
     if (!dock || !stage) return;
 
@@ -844,7 +796,6 @@
       isFloating = shouldFloat;
       if (isFloating) {
         dock.classList.add("is-docked-float");
-        resizeMiniCanvas();
         inView = true;
         startLoop();
       } else {
@@ -864,10 +815,7 @@
   window.addEventListener("resize", updateFloatingDock, { passive: true });
 
   if ("ResizeObserver" in window) {
-    const resizeObserver = new ResizeObserver(() => {
-      resize();
-      if (isFloating) resizeMiniCanvas();
-    });
+    const resizeObserver = new ResizeObserver(() => resize());
     resizeObserver.observe(stage);
   } else {
     window.addEventListener("resize", resize, { passive: true });

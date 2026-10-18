@@ -725,22 +725,6 @@ time {
   opacity: 1;
 }
 
-.scope-canvas-mini {
-  display: none;
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 14px;
-  opacity: 0.4;
-}
-
-.robot-dock.is-docked-float .scope-canvas-mini {
-  display: block;
-}
-
 .robot-dock.is-docked-float .robot-speech {
   bottom: calc(100% + 8px);
   right: 0;
