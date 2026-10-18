@@ -79,6 +79,12 @@
   const MAGNETIC_RADIUS = 175;
   const MAGNETIC_FORCE = 3.4;
 
+  // 画布向上/向下出血留白（避免彩虹大幅度向上拉扯或脉冲弹跳时被画布顶边截断）
+  const CANVAS_BLEED_TOP = 72;
+  const CANVAS_BLEED_BOTTOM = 12;
+
+  let stageWidth = 0;
+  let stageHeight = 0;
   let width = 0;
   let height = 0;
   let dpr = 1;
@@ -105,13 +111,13 @@
       this.vy = 0;
     }
 
-    updateBase(w, h) {
-      const padX = Math.min(28, Math.max(12, w * 0.025));
-      const spanW = Math.max(200, w - padX * 2);
+    updateBase(stageW, stageH) {
+      const padX = Math.min(28, Math.max(12, stageW * 0.025));
+      const spanW = Math.max(200, stageW - padX * 2);
       this.ox = padX + this.t * spanW;
-      // 跨过小机器人头顶的平滑仪器拱弧
+      // 跨过小机器人头顶的平滑仪器拱弧（叠加顶部出血偏移量）
       const arch = Math.pow(Math.sin(Math.PI * this.t), 0.84);
-      this.oy = (h - 14) - (h - 38) * arch;
+      this.oy = CANVAS_BLEED_TOP + (stageH - 14) - (stageH - 40) * arch;
 
       if (!isAnimating) {
         this.x = this.ox;
@@ -131,7 +137,7 @@
     for (let i = 0; i < NODE_COUNT; i += 1) {
       const t = i / (NODE_COUNT - 1);
       const node = new Node(t);
-      node.updateBase(width, height);
+      node.updateBase(stageWidth, stageHeight);
       node.x = node.ox;
       node.y = node.oy;
       nodes.push(node);
@@ -140,8 +146,10 @@
 
   const resize = () => {
     const rect = stage.getBoundingClientRect();
-    width = Math.max(280, Math.floor(rect.width));
-    height = Math.max(116, Math.floor(rect.height || 136));
+    stageWidth = Math.max(280, Math.floor(rect.width));
+    stageHeight = Math.max(116, Math.floor(rect.height || 142));
+    width = stageWidth;
+    height = stageHeight + CANVAS_BLEED_TOP + CANVAS_BLEED_BOTTOM;
     dpr = window.devicePixelRatio || 1;
 
     canvas.width = Math.floor(width * dpr);
@@ -156,7 +164,7 @@
       initNodes();
     } else {
       for (const node of nodes) {
-        node.updateBase(width, height);
+        node.updateBase(stageWidth, stageHeight);
       }
     }
 
@@ -258,6 +266,10 @@
 
     let maxVel = 0;
     let totalEnergy = 0;
+    const minY = Math.abs(BAND_OFFSETS[0]) + 8;
+    const maxY = height - BAND_OFFSETS[BAND_OFFSETS.length - 1] - 6;
+    const minX = 8;
+    const maxX = width - 8;
 
     for (let i = 0; i < nodes.length; i += 1) {
       const node = nodes[i];
@@ -294,11 +306,29 @@
         }
       }
 
-      // 4. 阻尼衰减与积分
+      // 4. 顶部/底部柔性缓冲边界（防止大幅拉扯时触碰画布边缘被裁切）
+      if (node.y < minY + 18) {
+        node.vy += (minY + 18 - node.y) * 0.15;
+      } else if (node.y > maxY - 14) {
+        node.vy -= (node.y - (maxY - 14)) * 0.15;
+      }
+
+      // 5. 阻尼衰减与积分
       node.vx *= DAMPING;
       node.vy *= DAMPING;
       node.x += node.vx;
       node.y += node.vy;
+
+      // 硬限幅保护
+      if (node.y < minY) {
+        node.y = minY;
+        if (node.vy < 0) node.vy *= 0.25;
+      } else if (node.y > maxY) {
+        node.y = maxY;
+        if (node.vy > 0) node.vy *= 0.25;
+      }
+      if (node.x < minX) node.x = minX;
+      if (node.x > maxX) node.x = maxX;
 
       const v = Math.hypot(node.vx, node.vy);
       if (v > maxVel) maxVel = v;
@@ -356,17 +386,19 @@
     }
   };
 
-  // 光标移动与视线追踪
+  // 光标移动与视线追踪（将舞台坐标映射到带顶部出血的画布坐标系）
   const updatePointer = (e) => {
     const rect = stage.getBoundingClientRect();
-    pointerX = e.clientX - rect.left;
-    pointerY = e.clientY - rect.top;
+    const localX = e.clientX - rect.left;
+    const localY = e.clientY - rect.top;
+    pointerX = localX;
+    pointerY = localY + CANVAS_BLEED_TOP;
     isPointerActive = true;
 
     const centerX = rect.width * 0.5;
     const centerY = rect.height * 0.55;
-    const normX = Math.max(-1, Math.min(1, (pointerX - centerX) / (rect.width * 0.45)));
-    const normY = Math.max(-1, Math.min(1, (pointerY - centerY) / (rect.height * 0.6)));
+    const normX = Math.max(-1, Math.min(1, (localX - centerX) / (rect.width * 0.45)));
+    const normY = Math.max(-1, Math.min(1, (localY - centerY) / (rect.height * 0.6)));
     targetEyeX = normX * 3.2;
     targetEyeY = normY * 2.0;
 
