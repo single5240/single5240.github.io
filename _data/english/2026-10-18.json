@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-18",
+  "sentence": "The fault, dear Brutus, is not in our stars, / But in ourselves, that we are underlings.",
+  "source": {
+    "author": "William Shakespeare",
+    "work": "Julius Caesar",
+    "year": "1599",
+    "detail": "第一幕第二场，Cassius 劝说 Brutus 时说的台词；剧本约 1599 年首演，1623 年收入第一对开本。斜杠表示原文的分行。"
+  },
+  "translation": "亲爱的布鲁图斯，错不在我们的命运，而在我们自己，是我们甘居人下。",
+  "grammar": [
+    "句子主干是 The fault is not in our stars, but in ourselves（过错不在星辰，而在我们自己）。dear Brutus 是插入的称呼语，两边用逗号隔开，去掉后主干不变。is in 表示“在于、存在于”，比如 The problem is in the driver.",
+    "not A but B 结构：意思是“不是 A，而是 B”，A 和 B 要是同类成分，这里两边都是介词短语 in our stars 和 in ourselves，对得很整齐。but 后面省略了重复的 the fault is，这是英语常见的承前省略。",
+    "that we are underlings 是对 the fault 的补充说明，说明“过错”具体是什么：是我们甘心做下属这件事。our stars 指占星意义上的星辰，也就是命运，所以整句是在说，别把处境怪给命运。"
+  ],
+  "vocab": [
+    {
+      "word": "fault",
+      "phonetic": "/fɔːlt/",
+      "pos": "n.",
+      "meaning": "过错，责任（句中义）；也指故障、缺陷",
+      "collocation": "It's not my fault / find fault with / at fault / a hard fault",
+      "example": "The crash was a hard fault caused by a null pointer, not the hardware's fault."
+    },
+    {
+      "word": "stars",
+      "phonetic": "/stɑːz/",
+      "pos": "n.",
+      "meaning": "星辰；引申为命运、运气",
+      "collocation": "thank your lucky stars / born under a lucky star",
+      "example": "You can thank your lucky stars that you had a backup."
+    },
+    {
+      "word": "underling",
+      "phonetic": "/ˈʌndəlɪŋ/",
+      "pos": "n.",
+      "meaning": "下属，手下（带贬义，指地位低、听人使唤的人）",
+      "collocation": "treat sb as an underling / one of his underlings",
+      "example": "He never treated the junior engineers as underlings."
+    },
+    {
+      "word": "not ... but ...",
+      "phonetic": "",
+      "pos": "phr.",
+      "meaning": "不是……而是……",
+      "collocation": "not because ... but because ... / not A but B",
+      "example": "The bug is not in the compiler but in my code."
+    }
+  ],
+  "note": "小结：这句话常被用来提醒人，与其怪运气，不如先看自己能改变什么。小练习：用 not ... but ... 造一句，比如 The problem is not in the chip but in my timing configuration. 试着写一句你最近遇到的问题吧。"
+}
