@@ -116,8 +116,11 @@ permalink: /board.html
       min-height: 260px;
       padding: 24px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
+      border-radius: 10px;
+      background: var(--raised-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
       transition: opacity 600ms ease, transform 200ms ease, box-shadow 200ms ease;
     }
 
@@ -233,6 +236,7 @@ permalink: /board.html
   </style>
 </head>
 <body>
+  <div class="site-ambience" aria-hidden="true"></div>
   <a class="skip-link" href="#main-content">跳到主要内容</a>
   <div class="wrap">
     <header class="topbar">

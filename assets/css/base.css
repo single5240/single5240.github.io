@@ -349,8 +349,10 @@ body {
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: var(--panel);
-  box-shadow: var(--shadow-small);
+  background: var(--raised-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
 }
 
 .theme-menu[hidden] {
