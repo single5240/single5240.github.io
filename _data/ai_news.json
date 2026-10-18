@@ -39,6 +39,12 @@
           "weekday": "周六",
           "title": "AI 资讯日报 · 10月17日（周六）",
           "summary": "Codex 第 12 天是改进，无全额重置：同样额度能干更多活。ChatGPT Chrome 扩展可读标签页并代办操作。Cursor 的 Grok 故障已恢复。"
+        },
+        {
+          "date": "2026-10-18",
+          "weekday": "周日",
+          "title": "AI 资讯日报 · 10月18日（周日）",
+          "summary": "Codex 第 13 天全额重置，是第 5 次重置。ChatGPT 和 Cursor 无新功能，状态页全绿。Pro 200 额度下调 10/30 生效。"
         }
       ]
     },
