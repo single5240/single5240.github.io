@@ -434,7 +434,7 @@ if (existsSync(newsDataPath)) {
         continue;
       }
       const page = readFileSync(built, "utf8");
-      if (!page.includes("s5-news-bar")) failures.push(`ai-news/${day.date}.html: missing return bar`);
+      if (!page.includes("s5-news-bar") && !page.includes("ai-news-subbar")) failures.push(`ai-news/${day.date}.html: missing return bar`);
       if (!page.includes(`/ai-news/index.html#week-${week.id}`)) failures.push(`ai-news/${day.date}.html: missing week link`);
       if (page.includes("<!-- s5-news-sources:start -->")) {
         const sourceHtml = page.match(/<!-- s5-news-sources:start -->([\s\S]*?)<!-- s5-news-sources:end -->/);
