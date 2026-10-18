@@ -40,7 +40,7 @@
     }
   });
   root.querySelector('.clear-search').addEventListener('click', () => { input.value = ''; topic = ''; render(); input.focus(); });
-  buttons.forEach(button => button.addEventListener('click', () => { topic = button.dataset.topicFilter; render(); }));
+  buttons.forEach(button => button.addEventListener('click', () => { topic = (topic === button.dataset.topicFilter && topic !== '') ? '' : button.dataset.topicFilter; render(); }));
   render();
   fetch(root.dataset.indexUrl).then(response => {
     if (!response.ok) throw new Error('Search index unavailable');

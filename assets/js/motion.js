@@ -81,6 +81,7 @@
   updateScrollState();
 
   // 4. 嵌入式心跳时钟（严格北京时间 BJT）
+  let clockTimer = null;
   const initClock = () => {
     const clockEl = document.querySelector("#statusClock");
     if (!clockEl) return;
@@ -113,7 +114,8 @@
     };
 
     updateClock();
-    setInterval(updateClock, 5000);
+    if (clockTimer) clearInterval(clockTimer);
+    clockTimer = setInterval(updateClock, 5000);
   };
 
   initClock();

@@ -49,7 +49,33 @@
     return bytes.map((b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ");
   }
 
-  // Copy helper
+  // Copy helper with fallback
+  async function copyText(str) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(str);
+        return true;
+      } catch {
+        // fallback
+      }
+    }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = str;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      ta.style.pointerEvents = "none";
+      document.body.append(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
   document.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-copy-target], [data-copy-value]");
     if (!btn) return;
@@ -60,16 +86,12 @@
       if (el) text = "value" in el ? el.value : el.textContent;
     }
     if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text.trim());
-      const orig = btn.textContent;
-      btn.textContent = "已复制";
-      setTimeout(() => {
-        btn.textContent = orig;
-      }, 1200);
-    } catch {
-      // Fallback ignored
-    }
+    const ok = await copyText(text.trim());
+    const orig = btn.textContent;
+    btn.textContent = ok ? "已复制" : "复制失败";
+    setTimeout(() => {
+      btn.textContent = orig;
+    }, 1200);
   });
 
   // =========================================================================

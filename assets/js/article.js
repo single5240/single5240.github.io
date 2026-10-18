@@ -2,28 +2,57 @@
   const content = document.querySelector('.content');
   if (!content) return;
   const toc = document.querySelector('#article-toc');
-  const list = toc.querySelector('ol');
+  const list = toc ? toc.querySelector('ol') : null;
   const headings = [...content.querySelectorAll('h2,h3')];
   const links = new Map();
-  // Keep existing Markdown anchors stable; generate only missing IDs.
-  headings.forEach((heading, index) => {
-    if (!heading.id) {
-      const base = heading.textContent.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || `section-${index + 1}`;
-      let id = base;
-      for (let n = 2; document.getElementById(id); n += 1) id = `${base}-${n}`;
-      heading.id = id;
+
+  const copyText = async (text) => {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback to execCommand below
+      }
     }
-    const item = document.createElement('li');
-    if (heading.tagName === 'H3') item.className = 'toc-sub';
-    const link = document.createElement('a');
-    link.href = `#${encodeURIComponent(heading.id)}`;
-    link.textContent = heading.textContent;
-    item.append(link);
-    list.append(item);
-    links.set(heading, link);
-  });
-  toc.hidden = headings.length < 2;
-  if (matchMedia('(max-width: 1000px)').matches) toc.open = false;
+    try {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      area.style.pointerEvents = 'none';
+      document.body.append(area);
+      area.focus();
+      area.select();
+      const success = document.execCommand('copy');
+      area.remove();
+      return success;
+    } catch {
+      return false;
+    }
+  };
+
+  // Keep existing Markdown anchors stable; generate only missing IDs.
+  if (toc && list) {
+    headings.forEach((heading, index) => {
+      if (!heading.id) {
+        const base = heading.textContent.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || `section-${index + 1}`;
+        let id = base;
+        for (let n = 2; document.getElementById(id); n += 1) id = `${base}-${n}`;
+        heading.id = id;
+      }
+      const item = document.createElement('li');
+      if (heading.tagName === 'H3') item.className = 'toc-sub';
+      const link = document.createElement('a');
+      link.href = `#${encodeURIComponent(heading.id)}`;
+      link.textContent = heading.textContent;
+      item.append(link);
+      list.append(item);
+      links.set(heading, link);
+    });
+    toc.hidden = headings.length < 2;
+    if (matchMedia('(max-width: 1000px)').matches) toc.open = false;
+  }
 
   content.querySelectorAll('table').forEach((table) => {
     const wrap = document.createElement('div');
@@ -48,10 +77,9 @@
     button.setAttribute('aria-label', '复制代码');
     button.setAttribute('aria-live', 'polite');
     button.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent);
-        button.textContent = '已复制';
-      } catch { button.textContent = '复制失败'; }
+      const text = pre.querySelector('code')?.textContent || pre.textContent;
+      const ok = await copyText(text);
+      button.textContent = ok ? '已复制' : '复制失败';
       setTimeout(() => { button.textContent = '复制'; }, 1800);
     });
     toolbar.append(language, button);
@@ -2125,14 +2153,22 @@
     log('[INIT] W25Q128 SPI NOR Flash 驱动仿真器就绪：默认采用非阻塞状态机架构', 'normal');
   }
 
-  // 初始化所有已挂载的交互组件
-  initFsmSimulator();
-  initFlashSimulator();
-  initSchedulerSimulator();
-  initEepromSimulator();
-  initRgb565Simulator();
-  initLcdStripSimulator();
-  initFontSimulator();
-  initEcatEsmSimulator();
-  initW25q128Simulator();
+  // 初始化所有已挂载的交互组件（增加错误隔离保护）
+  [
+    initFsmSimulator,
+    initFlashSimulator,
+    initSchedulerSimulator,
+    initEepromSimulator,
+    initRgb565Simulator,
+    initLcdStripSimulator,
+    initFontSimulator,
+    initEcatEsmSimulator,
+    initW25q128Simulator,
+  ].forEach((sim) => {
+    try {
+      sim();
+    } catch (err) {
+      console.warn('[Widget] Failed to initialize simulator:', sim.name, err);
+    }
+  });
 })();

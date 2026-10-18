@@ -1734,3 +1734,73 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media print {
+  .site-header,
+  .site-footer,
+  .reading-progress,
+  .toc,
+  .code-toolbar button,
+  .back-to-top,
+  .article-navigation,
+  .back,
+  .theme-spectrum,
+  .skip-link,
+  .article-interactive-widget .aiw-controls,
+  .aiw-actions,
+  .w25q-actions-grid,
+  .ecat-btn,
+  .font-btn {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  .reading-layout {
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .reading-grid {
+    display: block !important;
+  }
+
+  .content {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: #111111 !important;
+  }
+
+  .content h1,
+  .content h2,
+  .content h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+    color: #000000 !important;
+  }
+
+  .content pre,
+  .content table,
+  .article-interactive-widget {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #d0d7de !important;
+  }
+
+  .content pre {
+    background: #f6f8fa !important;
+    color: #24292f !important;
+    white-space: pre-wrap !important;
+    word-break: break-all;
+  }
+
+  .content a {
+    text-decoration: underline !important;
+    color: #0969da !important;
+  }
+}
