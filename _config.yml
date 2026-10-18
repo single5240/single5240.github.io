@@ -40,11 +40,18 @@ feed:
   collections:
     articles:
       path: /feed.xml
+repository: single5240/single5240.github.io
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
 exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
   - AGENTS.md
+  - vercel.json
+  - .vercel
   - scripts
   - vendor
   - docs

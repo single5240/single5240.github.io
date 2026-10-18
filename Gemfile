@@ -1,5 +1,11 @@
 source "https://rubygems.org"
 
-# Pin the gem GitHub Pages currently runs (https://pages.github.com/versions.json).
-gem "github-pages", "232", group: :jekyll_plugins
-gem "jekyll-feed"
+gem "jekyll", "~> 3.10"
+gem "jekyll-feed", "~> 0.17"
+gem "kramdown-parser-gfm", "~> 1.1"
+gem "csv"
+gem "logger"
+gem "base64"
+gem "bigdecimal"
+gem "drb"
+gem "webrick", "~> 1.8"
