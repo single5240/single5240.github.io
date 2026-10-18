@@ -1,0 +1,30 @@
+<div class="article-robot-card" id="articleRobotCard" aria-label="文章工作台伴侣">
+  <div class="robot-stage robot-stage-article" id="robotStage">
+    <!-- 文章侧边栏：示波器波形画布 -->
+    <canvas class="scope-canvas" id="scopeCanvas" aria-hidden="true"></canvas>
+
+    <button type="button" class="stage-meta scope-channel" id="scopeChannel" aria-label="示波器通道 1，点击切换波形">
+      <span class="stage-meta-dot" aria-hidden="true"></span>
+      <span aria-hidden="true">CH1 ▸</span>
+      <strong id="scopeChannelName">正弦波</strong>
+    </button>
+    <span class="stage-meta stage-meta-right" id="scopeReadout" aria-hidden="true">50Hz · 1V/div</span>
+
+    <!-- 侧边栏小机器人驻守台 -->
+    <div class="robot-dock" id="robotDock">
+      <span class="robot-speech" id="robotSpeech" aria-live="polite">
+        <span class="speech-prefix" aria-hidden="true">&gt;</span>
+        <span id="robotSpeechText"></span>
+      </span>
+
+      <button type="button" class="retro-robot-container" id="retroRobot" aria-label="文章工作台小机器人，点击和它打个招呼">
+        {% include retro-robot-svg.html %}
+      </button>
+
+      <canvas class="scope-canvas-mini" id="scopeCanvasMini" aria-hidden="true"></canvas>
+      <button type="button" class="dock-to-top" id="dockToTop" title="回到顶部" aria-label="回到顶部">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>

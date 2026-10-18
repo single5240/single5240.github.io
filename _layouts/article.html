@@ -5,7 +5,10 @@ layout: default
 <main class="reading-layout" id="main-content">
   <header class="article-header"><a class="eyebrow" href="{{ '/articles/index.html' | relative_url }}">← 返回文章归档</a><h1>{{ page.title | escape }}</h1><p class="description">{{ page.description | escape }}</p><div class="article-meta"><time datetime="{{ page.date | date_to_xmlschema }}">发布于 {{ page.date | date_to_xmlschema | slice: 0, 10 }}</time>{% if page.updated %}<time datetime="{{ page.updated | date_to_xmlschema }}">更新于 {{ page.updated | date: '%Y-%m-%d' }}</time>{% endif %}{% for topic in site.data.topics %}{% if topic.articles contains page.slug %}<a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}">{{ topic.title }}</a>{% endif %}{% endfor %}{% if page.status %}<span>{{ page.status | escape }}</span>{% endif %}</div></header>
   <div class="reading-grid">
-    <details class="toc" id="article-toc" open hidden><summary>本文目录</summary><ol></ol></details>
+    <aside class="reading-sidebar" id="reading-sidebar">
+      {% include article-robot.html %}
+      <details class="toc" id="article-toc" open hidden><summary>本文目录</summary><ol></ol></details>
+    </aside>
     <div class="reading-main"><article class="content">{{ content }}</article>
       <aside class="article-context" aria-label="相关内容"><p>相关内容</p>{% for topic in site.data.topics %}{% if topic.articles contains page.slug %}<a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}">{{ topic.title }}专题 ↗</a>{% endif %}{% endfor %}{% for project in site.data.projects %}{% if project.articles contains page.slug %}<a href="{{ project.url | relative_url }}">{{ project.title }}交互演示 ↗</a>{% endif %}{% endfor %}{% if page.series %}<span>{{ page.series | escape }}</span>{% endif %}</aside>
       {% assign article_pages = site.articles | sort: 'date' %}{% assign current_index = nil %}{% for item in article_pages %}{% if item.url == page.url %}{% assign current_index = forloop.index0 %}{% endif %}{% endfor %}

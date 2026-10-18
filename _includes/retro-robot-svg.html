@@ -1,0 +1,95 @@
+<svg class="retro-robot-svg" viewBox="0 0 160 138" width="124" height="107" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <ellipse cx="80" cy="134" rx="38" ry="3.5" class="robot-shadow" />
+
+  <!-- 头部组（天线 + 旋钮耳 + CRT 头），整体随视线偏转 -->
+  <g id="robotHead">
+    <g class="robot-part-antenna">
+      <rect x="75" y="24" width="10" height="4" rx="1.5" class="robot-metal-dark" />
+      <path d="M80 24 L80 19 L76.5 16.5 L83.5 13.5 L76.5 10.5 L80 8" class="robot-stroke-heavy" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="80" cy="5.5" r="5.5" class="antenna-glow-ring" />
+      <circle cx="80" cy="5.5" r="3.2" class="antenna-bulb" />
+      <circle cx="79" cy="4.5" r="1" fill="#ffffff" opacity="0.85" />
+    </g>
+
+    <g class="robot-part-ears">
+      <rect x="33" y="46" width="6" height="16" rx="2" class="robot-ear" />
+      <line x1="33" y1="50" x2="37" y2="50" class="robot-stroke-thin" />
+      <line x1="33" y1="54" x2="38" y2="54" class="robot-stroke-thin" />
+      <line x1="33" y1="58" x2="37" y2="58" class="robot-stroke-thin" />
+      <rect x="121" y="46" width="6" height="16" rx="2" class="robot-ear" />
+      <line x1="123" y1="50" x2="127" y2="50" class="robot-stroke-thin" />
+      <line x1="122" y1="54" x2="127" y2="54" class="robot-stroke-thin" />
+      <line x1="123" y1="58" x2="127" y2="58" class="robot-stroke-thin" />
+    </g>
+
+    <rect x="39" y="28" width="82" height="54" rx="11" class="robot-chassis" />
+    <rect x="42" y="31" width="76" height="48" rx="8.5" class="robot-chassis-inner" />
+    <circle cx="45.5" cy="34.5" r="1.4" class="robot-screw" />
+    <circle cx="114.5" cy="34.5" r="1.4" class="robot-screw" />
+    <circle cx="45.5" cy="75.5" r="1.4" class="robot-screw" />
+    <circle cx="114.5" cy="75.5" r="1.4" class="robot-screw" />
+
+    <!-- CRT 屏幕 = 固定眼眶 -->
+    <rect x="48" y="35" width="64" height="40" rx="6.5" class="robot-crt-bezel" />
+    <rect x="50" y="37" width="60" height="36" rx="5" class="robot-crt-screen" />
+    <line x1="52" y1="46" x2="108" y2="46" class="robot-crt-grid" />
+    <line x1="52" y1="55" x2="108" y2="55" class="robot-crt-grid" />
+    <line x1="52" y1="64" x2="108" y2="64" class="robot-crt-grid" />
+    <path d="M54 40 H60 M54 40 V45" class="robot-crt-glare" stroke-linecap="round" />
+
+    <!-- 荧光瞳孔：在屏幕内移动 -->
+    <g id="robotPupils">
+      <g class="robot-pupils-normal">
+        <rect x="62" y="46" width="8" height="10" rx="2.5" class="robot-eye robot-eye-left" />
+        <rect x="90" y="46" width="8" height="10" rx="2.5" class="robot-eye robot-eye-right" />
+        <rect x="63.5" y="47.5" width="2.5" height="2.5" rx="0.6" class="robot-eye-glint" />
+        <rect x="91.5" y="47.5" width="2.5" height="2.5" rx="0.6" class="robot-eye-glint" />
+      </g>
+      <g class="robot-eyes-happy">
+        <path d="M60 53 Q66 45 72 53" class="robot-happy-arc" stroke-linecap="round" />
+        <path d="M88 53 Q94 45 100 53" class="robot-happy-arc" stroke-linecap="round" />
+      </g>
+    </g>
+
+    <circle cx="56" cy="62" r="1.8" class="robot-cheek" />
+    <circle cx="104" cy="62" r="1.8" class="robot-cheek" />
+    <path d="M71 65 Q75.5 68.5 80 65 Q84.5 68.5 89 65" class="robot-mouth" stroke-linecap="round" />
+  </g>
+
+  <rect x="68" y="82" width="24" height="5" rx="1.5" class="robot-metal-dark" />
+  <line x1="72" y1="84.5" x2="88" y2="84.5" class="robot-stroke-thin" />
+
+  <g class="robot-part-arms">
+    <path d="M44 96 C33 98 29 109 35 121" class="robot-arm-tube" stroke-linecap="round" />
+    <circle cx="33" cy="107" r="2.2" class="robot-joint" />
+    <path d="M31 124 C31 119 39 119 39 124" class="robot-claw" stroke-linecap="round" />
+    <g class="robot-wave-arm">
+      <path d="M116 96 C127 94 132 84 127 72" class="robot-arm-tube" stroke-linecap="round" />
+      <circle cx="128" cy="85" r="2.2" class="robot-joint" />
+      <path d="M123 72 C124 66 132 67 131 73" class="robot-claw" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <g class="robot-part-body">
+    <rect x="44" y="87" width="72" height="43" rx="8" class="robot-chassis" />
+    <rect x="47" y="90" width="66" height="37" rx="5.5" class="robot-chassis-inner" />
+    <!-- 指针式表头 -->
+    <rect x="52" y="95" width="30" height="19" rx="3" class="robot-meter-face" />
+    <path d="M56 110 A11 11 0 0 1 78 110" class="robot-meter-arc" />
+    <line id="robotNeedle" x1="67" y1="111" x2="67" y2="99" class="robot-meter-needle" stroke-linecap="round" />
+    <circle cx="67" cy="111" r="1.6" class="robot-screw" />
+    <circle cx="90" cy="99" r="2.4" class="robot-jack" fill="#2c4554" />
+    <circle cx="98" cy="99" r="2.4" class="robot-jack" fill="#a4692e" />
+    <circle cx="106" cy="99" r="2.4" class="robot-jack" fill="#742d38" />
+    <circle cx="98" cy="112" r="6.5" class="robot-knob" />
+    <line x1="98" y1="112" x2="101.5" y2="107.5" class="robot-knob-mark" stroke-linecap="round" />
+    <line x1="53" y1="119" x2="73" y2="119" class="robot-vent" stroke-linecap="round" />
+    <line x1="53" y1="122.5" x2="73" y2="122.5" class="robot-vent" stroke-linecap="round" />
+    <text x="82" y="123" class="robot-badge-text">S5·BOT</text>
+  </g>
+
+  <g class="robot-part-feet">
+    <rect x="55" y="129" width="14" height="5" rx="2" class="robot-foot" />
+    <rect x="91" y="129" width="14" height="5" rx="2" class="robot-foot" />
+  </g>
+</svg>

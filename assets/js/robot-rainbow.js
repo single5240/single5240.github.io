@@ -10,6 +10,10 @@
   const channelBtn = document.querySelector("#scopeChannel");
   const channelNameEl = document.querySelector("#scopeChannelName");
   const readoutEl = document.querySelector("#scopeReadout");
+  const dock = document.querySelector("#robotDock");
+  const toTopBtn = document.querySelector("#dockToTop");
+  const miniCanvas = document.querySelector("#scopeCanvasMini");
+  const miniCtx = miniCanvas ? miniCanvas.getContext("2d") : null;
 
   if (!stage || !canvas) return;
 
@@ -325,12 +329,23 @@
     },
   };
 
+  const isArticlePage = Boolean(document.querySelector("#articleRobotCard"));
+  let isFloating = false;
+
   // 有条理的三层对话系统（告别杂乱报文）
   const NORMAL_DIALOGUES = [
     () => WAVEFORMS[currentWaveIndex].comment,
-    () => "戳我干嘛，正在跑 while(1) 主循环呢 (*/ω＼*)",
+    () =>
+      isArticlePage
+        ? "正在侧边栏陪你精读文章，目录随时可快速跳转 ↘"
+        : "戳我干嘛，正在跑 while(1) 主循环呢 (*/ω＼*)",
     () => "刚帮你喂过看门狗（IWDG）啦，0 Warning 0 Error，放心看笔记！",
-    () => "提示：点下方色卡可按专题筛文章，点左侧 CH1 可切换示波器波形 ↗",
+    () =>
+      isFloating
+        ? "悬浮常驻伴读模式中，点右上角 ↑ 可一键返回顶部哦 ~"
+        : isArticlePage
+        ? "提示：点左上角 CH1 可切换波形，滑动文章我一直都在侧栏！"
+        : "提示：点下方色卡可按专题筛文章，点左侧 CH1 可切换示波器波形 ↗",
     () => "汇报：栈水位安全，DMA 双缓冲就绪，无野指针出没！",
   ];
 
@@ -547,6 +562,39 @@
       ctx.stroke();
     }
     ctx.restore();
+
+    // 5. 若处于右下角悬浮模式，在微型底座画布上同步渲染微缩示波器波形
+    if (isFloating && miniCtx && miniCanvas) {
+      const mw = miniCanvas.clientWidth || 96;
+      const mh = miniCanvas.clientHeight || 78;
+      miniCtx.clearRect(0, 0, mw, mh);
+
+      const mCenterY = mh * 0.52;
+      const mAmp = Math.min(18, mh * 0.22);
+      const mSteps = 42;
+
+      miniCtx.save();
+      miniCtx.beginPath();
+      miniCtx.lineWidth = 1.6;
+      miniCtx.lineCap = "round";
+      miniCtx.lineJoin = "round";
+      miniCtx.strokeStyle = palette.trace;
+      if (palette.glow > 0) {
+        miniCtx.shadowColor = palette.trace;
+        miniCtx.shadowBlur = palette.glow;
+      }
+
+      for (let i = 0; i <= mSteps; i += 1) {
+        const u = i / mSteps;
+        const x = u * mw;
+        const theta = u * Math.PI * 2 * cycles - phase;
+        const y = mCenterY - sampleBlended(theta) * mAmp;
+        if (i === 0) miniCtx.moveTo(x, y);
+        else miniCtx.lineTo(x, y);
+      }
+      miniCtx.stroke();
+      miniCtx.restore();
+    }
   };
 
   const applyRobotTransforms = () => {
@@ -760,8 +808,66 @@
     }, 10000);
   };
 
+  const resizeMiniCanvas = () => {
+    if (!miniCanvas || !miniCtx || !dock) return;
+    const rect = dock.getBoundingClientRect();
+    const w = Math.max(90, Math.floor(rect.width));
+    const h = Math.max(76, Math.floor(rect.height));
+    miniCanvas.width = Math.floor(w * dpr);
+    miniCanvas.height = Math.floor(h * dpr);
+    miniCanvas.style.width = `${w}px`;
+    miniCanvas.style.height = `${h}px`;
+    miniCtx.setTransform(1, 0, 0, 1, 0, 0);
+    miniCtx.scale(dpr, dpr);
+  };
+
+  const updateFloatingDock = () => {
+    if (!dock || !stage) return;
+
+    // 桌面端文章页：侧边栏本身已是 sticky 贴顶跟随，目录上方的小机器人一直可见，不脱离为右下角悬浮
+    const isDesktopArticleSidebar =
+      document.querySelector("#reading-sidebar") && window.innerWidth > 1000;
+
+    if (isDesktopArticleSidebar) {
+      if (isFloating) {
+        isFloating = false;
+        dock.classList.remove("is-docked-float");
+      }
+      return;
+    }
+
+    const stageRect = stage.getBoundingClientRect();
+    // 当舞台滑出屏幕顶部（bottom < 15），平滑进入右下角悬浮工作台（固定常驻）
+    const shouldFloat = stageRect.bottom < 15;
+
+    if (shouldFloat !== isFloating) {
+      isFloating = shouldFloat;
+      if (isFloating) {
+        dock.classList.add("is-docked-float");
+        resizeMiniCanvas();
+        inView = true;
+        startLoop();
+      } else {
+        dock.classList.remove("is-docked-float");
+      }
+    }
+  };
+
+  if (toTopBtn) {
+    toTopBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  window.addEventListener("scroll", updateFloatingDock, { passive: true });
+  window.addEventListener("resize", updateFloatingDock, { passive: true });
+
   if ("ResizeObserver" in window) {
-    const resizeObserver = new ResizeObserver(() => resize());
+    const resizeObserver = new ResizeObserver(() => {
+      resize();
+      if (isFloating) resizeMiniCanvas();
+    });
     resizeObserver.observe(stage);
   } else {
     window.addEventListener("resize", resize, { passive: true });
@@ -770,7 +876,7 @@
   if ("IntersectionObserver" in window) {
     const observer = new IntersectionObserver(
       (entries) => {
-        inView = Boolean(entries[0] && entries[0].isIntersecting);
+        inView = Boolean(entries[0] && entries[0].isIntersecting) || isFloating;
         if (inView) startLoop();
       },
       { threshold: 0.05 }
@@ -802,6 +908,7 @@
 
   syncWaveLabels();
   resize();
+  updateFloatingDock();
   startLoop();
   startAutoSwitch();
 })();
