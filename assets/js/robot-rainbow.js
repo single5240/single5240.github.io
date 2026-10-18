@@ -1,11 +1,15 @@
 (() => {
-  const stage = document.querySelector("#rainbowMascotStage");
-  const canvas = document.querySelector("#rainbowCanvas");
+  const stage = document.querySelector("#robotStage");
+  const canvas = document.querySelector("#scopeCanvas");
   const robot = document.querySelector("#retroRobot");
-  const eyesTrack = document.querySelector("#robotEyesTrack");
+  const robotHead = document.querySelector("#robotHead");
+  const robotPupils = document.querySelector("#robotPupils");
+  const robotNeedle = document.querySelector("#robotNeedle");
   const speech = document.querySelector("#robotSpeech");
   const speechText = document.querySelector("#robotSpeechText");
-  const stageReadout = document.querySelector("#stageReadout");
+  const channelBtn = document.querySelector("#scopeChannel");
+  const channelNameEl = document.querySelector("#scopeChannelName");
+  const readoutEl = document.querySelector("#scopeReadout");
 
   if (!stage || !canvas) return;
 
@@ -15,141 +19,214 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
 
-  // 契合全站 5 套主题的复古实体油墨与仪器光谱色板（对应 MCU / 系统 / Qt / Linux / 工业通信）
-  const THEME_PALETTES = {
+  // 6 种常见嵌入式/电力电子示波器波形定义
+  const WAVEFORMS = [
+    {
+      id: "sine",
+      name: "正弦波",
+      spec: "50Hz · 1.0V/div",
+      cycles: 3.0,
+      comment: "背后正在采样【正弦波】：纯基准信号，THD < 0.05%，谐波干干净净 ~",
+      sample(theta) {
+        return Math.sin(theta);
+      },
+    },
+    {
+      id: "saddle",
+      name: "马鞍波",
+      spec: "SVPWM · +1/6·3rd",
+      cycles: 2.5,
+      comment: "背后正在采样【马鞍波】：三次谐波注入 SVPWM，母线电压利用率拉满 ⚡",
+      sample(theta) {
+        // 经典 SVPWM 三次谐波注入马鞍波：sin(θ) + (1/6)sin(3θ)，归一化到 ±1
+        return (Math.sin(theta) + (1 / 6) * Math.sin(3 * theta)) * 1.1547;
+      },
+    },
+    {
+      id: "square",
+      name: "方波",
+      spec: "CLK · 3.3V CMOS",
+      cycles: 3.0,
+      comment: "背后正在采样【方波】：3.3V 时钟信号，上升沿还带一点点吉布斯振铃 ~",
+      sample(theta) {
+        // 有限谐波合成方波，保留真实示波器微弱边沿过冲感
+        const s =
+          Math.sin(theta) +
+          Math.sin(3 * theta) / 3 +
+          Math.sin(5 * theta) / 5 +
+          Math.sin(7 * theta) / 7 +
+          Math.sin(9 * theta) / 9;
+        return Math.max(-1.05, Math.min(1.05, s * (4 / Math.PI) * 0.88));
+      },
+    },
+    {
+      id: "triangle",
+      name: "三角波",
+      spec: "CARRIER · 20kHz",
+      cycles: 3.5,
+      comment: "背后正在采样【三角波】：线性对称载波，PWM 比较器最忠实的搭档！",
+      sample(theta) {
+        return (2 / Math.PI) * Math.asin(Math.sin(theta));
+      },
+    },
+    {
+      id: "sawtooth",
+      name: "锯齿波",
+      spec: "TIM_CNT · 0→ARR",
+      cycles: 3.5,
+      comment: "背后正在采样【锯齿波】：定时器向上计数斜坡，到 ARR 准时触发更新中断！",
+      sample(theta) {
+        const u = theta / (Math.PI * 2);
+        const frac = u - Math.floor(u);
+        // 平滑陡降沿避免混叠锯齿
+        const raw = frac * 2 - 1;
+        return raw * (1 - Math.pow(frac, 18));
+      },
+    },
+    {
+      id: "spwm",
+      name: "SPWM波",
+      spec: "TIM1_CH1 · 互补",
+      cycles: 2.0,
+      comment: "背后正在采样【SPWM 波】：正弦包络调制脉冲，准备驱动 H 桥逆变器！",
+      sample(theta) {
+        const mod = Math.sin(theta);
+        const carrier = (2 / Math.PI) * Math.asin(Math.sin(theta * 9));
+        const pulse = Math.tanh((mod - carrier) * 6);
+        return pulse * 0.55 + mod * 0.45;
+      },
+    },
+  ];
+
+  // 主题自适应示波器轨迹配色
+  const THEME_SCOPE_COLORS = {
     light: {
-      bands: ["#2c4554", "#0f818d", "#3f5442", "#a4692e", "#742d38"],
-      guide: "rgba(30, 37, 43, 0.14)",
-      terminal: "#63707a",
-      alpha: 0.9,
+      trace: "#0f818d",
+      subTrace: "rgba(164, 105, 46, 0.28)",
+      axis: "rgba(30, 37, 43, 0.14)",
+      terminal: "#09686a",
       glow: 0,
     },
     dark: {
-      bands: ["#466f87", "#249eab", "#58825e", "#cc853d", "#a34654"],
-      guide: "rgba(168, 180, 187, 0.14)",
+      trace: "#58c4ce",
+      subTrace: "rgba(241, 166, 90, 0.26)",
+      axis: "rgba(168, 180, 187, 0.14)",
       terminal: "#78d5dc",
-      alpha: 0.92,
-      glow: 2,
+      glow: 3,
     },
     swiss: {
-      bands: ["#111111", "#4a4946", "#87837b", "#d84333", "#e63329"],
-      guide: "rgba(17, 17, 17, 0.14)",
-      terminal: "#e63329",
-      alpha: 0.92,
+      trace: "#e63329",
+      subTrace: "rgba(17, 17, 17, 0.2)",
+      axis: "rgba(17, 17, 17, 0.15)",
+      terminal: "#cc251b",
       glow: 0,
     },
     hud: {
-      bands: ["#1d5670", "#2899bd", "#52d8e8", "#80c7a7", "#ffd166"],
-      guide: "rgba(82, 216, 232, 0.18)",
-      terminal: "#52d8e8",
-      alpha: 0.94,
-      glow: 4,
+      trace: "#52d8e8",
+      subTrace: "rgba(255, 209, 102, 0.28)",
+      axis: "rgba(82, 216, 232, 0.18)",
+      terminal: "#7be4f0",
+      glow: 5,
     },
     mono: {
-      bands: ["#141414", "#3b3b3b", "#636363", "#8c8982", "#b5b0a6"],
-      guide: "rgba(20, 20, 20, 0.12)",
+      trace: "#262626",
+      subTrace: "rgba(115, 115, 115, 0.24)",
+      axis: "rgba(20, 20, 20, 0.14)",
       terminal: "#141414",
-      alpha: 0.9,
       glow: 0,
     },
   };
 
-  const BAND_OFFSETS = [-12, -6, 0, 6, 12];
-  const BAND_WIDTH = 3.8;
-
-  const SPEECH_MESSAGES = [
-    "READY · 115200bps",
-    "ADC 24-BIT · LOCKED",
-    "SPI DMA · ZERO-DROP",
-    "ETH-CAT · OP_MODE",
-    "N32G455 · 144MHz",
-    "IMX6ULL · QT5 UI",
-    "CRC16 · VERIFIED",
+  // 有条理的三层对话系统（告别杂乱报文）
+  const NORMAL_DIALOGUES = [
+    () => WAVEFORMS[currentWaveIndex].comment,
+    () => "戳我干嘛，正在跑 while(1) 主循环呢 (*/ω＼*)",
+    () => "刚帮你喂过看门狗（IWDG）啦，0 Warning 0 Error，放心看笔记！",
+    () => "提示：点下方色卡可按专题筛文章，点左侧 CH1 可切换示波器波形 ↗",
+    () => "汇报：栈水位安全，DMA 双缓冲就绪，无野指针出没！",
   ];
-  let speechIndex = 0;
-  let speechTimer = null;
-  let boopTimer = null;
 
-  // 质点弹簧链参数
-  const NODE_COUNT = 32;
-  const SPRING_K = 0.048;
-  const DAMPING = 0.87;
-  const NEIGHBOR_COUPLING_Y = 0.14;
-  const NEIGHBOR_COUPLING_X = 0.07;
-  const MAGNETIC_RADIUS = 175;
-  const MAGNETIC_FORCE = 3.4;
+  const COMBO_DIALOGUES = [
+    "⚠️ EXTI 外部中断触发太快，按键消抖状态机要冒烟啦！",
+    "⚡ 进 HardFault_Handler 啦……骗你的，已自动软复位 😄",
+  ];
 
-  // 画布向上/向下出血留白（避免彩虹大幅度向上拉扯或脉冲弹跳时被画布顶边截断）
-  const CANVAS_BLEED_TOP = 72;
-  const CANVAS_BLEED_BOTTOM = 12;
-
-  let stageWidth = 0;
-  let stageHeight = 0;
   let width = 0;
   let height = 0;
   let dpr = 1;
-  let nodes = [];
-  let isPointerActive = false;
-  let pointerX = -9999;
-  let pointerY = -9999;
-  let eyeOffsetX = 0;
-  let eyeOffsetY = 0;
-  let targetEyeX = 0;
-  let targetEyeY = 0;
-  let activeBandIndex = -1;
-  let isAnimating = false;
+
+  // 随机选一个非正弦或全部波形作为初始展示，让每次进入都有新鲜感
+  let currentWaveIndex = Math.floor(Math.random() * WAVEFORMS.length);
+  let prevWaveIndex = currentWaveIndex;
+  let morphProgress = 1;
+
+  let phase = 0;
+  let amplitudeBoost = 0;
+  let isStageHovered = false;
+  let stagePointerRatioX = 0.5;
+
+  // 视线与头部弹簧状态（范围大幅增强，清晰灵动）
+  let pupilX = 0;
+  let pupilY = 0;
+  let targetPupilX = 0;
+  let targetPupilY = 0;
+
+  let headX = 0;
+  let headY = 0;
+  let headRot = 0;
+  let targetHeadX = 0;
+  let targetHeadY = 0;
+  let targetHeadRot = 0;
+
+  // 胸前微安表指针物理角度（度）
+  let needleAngle = 0;
+  let needleVel = 0;
+  let targetNeedleAngle = 0;
+
+  // 对话状态机
+  let hasGreeted = false;
+  let dialogueCursor = 0;
+  let comboCursor = 0;
+  let clickTimestamps = [];
+  let speechTimer = null;
+  let boopTimer = null;
   let inView = true;
+  let rafId = null;
+  let autoSwitchTimer = null;
 
-  class Node {
-    constructor(t) {
-      this.t = t;
-      this.x = 0;
-      this.y = 0;
-      this.ox = 0;
-      this.oy = 0;
-      this.vx = 0;
-      this.vy = 0;
-    }
-
-    updateBase(stageW, stageH) {
-      const padX = Math.min(28, Math.max(12, stageW * 0.025));
-      const spanW = Math.max(200, stageW - padX * 2);
-      this.ox = padX + this.t * spanW;
-      // 跨过小机器人头顶的平滑仪器拱弧（叠加顶部出血偏移量）
-      const arch = Math.pow(Math.sin(Math.PI * this.t), 0.84);
-      this.oy = CANVAS_BLEED_TOP + (stageH - 14) - (stageH - 40) * arch;
-
-      if (!isAnimating) {
-        this.x = this.ox;
-        this.y = this.oy;
-      }
-    }
-  }
-
-  const currentPalette = () => {
+  const getScopePalette = () => {
     const attr = document.documentElement.getAttribute("data-theme");
-    if (attr && THEME_PALETTES[attr]) return THEME_PALETTES[attr];
-    return darkMedia.matches ? THEME_PALETTES.dark : THEME_PALETTES.light;
+    if (attr && THEME_SCOPE_COLORS[attr]) return THEME_SCOPE_COLORS[attr];
+    return darkMedia.matches ? THEME_SCOPE_COLORS.dark : THEME_SCOPE_COLORS.light;
   };
 
-  const initNodes = () => {
-    nodes = [];
-    for (let i = 0; i < NODE_COUNT; i += 1) {
-      const t = i / (NODE_COUNT - 1);
-      const node = new Node(t);
-      node.updateBase(stageWidth, stageHeight);
-      node.x = node.ox;
-      node.y = node.oy;
-      nodes.push(node);
+  const syncWaveLabels = () => {
+    const wave = WAVEFORMS[currentWaveIndex];
+    if (channelNameEl) channelNameEl.textContent = wave.name;
+    if (readoutEl) readoutEl.textContent = wave.spec;
+  };
+
+  const switchWaveform = (nextIndex, announce = false) => {
+    prevWaveIndex = currentWaveIndex;
+    currentWaveIndex = (nextIndex + WAVEFORMS.length) % WAVEFORMS.length;
+    morphProgress = 0;
+    amplitudeBoost = 0.22;
+    needleVel -= 9;
+    syncWaveLabels();
+
+    if (announce) {
+      showSpeech(`CH1 已切换至【${WAVEFORMS[currentWaveIndex].name}】(${WAVEFORMS[currentWaveIndex].spec})`);
+    }
+    if (reducedMotion.matches) {
+      morphProgress = 1;
+      drawScope();
     }
   };
 
   const resize = () => {
     const rect = stage.getBoundingClientRect();
-    stageWidth = Math.max(280, Math.floor(rect.width));
-    stageHeight = Math.max(116, Math.floor(rect.height || 142));
-    width = stageWidth;
-    height = stageHeight + CANVAS_BLEED_TOP + CANVAS_BLEED_BOTTOM;
+    width = Math.max(280, Math.floor(rect.width));
+    height = Math.max(96, Math.floor(rect.height || 114));
     dpr = window.devicePixelRatio || 1;
 
     canvas.width = Math.floor(width * dpr);
@@ -159,317 +236,341 @@
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.scale(dpr, dpr);
-
-    if (nodes.length !== NODE_COUNT) {
-      initNodes();
-    } else {
-      for (const node of nodes) {
-        node.updateBase(stageWidth, stageHeight);
-      }
-    }
-
-    drawStripes();
-    wakeUp();
+    drawScope();
   };
 
-  const drawCurve = (offsetY) => {
-    ctx.beginPath();
-    ctx.moveTo(nodes[0].x, nodes[0].y + offsetY);
-
-    for (let i = 1; i < nodes.length - 1; i += 1) {
-      const xc = (nodes[i].x + nodes[i + 1].x) * 0.5;
-      const yc = (nodes[i].y + nodes[i + 1].y + offsetY * 2) * 0.5;
-      ctx.quadraticCurveTo(nodes[i].x, nodes[i].y + offsetY, xc, yc);
-    }
-
-    const last = nodes[nodes.length - 1];
-    ctx.quadraticCurveTo(last.x, last.y + offsetY, last.x, last.y + offsetY);
-    ctx.stroke();
+  const sampleBlended = (theta) => {
+    const curr = WAVEFORMS[currentWaveIndex].sample(theta);
+    if (morphProgress >= 1) return curr;
+    const prev = WAVEFORMS[prevWaveIndex].sample(theta);
+    const t = morphProgress * morphProgress * (3 - 2 * morphProgress);
+    return prev + (curr - prev) * t;
   };
 
-  const drawStripes = () => {
-    if (nodes.length === 0) return;
+  const drawScope = () => {
+    if (!width || !height) return;
     ctx.clearRect(0, 0, width, height);
 
-    const palette = currentPalette();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    const palette = getScopePalette();
+    const padX = Math.min(24, Math.max(10, width * 0.02));
+    const spanW = Math.max(180, width - padX * 2);
+    const centerY = Math.round(height * 0.48);
+    const baseAmp = Math.min(26, height * 0.23) * (1 + amplitudeBoost);
 
-    // 1. 绘制底层示波器静态参考虚线弧
+    // 机器人中间遮挡柔化区（让机器人背后的波形略微淡化，突出主体层次）
+    const robotHalfW = 54;
+    const midX = width * 0.5;
+
+    // 1. 0V 基准虚线与刻度十字
     ctx.save();
     ctx.setLineDash([3, 4]);
     ctx.lineWidth = 1;
-    ctx.strokeStyle = palette.guide;
+    ctx.strokeStyle = palette.axis;
     ctx.beginPath();
-    ctx.moveTo(nodes[0].ox, nodes[0].oy - 19);
-    for (let i = 1; i < nodes.length; i += 1) {
-      ctx.lineTo(nodes[i].ox, nodes[i].oy - 19);
+    ctx.moveTo(padX, centerY);
+    ctx.lineTo(width - padX, centerY);
+    ctx.stroke();
+    ctx.restore();
+
+    const wave = WAVEFORMS[currentWaveIndex];
+    const prevWave = WAVEFORMS[prevWaveIndex];
+    const cycles =
+      morphProgress >= 1
+        ? wave.cycles
+        : prevWave.cycles + (wave.cycles - prevWave.cycles) * morphProgress;
+
+    const steps = Math.min(260, Math.max(120, Math.floor(spanW / 3)));
+
+    // 2. 辅助包络/谐波副通道轨迹 (CH2)
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = 1.15;
+    ctx.strokeStyle = palette.subTrace;
+    for (let i = 0; i <= steps; i += 1) {
+      const u = i / steps;
+      const x = padX + u * spanW;
+      const theta = u * Math.PI * 2 * cycles - phase * 0.65;
+      const y = centerY - Math.sin(theta) * (baseAmp * 0.72);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     }
     ctx.stroke();
     ctx.restore();
 
-    // 2. 绘制 5 条复古油墨光谱色带
-    for (let b = 0; b < BAND_OFFSETS.length; b += 1) {
-      const offset = BAND_OFFSETS[b];
-      const color = palette.bands[b % palette.bands.length];
-      const isHighlighted = activeBandIndex === b;
-
-      ctx.lineWidth = isHighlighted ? BAND_WIDTH + 1.4 : BAND_WIDTH;
-      ctx.strokeStyle = color;
-      ctx.globalAlpha = isHighlighted ? 1 : palette.alpha;
-
-      if (palette.glow > 0 || isHighlighted) {
-        ctx.shadowColor = color;
-        ctx.shadowBlur = isHighlighted ? 5 : palette.glow;
-      } else {
-        ctx.shadowBlur = 0;
-      }
-
-      drawCurve(offset);
+    // 3. 主通道示波器波形 (CH1)
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = 2.1;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = palette.trace;
+    if (palette.glow > 0) {
+      ctx.shadowColor = palette.trace;
+      ctx.shadowBlur = palette.glow;
     }
 
-    // 3. 绘制两端工程图纸焊盘端子圆环（与全站 SVG 插画风格统一）
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 0.85;
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = palette.terminal;
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#11191d";
+    for (let i = 0; i <= steps; i += 1) {
+      const u = i / steps;
+      const x = padX + u * spanW;
 
-    const first = nodes[0];
-    const last = nodes[nodes.length - 1];
-    for (const anchor of [first, last]) {
+      // 当鼠标在舞台上方移动时，光标附近产生轻微探头包络增益
+      let localGain = 1;
+      if (isStageHovered) {
+        const distRatio = Math.abs(u - stagePointerRatioX);
+        if (distRatio < 0.18) {
+          localGain = 1 + (1 - distRatio / 0.18) * 0.22;
+        }
+      }
+
+      // 机器人正后方略微收敛振幅，使画面更干净
+      const distFromCenter = Math.abs(x - midX);
+      const centerAtten =
+        distFromCenter < robotHalfW
+          ? 0.65 + 0.35 * (distFromCenter / robotHalfW)
+          : 1;
+
+      const theta = u * Math.PI * 2 * cycles - phase;
+      const val = sampleBlended(theta);
+      const y = centerY - val * baseAmp * localGain * centerAtten;
+
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. 两端图纸测试焊盘圆环
+    const startY = centerY - sampleBlended(-phase) * baseAmp;
+    const endY = centerY - sampleBlended(Math.PI * 2 * cycles - phase) * baseAmp;
+    const paperColor =
+      getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#11191d";
+
+    ctx.save();
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = palette.terminal;
+    ctx.fillStyle = paperColor;
+    for (const pt of [
+      { x: padX, y: startY },
+      { x: width - padX, y: endY },
+    ]) {
       ctx.beginPath();
-      ctx.arc(anchor.x, anchor.y, 3.2, 0, Math.PI * 2);
+      ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
     }
-
-    ctx.globalAlpha = 1;
+    ctx.restore();
   };
 
-  const wakeUp = () => {
-    if (reducedMotion.matches) {
-      drawStripes();
-      return;
+  const applyRobotTransforms = () => {
+    if (robotPupils) {
+      robotPupils.setAttribute(
+        "transform",
+        `translate(${pupilX.toFixed(2)}, ${pupilY.toFixed(2)})`
+      );
     }
-    if (!isAnimating && inView) {
-      isAnimating = true;
-      requestAnimationFrame(tick);
+    if (robotHead) {
+      robotHead.setAttribute(
+        "transform",
+        `translate(${headX.toFixed(2)}, ${headY.toFixed(2)}) rotate(${headRot.toFixed(2)}, 80, 62)`
+      );
+    }
+    if (robotNeedle) {
+      robotNeedle.setAttribute("transform", `rotate(${needleAngle.toFixed(2)}, 67, 111)`);
     }
   };
 
   const tick = () => {
     if (!inView || reducedMotion.matches) {
-      isAnimating = false;
+      rafId = null;
       return;
     }
 
-    let maxVel = 0;
-    let totalEnergy = 0;
-    const minY = Math.abs(BAND_OFFSETS[0]) + 8;
-    const maxY = height - BAND_OFFSETS[BAND_OFFSETS.length - 1] - 6;
-    const minX = 8;
-    const maxX = width - 8;
+    // 1. 示波器相位推进与波形平滑过渡
+    phase += isStageHovered ? 0.052 : 0.032;
+    if (phase > Math.PI * 200) phase -= Math.PI * 200;
 
-    for (let i = 0; i < nodes.length; i += 1) {
-      const node = nodes[i];
-
-      if (i === 0 || i === nodes.length - 1) {
-        node.x = node.ox;
-        node.y = node.oy;
-        node.vx = 0;
-        node.vy = 0;
-        continue;
-      }
-
-      // 1. 胡克定律复位弹力
-      node.vx += (node.ox - node.x) * SPRING_K;
-      node.vy += (node.oy - node.y) * SPRING_K;
-
-      // 2. 邻近节点张力耦合
-      const prev = nodes[i - 1];
-      const next = nodes[i + 1];
-      node.vy += ((prev.y + next.y) * 0.5 - node.y) * NEIGHBOR_COUPLING_Y;
-      node.vx += ((prev.x + next.x) * 0.5 - node.x) * NEIGHBOR_COUPLING_X;
-
-      // 3. 光标磁力牵引
-      if (isPointerActive) {
-        const dx = pointerX - node.x;
-        const dy = pointerY - node.y;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist < MAGNETIC_RADIUS && dist > 1) {
-          const ratio = 1 - dist / MAGNETIC_RADIUS;
-          const pull = ratio * ratio * MAGNETIC_FORCE;
-          node.vx += (dx / dist) * pull;
-          node.vy += (dy / dist) * pull;
-        }
-      }
-
-      // 4. 顶部/底部柔性缓冲边界（防止大幅拉扯时触碰画布边缘被裁切）
-      if (node.y < minY + 18) {
-        node.vy += (minY + 18 - node.y) * 0.15;
-      } else if (node.y > maxY - 14) {
-        node.vy -= (node.y - (maxY - 14)) * 0.15;
-      }
-
-      // 5. 阻尼衰减与积分
-      node.vx *= DAMPING;
-      node.vy *= DAMPING;
-      node.x += node.vx;
-      node.y += node.vy;
-
-      // 硬限幅保护
-      if (node.y < minY) {
-        node.y = minY;
-        if (node.vy < 0) node.vy *= 0.25;
-      } else if (node.y > maxY) {
-        node.y = maxY;
-        if (node.vy > 0) node.vy *= 0.25;
-      }
-      if (node.x < minX) node.x = minX;
-      if (node.x > maxX) node.x = maxX;
-
-      const v = Math.hypot(node.vx, node.vy);
-      if (v > maxVel) maxVel = v;
-      totalEnergy += Math.hypot(node.x - node.ox, node.y - node.oy);
+    if (morphProgress < 1) {
+      morphProgress = Math.min(1, morphProgress + 0.045);
     }
+    amplitudeBoost *= 0.92;
 
-    // 平滑更新机器人电子眼视线跟随
-    eyeOffsetX += (targetEyeX - eyeOffsetX) * 0.18;
-    eyeOffsetY += (targetEyeY - eyeOffsetY) * 0.18;
-    if (eyesTrack) {
-      eyesTrack.setAttribute("transform", `translate(${eyeOffsetX.toFixed(2)}, ${eyeOffsetY.toFixed(2)})`);
+    // 2. 瞳孔与头部平滑跟随（行程放大，目光清晰灵动）
+    pupilX += (targetPupilX - pupilX) * 0.22;
+    pupilY += (targetPupilY - pupilY) * 0.22;
+
+    headX += (targetHeadX - headX) * 0.14;
+    headY += (targetHeadY - headY) * 0.14;
+    headRot += (targetHeadRot - headRot) * 0.14;
+
+    // 3. 胸前微安表针弹簧阻尼摆动
+    const needleForce = (targetNeedleAngle - needleAngle) * 0.12;
+    needleVel = (needleVel + needleForce) * 0.82;
+    needleAngle += needleVel;
+
+    applyRobotTransforms();
+    drawScope();
+
+    rafId = requestAnimationFrame(tick);
+  };
+
+  const startLoop = () => {
+    if (reducedMotion.matches) {
+      drawScope();
+      return;
     }
-
-    // 更新右上角复古仪器遥测读数
-    if (stageReadout) {
-      const db = Math.min(18.0, totalEnergy * 0.035);
-      if (db > 0.15) {
-        stageReadout.textContent = `SYNC · +${db.toFixed(1)}dB`;
-      } else {
-        stageReadout.textContent = "IDLE · 0.0dB";
-      }
+    if (!rafId && inView) {
+      rafId = requestAnimationFrame(tick);
     }
+  };
 
-    drawStripes();
+  // 全页面鼠标移动监听：无论鼠标在哪里划过，机器人眼睛与头颅都灵动跟随
+  const onWindowPointerMove = (e) => {
+    if (reducedMotion.matches || !robot) return;
 
-    const eyeSettled = Math.hypot(targetEyeX - eyeOffsetX, targetEyeY - eyeOffsetY) < 0.04;
-    if (maxVel < 0.008 && !isPointerActive && eyeSettled) {
-      for (const node of nodes) {
-        node.x = node.ox;
-        node.y = node.oy;
-        node.vx = 0;
-        node.vy = 0;
-      }
-      if (eyesTrack) {
-        eyesTrack.removeAttribute("transform");
-      }
-      if (stageReadout) {
-        stageReadout.textContent = "IDLE · 0.0dB";
-      }
-      drawStripes();
-      isAnimating = false;
+    const rect = robot.getBoundingClientRect();
+    const centerX = rect.left + rect.width * 0.5;
+    const centerY = rect.top + rect.height * 0.38;
+
+    const dx = e.clientX - centerX;
+    const dy = e.clientY - centerY;
+    const dist = Math.hypot(dx, dy);
+
+    // 归一化方向向量，近处平滑过渡，远处饱和
+    const normFactor = Math.min(1, dist / 260);
+    const angle = Math.atan2(dy, dx);
+    const nx = Math.cos(angle) * normFactor;
+    const ny = Math.sin(angle) * normFactor;
+
+    // 瞳孔在固定 CRT 眼眶内大幅度游走（水平 ±6.5px，垂直 ±4.0px）
+    targetPupilX = nx * 6.5;
+    targetPupilY = ny * 4.0;
+
+    // 头部与天线跟随产生 3D 微倾角（水平 ±2.6px，垂直 ±1.5px，旋转 ±4°）
+    targetHeadX = nx * 2.6;
+    targetHeadY = ny * 1.5;
+    targetHeadRot = nx * 4.0;
+
+    // 判断是否在舞台上方以联动波形与表针
+    const stageRect = stage.getBoundingClientRect();
+    if (
+      e.clientX >= stageRect.left &&
+      e.clientX <= stageRect.right &&
+      e.clientY >= stageRect.top - 20 &&
+      e.clientY <= stageRect.bottom + 20
+    ) {
+      isStageHovered = true;
+      stagePointerRatioX = Math.max(
+        0,
+        Math.min(1, (e.clientX - stageRect.left) / Math.max(1, stageRect.width))
+      );
+      targetNeedleAngle = -10 + stagePointerRatioX * 26;
     } else {
-      requestAnimationFrame(tick);
+      isStageHovered = false;
+      targetNeedleAngle = 0;
     }
   };
 
-  // 触发脉冲波纹
-  const triggerRipple = (sourceIndex = Math.floor(NODE_COUNT * 0.5), force = -20) => {
-    if (reducedMotion.matches) return;
-    if (sourceIndex > 0 && sourceIndex < nodes.length - 1) {
-      nodes[sourceIndex].vy += force;
-      if (sourceIndex > 1) nodes[sourceIndex - 1].vy += force * 0.65;
-      if (sourceIndex < nodes.length - 2) nodes[sourceIndex + 1].vy += force * 0.65;
-      wakeUp();
-    }
+  window.addEventListener("pointermove", onWindowPointerMove, { passive: true });
+
+  document.addEventListener(
+    "pointerleave",
+    () => {
+      isStageHovered = false;
+      targetPupilX = 0;
+      targetPupilY = 0;
+      targetHeadX = 0;
+      targetHeadY = 0;
+      targetHeadRot = 0;
+      targetNeedleAngle = 0;
+    },
+    { passive: true }
+  );
+
+  // 弹出清晰受控的对话气泡
+  const showSpeech = (message, duration = 3800) => {
+    if (!speech || !speechText) return;
+    speechText.textContent = message;
+    speech.classList.add("is-active");
+    clearTimeout(speechTimer);
+    speechTimer = setTimeout(() => {
+      speech.classList.remove("is-active");
+    }, duration);
   };
 
-  // 光标移动与视线追踪（将舞台坐标映射到带顶部出血的画布坐标系）
-  const updatePointer = (e) => {
-    const rect = stage.getBoundingClientRect();
-    const localX = e.clientX - rect.left;
-    const localY = e.clientY - rect.top;
-    pointerX = localX;
-    pointerY = localY + CANVAS_BLEED_TOP;
-    isPointerActive = true;
+  // 点击小机器人：开心眨眼 + 表针跳动 + 切换/应答
+  const handleRobotClick = () => {
+    const now = performance.now();
+    clickTimestamps = clickTimestamps.filter((t) => now - t < 2200);
+    clickTimestamps.push(now);
 
-    const centerX = rect.width * 0.5;
-    const centerY = rect.height * 0.55;
-    const normX = Math.max(-1, Math.min(1, (localX - centerX) / (rect.width * 0.45)));
-    const normY = Math.max(-1, Math.min(1, (localY - centerY) / (rect.height * 0.6)));
-    targetEyeX = normX * 3.2;
-    targetEyeY = normY * 2.0;
-
-    wakeUp();
-  };
-
-  const releasePointer = () => {
-    isPointerActive = false;
-    pointerX = -9999;
-    pointerY = -9999;
-    targetEyeX = 0;
-    targetEyeY = 0;
-    wakeUp();
-  };
-
-  stage.addEventListener("pointermove", updatePointer, { passive: true });
-  stage.addEventListener("pointerdown", updatePointer, { passive: true });
-  stage.addEventListener("pointerleave", releasePointer, { passive: true });
-  stage.addEventListener("pointerup", releasePointer, { passive: true });
-  stage.addEventListener("pointercancel", releasePointer, { passive: true });
-
-  // 机器人点击交互与终端状态汇报
-  const boopRobot = () => {
-    speechIndex = (speechIndex + 1) % SPEECH_MESSAGES.length;
-    if (speechText) {
-      speechText.textContent = SPEECH_MESSAGES[speechIndex];
-    }
-    if (speech) {
-      speech.classList.add("is-active");
-      clearTimeout(speechTimer);
-      speechTimer = setTimeout(() => {
-        speech.classList.remove("is-active");
-      }, 3200);
-    }
+    // 动作反馈 1：开心弯眼 ^ ^ + 天线高亮
     if (robot) {
       robot.classList.add("is-booped");
       clearTimeout(boopTimer);
       boopTimer = setTimeout(() => {
         robot.classList.remove("is-booped");
-      }, 680);
+      }, 780);
     }
-    triggerRipple(Math.floor(NODE_COUNT * 0.5), -22);
+
+    // 动作反馈 2：胸前电流表针大幅跳动 + 背后波形随机切换为新波形
+    needleVel = -16;
+    amplitudeBoost = 0.28;
+
+    const pickOffset = 1 + Math.floor(Math.random() * (WAVEFORMS.length - 1));
+    switchWaveform(currentWaveIndex + pickOffset, false);
+
+    // 动作反馈 3：三层清晰情境对话
+    let text;
+    if (!hasGreeted) {
+      hasGreeted = true;
+      text = `嘀！工作台已就绪，背后正在采样【${WAVEFORMS[currentWaveIndex].name}】~`;
+    } else if (clickTimestamps.length >= 4) {
+      text = COMBO_DIALOGUES[comboCursor % COMBO_DIALOGUES.length];
+      comboCursor += 1;
+      clickTimestamps = [];
+    } else {
+      const fn = NORMAL_DIALOGUES[dialogueCursor % NORMAL_DIALOGUES.length];
+      text = fn();
+      dialogueCursor += 1;
+    }
+
+    showSpeech(text, 4000);
   };
 
   if (robot) {
-    robot.addEventListener("click", boopRobot);
+    robot.addEventListener("click", handleRobotClick);
   }
 
-  // 与下方专题色卡悬停联动谐振
+  if (channelBtn) {
+    channelBtn.addEventListener("click", () => {
+      switchWaveform(currentWaveIndex + 1, true);
+    });
+  }
+
+  // 悬停下方专题色卡时：小机器人低头注视对应色卡，表针响应
   const spectrumItems = document.querySelectorAll(".spectrum-item");
-  const bandMap = [0, 3, 2, 4]; // 对应 MCU(黛蓝)、Linux(古铜)、Qt(苔绿)、工业通信(枣红)
   spectrumItems.forEach((item, index) => {
     item.addEventListener("mouseenter", () => {
-      activeBandIndex = bandMap[index % bandMap.length];
-      const targetNode = Math.floor(((index + 0.5) / Math.max(1, spectrumItems.length)) * (NODE_COUNT - 4)) + 2;
-      triggerRipple(targetNode, -13);
-      drawStripes();
-    });
-    item.addEventListener("mouseleave", () => {
-      activeBandIndex = -1;
-      drawStripes();
-    });
-    item.addEventListener("focus", () => {
-      activeBandIndex = bandMap[index % bandMap.length];
-      drawStripes();
-    });
-    item.addEventListener("blur", () => {
-      activeBandIndex = -1;
-      drawStripes();
+      const ratio = (index + 0.5) / Math.max(1, spectrumItems.length) - 0.5;
+      targetPupilX = ratio * 10;
+      targetPupilY = 4.2;
+      targetHeadX = ratio * 3.5;
+      targetHeadY = 1.8;
+      targetHeadRot = ratio * 5;
+      needleVel -= 6;
+      amplitudeBoost = 0.16;
     });
   });
+
+  // 定时自动轮换背景示波器波形（每 10 秒平滑 morph 到随机波形）
+  const startAutoSwitch = () => {
+    clearInterval(autoSwitchTimer);
+    autoSwitchTimer = setInterval(() => {
+      if (!inView || document.hidden || isStageHovered) return;
+      const step = 1 + Math.floor(Math.random() * (WAVEFORMS.length - 1));
+      switchWaveform(currentWaveIndex + step, false);
+    }, 10000);
+  };
 
   if ("ResizeObserver" in window) {
     const resizeObserver = new ResizeObserver(() => resize());
@@ -479,34 +580,40 @@
   }
 
   if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries) => {
-      inView = Boolean(entries[0] && entries[0].isIntersecting);
-      if (inView) wakeUp();
-    }, { threshold: 0.05 });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        inView = Boolean(entries[0] && entries[0].isIntersecting);
+        if (inView) startLoop();
+      },
+      { threshold: 0.05 }
+    );
     observer.observe(stage);
   }
 
   const themeObserver = new MutationObserver(() => {
-    drawStripes();
-    wakeUp();
+    drawScope();
   });
   themeObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["data-theme", "data-skin"],
   });
 
-  darkMedia.addEventListener("change", () => {
-    drawStripes();
-  });
+  darkMedia.addEventListener("change", () => drawScope());
 
   reducedMotion.addEventListener("change", () => {
     if (reducedMotion.matches) {
-      isAnimating = false;
-      drawStripes();
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      drawScope();
     } else {
-      wakeUp();
+      startLoop();
     }
   });
 
+  syncWaveLabels();
   resize();
+  startLoop();
+  startAutoSwitch();
 })();

@@ -534,77 +534,101 @@ time {
 }
 
 
-/* 色谱指示条与复古实验小机器人谐振台（复古实体油墨 & 仪器前面板风） */
+/* 色谱指示条与工作台小机器人（背景示波器波形 & 复古仪器风） */
 .theme-spectrum-wrap {
-  margin: 18px 0 26px;
+  margin: 14px 0 26px;
   position: relative;
 }
 
-.rainbow-mascot-stage {
+.robot-stage {
   position: relative;
   width: 100%;
-  height: 142px;
+  height: 114px;
   margin-bottom: -5px;
   overflow: visible;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   user-select: none;
-  touch-action: pan-y;
 }
 
-.stage-meta {
+.scope-canvas {
   position: absolute;
-  bottom: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  opacity: 0.72;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.stage-meta-left {
-  left: 4px;
-}
-
-.stage-meta-right {
-  right: 4px;
-  font-variant-numeric: tabular-nums;
-}
-
-.stage-meta-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.85;
-}
-
-@media (max-width: 560px) {
-  .stage-meta {
-    display: none;
-  }
-}
-
-.rainbow-canvas {
-  position: absolute;
-  top: -72px;
-  left: 0;
+  inset: 0;
   width: 100%;
-  height: calc(100% + 84px);
+  height: 100%;
   pointer-events: none;
   z-index: 1;
 }
 
-.retro-robot-container {
+.stage-meta {
+  position: absolute;
+  bottom: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.78;
+  z-index: 2;
+}
+
+.scope-channel {
+  left: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--raised-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+}
+
+.scope-channel:hover,
+.scope-channel:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  opacity: 1;
+}
+
+.scope-channel strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.stage-meta-right {
+  right: 6px;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-meta-dot {
+  width: 5.5px;
+  height: 5.5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .stage-meta-right {
+    display: none;
+  }
+}
+
+.robot-dock {
   position: relative;
   z-index: 3;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.retro-robot-container {
+  position: relative;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -613,16 +637,16 @@ time {
   background: transparent;
   color: var(--ink);
   cursor: pointer;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .retro-robot-container:hover,
 .retro-robot-container:focus-visible {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .retro-robot-container:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
 }
 
 .retro-robot-svg {
@@ -691,13 +715,13 @@ time {
 
 .robot-crt-grid {
   stroke: var(--accent-dark);
-  stroke-opacity: 0.12;
+  stroke-opacity: 0.14;
   stroke-width: 0.75;
 }
 
 .robot-crt-glare {
   stroke: var(--code-ink);
-  stroke-opacity: 0.2;
+  stroke-opacity: 0.22;
   stroke-width: 1.1;
   fill: none;
 }
@@ -713,15 +737,15 @@ time {
 
 .robot-eye-glint {
   fill: #ffffff;
-  opacity: 0.88;
+  opacity: 0.92;
 }
 
 .robot-eyes-happy {
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.14s ease;
 }
 
-.retro-robot-container.is-booped .robot-eyes-normal {
+.retro-robot-container.is-booped .robot-pupils-normal {
   opacity: 0;
 }
 
@@ -731,19 +755,19 @@ time {
 
 .robot-happy-arc {
   stroke: var(--warm);
-  stroke-width: 2.2;
+  stroke-width: 2.3;
   fill: none;
 }
 
 .robot-cheek {
   fill: var(--warm);
-  opacity: 0.55;
+  opacity: 0.58;
 }
 
 .robot-mouth {
   stroke: var(--code-ink);
   stroke-width: 1.5;
-  opacity: 0.82;
+  opacity: 0.84;
   fill: none;
 }
 
@@ -758,6 +782,11 @@ time {
   opacity: 0.24;
   transform-origin: 80px 5.5px;
   animation: antenna-pulse 2.4s infinite ease-in-out;
+}
+
+.retro-robot-container.is-booped .antenna-glow-ring {
+  opacity: 0.78;
+  transform: scale(1.45);
 }
 
 .robot-arm-tube {
@@ -795,14 +824,12 @@ time {
 
 .robot-meter-needle {
   stroke: var(--note);
-  stroke-width: 1.35;
-  transform-origin: 67px 111px;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  stroke-width: 1.4;
 }
 
-.retro-robot-container:hover .robot-meter-needle,
-.retro-robot-container.is-booped .robot-meter-needle {
-  transform: rotate(-28deg);
+.robot-jack {
+  stroke: var(--line);
+  stroke-width: 0.75;
 }
 
 .robot-knob {
@@ -829,43 +856,44 @@ time {
   letter-spacing: 0.05em;
 }
 
-/* 机器人终端对话气泡 */
+/* 机器人状态对话气泡（语义清晰，受控弹出） */
 .robot-speech {
   position: absolute;
-  top: -22px;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translate(-50%, 6px);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 10.5px;
+  gap: 6px;
+  width: max-content;
+  max-width: min(380px, 88vw);
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  line-height: 1.45;
   color: var(--ink);
   background: var(--raised-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--raised-border);
-  border-radius: 6px;
-  padding: 2px 9px;
+  border-radius: 8px;
+  padding: 5px 11px;
   box-shadow: var(--shadow-small);
   opacity: 0;
-  transform: translateY(4px);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   z-index: 10;
 }
 
 .speech-prefix {
+  font-family: ui-monospace, Consolas, monospace;
   color: var(--accent-dark);
-  font-weight: 700;
+  font-weight: 800;
+  flex-shrink: 0;
 }
 
-.robot-speech.is-active,
-.retro-robot-container:hover .robot-speech,
-.retro-robot-container:focus-visible .robot-speech {
+.robot-speech.is-active {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(-50%, 0);
 }
 
 .robot-speech::after {
@@ -874,7 +902,7 @@ time {
   bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 5px 4px 0 4px;
+  border-width: 5px 5px 0 5px;
   border-style: solid;
   border-color: var(--raised-border) transparent transparent transparent;
 }
@@ -886,18 +914,18 @@ time {
 }
 
 @keyframes robot-blink {
-  0%, 94%, 98%, 100% { transform: scaleY(1); }
-  96% { transform: scaleY(0.1); }
+  0%, 93%, 97%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
 }
 
 .robot-eye-left {
   transform-origin: 66px 51px;
-  animation: robot-blink 4.6s infinite ease-in-out;
+  animation: robot-blink 4.2s infinite ease-in-out;
 }
 
 .robot-eye-right {
   transform-origin: 94px 51px;
-  animation: robot-blink 4.6s infinite ease-in-out;
+  animation: robot-blink 4.2s infinite ease-in-out;
 }
 
 @keyframes robot-wave {
