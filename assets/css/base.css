@@ -342,7 +342,10 @@ body {
   top: calc(100% + 10px);
   right: 0;
   z-index: 100;
-  width: 220px;
+  width: 226px;
+  max-height: min(520px, calc(100vh - 100px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -352,6 +355,21 @@ body {
 
 .theme-menu[hidden] {
   display: none;
+}
+
+.theme-menu-title {
+  padding: 6px 10px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  user-select: none;
+}
+
+.theme-menu-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 6px 4px;
 }
 
 .theme-option {
@@ -601,7 +619,13 @@ time {
   background: linear-gradient(90deg, #141414, #737373);
 }
 
-/* 特种纸张微噪点与环境漫射光 */
+/* ==========================================================================
+   特种底纹与复古电子硬件质感系统（Retro Electronics Skins）
+   方案 A: 工程坐标网格 (grid)
+   方案 B: 洞洞板覆铜阵列 (matrix)
+   方案 C: 复古仪器前面板全套 (chassis)
+   默认模式: 清爽素雅 (default)
+   ========================================================================== */
 .site-ambience {
   position: fixed;
   inset: 0;
@@ -610,6 +634,7 @@ time {
   background-image: radial-gradient(rgba(17, 25, 29, 0.04) 1px, transparent 0);
   background-size: 28px 28px;
   opacity: 0.65;
+  transition: opacity 240ms ease;
 }
 
 :root[data-theme="hud"] .site-ambience {
@@ -640,6 +665,193 @@ time {
   background-image: radial-gradient(rgba(20, 20, 20, 0.04) 1px, transparent 0);
   background-size: 24px 24px;
   opacity: 0.6;
+}
+
+/* --------------------------------------------------------------------------
+   方案 A: 经典工程坐标网格 & 示波器荧光分划板 (grid)
+   -------------------------------------------------------------------------- */
+:root[data-skin="grid"] .site-ambience {
+  background-image:
+    linear-gradient(rgba(15, 129, 141, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 129, 141, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(15, 129, 141, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 129, 141, 0.035) 1px, transparent 1px);
+  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.88;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-skin="grid"]:not([data-theme]) .site-ambience {
+    background-image:
+      radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.16), transparent 70%),
+      linear-gradient(rgba(120, 213, 220, 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 213, 220, 0.09) 1px, transparent 1px),
+      linear-gradient(rgba(120, 213, 220, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 213, 220, 0.035) 1px, transparent 1px);
+    background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
+    opacity: 0.95;
+  }
+}
+
+:root[data-skin="grid"][data-theme="dark"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.16), transparent 70%),
+    linear-gradient(rgba(120, 213, 220, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 213, 220, 0.09) 1px, transparent 1px),
+    linear-gradient(rgba(120, 213, 220, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 213, 220, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
+  opacity: 0.95;
+}
+
+:root[data-skin="grid"][data-theme="hud"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 50% 20%, rgba(82, 216, 232, 0.2), transparent 65%),
+    linear-gradient(rgba(82, 216, 232, 0.12) 1.2px, transparent 1.2px),
+    linear-gradient(90deg, rgba(82, 216, 232, 0.12) 1.2px, transparent 1.2px),
+    linear-gradient(rgba(82, 216, 232, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(82, 216, 232, 0.04) 1px, transparent 1px);
+  background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
+  opacity: 1;
+}
+
+:root[data-skin="grid"][data-theme="swiss"] .site-ambience {
+  background-image:
+    linear-gradient(rgba(230, 51, 41, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230, 51, 41, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px);
+  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.9;
+}
+
+:root[data-skin="grid"][data-theme="mono"] .site-ambience {
+  background-image:
+    linear-gradient(rgba(20, 20, 20, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 20, 20, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px;
+  opacity: 0.75;
+}
+
+/* --------------------------------------------------------------------------
+   方案 B: 洞洞板 / 覆铜板打孔焊接阵列 (matrix)
+   -------------------------------------------------------------------------- */
+:root[data-skin="matrix"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, var(--paper) 1.2px, var(--line) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-skin="matrix"]:not([data-theme]) .site-ambience {
+    background-image:
+      radial-gradient(circle at 11px 11px, #11191d 1.2px, rgba(120, 213, 220, 0.28) 2.2px, transparent 3.2px);
+    background-size: 22px 22px;
+    opacity: 0.9;
+  }
+}
+
+:root[data-skin="matrix"][data-theme="dark"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #11191d 1.2px, rgba(120, 213, 220, 0.28) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.9;
+}
+
+:root[data-skin="matrix"][data-theme="hud"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #040b15 1.2px, rgba(82, 216, 232, 0.35) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   方案 C: 复古电子仪器前面板全套 (chassis)
+   包含复合坐标网格 + 极细 CRT 水平微扫描线 + 工业十字准星
+   -------------------------------------------------------------------------- */
+:root[data-skin="chassis"] .site-ambience {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.02) 0px, rgba(0, 0, 0, 0.02) 1px, transparent 1px, transparent 4px),
+    linear-gradient(rgba(15, 129, 141, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 129, 141, 0.07) 1px, transparent 1px);
+  background-size: 100% 4px, 24px 24px, 24px 24px;
+  opacity: 0.92;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-skin="chassis"]:not([data-theme]) .site-ambience {
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1.5px, transparent 1.5px, transparent 4px),
+      linear-gradient(rgba(120, 213, 220, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 213, 220, 0.07) 1px, transparent 1px);
+    background-size: 100% 4px, 28px 28px, 28px 28px;
+    opacity: 0.95;
+  }
+}
+
+:root[data-skin="chassis"][data-theme="dark"] .site-ambience {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1.5px, transparent 1.5px, transparent 4px),
+    linear-gradient(rgba(120, 213, 220, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 213, 220, 0.07) 1px, transparent 1px);
+  background-size: 100% 4px, 28px 28px, 28px 28px;
+  opacity: 0.95;
+}
+
+:root[data-skin="chassis"][data-theme="hud"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 50% 20%, rgba(82, 216, 232, 0.18), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0px, rgba(0, 0, 0, 0.3) 1.5px, transparent 1.5px, transparent 4px),
+    linear-gradient(rgba(82, 216, 232, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(82, 216, 232, 0.09) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 4px, 28px 28px, 28px 28px;
+  opacity: 1;
+}
+
+/* 方案 C 细节: 面板卡片四角机械定位十字刻度标 */
+:root[data-skin="chassis"] .article-item,
+:root[data-skin="chassis"] .panel,
+:root[data-skin="chassis"] .project-feature,
+:root[data-skin="chassis"] .article-interactive-widget {
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+:root[data-skin="chassis"] .article-item::before,
+:root[data-skin="chassis"] .panel::before,
+:root[data-skin="chassis"] .project-feature::before {
+  content: "+";
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+:root[data-skin="chassis"] .article-item::after,
+:root[data-skin="chassis"] .panel::after,
+:root[data-skin="chassis"] .project-feature::after {
+  content: "+";
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+/* 方案 C 细节: 状态时钟微荧光余辉 */
+:root[data-skin="chassis"] .status-time {
+  text-shadow: 0 0 5px currentColor;
+  letter-spacing: 0.5px;
 }
 
 /* 嵌入式系统心跳指示灯与状态时钟 */
