@@ -123,7 +123,7 @@ NOR Flash 页编程如果在写正文中途断电，会留下部分字节已写�
 
     <div>
       <div class="aiw-section-title">
-        <span>数据扇区 0xFDC000 (4 KiB) 物理槽位视图</span>
+        <span id="flash-sector-addr">数据扇区 0xFDC000 (4 KiB) 物理槽位视图</span>
         <span class="aiw-hint">点击任意槽位可在下方检视 64 字节二进制结构</span>
       </div>
       <div class="flash-slots-grid" id="flash-slots-grid"></div>
@@ -131,13 +131,14 @@ NOR Flash 页编程如果在写正文中途断电，会留下部分字节已写�
 
     <div>
       <div class="aiw-section-title">
-        <span>两阶段写入与掉电故障注入操作</span>
-        <span class="aiw-hint">演示两阶段原子性与掉电防护</span>
+        <span>两阶段写入、紧缩迁移与故障注入操作</span>
+        <span class="aiw-hint">演示两阶段原子性、墓碑删除、稀疏扇区紧缩回收与掉电防护</span>
       </div>
       <div class="aiw-controls">
         <button type="button" class="aiw-btn primary" id="flash-btn-write">两阶段正常写入 (2PC Write)</button>
         <button type="button" class="aiw-btn danger" id="flash-btn-fail">故障注入: 阶段1中断电</button>
         <button type="button" class="aiw-btn warn" id="flash-btn-del">原位墓碑单条删除 (1→0)</button>
+        <button type="button" class="aiw-btn" id="flash-btn-migrate">紧缩迁移回收 (Sector GC)</button>
         <button type="button" class="aiw-btn" id="flash-btn-clear">世代控制环逻辑清空 (Clear All)</button>
         <button type="button" class="aiw-btn" id="flash-btn-scan">模拟上电扫描 (Boot Scan)</button>
         <button type="button" class="aiw-btn" id="flash-btn-erase">整扇区擦除 4KB</button>

@@ -460,7 +460,7 @@
     function write2PC() {
       const nextIdx = computeStats();
       if (nextIdx === -1) {
-        log('[WRITE FAIL] 当前数据扇区无可用空槽，需先执行清空或扇区迁移回收', 'error');
+        log('[WRITE FAIL] 当前数据扇区无可用空槽，请点击【紧缩迁移回收 (Sector GC)】搬移存活记录并释放空闲空间！', 'warn');
         return;
       }
 
@@ -531,6 +531,92 @@
       log(`[TOMBSTONE] Slot ${target} (ID:${s.id}) 执行原位墓碑单条删除：利用 NOR Flash 物理特性将 lifecycle 从 0xFFFF 编程为 0x0000 (仅将位从 1 改为 0)，耗时 < 0.2ms，免除 400ms 整扇区擦除！`, 'warn');
     }
 
+    let currentSectorAddr = 0xFDC000;
+
+    function migrateSector() {
+      // 1. 扫描当前属于当前世代且未被墓碑删除的有效存活记录
+      const validRecords = [];
+      for (let i = 1; i < SLOT_COUNT; i++) {
+        const s = slots[i];
+        if (s.status === 'valid' && s.gen === generation && s.lifecycle === 0xFFFF) {
+          validRecords.push({ ...s });
+        }
+      }
+
+      const oldCount = validRecords.length;
+      const discardedCount = (SLOT_COUNT - 1) - oldCount;
+      const oldAddrHex = '0x' + currentSectorAddr.toString(16).toUpperCase();
+      currentSectorAddr = currentSectorAddr === 0xFDC000 ? 0xFDD000 : 0xFDC000;
+      const newAddrHex = '0x' + currentSectorAddr.toString(16).toUpperCase();
+
+      log(`[MIGRATE BEGIN] 启动稀疏扇区紧缩迁移回收：源扇区 ${oldAddrHex} ➔ 目标扇区 ${newAddrHex}`, 'event');
+      log(`[GC SCAN] 扫描完成：检出 ${oldCount} 条有效存活记录，识别并过滤 ${discardedCount} 个脏槽/墓碑/历史旧世代槽`, 'normal');
+
+      // 更新界面扇区物理地址
+      const elSectorTitle = root.querySelector('#flash-sector-addr');
+      if (elSectorTitle) {
+        elSectorTitle.textContent = `数据扇区 ${newAddrHex} (4 KiB) 物理槽位视图`;
+      }
+
+      // 重建 slots 数组：Slot 0 为新扇区 Header，版本更新为当前 generation
+      slots[0] = {
+        idx: 0,
+        status: 'valid',
+        magic: 'SECT',
+        version: 3,
+        gen: generation,
+        id: 0,
+        val: 0,
+        lifecycle: 0xFFFF,
+        crc16: '0x' + Math.floor(0x1000 + Math.random() * 0xE000).toString(16).toUpperCase(),
+        commitFlag: 0x00
+      };
+
+      // Slot 1..oldCount 为紧凑迁移搬移过来的有效记录
+      for (let i = 0; i < validRecords.length; i++) {
+        const rec = validRecords[i];
+        slots[i + 1] = {
+          idx: i + 1,
+          status: 'valid',
+          magic: rec.magic,
+          version: rec.version,
+          gen: generation,
+          id: rec.id,
+          val: rec.val,
+          lifecycle: 0xFFFF,
+          crc16: rec.crc16,
+          commitFlag: 0x00
+        };
+      }
+
+      // 剩余槽位恢复全新干净态 (全 0xFF ERASED)
+      for (let i = validRecords.length + 1; i < SLOT_COUNT; i++) {
+        slots[i] = {
+          idx: i,
+          status: 'erased',
+          magic: '0xFFFFFFFF',
+          version: 255,
+          gen: 0xFFFFFFFF,
+          id: 0xFFFFFFFF,
+          val: 0xFFFFFFFF,
+          lifecycle: 0xFFFF,
+          crc16: '0xFFFF',
+          commitFlag: 0xFF
+        };
+      }
+
+      selectedSlot = validRecords.length > 0 ? 1 : 0;
+      const nextIdx = computeStats();
+      renderSlots();
+
+      if (oldCount > 0) {
+        log(`[MIGRATE COMMIT] ${oldCount} 条有效记录已按 2PC 契约原子搬移至新扇区 Slot 1..${oldCount}！`, 'success');
+      } else {
+        log(`[GC ERASE] 当前扇区无有效存活记录（全为废弃/旧世代），新扇区干净清空，空间 100% 回收！`, 'success');
+      }
+      log(`[SOURCE RELEASE] 源扇区 ${oldAddrHex} 执行整扇区 4KB 擦除并安全归还全局可用扇区池！下一追加槽位为 Slot ${nextIdx}`, 'success');
+    }
+
     function clearAllGeneration() {
       generation++;
       recordSerial = 101;
@@ -590,6 +676,7 @@
     root.querySelector('#flash-btn-write')?.addEventListener('click', write2PC);
     root.querySelector('#flash-btn-fail')?.addEventListener('click', powerFail);
     root.querySelector('#flash-btn-del')?.addEventListener('click', tombstoneDelete);
+    root.querySelector('#flash-btn-migrate')?.addEventListener('click', migrateSector);
     root.querySelector('#flash-btn-clear')?.addEventListener('click', clearAllGeneration);
     root.querySelector('#flash-btn-scan')?.addEventListener('click', bootScan);
     root.querySelector('#flash-btn-erase')?.addEventListener('click', eraseSector);

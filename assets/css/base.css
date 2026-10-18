@@ -672,47 +672,47 @@ time {
    -------------------------------------------------------------------------- */
 :root[data-skin="grid"] .site-ambience {
   background-image:
-    linear-gradient(rgba(15, 129, 141, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 129, 141, 0.08) 1px, transparent 1px),
-    linear-gradient(rgba(15, 129, 141, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 129, 141, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(15, 129, 141, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 129, 141, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(15, 129, 141, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 129, 141, 0.022) 1px, transparent 1px);
   background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
-  opacity: 0.88;
+  opacity: 0.85;
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-skin="grid"]:not([data-theme]) .site-ambience {
     background-image:
-      radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.16), transparent 70%),
-      linear-gradient(rgba(120, 213, 220, 0.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(120, 213, 220, 0.09) 1px, transparent 1px),
-      linear-gradient(rgba(120, 213, 220, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(120, 213, 220, 0.035) 1px, transparent 1px);
+      radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.12), transparent 70%),
+      linear-gradient(rgba(120, 213, 220, 0.065) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 213, 220, 0.065) 1px, transparent 1px),
+      linear-gradient(rgba(120, 213, 220, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 213, 220, 0.022) 1px, transparent 1px);
     background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-    opacity: 0.95;
+    opacity: 0.9;
   }
 }
 
 :root[data-skin="grid"][data-theme="dark"] .site-ambience {
   background-image:
-    radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.16), transparent 70%),
-    linear-gradient(rgba(120, 213, 220, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 213, 220, 0.09) 1px, transparent 1px),
-    linear-gradient(rgba(120, 213, 220, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 213, 220, 0.035) 1px, transparent 1px);
+    radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.12), transparent 70%),
+    linear-gradient(rgba(120, 213, 220, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 213, 220, 0.065) 1px, transparent 1px),
+    linear-gradient(rgba(120, 213, 220, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 213, 220, 0.022) 1px, transparent 1px);
   background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-  opacity: 0.95;
+  opacity: 0.9;
 }
 
 :root[data-skin="grid"][data-theme="hud"] .site-ambience {
   background-image:
-    radial-gradient(ellipse at 50% 20%, rgba(82, 216, 232, 0.2), transparent 65%),
-    linear-gradient(rgba(82, 216, 232, 0.12) 1.2px, transparent 1.2px),
-    linear-gradient(90deg, rgba(82, 216, 232, 0.12) 1.2px, transparent 1.2px),
-    linear-gradient(rgba(82, 216, 232, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(82, 216, 232, 0.04) 1px, transparent 1px);
+    radial-gradient(ellipse at 50% 20%, rgba(82, 216, 232, 0.15), transparent 65%),
+    linear-gradient(rgba(82, 216, 232, 0.08) 1.2px, transparent 1.2px),
+    linear-gradient(90deg, rgba(82, 216, 232, 0.08) 1.2px, transparent 1.2px),
+    linear-gradient(rgba(82, 216, 232, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(82, 216, 232, 0.025) 1px, transparent 1px);
   background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-  opacity: 1;
+  opacity: 0.95;
 }
 
 :root[data-skin="grid"][data-theme="swiss"] .site-ambience {

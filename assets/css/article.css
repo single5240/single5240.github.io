@@ -1,13 +1,13 @@
 .reading-progress { position: fixed; top: 0; left: 0; height: 2px; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--accent-dark); z-index: 80; }
 .reading-layout { width: min(1120px,calc(100% - 64px)); margin: auto; padding: 50px 0 80px; }
-.article-header { max-width: 850px; margin-bottom: 38px; }
+.article-header { max-width: 850px; margin-bottom: 36px; background: var(--raised-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: 12px; padding: 30px 36px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); }
 .article-header h1 { margin: 20px 0; font-size: clamp(32px,4vw,48px); line-height: 1.4; }
 .article-meta { display: flex; flex-wrap: wrap; gap: 9px 18px; color: var(--muted); font-size: 12px; }
 .article-meta a { color: var(--accent-dark); }
 .description { font-size: 16px; line-height: 1.9; color: var(--muted); }
 .reading-grid { display: grid; grid-template-columns: minmax(0,760px) minmax(0,1fr); gap: 55px; align-items: start; }
-.reading-main { min-width: 0; }
-.toc { grid-column: 2; grid-row: 1; position: sticky; top: 110px; max-height: calc(100vh - 135px); overflow: auto; border-left: 1px solid var(--line); padding-left: 20px; font-size: 12px; }
+.reading-main { min-width: 0; background: var(--raised-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: 12px; padding: 38px 44px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03); }
+.toc { grid-column: 2; grid-row: 1; position: sticky; top: 110px; max-height: calc(100vh - 135px); overflow: auto; background: var(--raised-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; font-size: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02); }
 .toc summary { font-size: 12px; font-weight: 650; color: var(--ink); cursor: pointer; margin-bottom: 14px; }
 .toc ol { margin: 0; padding: 0; list-style: none; }
 .toc li { margin: 8px 0; line-height: 1.7; }
@@ -69,7 +69,7 @@
 .article-context a { display: inline-block; color: var(--accent-dark); margin: 0 16px 10px 0; }
 .back { display: inline-block; margin-top: 28px; color: var(--accent-dark); font-size: 13px; }
 @media(max-width:1000px) { .reading-grid { display: flex; flex-direction: column; gap: 28px; } .toc { position: static; order: -1; max-height: 350px; width: 100%; background: var(--alt-bg); padding: 15px 20px; border-left: 2px solid var(--accent-dark); } .toc summary { margin: 0; } .toc[open] summary { margin-bottom: 12px; } .reading-main { width: 100%; } .content { max-width: 760px; } }
-@media(max-width:620px) { .reading-layout { width: calc(100% - 40px); padding-top: 32px; } .article-header h1 { font-size: 30px; } .description { font-size: 15px; } .content { font-size: 16px; line-height: 1.9; } .content h2 { font-size: 24px; } .content h3 { font-size: 20px; } .content pre { font-size: 12px; padding: 16px; } .article-navigation { gap: 15px; } .article-navigation a { font-size: 13px; } .content blockquote { padding: 14px 17px; font-size: 14px; } }
+@media(max-width:620px) { .reading-layout { width: calc(100% - 40px); padding-top: 32px; } .article-header { padding: 22px 18px; border-radius: 8px; } .article-header h1 { font-size: 30px; } .description { font-size: 15px; } .reading-main { padding: 24px 18px; border-radius: 8px; } .content { font-size: 16px; line-height: 1.9; } .content h2 { font-size: 24px; } .content h3 { font-size: 20px; } .content pre { font-size: 12px; padding: 16px; } .article-navigation { gap: 15px; } .article-navigation a { font-size: 13px; } .content blockquote { padding: 14px 17px; font-size: 14px; } }
 
 /* ==========================================================================
    Article Interactive Widgets (FSM, NOR Flash 2PC, Ring Buffer Scheduler)
