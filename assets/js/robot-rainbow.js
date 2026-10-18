@@ -19,7 +19,9 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
 
-  // 6 种常见嵌入式/电力电子示波器波形定义
+  const normMod = (val, mod) => ((val % mod) + mod) % mod;
+
+  // 18 种丰富且经典的嵌入式/电子工程示波器波形库
   const WAVEFORMS = [
     {
       id: "sine",
@@ -78,7 +80,6 @@
       sample(theta) {
         const u = theta / (Math.PI * 2);
         const frac = u - Math.floor(u);
-        // 平滑陡降沿避免混叠锯齿
         const raw = frac * 2 - 1;
         return raw * (1 - Math.pow(frac, 18));
       },
@@ -94,6 +95,193 @@
         const carrier = (2 / Math.PI) * Math.asin(Math.sin(theta * 9));
         const pulse = Math.tanh((mod - carrier) * 6);
         return pulse * 0.55 + mod * 0.45;
+      },
+    },
+    {
+      id: "ecg",
+      name: "心电波",
+      spec: "ECG · Lead II · 60BPM",
+      cycles: 2.0,
+      comment: "背后正在采样【心电波】：P-Q-R-S-T 窦性心律，单片机和你的心脏都在有力跳动！",
+      sample(theta) {
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        const g = (c, w, a) => a * Math.exp(-Math.pow((u - c) / w, 2));
+        return (
+          g(0.18, 0.045, 0.28) +
+          g(0.35, 0.015, -0.18) +
+          g(0.39, 0.018, 1.05) +
+          g(0.43, 0.016, -0.38) +
+          g(0.64, 0.08, 0.35) -
+          0.05
+        );
+      },
+    },
+    {
+      id: "damped",
+      name: "欠阻尼振荡",
+      spec: "RLC · Ringing · 10MHz",
+      cycles: 2.0,
+      comment: "背后正在采样【欠阻尼振荡波】：走线寄生 LC 触发的边沿振铃，快加上磁珠和端接电阻！",
+      sample(theta) {
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        if (u < 0.5) {
+          const x = u / 0.5;
+          return (1 - Math.exp(-4.2 * x) * Math.cos(x * Math.PI * 8)) * 0.7 - 0.7;
+        } else {
+          const x = (u - 0.5) / 0.5;
+          return -(1 - Math.exp(-4.2 * x) * Math.cos(x * Math.PI * 8)) * 0.7 + 0.7;
+        }
+      },
+    },
+    {
+      id: "am",
+      name: "AM调幅波",
+      spec: "AM · 1000kHz · m=65%",
+      cycles: 2.0,
+      comment: "背后正在采样【AM 调幅波】：高频载波带上音频包络，无线电矿石收音机的复古浪漫 📻",
+      sample(theta) {
+        return ((1 + 0.65 * Math.cos(theta)) * Math.sin(theta * 8)) / 1.65;
+      },
+    },
+    {
+      id: "fm",
+      name: "FM调频波",
+      spec: "FM · 10.7MHz IF · Δf=75k",
+      cycles: 2.0,
+      comment: "背后正在采样【FM 调频波】：载波疏密变化传递音频信息，抗干扰能力比 AM 强悍得多！",
+      sample(theta) {
+        return Math.sin(theta * 6 + 2.5 * Math.sin(theta));
+      },
+    },
+    {
+      id: "chirp",
+      name: "线性调频Chirp",
+      spec: "CHIRP · 1M→20MHz",
+      cycles: 2.0,
+      comment: "背后正在采样【线性调频 Chirp 波】：频率随时间线性攀升，LoRa 扩频通信与雷达测距的绝技！",
+      sample(theta) {
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        const env = Math.sin(Math.PI * u);
+        return env * Math.sin(Math.PI * 2 * (1.5 * u + 4.5 * u * u));
+      },
+    },
+    {
+      id: "rc_step",
+      name: "RC充放电波",
+      spec: "RC · τ=100μs · 一阶",
+      cycles: 2.5,
+      comment: "背后正在采样【RC 充放电波】：一阶惯性滤波电路，τ = RC，3 个时间常数充到 95%！",
+      sample(theta) {
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        if (u < 0.5) {
+          const x = u / 0.5;
+          return 1 - 2 * Math.exp(-4 * x);
+        } else {
+          const x = (u - 0.5) / 0.5;
+          return -1 + 2 * Math.exp(-4 * x);
+        }
+      },
+    },
+    {
+      id: "rectified",
+      name: "全波整流波",
+      spec: "RECT · 100Hz · 12Vpk",
+      cycles: 3.0,
+      comment: "背后正在采样【全波整流波】：桥式整流二极管输出的馒头波，后面滤波电容正全力蓄能！",
+      sample(theta) {
+        return Math.abs(Math.sin(theta)) * 1.7 - 0.85;
+      },
+    },
+    {
+      id: "uart",
+      name: "UART串口波",
+      spec: "UART · 115200 · 8-N-1",
+      cycles: 1.5,
+      comment: "背后正在采样【UART 串口波】：波特率 115200 8-N-1，正在向控制台吐出调试日志！",
+      sample(theta) {
+        const UART_BITS = [0.8, -0.8, -0.8, 0.8, -0.8, 0.8, 0.8, -0.8, 0.8, -0.8, 0.8, 0.8];
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        const bitPos = u * UART_BITS.length;
+        const idx = Math.floor(bitPos);
+        const frac = bitPos - idx;
+        const curr = UART_BITS[idx];
+        const prev = UART_BITS[(idx - 1 + UART_BITS.length) % UART_BITS.length];
+        const t = Math.min(1, frac / 0.18);
+        return prev + (curr - prev) * (1 - Math.exp(-5 * t));
+      },
+    },
+    {
+      id: "i2c",
+      name: "I2C总线波",
+      spec: "I2C · 400kHz · Fast",
+      cycles: 1.5,
+      comment: "背后正在采样【I2C 总线波】：SCL 时钟与 SDA 数据线正在打配合，检测到了设备 ACK 应答！",
+      sample(theta) {
+        const I2C_BITS = [0.8, -0.8, -0.8, 0.8, -0.8, 0.8, -0.8, 0.8, -0.8, -0.8, 0.8, 0.8];
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        const bitPos = u * I2C_BITS.length;
+        const idx = Math.floor(bitPos);
+        const frac = bitPos - idx;
+        const curr = I2C_BITS[idx];
+        const prev = I2C_BITS[(idx - 1 + I2C_BITS.length) % I2C_BITS.length];
+        const t = Math.min(1, frac / 0.16);
+        return curr > prev
+          ? prev + (curr - prev) * (1 - Math.exp(-4.5 * t))
+          : prev + (curr - prev) * (1 - Math.exp(-9.0 * t));
+      },
+    },
+    {
+      id: "can",
+      name: "CAN总线波",
+      spec: "CAN-FD · 500k · DIFF",
+      cycles: 1.5,
+      comment: "背后正在采样【CAN 总线波】：500kbps 差分仲裁段，显性电平覆盖隐性，车载通信稳如磐石！",
+      sample(theta) {
+        const CAN_BITS = [0.85, -0.25, -0.25, -0.25, -0.25, 0.85, -0.25, -0.25, 0.85, 0.85, 0.85, -0.25, 0.85, -0.25];
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        const pos = u * CAN_BITS.length;
+        const idx = Math.floor(pos);
+        const frac = pos - idx;
+        const curr = CAN_BITS[idx];
+        const prev = CAN_BITS[(idx - 1 + CAN_BITS.length) % CAN_BITS.length];
+        const t = Math.min(1, frac / 0.14);
+        return prev + (curr - prev) * (1 - Math.exp(-6 * t));
+      },
+    },
+    {
+      id: "video",
+      name: "视频行同步波",
+      spec: "VIDEO · 1Vp-p · PAL",
+      cycles: 1.5,
+      comment: "背后正在采样【模拟视频复合波】：行同步头 + 4.43MHz 色副载波群，复古阴极射线管 CRT 的灵魂！",
+      sample(theta) {
+        const u = normMod(theta, Math.PI * 2) / (Math.PI * 2);
+        if (u < 0.12) return -0.85;
+        if (u < 0.18) return -0.2;
+        if (u < 0.32) {
+          const burstFrac = (u - 0.18) / 0.14;
+          return -0.2 + Math.sin(burstFrac * Math.PI * 6) * 0.35 * Math.sin(burstFrac * Math.PI);
+        }
+        if (u < 0.9) {
+          const activeFrac = (u - 0.32) / 0.58;
+          return -0.15 + 0.95 * activeFrac + Math.sin(activeFrac * Math.PI * 14) * 0.18;
+        }
+        return -0.2;
+      },
+    },
+    {
+      id: "noise",
+      name: "ADC底噪采样",
+      spec: "NOISE · 100μVrms · 24b",
+      cycles: 2.5,
+      comment: "背后正在采样【ADC 采样底噪】：24位 Σ-Δ 高精度 ADC 测得的白噪声基底，有效位数 ENOB 在线巡检！",
+      sample(theta) {
+        return (
+          Math.sin(theta * 19) * 0.38 +
+          Math.sin(theta * 37 + 1.2) * 0.32 +
+          Math.sin(theta * 61 + 2.4) * 0.22 +
+          Math.sin(theta * 97 + 0.5) * 0.15
+        );
       },
     },
   ];
