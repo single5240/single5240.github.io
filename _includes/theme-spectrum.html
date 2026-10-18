@@ -1,105 +1,147 @@
 <div class="theme-spectrum-wrap" aria-label="专题色彩光谱与复古机器人吉祥物">
   <div class="rainbow-mascot-stage" id="rainbowMascotStage">
-    <!-- 交互式弹性彩虹物理画布 -->
+    <div class="stage-meta stage-meta-left" aria-hidden="true">
+      <span class="stage-meta-dot"></span>
+      <span>ARC // 5-BAND INK</span>
+    </div>
+    <div class="stage-meta stage-meta-right" aria-hidden="true">
+      <span id="stageReadout">IDLE · 0.0dB</span>
+    </div>
+
+    <!-- 交互式复古油墨/示波器彩虹画布 -->
     <canvas class="rainbow-canvas" id="rainbowCanvas" aria-hidden="true"></canvas>
 
-    <!-- 复古极客小机器人吉祥物 -->
-    <div class="retro-robot-container" id="retroRobot" tabindex="0" role="button" aria-label="复古小机器人吉祥物，点击可与其互动" title="点击与小机器人互动">
-      <div class="robot-speech" id="robotSpeech" aria-hidden="true">
-        <span class="speech-prefix">&gt;</span> <span class="speech-text" id="robotSpeechText">SYSTEM ONLINE ⚡</span>
-      </div>
+    <!-- 复古实验室小机器人 UNIT-5240 -->
+    <button type="button" class="retro-robot-container" id="retroRobot" aria-label="复古实验小机器人 UNIT-5240，点击触发光谱谐振" title="点击或悬停与小机器人互动">
+      <span class="robot-speech" id="robotSpeech" aria-live="polite">
+        <span class="speech-prefix">5240&gt;</span>
+        <span class="speech-text" id="robotSpeechText">READY · 115200bps</span>
+      </span>
 
-      <svg class="retro-robot-svg" viewBox="0 0 160 160" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <linearGradient id="robotMetalGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#334155" />
-            <stop offset="100%" stop-color="#1e293b" />
-          </linearGradient>
-          <linearGradient id="robotScreenGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#022c22" />
-            <stop offset="100%" stop-color="#064e3b" />
-          </linearGradient>
-          <linearGradient id="pcbGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#064e3b" />
-            <stop offset="50%" stop-color="#047857" />
-            <stop offset="100%" stop-color="#064e3b" />
-          </linearGradient>
-        </defs>
+      <svg class="retro-robot-svg" viewBox="0 0 160 138" width="124" height="107" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <!-- 底座阴影 -->
+        <ellipse cx="80" cy="134" rx="38" ry="3.5" class="robot-shadow" />
 
-        <!-- 底座：PCB 沉金焊盘与电路走线 -->
-        <g class="robot-part-pedestal">
-          <rect x="24" y="142" width="112" height="12" rx="4" fill="url(#pcbGrad)" stroke="#10b981" stroke-width="1.2" />
-          <line x1="34" y1="148" x2="48" y2="148" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" />
-          <line x1="54" y1="148" x2="68" y2="148" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" />
-          <line x1="92" y1="148" x2="106" y2="148" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" />
-          <line x1="112" y1="148" x2="126" y2="148" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" />
-          <circle cx="80" cy="148" r="2.5" fill="#fbbf24" />
-        </g>
-
-        <!-- 手臂：金属波纹软管与爪手 -->
-        <g class="robot-part-arms">
-          <path d="M 46 102 C 32 106 28 118 36 128" stroke="#64748b" stroke-width="6" stroke-linecap="round" fill="none" />
-          <circle cx="36" cy="128" r="3.5" fill="#94a3b8" />
-          <!-- 抬手挥舞的右臂 -->
-          <path d="M 114 102 C 128 100 134 90 128 78" stroke="#64748b" stroke-width="6" stroke-linecap="round" fill="none" class="robot-wave-arm" />
-          <circle cx="128" cy="76" r="3.5" fill="#94a3b8" />
-          <path d="M 124 72 C 127 67 133 67 135 72" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" fill="none" />
-        </g>
-
-        <!-- 躯干：复古工控/示波器主机箱 -->
-        <g class="robot-part-body">
-          <rect x="46" y="92" width="68" height="48" rx="8" fill="url(#robotMetalGrad)" stroke="#475569" stroke-width="1.8" />
-          <circle cx="51" cy="97" r="1.5" fill="#94a3b8" />
-          <circle cx="109" cy="97" r="1.5" fill="#94a3b8" />
-          <circle cx="51" cy="135" r="1.5" fill="#94a3b8" />
-          <circle cx="109" cy="135" r="1.5" fill="#94a3b8" />
-          <!-- 迷你示波器视窗与动态波形 -->
-          <rect x="53" y="101" width="28" height="18" rx="3" fill="#022c22" stroke="#059669" stroke-width="1" />
-          <path d="M 55 110 Q 60 104 67 110 T 79 110" stroke="#34d399" stroke-width="1.5" fill="none" class="robot-scope-wave" />
-          <!-- 仪器仪表指示灯与旋钮 -->
-          <circle cx="89" cy="106" r="3" fill="#ef4444" />
-          <circle cx="99" cy="106" r="3" fill="#10b981" />
-          <circle cx="94" cy="118" r="5" fill="#334155" stroke="#94a3b8" stroke-width="1.5" />
-          <line x1="94" y1="118" x2="94" y2="114" stroke="#fbbf24" stroke-width="1.5" />
-          <line x1="55" y1="126" x2="79" y2="126" stroke="#1e293b" stroke-width="2" />
-          <line x1="55" y1="130" x2="79" y2="130" stroke="#1e293b" stroke-width="2" />
-        </g>
-
-        <!-- 颈部连接轴 -->
-        <rect x="73" y="86" width="14" height="6" rx="2" fill="#475569" />
-
-        <!-- 头部：CRT 荧光绿视窗与电子眼 -->
-        <g class="robot-part-head">
-          <rect x="37" y="52" width="7" height="14" rx="2" fill="#64748b" stroke="#334155" stroke-width="1" />
-          <rect x="116" y="52" width="7" height="14" rx="2" fill="#64748b" stroke="#334155" stroke-width="1" />
-          <rect x="44" y="38" width="72" height="48" rx="10" fill="url(#robotMetalGrad)" stroke="#475569" stroke-width="2" />
-          <circle cx="49" cy="43" r="1.5" fill="#94a3b8" />
-          <circle cx="111" cy="43" r="1.5" fill="#94a3b8" />
-          <circle cx="49" cy="81" r="1.5" fill="#94a3b8" />
-          <circle cx="111" cy="81" r="1.5" fill="#94a3b8" />
-          <rect x="52" y="44" width="56" height="34" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
-          <rect x="54" y="46" width="52" height="30" rx="5" fill="url(#robotScreenGrad)" />
-
-          <!-- 点阵电子眼（定时眨眼动画） -->
-          <g class="robot-eyes">
-            <rect x="62" y="54" width="10" height="12" rx="4" fill="#38bdf8" class="robot-eye robot-eye-left" />
-            <rect x="88" y="54" width="10" height="12" rx="4" fill="#38bdf8" class="robot-eye robot-eye-right" />
-            <circle cx="65" cy="57" r="1.5" fill="#ffffff" />
-            <circle cx="91" cy="57" r="1.5" fill="#ffffff" />
-          </g>
-
-          <!-- 示波器声波微笑 -->
-          <path d="M 72 69 Q 80 74 88 69" stroke="#34d399" stroke-width="2" stroke-linecap="round" fill="none" />
-        </g>
-
-        <!-- 弹簧天线与心跳二极管 -->
+        <!-- 弹簧天线与玻璃真空管指示灯 -->
         <g class="robot-part-antenna">
-          <path d="M 80 38 L 80 32 L 76 28 L 84 24 L 76 20 L 80 16" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-          <circle cx="80" cy="12" r="8" fill="#f43f5e" opacity="0.3" class="antenna-glow-ring" />
-          <circle cx="80" cy="12" r="5" fill="#f43f5e" stroke="#ffe4e6" stroke-width="1.5" />
+          <rect x="75" y="24" width="10" height="4" rx="1.5" class="robot-metal-dark" />
+          <path d="M80 24 L80 19 L76.5 16.5 L83.5 13.5 L76.5 10.5 L80 8" class="robot-stroke-heavy" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="80" cy="5.5" r="5.5" class="antenna-glow-ring" />
+          <circle cx="80" cy="5.5" r="3.2" class="antenna-bulb" />
+          <circle cx="79" cy="4.5" r="1" fill="#ffffff" opacity="0.85" />
+        </g>
+
+        <!-- 左右调谐旋钮耳（刻度编码器） -->
+        <g class="robot-part-ears">
+          <rect x="33" y="46" width="6" height="16" rx="2" class="robot-ear" />
+          <line x1="33" y1="50" x2="37" y2="50" class="robot-stroke-thin" />
+          <line x1="33" y1="54" x2="38" y2="54" class="robot-stroke-thin" />
+          <line x1="33" y1="58" x2="37" y2="58" class="robot-stroke-thin" />
+
+          <rect x="121" y="46" width="6" height="16" rx="2" class="robot-ear" />
+          <line x1="123" y1="50" x2="127" y2="50" class="robot-stroke-thin" />
+          <line x1="122" y1="54" x2="127" y2="54" class="robot-stroke-thin" />
+          <line x1="123" y1="58" x2="127" y2="58" class="robot-stroke-thin" />
+        </g>
+
+        <!-- 头部：复古博朗/泰克仪器外壳与圆角 CRT 监视器 -->
+        <g class="robot-part-head">
+          <rect x="39" y="28" width="82" height="54" rx="11" class="robot-chassis" />
+          <rect x="42" y="31" width="76" height="48" rx="8.5" class="robot-chassis-inner" />
+
+          <!-- 四角一字螺丝 -->
+          <circle cx="45.5" cy="34.5" r="1.4" class="robot-screw" />
+          <circle cx="114.5" cy="34.5" r="1.4" class="robot-screw" />
+          <circle cx="45.5" cy="75.5" r="1.4" class="robot-screw" />
+          <circle cx="114.5" cy="75.5" r="1.4" class="robot-screw" />
+
+          <!-- CRT 沉降金属外框与深色荧光屏 -->
+          <rect x="48" y="35" width="64" height="40" rx="6.5" class="robot-crt-bezel" />
+          <rect x="50" y="37" width="60" height="36" rx="5" class="robot-crt-screen" />
+
+          <!-- 屏幕微扫描线与分划刻度 -->
+          <line x1="52" y1="46" x2="108" y2="46" class="robot-crt-grid" />
+          <line x1="52" y1="55" x2="108" y2="55" class="robot-crt-grid" />
+          <line x1="52" y1="64" x2="108" y2="64" class="robot-crt-grid" />
+          <path d="M54 40 H60 M54 40 V45" class="robot-crt-glare" stroke-linecap="round" />
+
+          <!-- 可跟随光标移动的荧光电子眼 -->
+          <g class="robot-eyes-track" id="robotEyesTrack">
+            <!-- 常态电子眼 -->
+            <g class="robot-eyes-normal">
+              <rect x="61" y="45" width="10" height="12" rx="3" class="robot-eye robot-eye-left" />
+              <rect x="89" y="45" width="10" height="12" rx="3" class="robot-eye robot-eye-right" />
+              <rect x="63.5" y="47.5" width="3" height="3" rx="0.8" class="robot-eye-glint" />
+              <rect x="91.5" y="47.5" width="3" height="3" rx="0.8" class="robot-eye-glint" />
+            </g>
+            <!-- 开心弯眼（点击或激活态） -->
+            <g class="robot-eyes-happy">
+              <path d="M60 53 Q66 45 72 53" class="robot-happy-arc" stroke-linecap="round" />
+              <path d="M88 53 Q94 45 100 53" class="robot-happy-arc" stroke-linecap="round" />
+            </g>
+
+            <!-- 腮红/信号指示灯点 -->
+            <circle cx="57" cy="58" r="1.8" class="robot-cheek" />
+            <circle cx="103" cy="58" r="1.8" class="robot-cheek" />
+
+            <!-- 示波器声波微笑线 -->
+            <path d="M71 63.5 Q75.5 67 80 63.5 Q84.5 67 89 63.5" class="robot-mouth" stroke-linecap="round" />
+          </g>
+        </g>
+
+        <!-- 颈部波纹垫圈 -->
+        <rect x="68" y="82" width="24" height="5" rx="1.5" class="robot-metal-dark" />
+        <line x1="72" y1="84.5" x2="88" y2="84.5" class="robot-stroke-thin" />
+
+        <!-- 左右机械节段手臂 -->
+        <g class="robot-part-arms">
+          <!-- 左臂（轻扶台面） -->
+          <path d="M44 96 C33 98 29 109 35 121" class="robot-arm-tube" stroke-linecap="round" />
+          <circle cx="33" cy="107" r="2.2" class="robot-joint" />
+          <!-- 左机械U型钳爪 -->
+          <path d="M31 124 C31 119 39 119 39 124" class="robot-claw" stroke-linecap="round" />
+
+          <!-- 右臂（挥手致意） -->
+          <g class="robot-wave-arm">
+            <path d="M116 96 C127 94 132 84 127 72" class="robot-arm-tube" stroke-linecap="round" />
+            <circle cx="128" cy="85" r="2.2" class="robot-joint" />
+            <path d="M123 72 C124 66 132 67 131 73" class="robot-claw" stroke-linecap="round" />
+          </g>
+        </g>
+
+        <!-- 躯干：复古实验仪器前面板 -->
+        <g class="robot-part-body">
+          <rect x="44" y="87" width="72" height="43" rx="8" class="robot-chassis" />
+          <rect x="47" y="90" width="66" height="37" rx="5.5" class="robot-chassis-inner" />
+
+          <!-- 左侧：复古指针式微安表盘 (VU Meter) -->
+          <rect x="52" y="95" width="30" height="19" rx="3" class="robot-meter-face" />
+          <path d="M56 110 A11 11 0 0 1 78 110" class="robot-meter-arc" />
+          <line x1="67" y1="111" x2="72" y2="99" class="robot-meter-needle" stroke-linecap="round" />
+          <circle cx="67" cy="111" r="1.6" class="robot-screw" />
+
+          <!-- 右侧：三色测试端子与拨档旋钮 -->
+          <circle cx="90" cy="99" r="2.4" fill="#2c4554" stroke="currentColor" stroke-width="0.6" />
+          <circle cx="98" cy="99" r="2.4" fill="#a4692e" stroke="currentColor" stroke-width="0.6" />
+          <circle cx="106" cy="99" r="2.4" fill="#742d38" stroke="currentColor" stroke-width="0.6" />
+
+          <!-- 精密调谐大旋钮 -->
+          <circle cx="98" cy="112" r="6.5" class="robot-knob" />
+          <line x1="98" y1="112" x2="101.5" y2="107.5" class="robot-knob-mark" stroke-linecap="round" />
+
+          <!-- 底部散热百叶窗与铭牌 -->
+          <line x1="53" y1="119" x2="73" y2="119" class="robot-vent" stroke-linecap="round" />
+          <line x1="53" y1="122.5" x2="73" y2="122.5" class="robot-vent" stroke-linecap="round" />
+          <text x="82" y="123" class="robot-badge-text">S5·BOT</text>
+        </g>
+
+        <!-- 底部踏脚（稳稳站在光谱色卡条上） -->
+        <g class="robot-part-feet">
+          <rect x="55" y="129" width="14" height="5" rx="2" class="robot-foot" />
+          <rect x="91" y="129" width="14" height="5" rx="2" class="robot-foot" />
         </g>
       </svg>
-    </div>
+    </button>
   </div>
 
   <div class="theme-spectrum" id="themeSpectrum">

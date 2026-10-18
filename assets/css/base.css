@@ -534,23 +534,62 @@ time {
 }
 
 
-/* 色谱指示条与复古机器人吉祥物舞台 */
+/* 色谱指示条与复古实验小机器人谐振台（复古实体油墨 & 仪器前面板风） */
 .theme-spectrum-wrap {
-  margin: 24px 0 28px;
+  margin: 18px 0 26px;
   position: relative;
 }
 
 .rainbow-mascot-stage {
   position: relative;
   width: 100%;
-  height: 160px;
-  margin-bottom: -18px;
+  height: 136px;
+  margin-bottom: -5px;
   overflow: visible;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   user-select: none;
-  touch-action: none;
+  touch-action: pan-y;
+}
+
+.stage-meta {
+  position: absolute;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  opacity: 0.72;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.stage-meta-left {
+  left: 4px;
+}
+
+.stage-meta-right {
+  right: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage-meta-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.85;
+}
+
+@media (max-width: 560px) {
+  .stage-meta {
+    display: none;
+  }
 }
 
 .rainbow-canvas {
@@ -566,57 +605,260 @@ time {
 .retro-robot-container {
   position: relative;
   z-index: 3;
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
   cursor: pointer;
-  outline: none;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  margin-bottom: 2px;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .retro-robot-container:hover,
 .retro-robot-container:focus-visible {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-3px);
 }
 
 .retro-robot-container:active {
-  transform: translateY(-2px) scale(0.98);
+  transform: translateY(0) scale(0.98);
 }
 
 .retro-robot-svg {
   display: block;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
-  transition: filter 0.2s ease;
+  overflow: visible;
+  filter: drop-shadow(0 6px 14px rgba(17, 25, 29, 0.2));
+  transition: filter 0.25s ease;
 }
 
-.retro-robot-container:hover .retro-robot-svg,
-.retro-robot-container:focus-visible .retro-robot-svg {
-  filter: drop-shadow(0 8px 18px rgba(0, 240, 255, 0.25));
+:root[data-theme="dark"] .retro-robot-svg,
+:root[data-theme="hud"] .retro-robot-svg {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.48));
 }
 
-/* 机器人对话气泡 */
+/* 复古仪器小机器人 SVG 主题自适应配色 */
+.robot-shadow {
+  fill: rgba(17, 25, 29, 0.22);
+}
+
+.robot-chassis {
+  fill: var(--panel);
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.robot-chassis-inner {
+  fill: var(--subtle-bg);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.robot-metal-dark,
+.robot-ear,
+.robot-foot {
+  fill: var(--alt-bg);
+  stroke: var(--muted);
+  stroke-width: 1.25;
+}
+
+.robot-stroke-heavy {
+  stroke: var(--muted);
+  stroke-width: 1.8;
+  fill: none;
+}
+
+.robot-stroke-thin {
+  stroke: var(--muted);
+  stroke-width: 0.9;
+  opacity: 0.7;
+}
+
+.robot-screw {
+  fill: var(--muted);
+  opacity: 0.75;
+}
+
+.robot-crt-bezel {
+  fill: var(--deep);
+  stroke: var(--line);
+  stroke-width: 1.1;
+}
+
+.robot-crt-screen {
+  fill: var(--code-bg);
+}
+
+.robot-crt-grid {
+  stroke: var(--accent-dark);
+  stroke-opacity: 0.12;
+  stroke-width: 0.75;
+}
+
+.robot-crt-glare {
+  stroke: var(--code-ink);
+  stroke-opacity: 0.2;
+  stroke-width: 1.1;
+  fill: none;
+}
+
+.robot-eye {
+  fill: var(--accent-dark);
+}
+
+:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]) .robot-eye,
+:root[data-theme="light"] .robot-eye {
+  fill: #80c7a7;
+}
+
+.robot-eye-glint {
+  fill: #ffffff;
+  opacity: 0.88;
+}
+
+.robot-eyes-happy {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.retro-robot-container.is-booped .robot-eyes-normal {
+  opacity: 0;
+}
+
+.retro-robot-container.is-booped .robot-eyes-happy {
+  opacity: 1;
+}
+
+.robot-happy-arc {
+  stroke: var(--warm);
+  stroke-width: 2.2;
+  fill: none;
+}
+
+.robot-cheek {
+  fill: var(--warm);
+  opacity: 0.55;
+}
+
+.robot-mouth {
+  stroke: var(--code-ink);
+  stroke-width: 1.5;
+  opacity: 0.82;
+  fill: none;
+}
+
+.antenna-bulb {
+  fill: var(--warm);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.antenna-glow-ring {
+  fill: var(--warm);
+  opacity: 0.24;
+  transform-origin: 80px 5.5px;
+  animation: antenna-pulse 2.4s infinite ease-in-out;
+}
+
+.robot-arm-tube {
+  stroke: var(--muted);
+  stroke-width: 4;
+  stroke-dasharray: 2.5 1.2;
+  fill: none;
+}
+
+.robot-joint {
+  fill: var(--panel);
+  stroke: var(--muted);
+  stroke-width: 1.2;
+}
+
+.robot-claw {
+  stroke: var(--accent-dark);
+  stroke-width: 2;
+  fill: none;
+}
+
+.robot-meter-face {
+  fill: var(--paper);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.robot-meter-arc {
+  stroke: var(--muted);
+  stroke-width: 0.9;
+  stroke-dasharray: 2 1.5;
+  fill: none;
+  opacity: 0.75;
+}
+
+.robot-meter-needle {
+  stroke: var(--note);
+  stroke-width: 1.35;
+  transform-origin: 67px 111px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.retro-robot-container:hover .robot-meter-needle,
+.retro-robot-container.is-booped .robot-meter-needle {
+  transform: rotate(-28deg);
+}
+
+.robot-knob {
+  fill: var(--alt-bg);
+  stroke: var(--muted);
+  stroke-width: 1.2;
+}
+
+.robot-knob-mark {
+  stroke: var(--warm);
+  stroke-width: 1.4;
+}
+
+.robot-vent {
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.robot-badge-text {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 6.5px;
+  font-weight: 700;
+  fill: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* 机器人终端对话气泡 */
 .robot-speech {
   position: absolute;
-  top: -24px;
+  top: -22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--accent-dark);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink);
   background: var(--raised-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--accent);
-  border-radius: 12px;
-  padding: 3px 10px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--raised-border);
+  border-radius: 6px;
+  padding: 2px 9px;
+  box-shadow: var(--shadow-small);
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(4px);
   pointer-events: none;
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 10;
+}
+
+.speech-prefix {
+  color: var(--accent-dark);
+  font-weight: 700;
 }
 
 .robot-speech.is-active,
@@ -632,20 +874,15 @@ time {
   bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
-  border-width: 5px 5px 0 5px;
+  border-width: 5px 4px 0 4px;
   border-style: solid;
-  border-color: var(--accent) transparent transparent transparent;
+  border-color: var(--raised-border) transparent transparent transparent;
 }
 
-/* 机器人 SVG 各部件微动动画 */
+/* 机器人微动动画 */
 @keyframes antenna-pulse {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.35); }
-}
-
-.antenna-glow-ring {
-  transform-origin: 80px 12px;
-  animation: antenna-pulse 2s infinite ease-in-out;
+  0%, 100% { opacity: 0.18; transform: scale(0.95); }
+  50% { opacity: 0.55; transform: scale(1.22); }
 }
 
 @keyframes robot-blink {
@@ -654,48 +891,37 @@ time {
 }
 
 .robot-eye-left {
-  transform-origin: 67px 60px;
-  animation: robot-blink 4.2s infinite ease-in-out;
+  transform-origin: 66px 51px;
+  animation: robot-blink 4.6s infinite ease-in-out;
 }
 
 .robot-eye-right {
-  transform-origin: 93px 60px;
-  animation: robot-blink 4.2s infinite ease-in-out;
+  transform-origin: 94px 51px;
+  animation: robot-blink 4.6s infinite ease-in-out;
 }
 
 @keyframes robot-wave {
   0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(7deg); }
-  70% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
 }
 
 .robot-wave-arm {
-  transform-origin: 114px 102px;
-  animation: robot-wave 3.2s infinite ease-in-out;
-}
-
-@keyframes scope-wave-pan {
-  0% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: -20; }
-}
-
-.robot-scope-wave {
-  stroke-dasharray: 4 2;
-  animation: scope-wave-pan 1.6s linear infinite;
+  transform-origin: 116px 96px;
+  animation: robot-wave 3.6s infinite ease-in-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .antenna-glow-ring,
   .robot-eye-left,
   .robot-eye-right,
-  .robot-wave-arm,
-  .robot-scope-wave {
+  .robot-wave-arm {
     animation: none !important;
   }
   .retro-robot-container {
     transition: none !important;
   }
 }
+
 
 
 .theme-spectrum {
