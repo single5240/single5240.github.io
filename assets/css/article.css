@@ -9,6 +9,7 @@
 .reading-main { min-width: 0; background: var(--raised-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: 12px; padding: 38px 44px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03); }
 .reading-sidebar { grid-column: 2; grid-row: 1; position: sticky; top: 82px; display: flex; flex-direction: column; gap: 14px; max-height: calc(100vh - 96px); z-index: 10; }
 .toc { position: static; max-height: calc(100vh - 245px); overflow: auto; background: var(--raised-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; font-size: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02); }
+.reading-sidebar > .toc:only-child { max-height: calc(100vh - 120px); }
 .toc summary { font-size: 12px; font-weight: 650; color: var(--ink); cursor: pointer; margin-bottom: 14px; }
 .toc ol { margin: 0; padding: 0; list-style: none; }
 .toc li { margin: 8px 0; line-height: 1.7; }

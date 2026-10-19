@@ -15,7 +15,10 @@ layout: default
     </div>
   </header>
   <div class="reading-grid">
-    <details class="toc" id="article-toc" open hidden><summary>本页目录</summary><ol></ol></details>
+    <aside class="reading-sidebar" id="reading-sidebar">
+      {% include article-robot.html %}
+      <details class="toc" id="article-toc" open hidden><summary>本页目录</summary><ol></ol></details>
+    </aside>
     <div class="reading-main">
       <article class="content">{{ content }}</article>
       <aside class="article-context" aria-label="相关内容">
