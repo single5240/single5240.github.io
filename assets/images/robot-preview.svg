@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="460" viewBox="0 0 640 460">
+<defs>
+  <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+    <path d="M24 0H0V24" fill="none" stroke="#c4d3cf" stroke-width=".6"/>
+  </pattern>
+  <linearGradient id="scope-bg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#0e171b"/>
+    <stop offset="100%" stop-color="#070c0e"/>
+  </linearGradient>
+  <linearGradient id="wave-grad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#22d3ee"/>
+    <stop offset="50%" stop-color="#80c7a7"/>
+    <stop offset="100%" stop-color="#22d3ee"/>
+  </linearGradient>
+</defs>
+<rect width="640" height="460" fill="#e9efeb"/>
+<rect width="640" height="460" fill="url(#grid)"/>
+
+<!-- 左右技术引线与引出点 -->
+<g fill="none" stroke="#79948d" stroke-width="1">
+  <path d="M35 110H130M35 230H130M35 350H130M510 130H605M510 330H605"/>
+  <circle cx="35" cy="110" r="3"/>
+  <circle cx="35" cy="230" r="3"/>
+  <circle cx="35" cy="350" r="3"/>
+  <circle cx="605" cy="130" r="3"/>
+  <circle cx="605" cy="330" r="3"/>
+</g>
+<g font-family="monospace" font-size="11" fill="#41675d">
+  <text x="37" y="96">18 WAVEFORMS</text>
+  <text x="37" y="216">CANVAS 2D 60FPS</text>
+  <text x="37" y="336">PHYSICS LERP</text>
+  <text x="516" y="116">S5·BOT COPILOT</text>
+  <text x="516" y="316">FLOATING DOCK</text>
+</g>
+
+<!-- 主工作台底座与外壳 -->
+<rect x="130" y="42" width="380" height="364" rx="18" fill="#20332d" stroke="#5d7b71" stroke-width="2"/>
+<rect x="140" y="52" width="360" height="344" rx="14" fill="#142420"/>
+
+<!-- 示波器 CRT 屏幕区域 -->
+<rect x="156" y="68" width="224" height="186" rx="8" fill="url(#scope-bg)" stroke="#39594e" stroke-width="1.5"/>
+
+<!-- CRT 示波器标线网格 (8格 x 6格) -->
+<g stroke="#1a2e28" stroke-width="0.8">
+  <line x1="156" y1="99" x2="380" y2="99"/>
+  <line x1="156" y1="130" x2="380" y2="130"/>
+  <line x1="156" y1="161" x2="380" y2="161" stroke="#25433b" stroke-dasharray="2 2"/>
+  <line x1="156" y1="192" x2="380" y2="192"/>
+  <line x1="156" y1="223" x2="380" y2="223"/>
+  <line x1="193" y1="68" x2="193" y2="254"/>
+  <line x1="230" y1="68" x2="230" y2="254"/>
+  <line x1="268" y1="68" x2="268" y2="254" stroke="#25433b" stroke-dasharray="2 2"/>
+  <line x1="305" y1="68" x2="305" y2="254"/>
+  <line x1="342" y1="68" x2="342" y2="254"/>
+</g>
+
+<!-- 动态波形轨迹 (正弦 + 三次谐波 SVPWM 马鞍波) -->
+<path d="M156 161 C172 110, 186 112, 203 140 C220 166, 238 214, 258 210 C276 206, 288 116, 305 112 C324 108, 338 160, 356 210 C368 214, 375 180, 380 161"
+      fill="none" stroke="url(#wave-grad)" stroke-width="2.5" stroke-linecap="round"/>
+
+<!-- 示波器顶部信息标签 -->
+<g font-family="monospace" font-size="9" fill="#80c7a7">
+  <rect x="164" y="76" width="56" height="16" rx="3" fill="#1b332b" stroke="#3d6657"/>
+  <text x="171" y="88" font-weight="bold">CH1 ▸ SINE</text>
+  <text x="312" y="88" fill="#5eead4">50Hz · 1V/div</text>
+</g>
+
+<!-- 示波器控制面板与通道插孔 (左下) -->
+<rect x="156" y="268" width="224" height="114" rx="8" fill="#1b2d28" stroke="#334f46"/>
+<g font-family="monospace" font-size="8" fill="#8ba89c" text-anchor="middle">
+  <!-- 旋钮 1 -->
+  <circle cx="186" cy="298" r="14" fill="#243d36" stroke="#4a6e62" stroke-width="1.5"/>
+  <circle cx="186" cy="298" r="8" fill="#172b25"/>
+  <line x1="186" y1="298" x2="192" y2="290" stroke="#80c7a7" stroke-width="2" stroke-linecap="round"/>
+  <text x="186" y="322">TIME/DIV</text>
+
+  <!-- 旋钮 2 -->
+  <circle cx="236" cy="298" r="14" fill="#243d36" stroke="#4a6e62" stroke-width="1.5"/>
+  <circle cx="236" cy="298" r="8" fill="#172b25"/>
+  <line x1="236" y1="298" x2="230" y2="290" stroke="#80c7a7" stroke-width="2" stroke-linecap="round"/>
+  <text x="236" y="322">VOLTS/DIV</text>
+
+  <!-- BNC 探头插口 -->
+  <circle cx="290" cy="298" r="11" fill="#152621" stroke="#4a6e62" stroke-width="1.5"/>
+  <circle cx="290" cy="298" r="4" fill="#4a6e62"/>
+  <text x="290" y="322">CH1 BNC</text>
+
+  <circle cx="344" cy="298" r="11" fill="#152621" stroke="#4a6e62" stroke-width="1.5"/>
+  <circle cx="344" cy="298" r="4" fill="#4a6e62"/>
+  <text x="344" y="322">EXT TRIG</text>
+</g>
+
+<!-- 波形选择功能按键矩阵 -->
+<g fill="#253f38" stroke="#43685c" font-family="monospace" font-size="7.5" text-anchor="middle">
+  <rect x="168" y="338" width="36" height="18" rx="3"/><text x="186" y="350" fill="#a3c4b7">SINE</text>
+  <rect x="210" y="338" width="36" height="18" rx="3"/><text x="228" y="350" fill="#a3c4b7">SVPWM</text>
+  <rect x="252" y="338" width="36" height="18" rx="3"/><text x="270" y="350" fill="#a3c4b7">UART</text>
+  <rect x="294" y="338" width="36" height="18" rx="3"/><text x="312" y="350" fill="#a3c4b7">CAN</text>
+  <rect x="336" y="338" width="36" height="18" rx="3" fill="#355e52"/><text x="354" y="350" fill="#5eead4" font-weight="bold">18 W</text>
+  <text x="268" y="374" font-size="8" fill="#6c9183">AUTO RUN · TRIGGER LOCK</text>
+</g>
+
+<!-- 右侧：复古实验小机器人 S5·BOT -->
+<g transform="translate(390, 78)">
+  <!-- 气泡对话框 -->
+  <rect x="-14" y="0" width="112" height="34" rx="6" fill="#1e3630" stroke="#436c5f" stroke-width="1.2"/>
+  <path d="M26 34 L32 40 L38 34 Z" fill="#1e3630"/>
+  <text x="42" y="16" font-family="monospace" font-size="8" fill="#5eead4" text-anchor="middle">0 Warning 0 Error</text>
+  <text x="42" y="27" font-family="monospace" font-size="7.5" fill="#a3c4b7" text-anchor="middle">已帮您喂过看门狗 ⚡</text>
+
+  <!-- 机器人天线 -->
+  <path d="M48 48 L48 40 L44 37 L52 33 L48 29" fill="none" stroke="#4a6e62" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="48" cy="27" r="4" fill="#22d3ee" filter="drop-shadow(0 0 4px #22d3ee)"/>
+
+  <!-- 头部外壳 -->
+  <rect x="12" y="48" width="72" height="48" rx="10" fill="#263f38" stroke="#5d8276" stroke-width="1.5"/>
+  <!-- CRT 眼眶 -->
+  <rect x="20" y="55" width="56" height="34" rx="6" fill="#0f1c19" stroke="#36574e"/>
+  <!-- 发光双眼 (带高光) -->
+  <rect x="30" y="63" width="9" height="12" rx="3" fill="#22d3ee"/>
+  <rect x="32" y="65" width="3" height="3" fill="#ffffff" opacity="0.8"/>
+  <rect x="57" y="63" width="9" height="12" rx="3" fill="#22d3ee"/>
+  <rect x="59" y="65" width="3" height="3" fill="#ffffff" opacity="0.8"/>
+  <!-- 微笑弧线 -->
+  <path d="M42 82 Q48 86 54 82" fill="none" stroke="#447063" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 身体与表头 -->
+  <rect x="16" y="100" width="64" height="44" rx="8" fill="#20352f" stroke="#54786d" stroke-width="1.5"/>
+  <rect x="22" y="106" width="30" height="20" rx="3" fill="#13231f" stroke="#39594f"/>
+  <!-- 表头指针 -->
+  <path d="M26 122 A10 10 0 0 1 48 122" fill="none" stroke="#3d6457" stroke-width="0.8"/>
+  <line x1="37" y1="122" x2="42" y2="110" stroke="#5eead4" stroke-width="1.2" stroke-linecap="round"/>
+  <!-- 旋钮与孔位 -->
+  <circle cx="64" cy="112" r="5" fill="#172b25" stroke="#4a6e62"/>
+  <line x1="64" y1="112" x2="67" y2="108" stroke="#80c7a7" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="64" cy="126" r="2.5" fill="#f59e0b"/>
+  <text x="37" y="138" font-family="monospace" font-size="6" fill="#759b8d" text-anchor="middle">S5·BOT</text>
+
+  <!-- 手臂与挥手动作 -->
+  <path d="M16 108 C6 112, 4 122, 10 130" fill="none" stroke="#4a6e62" stroke-width="3" stroke-linecap="round"/>
+  <path d="M80 108 C90 104, 96 92, 92 82" fill="none" stroke="#4a6e62" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="92" cy="80" r="3" fill="#5eead4"/>
+
+  <!-- 脚部 -->
+  <rect x="26" y="146" width="14" height="6" rx="2" fill="#172b25" stroke="#3f6356"/>
+  <rect x="56" y="146" width="14" height="6" rx="2" fill="#172b25" stroke="#3f6356"/>
+</g>
+
+<!-- 底部说明与版权徽章 -->
+<text x="25" y="438" fill="#55776b" font-family="monospace" font-size="10">RETRO SCOPE &amp; COMPANION ROBOT · 示波器伴读机器人交互工作台</text>
+</svg>
