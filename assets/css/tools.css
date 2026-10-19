@@ -20,24 +20,30 @@
   min-height: 40px;
   padding: 8px 14px;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--panel);
   color: var(--muted);
   font-size: 13px;
   font-weight: 650;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+  box-shadow: var(--panel-bevel), 0 1.5px 3px rgba(0, 0, 0, 0.05);
+  transition: all 150ms ease;
 }
 
 .tools-tab-btn:hover {
   border-color: var(--accent);
   color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: var(--panel-bevel), 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
+.tools-tab-btn:active,
 .tools-tab-btn[aria-selected="true"] {
   border-color: var(--accent-dark);
   background: var(--soft);
   color: var(--accent-dark);
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .tools-tab-num {
@@ -92,8 +98,9 @@
 .tool-card {
   padding: 20px 22px;
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--panel);
+  box-shadow: var(--panel-bevel), var(--shadow-small);
 }
 
 .tool-card-full {
@@ -192,24 +199,40 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+  box-shadow: var(--panel-bevel), 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 140ms ease;
 }
 
 .tool-btn:hover {
   border-color: var(--accent-dark);
   background: var(--soft);
   color: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--panel-bevel), 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tool-btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.14);
 }
 
 .tool-btn.primary {
   background: var(--accent-dark);
   border-color: var(--accent-dark);
   color: var(--paper);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2px 6px rgba(0, 0, 0, 0.18);
 }
 
 .tool-btn.primary:hover {
-  opacity: 0.9;
+  opacity: 0.95;
   color: var(--paper);
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 10px rgba(15, 129, 141, 0.3);
+}
+
+.tool-btn.primary:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
 .copy-mini {
