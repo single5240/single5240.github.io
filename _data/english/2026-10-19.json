@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-19",
+  "sentence": "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity…",
+  "source": {
+    "author": "Charles Dickens",
+    "work": "A Tale of Two Cities",
+    "year": "1859",
+    "detail": "第一卷第一章开篇句（节选前六个分句），背景是法国大革命前夕的伦敦与巴黎"
+  },
+  "translation": "那是最好的时代，那是最坏的时代；那是智慧的年代，那是愚蠢的年代；那是信仰的纪元，那是怀疑的纪元……",
+  "grammar": [
+    "主干极简单：每个分句都是 it was + 名词短语（主系表）。it 指代当时那个时代，was 是系动词，后面是表语。整句就是同一个结构反复出现。",
+    "平行结构 + 对照：六个分句两两成对（best/worst、wisdom/foolishness、belief/incredulity），结构完全一样、意思正好相反。重复的开头叫首语重复（anaphora），营造出排山倒海的节奏，也把那个时代的矛盾感写透了。",
+    "标点上的故意“犯规”：正常语法里，两个完整句子不能只用逗号连接（叫 comma splice），应该用分号、句号或 and。狄更斯故意只用逗号，让句子一口气往前冲。日常写作别学这一点，用分号更规范。",
+    "the best of times：最高级 + of + 复数名词，表示“所有……之中最……的”，times 在这里是“时代、时期”，所以用复数。"
+  ],
+  "vocab": [
+    {
+      "word": "epoch",
+      "phonetic": "/ˈiːpɒk/（英）/ˈepək/（美）",
+      "pos": "n.",
+      "meaning": "纪元，时代（通常指有重大事件或特征的一段历史时期）",
+      "collocation": "a new epoch, mark an epoch, the epoch of …",
+      "example": "The smartphone marked a new epoch in personal computing."
+    },
+    {
+      "word": "incredulity",
+      "phonetic": "/ˌɪnkrəˈdjuːləti/",
+      "pos": "n.",
+      "meaning": "不肯相信，怀疑；句中与 belief 相对，指普遍的怀疑态度",
+      "collocation": "in incredulity, a look of incredulity；形容词 incredulous",
+      "example": "She stared at the test results in incredulity."
+    },
+    {
+      "word": "foolishness",
+      "phonetic": "/ˈfuːlɪʃnəs/",
+      "pos": "n.",
+      "meaning": "愚蠢，愚昧；与 wisdom 相对",
+      "collocation": "sheer foolishness, an act of foolishness",
+      "example": "Skipping the code review to save ten minutes was pure foolishness."
+    },
+    {
+      "word": "the best of times",
+      "phonetic": "/ðə best əv taɪmz/",
+      "pos": "phrase",
+      "meaning": "最好的时光、最好的时代；日常也常说 in the best of times（即便在最顺的时候）",
+      "collocation": "the best of times and the worst of times, even in the best of times",
+      "example": "Even in the best of times, embedded debugging takes patience."
+    }
+  ],
+  "note": "小练习：模仿这个平行结构，写一句描述你最近工作或学习的话，比如：It was the week of bugs, it was the week of breakthroughs. 注意两半结构一致、意思相对。"
+}
