@@ -36,6 +36,9 @@ layout: null
   <url>
     <loc>{{ '/projects/my-skills/index.html' | absolute_url }}</loc>
   </url>
+  <url>
+    <loc>{{ '/projects/retro-robot/index.html' | absolute_url }}</loc>
+  </url>
   {% assign skill_pages = site.skills | sort: "order" %}
   {% for item in skill_pages %}
   <url>
