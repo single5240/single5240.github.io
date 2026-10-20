@@ -1768,6 +1768,476 @@
     grid-template-columns: 1fr;
   }
 }
+/* ==========================================================================
+   N32G455 SPI & DMA 硬件仿真实验室 (spi-dma-demo-app)
+   ========================================================================== */
+
+.spi-dma-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.spi-dma-tab-btn {
+  padding: 8px 16px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.spi-dma-tab-btn:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+.spi-dma-tab-btn.is-active {
+  background: var(--panel);
+  color: var(--accent-dark);
+  border-color: var(--accent);
+  box-shadow: inset 0 2px 0 var(--accent), var(--shadow-small);
+}
+
+.spi-dma-view {
+  display: block;
+}
+
+.spi-dma-view[hidden] {
+  display: none !important;
+}
+
+/* 时钟拓扑 */
+.spi-clock-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--alt-bg);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  margin-bottom: 22px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.spi-clock-pill {
+  padding: 4px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.spi-clock-pill strong {
+  color: var(--accent-dark);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.spi-clock-arrow {
+  color: var(--muted);
+  font-weight: bold;
+}
+
+.spi-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.spi-card {
+  padding: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-small);
+  transition: border-color 0.2s ease;
+}
+
+.spi-card:hover {
+  border-color: var(--accent);
+}
+
+.spi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.spi-chip-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.spi-card-header h4 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.spi-mode-tag {
+  font-size: 11px;
+  font-family: ui-monospace, Consolas, monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.spi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spi-field label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.spi-select {
+  padding: 6px 10px;
+  font-size: 13px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.spi-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--raised-border);
+}
+
+.spi-metric-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  background: var(--subtle-bg);
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+
+.spi-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spi-metric-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.spi-metric-val {
+  font-size: 16px;
+  font-weight: 750;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--ink);
+}
+
+.spi-eval {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--alt-bg);
+}
+
+.spi-eval-icon {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.spi-eval-icon.success { color: #10b981; }
+.spi-eval-icon.warn { color: var(--warm); }
+.spi-eval-icon.danger { color: #ef4444; }
+
+/* DMA 仲裁 */
+.arbiter-overview {
+  margin-bottom: 18px;
+}
+
+.dma-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dma-channel-card {
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-small);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.dma-channel-card.is-active-bus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--raised-border), 0 4px 12px rgba(15, 129, 141, 0.2);
+  background: var(--soft);
+}
+
+.dma-ch-badge {
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.prio-vhigh .dma-ch-badge { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.prio-high .dma-ch-badge { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+.prio-med .dma-ch-badge { background: rgba(15, 129, 141, 0.15); color: var(--accent); border: 1px solid var(--raised-border); }
+
+.dma-ch-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.dma-ch-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dma-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.dma-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.15s ease;
+}
+
+.prio-vhigh .dma-progress-bar { background: #ef4444; }
+.prio-high .dma-progress-bar { background: #f59e0b; }
+
+.dma-ch-stat {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.dma-ch-stat span {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.dma-bus-section {
+  padding: 16px;
+  background: var(--alt-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.dma-bus-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.dma-current-owner {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--accent-dark);
+  font-size: 12px;
+  background: var(--panel);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+.dma-bus-slots {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 4px;
+  height: 32px;
+}
+
+.dma-bus-slot {
+  border-radius: 3px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--muted);
+  transition: all 0.15s ease;
+}
+
+.dma-bus-slot.slot-ch4 { background: #ef4444; color: #fff; font-weight: 700; border-color: #dc2626; }
+.dma-bus-slot.slot-ch5 { background: #f59e0b; color: #fff; font-weight: 700; border-color: #d97706; }
+.dma-bus-slot.slot-ch2 { background: var(--accent); color: #fff; font-weight: 700; border-color: var(--accent-dark); }
+.dma-bus-slot.slot-ch1 { background: #3b82f6; color: #fff; font-weight: 700; border-color: #2563eb; }
+
+/* 避坑实验 */
+.pitfall-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pitfall-choice {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.pitfall-choice strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.pitfall-choice span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pitfall-choice:hover {
+  border-color: var(--accent);
+}
+
+.pitfall-choice.is-active {
+  border-color: var(--accent);
+  background: var(--soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.pitfall-display {
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+}
+
+.pitfall-registers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reg-pill {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+}
+
+.reg-pill.active {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #059669;
+}
+
+.reg-pill.danger.active {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #dc2626;
+  animation: pulse-danger 1s infinite alternate;
+}
+
+.reg-pill.warn.active {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #d97706;
+}
+
+@keyframes pulse-danger {
+  from { opacity: 0.8; }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+.pitfall-diagram {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.pitfall-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #cbd5e1;
+  max-width: 650px;
+}
+
+@media(max-width: 768px) {
+  .spi-cards-grid,
+  .dma-channels-grid {
+    grid-template-columns: 1fr;
+  }
+  .dma-bus-slots {
+    grid-template-columns: repeat(8, 1fr);
+    height: auto;
+    gap: 4px;
+  }
+  .dma-bus-slot {
+    height: 24px;
+  }
+}
+
 
 @media print {
   .site-header,

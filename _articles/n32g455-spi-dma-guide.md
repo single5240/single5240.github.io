@@ -121,6 +121,247 @@ tags:
 
 DMA 未结束前，发送缓冲区不得被修改或离开作用域，接收缓冲区不得被其他模块读写。N32G455 当前未使用数据缓存；迁移到带 D-Cache 的 MCU 时必须增加 cache clean/invalidate。
 
+<div class="article-interactive-widget" id="spi-dma-demo-app" aria-label="N32G455 三路 SPI 与 DMA1 仲裁交互实验室">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE LAB · 硬件总线仿真</span>
+    <h3 class="aiw-title">N32G455 三路 SPI 时钟树与 DMA1 硬件仲裁实验室</h3>
+    <p class="aiw-desc">动态仿真 N32G455 在 128 MHz 主频下的三路 SPI 时钟分频验算、DMA1 多通道并发仲裁时序（抢占与流水插槽）、以及“先开 RX 后开 TX”全双工时序与边沿避坑实验。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="spi-dma-tabs" role="tablist" aria-label="仿真模式选择">
+      <button type="button" class="spi-dma-tab-btn is-active" role="tab" aria-selected="true" data-tab="clock">01 · 时钟树与 SCLK 验算</button>
+      <button type="button" class="spi-dma-tab-btn" role="tab" aria-selected="false" data-tab="arbiter">02 · DMA1 4通道硬件仲裁时序</button>
+      <button type="button" class="spi-dma-tab-btn" role="tab" aria-selected="false" data-tab="pitfall">03 · 全双工启停与边沿避坑</button>
+    </div>
+
+    <!-- 01: 时钟树与分频验算 -->
+    <div class="spi-dma-view is-active" id="spi-view-clock" role="tabpanel">
+      <div class="spi-clock-summary">
+        <div class="spi-clock-pill">系统核心 <strong>HSI-PLL 128 MHz</strong></div>
+        <div class="spi-clock-arrow" aria-hidden="true">→</div>
+        <div class="spi-clock-pill">HCLK <strong>128 MHz</strong></div>
+        <div class="spi-clock-arrow" aria-hidden="true">→</div>
+        <div class="spi-clock-pill">APB1 <strong>32 MHz</strong> / APB2 <strong>64 MHz</strong></div>
+      </div>
+
+      <div class="spi-cards-grid">
+        <!-- SPI1 (LCD) -->
+        <div class="spi-card" id="spi-card-1">
+          <div class="spi-card-header">
+            <div>
+              <span class="spi-chip-tag">SPI1 · LCD (ST7789)</span>
+              <h4>挂载 APB2 (PCLK2 = 64 MHz)</h4>
+            </div>
+            <span class="spi-mode-tag">Mode 0 · 16-bit DMA</span>
+          </div>
+          <div class="spi-field">
+            <label for="spi1-prescaler">时钟分频系数 (BaudRatePrescaler):</label>
+            <select id="spi1-prescaler" class="spi-select">
+              <option value="2" selected>Div 2 (2分频 - 生产配置 32 MHz)</option>
+              <option value="4">Div 4 (4分频 - 16 MHz)</option>
+              <option value="8">Div 8 (8分频 - 8 MHz)</option>
+              <option value="16">Div 16 (16分频 - 4 MHz)</option>
+              <option value="32">Div 32 (32分频 - 2 MHz)</option>
+            </select>
+          </div>
+          <div class="spi-metric-row">
+            <div class="spi-metric">
+              <span class="spi-metric-label">输出 SCLK</span>
+              <span class="spi-metric-val" id="spi1-sclk">32.0 MHz</span>
+            </div>
+            <div class="spi-metric">
+              <span class="spi-metric-label">时钟周期 T</span>
+              <span class="spi-metric-val" id="spi1-period">31.25 ns</span>
+            </div>
+          </div>
+          <div class="spi-eval" id="spi1-eval">
+            <span class="spi-eval-icon success">●</span>
+            <span class="spi-eval-text" id="spi1-eval-text">ST7789 像素写入周期约 15ns (最高~66MHz)，32MHz 处于高速安全范围。</span>
+          </div>
+        </div>
+
+        <!-- SPI2 (AD7190) -->
+        <div class="spi-card" id="spi-card-2">
+          <div class="spi-card-header">
+            <div>
+              <span class="spi-chip-tag">SPI2 · ADC (AD7190)</span>
+              <h4>挂载 APB1 (PCLK1 = 32 MHz)</h4>
+            </div>
+            <span class="spi-mode-tag">Mode 3 · 8-bit DMA</span>
+          </div>
+          <div class="spi-field">
+            <label for="spi2-prescaler">时钟分频系数 (BaudRatePrescaler):</label>
+            <select id="spi2-prescaler" class="spi-select">
+              <option value="2">Div 2 (2分频 - 16 MHz 严重超频)</option>
+              <option value="4">Div 4 (4分频 - 8 MHz 超频)</option>
+              <option value="8" selected>Div 8 (8分频 - 生产配置 4 MHz)</option>
+              <option value="16">Div 16 (16分频 - 2 MHz)</option>
+              <option value="32">Div 32 (32分频 - 1 MHz)</option>
+            </select>
+          </div>
+          <div class="spi-metric-row">
+            <div class="spi-metric">
+              <span class="spi-metric-label">输出 SCLK</span>
+              <span class="spi-metric-val" id="spi2-sclk">4.0 MHz</span>
+            </div>
+            <div class="spi-metric">
+              <span class="spi-metric-label">时钟周期 T</span>
+              <span class="spi-metric-val" id="spi2-period">250.0 ns</span>
+            </div>
+          </div>
+          <div class="spi-eval" id="spi2-eval">
+            <span class="spi-eval-icon success">●</span>
+            <span class="spi-eval-text" id="spi2-eval-text">AD7190 最大容许 SCLK 为 4.9 MHz。4 MHz 满足手册规范且保留了 18% 时序裕量。</span>
+          </div>
+        </div>
+
+        <!-- SPI3 (W25Q128) -->
+        <div class="spi-card" id="spi-card-3">
+          <div class="spi-card-header">
+            <div>
+              <span class="spi-chip-tag">SPI3 · Flash (W25Q128)</span>
+              <h4>挂载 APB1 (PCLK1 = 32 MHz)</h4>
+            </div>
+            <span class="spi-mode-tag">Mode 0 · 8-bit 轮询</span>
+          </div>
+          <div class="spi-field">
+            <label for="spi3-prescaler">时钟分频系数 (BaudRatePrescaler):</label>
+            <select id="spi3-prescaler" class="spi-select">
+              <option value="2">Div 2 (2分频 - 16 MHz)</option>
+              <option value="4" selected>Div 4 (4分频 - 生产配置 8 MHz)</option>
+              <option value="8">Div 8 (8分频 - 4 MHz)</option>
+              <option value="16">Div 16 (16分频 - 2 MHz)</option>
+            </select>
+          </div>
+          <div class="spi-metric-row">
+            <div class="spi-metric">
+              <span class="spi-metric-label">输出 SCLK</span>
+              <span class="spi-metric-val" id="spi3-sclk">8.0 MHz</span>
+            </div>
+            <div class="spi-metric">
+              <span class="spi-metric-label">时钟周期 T</span>
+              <span class="spi-metric-val" id="spi3-period">125.0 ns</span>
+            </div>
+          </div>
+          <div class="spi-eval" id="spi3-eval">
+            <span class="spi-eval-icon success">●</span>
+            <span class="spi-eval-text" id="spi3-eval-text">W25Q128 支持高达 104 MHz。8 MHz 处于高度稳定抗干扰的轮询安全区间。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02: DMA1 硬件仲裁时序 -->
+    <div class="spi-dma-view" id="spi-view-arbiter" role="tabpanel" hidden>
+      <div class="arbiter-overview">
+        <p class="aiw-hint">N32G455 的 DMA1 内部硬件仲裁器按 <strong>Very High &gt; High &gt; Medium &gt; Low</strong> 判定总线控制权。当 LCD (Medium) 与 AD7190 (Very High/High) 同时请求总线时，仲裁器在每个 AHB 传输槽插队抢占，确保高精度采样绝不丢包。</p>
+      </div>
+
+      <div class="dma-channels-grid">
+        <div class="dma-channel-card prio-vhigh" id="dma-card-ch4">
+          <div class="dma-ch-badge">Very High (优先级最高)</div>
+          <div class="dma-ch-name">DMA1_CH4 · AD7190 RX</div>
+          <div class="dma-ch-meta">8-bit · 内存递增 · 中断使能</div>
+          <div class="dma-progress-track"><div class="dma-progress-bar" id="dma-bar-ch4" style="width: 0%"></div></div>
+          <div class="dma-ch-stat">待传项 (CNDTR): <span id="dma-cndtr-ch4">0</span> / 4 字节</div>
+        </div>
+
+        <div class="dma-channel-card prio-high" id="dma-card-ch5">
+          <div class="dma-ch-badge">High (高优先级)</div>
+          <div class="dma-ch-name">DMA1_CH5 · AD7190 TX</div>
+          <div class="dma-ch-meta">8-bit · 内存递增 · Dummy 0x00</div>
+          <div class="dma-progress-track"><div class="dma-progress-bar" id="dma-bar-ch5" style="width: 0%"></div></div>
+          <div class="dma-ch-stat">待传项 (CNDTR): <span id="dma-cndtr-ch5">0</span> / 4 字节</div>
+        </div>
+
+        <div class="dma-channel-card prio-med" id="dma-card-ch1">
+          <div class="dma-ch-badge">Medium (中等优先级)</div>
+          <div class="dma-ch-name">DMA1_CH1 · LCD SPI1 RX</div>
+          <div class="dma-ch-meta">16-bit · 地址固定 · 丢弃接收值</div>
+          <div class="dma-progress-track"><div class="dma-progress-bar" id="dma-bar-ch1" style="width: 0%"></div></div>
+          <div class="dma-ch-stat">待传项 (CNDTR): <span id="dma-cndtr-ch1">0</span> / 1920 像素</div>
+        </div>
+
+        <div class="dma-channel-card prio-med" id="dma-card-ch2">
+          <div class="dma-ch-badge">Medium (中等优先级)</div>
+          <div class="dma-ch-name">DMA1_CH2 · LCD SPI1 TX</div>
+          <div class="dma-ch-meta">16-bit · 内存递增 · 8行条带数据</div>
+          <div class="dma-progress-track"><div class="dma-progress-bar" id="dma-bar-ch2" style="width: 0%"></div></div>
+          <div class="dma-ch-stat">待传项 (CNDTR): <span id="dma-cndtr-ch2">0</span> / 1920 像素</div>
+        </div>
+      </div>
+
+      <!-- Bus cycle visualization -->
+      <div class="dma-bus-section">
+        <div class="dma-bus-title">
+          <span>DMA1 总线周期仲裁槽 (Arbiter Slot Allocation)</span>
+          <span class="dma-current-owner" id="dma-bus-owner">总线状态：空闲 (IDLE)</span>
+        </div>
+        <div class="dma-bus-slots" id="dma-bus-slots" aria-label="总线时隙动态流水"></div>
+      </div>
+
+      <div class="aiw-actions">
+        <button type="button" class="aiw-btn primary" id="btn-start-lcd">启动 LCD 条带传输 (1920 像素)</button>
+        <button type="button" class="aiw-btn warn" id="btn-trigger-ad7190">并发触发 AD7190 RDY 脉冲</button>
+        <button type="button" class="aiw-btn" id="btn-step-dma">单步总线周期 (Step)</button>
+        <button type="button" class="aiw-btn" id="btn-auto-dma">连续运行</button>
+        <button type="button" class="aiw-btn" id="btn-reset-dma">复位总线</button>
+      </div>
+    </div>
+
+    <!-- 03: 全双工启停与避坑实验 -->
+    <div class="spi-dma-view" id="spi-view-pitfall" role="tabpanel" hidden>
+      <div class="pitfall-selector" role="radiogroup" aria-label="时序实验场景">
+        <button type="button" class="pitfall-choice is-active" data-scenario="correct" role="radio" aria-checked="true">
+          <strong>✅ 规范顺序：先开 RX DMA，后开 TX DMA</strong>
+          <span>RX 接收缓冲区完全就绪，TX 产生时钟后首项准确落入 FIFO</span>
+        </button>
+        <button type="button" class="pitfall-choice" data-scenario="wrong-order" role="radio" aria-checked="false">
+          <strong>❌ 错误顺序：先开 TX DMA，后开 RX DMA</strong>
+          <span>TX 立即激活产生 SCLK，从机返回首字节时 RX 未开启，触发硬件 OVR 溢出</span>
+        </button>
+        <button type="button" class="pitfall-choice" data-scenario="exti-storm" role="radio" aria-checked="false">
+          <strong>⚠️ 边沿陷阱：连续采样未关 EXTI14 直接启动 DMA</strong>
+          <span>PB14 兼作 MISO 与 DOUT/RDY，数据传输位跳变诱发 EXTI 中断风暴与死锁</span>
+        </button>
+      </div>
+
+      <!-- Interactive waveform / status diagram -->
+      <div class="pitfall-display" id="pitfall-display-box">
+        <div class="pitfall-registers" aria-label="SPI 核心状态寄存器">
+          <div class="reg-pill" id="reg-rxne">RXNE: 0</div>
+          <div class="reg-pill" id="reg-txe">TXE: 1</div>
+          <div class="reg-pill" id="reg-bsy">BSY: 0</div>
+          <div class="reg-pill" id="reg-ovr">OVR: 0</div>
+          <div class="reg-pill" id="reg-tc">TCIF: 0</div>
+          <div class="reg-pill" id="reg-exti">EXTI14: EN</div>
+        </div>
+
+        <div class="pitfall-diagram" id="pitfall-canvas-wrap">
+          <div class="pitfall-desc" id="pitfall-desc-text">
+            点击下方“单步执行时序”或“自动演练”，观察硬件寄存器与移位寄存器内部的状态演化。
+          </div>
+        </div>
+      </div>
+
+      <div class="aiw-actions">
+        <button type="button" class="aiw-btn primary" id="btn-pitfall-step">单步执行时序 (Step)</button>
+        <button type="button" class="aiw-btn" id="btn-pitfall-run">自动演练</button>
+        <button type="button" class="aiw-btn" id="btn-pitfall-reset">复位实验</button>
+      </div>
+    </div>
+
+    <!-- Log Panel -->
+    <div class="aiw-log-panel">
+      <div class="aiw-section-title">
+        <span>硬件追踪与事件总线日志</span>
+        <button type="button" class="aiw-btn copy-mini" id="btn-clear-spilog">清空日志</button>
+      </div>
+      <div class="aiw-log" id="spi-dma-log" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
 ## AD7190：SPI2 + DMA 连续采样
 
 ### 初始化与默认参数
