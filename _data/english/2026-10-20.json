@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-20",
+  "sentence": "We should forget about small efficiencies, say about 97% of the time: premature optimization is the root of all evil.",
+  "source": {
+    "author": "Donald E. Knuth",
+    "work": "Structured Programming with go to Statements",
+    "year": "1974",
+    "detail": "发表于 ACM Computing Surveys 第 6 卷第 4 期；紧接着下一句是 \"Yet we should not pass up our opportunities in that critical 3%.\""
+  },
+  "translation": "大约 97% 的时候，我们都应该忘掉那些细枝末节的效率：过早优化是万恶之源。",
+  "grammar": [
+    "句子主干：We（主语）+ should forget about（情态动词 + 谓语短语）+ small efficiencies（宾语）。should 表示建议，“应该”。efficiency 本来常作不可数名词“效率”，这里用复数 efficiencies，指“一处处具体的效率提升点”，所以加了 small 修饰。",
+    "say 作插入语：say 在这里不是“说”，而是“比方说、大约”，插在句中表示后面是个估计数字。say about 97% of the time 整体是时间状语，about 也是“大约”，两个词叠在一起让语气更随意、更口语。",
+    "冒号的用法：冒号后面是一个完整的句子 premature optimization（主语）+ is（系动词）+ the root of all evil（表语），用来解释前半句“为什么要忘掉小效率”。英文里冒号常表示“下面就是原因/解释/结论”，相当于中文的“因为”“也就是说”。"
+  ],
+  "vocab": [
+    {
+      "word": "efficiency",
+      "phonetic": "/ɪˈfɪʃnsi/",
+      "pos": "n.",
+      "meaning": "效率；（复数）提高效率的地方、节省之处",
+      "collocation": "improve efficiency；energy efficiency；cost efficiency",
+      "example": "The new driver improved the system's power efficiency by 20%."
+    },
+    {
+      "word": "premature",
+      "phonetic": "/ˈpremətʃə(r)/（英）/ˌpriːməˈtʃʊr/（美）",
+      "pos": "adj.",
+      "meaning": "过早的，时机未到的",
+      "collocation": "a premature decision；premature death；It's premature to say...",
+      "example": "It's premature to blame the hardware before we check the code."
+    },
+    {
+      "word": "optimization",
+      "phonetic": "/ˌɒptɪmaɪˈzeɪʃn/",
+      "pos": "n.",
+      "meaning": "优化",
+      "collocation": "code optimization；performance optimization；compiler optimization",
+      "example": "Turn off compiler optimization when you debug the interrupt handler."
+    },
+    {
+      "word": "the root of all evil",
+      "phonetic": "/ðə ruːt əv ɔːl ˈiːvl/",
+      "pos": "phrase",
+      "meaning": "万恶之源，一切问题的根源（源自《圣经》“贪财是万恶之根”）",
+      "collocation": "be the root of all evil；the root of the problem",
+      "example": "Some engineers say global variables are the root of all evil."
+    },
+    {
+      "word": "pass up",
+      "phonetic": "/pɑːs ʌp/",
+      "pos": "phrasal v.",
+      "meaning": "错过、放弃（机会）",
+      "collocation": "pass up a chance；pass up an opportunity",
+      "example": "Don't pass up the chance to read good code."
+    }
+  ],
+  "note": "这句话常被只引后半句，但 Knuth 原意并不是“别优化”，而是先找准真正关键的那 3% 再动手，正好对应写 MCU 代码时“先测量、再优化”。小练习：用 premature 造个句，比如 “It's premature to ______ before ______.”"
+}
