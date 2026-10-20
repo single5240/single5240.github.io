@@ -9,6 +9,12 @@
           "weekday": "周一",
           "title": "AI 资讯日报 · 10月19日（周一）",
           "summary": "Codex 第 14 天截至发稿还没公布。Cursor 补记 10/16 的云端 agent 画布和 Environments API。Pro 200 额度下调 10/30 生效，还有 11 天。"
+        },
+        {
+          "date": "2026-10-20",
+          "weekday": "周二",
+          "title": "AI 资讯日报 · 10月20日（周二）",
+          "summary": "Codex 第 14 天可编辑历史消息，第 15 天是直播，没有宣布重置。ChatGPT 上线 Slides 和 GPT-6 Pro 更新。Pro 200 额度下调 10/30 生效，还有 10 天。"
         }
       ]
     },
