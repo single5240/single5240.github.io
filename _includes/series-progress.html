@@ -1,0 +1,165 @@
+{% assign active_series_title = nil %}
+{% assign active_series_url = nil %}
+{% assign active_slugs = nil %}
+{% assign is_custom_series = false %}
+
+{% if page.series %}
+  {% assign series_posts = site.articles | where: 'series', page.series | sort: 'date' %}
+  {% if series_posts.size > 1 %}
+    {% assign is_custom_series = true %}
+    {% assign active_series_title = page.series %}
+    {% assign active_slugs = series_posts | map: 'slug' %}
+  {% endif %}
+{% endif %}
+
+{% if is_custom_series == false %}
+  {% for topic in site.data.topics %}
+    {% if topic.articles contains page.slug %}
+      {% assign active_series_title = topic.title %}
+      {% assign active_series_url = '/topics/' | append: topic.id | append: '.html' | relative_url %}
+      {% assign active_slugs = topic.articles %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if active_slugs and active_slugs.size > 1 %}
+  {% assign total_series_count = active_slugs.size %}
+  {% assign current_series_index = nil %}
+  {% assign prev_slug = nil %}
+  {% assign next_slug = nil %}
+  {% assign last_seen_slug = nil %}
+  {% assign is_next_turn = false %}
+
+  {% for s in active_slugs %}
+    {% if is_next_turn %}
+      {% assign next_slug = s %}
+      {% assign is_next_turn = false %}
+    {% endif %}
+    {% if s == page.slug %}
+      {% assign current_series_index = forloop.index0 %}
+      {% assign prev_slug = last_seen_slug %}
+      {% assign is_next_turn = true %}
+    {% endif %}
+    {% assign last_seen_slug = s %}
+  {% endfor %}
+
+  {% if current_series_index != nil %}
+    {% assign current_series_num = current_series_index | plus: 1 %}
+
+    {% assign prev_post = nil %}
+    {% if prev_slug %}
+      {% assign prev_post = site.articles | where: 'slug', prev_slug | first %}
+    {% endif %}
+
+    {% assign next_post = nil %}
+    {% if next_slug %}
+      {% assign next_post = site.articles | where: 'slug', next_slug | first %}
+    {% endif %}
+
+    {% if include.position == 'bottom' %}
+      <!-- 底部系列路线与下一篇导引 -->
+      <nav class="series-nav series-nav-bottom" aria-label="{{ active_series_title | escape }} 系列阅读路线">
+        <div class="series-bottom-header">
+          <div class="series-bottom-title-group">
+            <span class="series-tag">系列路线</span>
+            <h4>{{ active_series_title | escape }} <small>({{ current_series_num }}/{{ total_series_count }})</small></h4>
+          </div>
+          {% if active_series_url %}
+            <a class="series-all-link" href="{{ active_series_url }}">浏览专题全部文章 ↗</a>
+          {% endif %}
+        </div>
+
+        <div class="series-bottom-grid">
+          {% if prev_post %}
+            <a class="series-step-card is-prev" href="{{ prev_post.url | relative_url }}">
+              <span class="series-step-sub">← 系列上一篇 (第 {{ current_series_num | minus: 1 }} 篇)</span>
+              <strong class="series-step-title">{{ prev_post.title | escape }}</strong>
+            </a>
+          {% else %}
+            <div class="series-step-card is-disabled is-start">
+              <span class="series-step-sub">系列开篇</span>
+              <strong class="series-step-title">当前为本系列第 1 篇</strong>
+            </div>
+          {% endif %}
+
+          {% if next_post %}
+            <a class="series-step-card is-next" href="{{ next_post.url | relative_url }}">
+              <span class="series-step-sub">系列下一篇 (第 {{ current_series_num | plus: 1 }} 篇) →</span>
+              <strong class="series-step-title">{{ next_post.title | escape }}</strong>
+            </a>
+          {% else %}
+            <div class="series-step-card is-disabled is-end">
+              <span class="series-step-sub">🎉 系列完结</span>
+              <strong class="series-step-title">您已读完本系列全部文章</strong>
+            </div>
+          {% endif %}
+        </div>
+      </nav>
+    {% else %}
+      <!-- 顶部紧凑系列上下文与分段进度条 (Steph Ango / Eli Bendersky 风格) -->
+      <nav class="series-nav series-nav-top" aria-label="{{ active_series_title | escape }} 专题阅读进度">
+        <div class="series-nav-header">
+          <div class="series-nav-info">
+            <span class="series-tag">专题系列</span>
+            {% if active_series_url %}
+              <a class="series-title-link" href="{{ active_series_url }}">{{ active_series_title | escape }} <span class="series-arrow" aria-hidden="true">↗</span></a>
+            {% else %}
+              <span class="series-title-static">{{ active_series_title | escape }}</span>
+            {% endif %}
+          </div>
+          <div class="series-nav-status">
+            <span class="series-progress-count">第 <strong>{{ current_series_num }}</strong> / {{ total_series_count }} 篇</span>
+            <details class="series-dropdown" id="series-toc-dropdown">
+              <summary class="series-dropdown-toggle" aria-haspopup="true">
+                <span>系列清单</span>
+                <svg class="series-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </summary>
+              <div class="series-dropdown-panel" role="region" aria-label="{{ active_series_title | escape }} 系列完整目录">
+                <div class="series-dropdown-heading">{{ active_series_title | escape }} · 全部文章</div>
+                <ol class="series-dropdown-list">
+                  {% for s in active_slugs %}
+                    {% assign p = site.articles | where: 'slug', s | first %}
+                    {% if p %}
+                      <li class="series-dropdown-item {% if s == page.slug %}is-active{% endif %}">
+                        <span class="series-item-num">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</span>
+                        {% if s == page.slug %}
+                          <span class="series-item-current" aria-current="page">{{ p.title | escape }} <span class="series-now-badge">阅读中</span></span>
+                        {% else %}
+                          <a class="series-item-link" href="{{ p.url | relative_url }}">{{ p.title | escape }}</a>
+                        {% endif %}
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+                </ol>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="series-bar-container" role="progressbar" aria-valuenow="{{ current_series_num }}" aria-valuemin="1" aria-valuemax="{{ total_series_count }}" aria-label="{{ active_series_title | escape }} 阅读进度条">
+          <div class="series-segments-track">
+            {% for s in active_slugs %}
+              {% assign p = site.articles | where: 'slug', s | first %}
+              {% if p %}
+                {% if s == page.slug %}
+                  <span class="series-segment is-current" aria-current="step" title="当前篇 [{{ forloop.index }}/{{ total_series_count }}]: {{ p.title | escape }}">
+                    <span class="series-segment-inner"></span>
+                  </span>
+                {% elsif forloop.index0 < current_series_index %}
+                  <a href="{{ p.url | relative_url }}" class="series-segment is-completed" title="第 {{ forloop.index }} 篇: {{ p.title | escape }}">
+                    <span class="series-segment-inner"></span>
+                  </a>
+                {% else %}
+                  <a href="{{ p.url | relative_url }}" class="series-segment is-upcoming" title="第 {{ forloop.index }} 篇: {{ p.title | escape }}">
+                    <span class="series-segment-inner"></span>
+                  </a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </nav>
+    {% endif %}
+  {% endif %}
+{% endif %}

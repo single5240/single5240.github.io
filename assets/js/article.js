@@ -2241,6 +2241,27 @@
   }
 
 
+  // 11. 专题/系列阅读导航与目录交互 (Steph Ango & Eli Bendersky 风格)
+  function initSeriesNav() {
+    const dropdown = document.querySelector('#series-toc-dropdown');
+    if (!dropdown) return;
+
+    // 点击页面外部区域时自动收起目录面板
+    document.addEventListener('click', (e) => {
+      if (dropdown.open && !dropdown.contains(e.target)) {
+        dropdown.open = false;
+      }
+    });
+
+    // 按下 ESC 键时收起目录
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dropdown.open) {
+        dropdown.open = false;
+        dropdown.querySelector('summary')?.focus();
+      }
+    });
+  }
+
   // 10. N32G455 三路 SPI 架构与 DMA1 硬件仲裁实验室
   function initSpiDmaSimulator() {
     const root = document.getElementById('spi-dma-demo-app');
@@ -2605,6 +2626,7 @@
     initEcatEsmSimulator,
     initW25q128Simulator,
     initSpiDmaSimulator,
+    initSeriesNav,
   ].forEach((sim) => {
     try {
       sim();
