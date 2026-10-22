@@ -176,3 +176,620 @@ h3 { font-size: 20px; line-height: 1.5; font-weight: 700; }
   .search-input-wrap input { font-size: 16px; }
   .skills-arch-card pre { max-width: 100%; overscroll-behavior-x: contain; }
 }
+
+
+/* ==========================================================================
+   方案 1：工程工作台 / 仪表控制台 (Workbench Console)
+   ========================================================================== */
+.workbench-home {
+  padding-bottom: 70px;
+}
+
+/* 控制台外壳机箱 */
+.workbench-console {
+  margin-top: 32px;
+  margin-bottom: 48px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--panel-bevel), var(--shadow);
+  overflow: hidden;
+  position: relative;
+}
+
+.workbench-console::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--warm) 50%, var(--accent-dark) 100%);
+  opacity: 0.85;
+}
+
+/* 控制台状态顶栏 */
+.workbench-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.025);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+}
+
+:root[data-theme="dark"] .workbench-header {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.workbench-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-dark);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.status-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  animation: status-pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes status-pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.workbench-meta-tags {
+  display: flex;
+  gap: 8px;
+}
+
+.workbench-meta-tags .chip {
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--alt-bg);
+  color: var(--muted);
+}
+
+/* 主面板网格：左侧介绍+指标，右侧仪器示波器 */
+.workbench-hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 36px;
+  padding: 34px 34px 26px;
+  align-items: center;
+}
+
+.workbench-intro {
+  min-width: 0;
+}
+
+.workbench-eyebrow {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent-dark);
+  margin-bottom: 10px;
+}
+
+.workbench-main-title {
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.28;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--ink) 30%, var(--accent-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.workbench-desc {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--body-copy);
+  margin-bottom: 22px;
+}
+
+/* 4 格仪表指标 HUD */
+.workbench-hud-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--alt-bg);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  padding-right: 8px;
+}
+
+.hud-item:last-child {
+  border-right: 0;
+  padding-right: 0;
+}
+
+.hud-num {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--accent-dark);
+  letter-spacing: -0.02em;
+}
+
+.hud-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 4px;
+}
+
+.hud-sub {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* 快捷按钮组 */
+.workbench-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.workbench-actions .button {
+  gap: 8px;
+  font-size: 13px;
+}
+
+.button-arrow {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+
+.button:hover .button-arrow {
+  transform: translate(2px, -2px);
+}
+
+/* 仪器示波器机舱 */
+.workbench-scope-bay {
+  min-width: 0;
+  position: relative;
+}
+
+.scope-bay-frame {
+  border: 1px solid #2d3c45;
+  border-radius: 10px;
+  background: #111a1f;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.2);
+  padding: 12px 14px 12px;
+  position: relative;
+}
+
+.scope-bay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  color: #78d5dc;
+}
+
+.scope-bezel-screws {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.scope-bezel-screws .screw {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34454f;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.scope-title-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.dot-live {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00ffcc;
+  box-shadow: 0 0 6px #00ffcc;
+}
+
+.scope-screen-spec {
+  color: #63707a;
+  letter-spacing: 0.05em;
+}
+
+.scope-bay-body {
+  position: relative;
+  border-radius: 6px;
+  background: #090e12;
+  border: 1px solid rgba(120, 213, 220, 0.2);
+  overflow: visible;
+  padding: 6px;
+}
+
+.scope-bay-body .theme-spectrum-wrap {
+  margin: 0;
+}
+
+.scope-bay-body .robot-stage {
+  height: 120px;
+  margin-bottom: 0;
+}
+
+.scope-bay-body .theme-spectrum {
+  margin-top: 8px;
+}
+
+/* 控制台底部专题频带 */
+.workbench-channel-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+:root[data-theme="dark"] .workbench-channel-bar {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.channel-label {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.workbench-channel-bar .home-topic-links {
+  border-bottom: 0;
+  padding-bottom: 0;
+  gap: 8px;
+}
+
+.topic-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--topic-accent, var(--accent));
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   工程交互项目展台 (2 列工控网格)
+   ========================================================================== */
+.workbench-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.workbench-projects-grid .project-feature {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  gap: 20px;
+  padding: 24px;
+  height: 100%;
+}
+
+.workbench-projects-grid .project-feature + .project-feature {
+  margin-top: 0;
+}
+
+.workbench-projects-grid .project-visual {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workbench-projects-grid .project-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.workbench-projects-grid .project-copy {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.workbench-projects-grid .project-copy h3 {
+  font-size: 21px;
+  margin-bottom: 6px;
+}
+
+.workbench-projects-grid .project-copy p {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--muted);
+  flex-grow: 1;
+}
+
+.workbench-projects-grid .project-copy .text-link {
+  margin: 16px 0 8px;
+}
+
+.workbench-projects-grid .project-notes {
+  margin-top: 12px;
+}
+
+/* ==========================================================================
+   双列主工作区 (Workbench Main Deck: 左文章，右侧栏遥测)
+   ========================================================================== */
+.deck-split-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(290px, 1fr);
+  gap: 36px;
+  align-items: start;
+}
+
+.deck-primary-column {
+  min-width: 0;
+}
+
+.deck-more-articles {
+  margin-top: 20px;
+}
+
+.load-more-btn {
+  width: 100%;
+  padding: 13px 20px;
+  font-weight: 700;
+  font-size: 13.5px;
+  gap: 10px;
+  background: var(--raised-bg);
+}
+
+/* 侧栏遥测面板 */
+.deck-aside-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 96px;
+}
+
+.aside-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 20px;
+  box-shadow: var(--panel-bevel), var(--shadow-small);
+}
+
+.aside-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.aside-badge {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent-dark);
+}
+
+.aside-label {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* 每日思考在侧栏的优化 */
+.daily-quote-box .eyebrow {
+  display: none;
+}
+
+.daily-quote-box .daily-quote-zh {
+  font-size: 14.5px;
+  line-height: 1.75;
+  margin-bottom: 10px;
+}
+
+.daily-quote-box .daily-quote-en {
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* 日常追踪卡片中的条目 */
+.aside-feed-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feed-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--alt-bg);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.feed-item:hover {
+  border-color: var(--accent);
+  background: var(--subtle-bg);
+  transform: translateY(-1.5px);
+}
+
+.feed-tag {
+  grid-column: 1 / -1;
+  font-size: 10.5px;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--accent-dark);
+  font-weight: 600;
+}
+
+.feed-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.feed-arrow {
+  color: var(--accent-dark);
+  font-size: 12px;
+}
+
+/* 常用小工具卡片 */
+.aside-text {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.aside-tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.aside-tools-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--alt-bg);
+  border: 1px solid var(--line);
+  transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+
+.aside-tools-list a:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  background: var(--soft);
+}
+
+.aside-more-link {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+/* ==========================================================================
+   响应式断点适配
+   ========================================================================== */
+@media (max-width: 980px) {
+  .workbench-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 26px 20px;
+  }
+  .workbench-projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .deck-split-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .deck-aside-column {
+    position: static;
+  }
+}
+
+@media (max-width: 620px) {
+  .workbench-console {
+    margin-top: 18px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+  }
+  .workbench-header {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .workbench-hero-grid {
+    padding: 18px 14px;
+    gap: 20px;
+  }
+  .workbench-hud-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 12px;
+  }
+  .hud-item {
+    border-right: 0;
+  }
+  .hud-item:nth-child(1),
+  .hud-item:nth-child(2) {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+  }
+  .workbench-channel-bar {
+    padding: 12px 14px;
+  }
+  .workbench-actions {
+    flex-direction: column;
+  }
+  .workbench-actions .button {
+    width: 100%;
+    min-height: 44px;
+  }
+  .aside-card {
+    padding: 16px 14px;
+  }
+}

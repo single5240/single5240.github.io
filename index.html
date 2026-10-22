@@ -4,39 +4,219 @@ title: 技术笔记与实验室
 description: single5240 的嵌入式开发、Linux 与 Qt 实践笔记，以及可以直接操作的项目演示。
 section: home
 ---
-<main class="home" id="main-content">
+<main class="home workbench-home" id="main-content">
   <div id="top"></div>
-  <section class="home-section" id="articles" aria-labelledby="articles-title">
-    <div class="section-heading">
-      <h1 id="articles-title">笔记</h1>
-      <a class="text-link" href="{{ '/articles/index.html' | relative_url }}">归档与搜索 ↗</a>
-    </div>
-    {% include theme-spectrum.html %}
-    <nav class="home-topic-links" aria-label="文章专题">
-      {% for topic in site.data.topics %}
-      <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}">{{ topic.title }} <span>{{ topic.articles.size }}</span></a>
-      {% endfor %}
-    </nav>
-    <h2 class="visually-hidden">文章列表</h2>
-    {% assign posts = site.articles | sort: 'date' | reverse %}
-    {% for post in posts %}{% include article-item.html article=post %}{% endfor %}
-  </section>
-  <section class="home-section" aria-labelledby="projects-title">
-    <div class="section-heading"><h2 id="projects-title">项目</h2><a class="text-link" href="{{ '/projects/index.html' | relative_url }}">全部项目 ↗</a></div>
-    {% for project in site.data.projects %}{% include project-card.html project=project %}{% endfor %}
-  </section>
-  <section class="home-section daily-section" id="daily-reading" aria-labelledby="daily-title">
-    <div class="section-heading"><h2 id="daily-title">日常</h2><a class="text-link" href="{{ '/daily/index.html' | relative_url }}">全部记录 ↗</a></div>
-    <div class="daily-grid">
-      <div>{% include daily-quote.html %}</div>
-      <div class="daily-links">
-        {% assign english_days = site.english | sort: 'day' | reverse %}
-        {% assign latest = english_days.first %}
-        {% assign entry = site.data.english[latest.day] %}
-        {% if entry %}<a href="{{ latest.url | relative_url }}"><span class="eyebrow">每日英语 · {{ latest.day }}</span><strong lang="en">{{ entry.sentence | escape }}</strong><span aria-hidden="true">↗</span></a>{% endif %}
-        {% assign latest_news = site.data.ai_news.weeks.first.days.last %}
-        {% if latest_news %}<a href="{{ '/ai-news/' | append: latest_news.date | append: '.html' | relative_url }}"><span class="eyebrow">AI 资讯</span><strong>最新一期 {{ latest_news.date }}</strong><span aria-hidden="true">↗</span></a>{% endif %}
+
+  <!-- 1. 工作台主仪表控制台 Hero (Workbench Master Console) -->
+  <section class="workbench-console" aria-labelledby="workbench-title">
+    <div class="workbench-header">
+      <div class="workbench-status-badge">
+        <span class="status-pulse-dot" aria-hidden="true"></span>
+        <span>ONLINE / SYS: READY</span>
       </div>
+      <div class="workbench-meta-tags">
+        <span class="chip">N32G455 / STM32</span>
+        <span class="chip">Baremetal C99</span>
+        <span class="chip">Web Simulators</span>
+      </div>
+    </div>
+
+    <div class="workbench-hero-grid">
+      <!-- 左侧：工作台介绍与核心度量 HUD -->
+      <div class="workbench-intro">
+        <div class="workbench-eyebrow">LABORATORY & WORKBENCH</div>
+        <h1 id="workbench-title" class="workbench-main-title">
+          硬件驱动、底层时序<br>与 <span class="text-gradient">Web 交互实验室</span>
+        </h1>
+        <p class="workbench-desc">
+          记录真实单片机裸机架构、DMA 无锁队列、Flash 掉电安全存储与仪器 UI 设计；并在浏览器中 1:1 复刻硬件实验台。
+        </p>
+
+        <!-- 4 格仪表指标 HUD (Metrics HUD) -->
+        <div class="workbench-hud-grid">
+          <div class="hud-item">
+            <span class="hud-num">{{ site.articles.size }}</span>
+            <span class="hud-label">深度笔记</span>
+            <span class="hud-sub">实战复盘 / 源码</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-num">{{ site.data.projects.size }}</span>
+            <span class="hud-label">在线项目</span>
+            <span class="hud-sub">带 Web 仿真操作</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-num">16</span>
+            <span class="hud-label">Agent Skills</span>
+            <span class="hud-sub">驱动/时序自动化</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-num">8+</span>
+            <span class="hud-label">工程工具</span>
+            <span class="hud-sub">CRC/字模/HardFault</span>
+          </div>
+        </div>
+
+        <!-- 快捷操作按钮组 -->
+        <div class="workbench-actions">
+          <a class="button primary" href="{{ '/projects/n32g455-tensile/' | relative_url }}">
+            <span>数显拉力计仿真</span>
+            <span class="button-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="button" href="{{ '/tools/index.html' | relative_url }}">
+            <span>在线工具箱</span>
+            <span class="button-arrow" aria-hidden="true">↗</span>
+          </a>
+          <a class="button" href="{{ '/articles/index.html' | relative_url }}">
+            <span>归档与搜索</span>
+            <span class="button-arrow" aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 右侧：仪器示波器显示屏视窗与伴读机器人 (Instrument Scope Bay) -->
+      <div class="workbench-scope-bay">
+        <div class="scope-bay-frame">
+          <div class="scope-bay-header">
+            <div class="scope-bezel-screws" aria-hidden="true">
+              <span class="screw"></span>
+              <span class="screw"></span>
+            </div>
+            <div class="scope-title-tag">
+              <span class="dot-live" aria-hidden="true"></span>
+              <span>DSO-VIRTUAL OSCILLOSCOPE</span>
+            </div>
+            <div class="scope-screen-spec" aria-hidden="true">
+              <span>TIME: 2.0ms/DIV</span>
+            </div>
+          </div>
+
+          <div class="scope-bay-body">
+            {% include theme-spectrum.html %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部：专题频带切换 (Topic Channel Selector) -->
+    <div class="workbench-channel-bar">
+      <span class="channel-label">专题频段:</span>
+      <nav class="home-topic-links" aria-label="文章专题">
+        {% for topic in site.data.topics %}
+        <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}" style="--topic-accent: {{ topic.color | default: 'var(--accent)' }}">
+          <span class="topic-dot" aria-hidden="true"></span>
+          {{ topic.title }}
+          <span class="topic-count">{{ topic.articles.size }}</span>
+        </a>
+        {% endfor %}
+      </nav>
+    </div>
+  </section>
+
+  <!-- 2. 交互实验项目展台 (Interactive Bench Demos) -->
+  <section class="home-section workbench-demos-section" aria-labelledby="demos-title">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">INTERACTIVE LAB & PROJECTS</div>
+        <h2 id="demos-title">工程交互展台</h2>
+      </div>
+      <a class="text-link" href="{{ '/projects/index.html' | relative_url }}">全部项目 ↗</a>
+    </div>
+
+    <div class="workbench-projects-grid">
+      {% for project in site.data.projects %}
+        {% include project-card.html project=project %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 3. 双列主工作区：左侧最新工程笔记 + 右侧日常遥测/知识侧栏 -->
+  <section class="home-section workbench-main-deck" aria-labelledby="articles-title">
+    <div class="deck-split-layout">
+      <!-- 左列：最新实战笔记流 (Engineering Field Notes) -->
+      <div class="deck-primary-column">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">FIELD NOTES & RESEARCH</div>
+            <h2 id="articles-title">最新工程笔记</h2>
+          </div>
+          <a class="text-link" href="{{ '/articles/index.html' | relative_url }}">归档与搜索 ↗</a>
+        </div>
+
+        <div class="deck-articles-list">
+          {% assign posts = site.articles | sort: 'date' | reverse %}
+          {% for post in posts limit: 8 %}
+            {% include article-item.html article=post %}
+          {% endfor %}
+        </div>
+
+        {% if site.articles.size > 8 %}
+        <div class="deck-more-articles">
+          <a class="button load-more-btn" href="{{ '/articles/index.html' | relative_url }}">
+            <span>进入归档库查看全部 {{ site.articles.size }} 篇笔记</span>
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- 右列：遥测面板与日常晨读 (Telemetry & Daily Deck) -->
+      <aside class="deck-aside-column" aria-labelledby="telemetry-aside-title">
+        <h2 id="telemetry-aside-title" class="visually-hidden">日常记录与开发工具</h2>
+
+        <!-- 每日晨读卡片 -->
+        <div class="aside-card daily-quote-box">
+          <div class="aside-card-head">
+            <span class="aside-badge">DAILY THOUGHT</span>
+            <span class="aside-label">每日思考</span>
+          </div>
+          {% include daily-quote.html %}
+        </div>
+
+        <!-- 每日英语与 AI 资讯卡片 -->
+        <div class="aside-card daily-feeds-box">
+          <div class="aside-card-head">
+            <span class="aside-badge">TELEMETRY</span>
+            <span class="aside-label">日常追踪</span>
+          </div>
+          <div class="aside-feed-links">
+            {% assign english_days = site.english | sort: 'day' | reverse %}
+            {% assign latest = english_days.first %}
+            {% assign entry = site.data.english[latest.day] %}
+            {% if entry %}
+            <a class="feed-item" href="{{ latest.url | relative_url }}">
+              <span class="feed-tag">每日英语 · {{ latest.day }}</span>
+              <strong lang="en" class="feed-title">{{ entry.sentence | escape }}</strong>
+              <span class="feed-arrow" aria-hidden="true">↗</span>
+            </a>
+            {% endif %}
+
+            {% assign latest_news = site.data.ai_news.weeks.first.days.last %}
+            {% if latest_news %}
+            <a class="feed-item" href="{{ '/ai-news/' | append: latest_news.date | append: '.html' | relative_url }}">
+              <span class="feed-tag">AI 资讯</span>
+              <strong class="feed-title">最新一期 {{ latest_news.date }}</strong>
+              <span class="feed-arrow" aria-hidden="true">↗</span>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 快速在线工具箱小工具卡片 -->
+        <div class="aside-card tools-quick-box">
+          <div class="aside-card-head">
+            <span class="aside-badge">QUICK UTILITIES</span>
+            <span class="aside-label">嵌入式小工具</span>
+          </div>
+          <p class="aside-text">无需安装调试助手，在浏览器直接完成嵌入式高频计算：</p>
+          <div class="aside-tools-list">
+            <a href="{{ '/tools/index.html#radix' | relative_url }}"><span>⚡ 进制与字节序转换</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#modbus' | relative_url }}"><span>🔍 CRC16 / Modbus 校验</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#hardfault' | relative_url }}"><span>💥 HardFault 故障解码</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#rgb565' | relative_url }}"><span>🎨 RGB565 / 字模生成</span><span aria-hidden="true">→</span></a>
+          </div>
+          <a class="aside-more-link" href="{{ '/tools/index.html' | relative_url }}">打开完整工具箱 ↗</a>
+        </div>
+      </aside>
     </div>
   </section>
 </main>
