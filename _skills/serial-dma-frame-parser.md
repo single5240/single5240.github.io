@@ -2,7 +2,7 @@
 layout: skill
 title: 串口 DMA 环形接收与协议帧拆包状态机 (serial-dma-frame-parser)
 skill_id: serial-dma-frame-parser
-description: UART/RS-485/DMX512/Modbus RTU 串口 IDLE+DMA 环形缓冲区接收、带帧内超时的状态机拆包、短帧/断帧/粘包防御与半双工 DE/RE 方向切换时序。
+description: 用 IDLE 和 DMA 接收串口数据，按状态机拆帧，处理断帧、粘包和 RS-485 收发切换。
 category: protocols-debug
 category_label: 通信协议与硬件联调
 scope: global
@@ -26,13 +26,13 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`protocols-debug`
 - **使用范围 (Scope)**：`global`（全平台 MCU 通用，涵盖 UART / RS-232 / RS-485 / Modbus RTU / DMX512）
-- **核心设计目标**：ISR 零协议解析负担、零动态内存、天然免疫粘包（Back-to-Back Frames）/ 断帧（Fragmented Bytes）/ 伪帧头（False Header Inside Payload）与半双工尾字节截断。
+- **设计目标**：ISR 只搬运数据，主循环解析协议，缓冲区静态分配。拆包状态机需要处理粘包、断帧和载荷中的伪帧头，半双工发送需要等待尾字节发完。
 
-## 2. 四大核心场景架构准则
+## 2. 接收、拆包与半双工发送
 
 ### 2.1 `UART IDLE + DMA Circular` 双游标搬运模型
 
@@ -49,14 +49,14 @@ description: >-
   1. **帧内字节超时（Inter-Byte Timeout）**：若状态机停留在非 `SYNC_HEAD` 状态且超过 `T_timeout`（如 `20 ms`）未收齐剩余字节，自动复位状态机并丢弃残帧，防止断帧导致下一帧合法报文被吞。
   2. **CRC 失败滑动重同步**：若帧头命中但最终 CRC 校验失败（说明帧头字节恰好是上一帧残片里的载荷数据），不要整包丢弃全部已收字节，应从帧头下一字节重新扫描 `SYNC_HEAD`。
 
-### 2.3 DMX512 协议接收与短帧安全发布法则
+### 2.3 DMX512 协议接收与短帧发布条件
 
 - **Break + MAB 帧同步**：利用 UART 帧错误标志（`FE` Framing Error + 接收数据为 `0x00`）识别 `>= 88 μs` 的 `BREAK` 低电平脉冲，随后第 1 个正常字节为 `Start Code`（标准调光帧为 `0x00`），后续为 `Slot 1..512`（250 kbps, 8N2）。
-- **短帧发布铁律**：DMX 控台允许发送少于 512 通道的短帧（Short Frame）。**不得要求必须收满 513 字节才发布数据**；当检测到下一个 `BREAK` 或帧空闲超时，只要已收到合法 `Start Code == 0x00` 且已接收通道数 ≥ 本灯具所需的目标起始通道范围，即刻将双缓冲中的完整快照原子发布给调光层；若在中途发生 `ORE/NE` 错误或不足本设备通道数，则丢弃本帧保持上一帧输出，绝不把半帧残缺数据直接写向 PWM！
+- **短帧发布条件**：DMX 控台允许发送少于 512 通道的短帧（Short Frame）。**不得要求必须收满 513 字节才发布数据**；当检测到下一个 `BREAK` 或帧空闲超时，只要已收到合法 `Start Code == 0x00` 且已接收通道数 ≥ 本灯具所需的目标起始通道范围，即刻将双缓冲中的完整快照原子发布给调光层；若在中途发生 `ORE/NE` 错误或不足本设备通道数，则丢弃本帧保持上一帧输出，绝不把半帧残缺数据直接写向 PWM！
 
 ### 2.4 半双工 RS-485 `DE/RE` 方向切换与 Modbus 3.5T 边界
 
-- **发送切接收铁律（等待 `TC` 而非 `TXE`）**：
+- **发送完成后切回接收（等待 `TC` 而非 `TXE`）**：
   - `TXE=1`（或 DMA TX 完成）仅代表最后一个字节刚送入移位寄存器，此时停止位尚未从引脚发出！
   - **必须在 `USART_FLAG_TC`（Transmission Complete）置位后**，才可将 RS-485 `DE/RE` 引脚拉低切回接收态，否则最后一个字节（通常是 CRC 高字节）会被物理截断。
 - **硬件异常自愈（`ORE / FE / NE`）**：
@@ -70,7 +70,7 @@ description: >-
 - [ ] **长度字段防缓冲区溢出**：状态机解析出 `LEN` 字段后，必须立即校验 `LEN >= MIN_LEN && LEN <= MAX_PAYLOAD_SIZE`；越界立即拒绝并退回 `SYNC_HEAD`，严禁按未校验的 `LEN` 继续向 `payload[]` 写入。
 - [ ] **上电 `DE/RE` 默认接收态**：RS-485 控制脚初始化时先写低电平（接收态）再配输出模式，防止多机总线上电瞬间同时抢占驱动器拉死总线。
 
-## 4. 验证与调试方法 (Verification)
+## 4. 验证方法
 
 1. **粘包与断帧压力测试**：
    - 上位机一次发送 3 帧首尾相连的合法报文（粘包），验证解析计数 `+3`；

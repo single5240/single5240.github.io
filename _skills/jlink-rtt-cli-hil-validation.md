@@ -2,7 +2,7 @@
 layout: skill
 title: J-Link RTT 表驱动 CLI 与板级故障注入自测 (jlink-rtt-cli-hil-validation)
 skill_id: jlink-rtt-cli-hil-validation
-description: 基于 J-Link SEGGER RTT 的零串口占用表驱动 CLI、DWT 主循环/栈水位性能探针与非阻塞板级故障注入（HIL）自动化验收。
+description: 通过 J-Link RTT 收发调试命令，记录主循环耗时与栈水位，并分步执行板级故障注入测试。
 category: protocols-debug
 category_label: 通信协议与硬件联调
 scope: global
@@ -26,13 +26,13 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`protocols-debug`
 - **使用范围 (Scope)**：`global`（全平台 Cortex-M 通用，提炼自 N32G455 量产验证工程）
 - **适用硬件与工具**：ARM Cortex-M0/M3/M4/M7 + J-Link 调试器（SWD 接口）+ SEGGER RTT 组件，无需占用任何硬件 UART 引脚。
 
-## 2. 核心设计模式 (Core Patterns)
+## 2. 实现方式
 
 1. **零动态内存、单层表驱动 RTT CLI (`app_rtt_cli`)**：
    - 在主循环中非阻塞轮询 `SEGGER_RTT_ReadNoLock(0, ...)`（每次最多读 32 字节），组装以 `\r` 或 `\n` 结尾的命令行（静态缓冲 128B，超长行自动丢弃防溢出）。
@@ -40,14 +40,14 @@ description: >-
    - 每次响应前置打印系统运行毫秒时间戳 `[HH:MM:SS.mmm]`，便于上位机日志对齐。
 2. **DWT 周期级主循环耗时与硬件健康度探针 (`stat` 命令)**：
    - 在 `main.c` 的 `while(1)` 首尾调用 `AppRttCli_NoteMainLoopStart()` 与 `AppRttCli_NoteMainLoopEnd()`，利用 Cortex-M `DWT->CYCCNT` 硬件周期计数器统计主循环**最小/最大/平均执行耗时与调度周期**。
-   - 结合栈涂漆（Stack Painting）水位检测、IWDG 标志以及高频外设（如 AD7190 `rdy/dma/error/overrun/recovery`）快照差值，一键输出压力测试期间的实时性证据。
+   - 结合栈涂漆（Stack Painting）水位检测、IWDG 标志以及高频外设（如 AD7190 `rdy/dma/error/overrun/recovery`）快照差值，输出压力测试期间的耗时和计数器记录。
 3. **编译宏隔离的协作式板级故障注入状态机 (`*_VALIDATION_ENABLE`)**：
    - 破坏性或大体积验证代码（批量写入、持久化边界软复位注入、擦除超时/读回错误注入）置于独立模块（如 `app_record_store_test.c`），由 `#define APP_XXX_VALIDATION_ENABLE 0` 默认关闭。
    - **严禁在 RTT 命令回调里用死循环跑完长耗时测试**：RTT 命令仅启动测试状态机并返回 `PENDING`；由主循环每轮推进一小步，完成后打印确定性的 `PASS: <case>` 或 `FAIL: <case> reason=...` 终态日志。
 
 > 可直接复用的表驱动 CLI 与 DWT 探针模板见 [examples/rtt_cli_template.c](#example-rtt-cli)；板级 HIL 验收流程与持久化边界故障注入规范见 [references/hil-validation-protocol.md](#ref-hil-protocol)。
 
-## 3. 核心执行流程 (Step-by-Step Workflow)
+## 3. 操作步骤
 
 1. **接入 SEGGER RTT 与非阻塞 CLI**：
    - 在 `SysTick` 初始化后调用 `SEGGER_RTT_Init()` 与 `AppRttCli_Init()`。
@@ -62,11 +62,11 @@ description: >-
 
 ## 4. 关键安全与并发约束检查清单
 
-- [ ] **生产固件零污染**：交付前必须将 `*_VALIDATION_ENABLE` 恢复为 `0` 并重新全量编译，确认 `record_test` 等命令仅返回 `no support now`，且验证代码的 `Code/ZI` 占用已剥离。
+- [ ] **交付前关闭验证代码**：交付前必须将 `*_VALIDATION_ENABLE` 恢复为 `0` 并重新全量编译，确认 `record_test` 等命令仅返回 `no support now`，且验证代码的 `Code/ZI` 占用已剥离。
 - [ ] **破坏性擦写双门禁**：任何会擦除 Flash 分区的测试命令（如 `cleanup`）执行前，必须在文档和交互中确认目标分区无用户生产数据并已获擦写授权。
 - [ ] **命令接受 != 测试通过**：上位机或测试人员发送异步验证命令后，必须等待终态日志 `PASS:` / `FAIL:`，且检查 `stat` 中 `iwdg_reset == 0`、`adc_overrun == 0`、`adc_recovery == 0`。
 
-## 5. 验证与调试方法 (Verification)
+## 5. 验证方法
 
 1. **基线健康检查命令序列**：
    ```text

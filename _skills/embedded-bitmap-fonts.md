@@ -2,7 +2,7 @@
 layout: skill
 title: 嵌入式 LCD/OLED 点阵字库诊断、子集裁剪与生成 (embedded-bitmap-fonts)
 skill_id: embedded-bitmap-fonts
-description: 嵌入式 LCD/OLED/TFT 点阵字库诊断、子集裁剪与生成，涵盖中文 BDF 原生点阵、基线防裁剪、RGB565 条带局部渲染及 ARMCC 5 UTF-8 字符串转义。
+description: 生成和裁剪嵌入式点阵字库，排查中文笔画粘连、基线偏移、裁切和 ARMCC 5 字符串编码问题。
 category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global

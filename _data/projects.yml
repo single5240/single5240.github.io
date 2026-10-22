@@ -1,7 +1,7 @@
 - id: tensile
   title: 数显式拉力计
-  subtitle: 从固件逻辑到可操作的界面演示
-  description: 在浏览器中体验 240×320 仪表界面，探索测试模式、按键操作、记录与双层校正。
+  subtitle: 240×320 仪表界面与按键操作
+  description: 在浏览器中操作拉力计界面，切换测试模式、保存记录并演示双层校正。
   url: /projects/n32g455-tensile/
   image: /assets/images/tensile-preview.svg
   image_alt: 数显式拉力计界面与采集流程示意图
@@ -21,8 +21,8 @@
   boundary: 力值由滑块模拟，不是真实计量结果。
 - id: my-skills
   title: 嵌入式与研发 AI Skills 库
-  subtitle: 一级按技术方向划分、内部按 Scope 管理的 16 项实战 Agent 技能
-  description: 涵盖单片机裸机驱动（AD7190、ST7789 DMA 条带刷屏、NOR Flash 掉电安全存储、EEPROM 双槽标定、表驱动状态机）、通信联调（J-Link RTT HIL、串口 DMA 拆包、HardFault 解码）与通用工程基建，完整收录 SKILL.md、参考规范与可复用 C99/脚本源码。
+  subtitle: 按技术方向分类的 16 个 Agent Skills
+  description: 收集外设驱动、存储、状态机、通信和调试任务的 Skill，提供使用说明、检查清单与参考代码。
   url: /projects/my-skills/index.html
   image: /assets/images/skills-preview.svg
   image_alt: 嵌入式与通用研发 AI Skills 中心库目录架构示意图
@@ -30,11 +30,11 @@
   tags: [AI Skills, 单片机裸机, 协议联调, 工程基建]
   articles:
     - n32g455-spi-dma-guide
-  boundary: 全部 16 个 Skill 均含完整触发说明、检查清单与配套参考代码。
+  boundary: 使用前需核对适用芯片、工具链和项目约束。
 - id: embedded-tools
   title: 嵌入式开发在线工具箱
-  subtitle: 零依赖纯前端的五合一硬件与协议联调工作台
-  description: 集成 32-bit 进制/字节序/IEEE-754 浮点与 Q15/Q31 定点转换、CRC8/16/32 全家桶与 Modbus RTU 帧构造/拆包、32-bit 寄存器位域可视化与 Cortex-M HardFault (CFSR/HFSR) 解码、24-bit ADC 换算与定时器分频、RGB565 调色板与 1-bit 字模预览编辑器。
+  subtitle: 进制、CRC、寄存器、ADC 与字模计算
+  description: 提供进制和字节序转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 解码、ADC 换算、定时器分频及 RGB565 字模工具。
   url: /tools/index.html
   image: /assets/images/tools-preview.svg
   image_alt: 嵌入式开发在线工具箱五合一模块示意图
@@ -44,11 +44,11 @@
     - lcd-rgb565-color-troubleshooting
     - embedded-1bit-bitmap-font-pipeline
     - n32g455-spi-dma-guide
-  boundary: 纯浏览器本地计算，不上传任何报文或工程数据，支持一键复制 C99 代码。
+  boundary: 计算在浏览器本地完成，可复制生成的 C99 代码。
 - id: retro-robot
   title: 复古示波器伴读小机器人
-  subtitle: 原生 Canvas 物理动效与 18 种硬件波形实时发生器
-  description: 零外部依赖的纯原生前端硬件伴读工作台。集成 18 种经典电子工程波形平滑渲染引擎（正弦/马鞍波/心电/UART/I2C/CAN/PWM/眼图等）、Hooke 弹簧阻尼视线追踪物理引擎、三层嵌入式语料趣味对话系统，以及离开视口后无缝停靠右下角的悬浮伴读 Dock。
+  subtitle: 18 种模拟波形与鼠标跟随动画
+  description: 用 Canvas 和 SVG 绘制示波器与小机器人。可切换波形、调节增益和噪声，点击机器人查看预设对话；阅读文章时可停靠右下角。
   url: /projects/retro-robot/index.html
   image: /assets/images/robot-preview.svg
   image_alt: 复古示波器伴读小机器人交互实验台示意图
@@ -59,4 +59,4 @@
     - baremetal-firmware-scheduler-and-refactoring
     - c99-table-driven-state-machine
     - st7789-command-and-pixel-dma
-  boundary: 纯原生 Canvas 2D 与 SVG 实时物理计算，零第三方库依赖，支持全端手势交互与波形控制。
+  boundary: 波形由浏览器中的函数生成，页面显示的频率和电压是示例参数。

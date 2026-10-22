@@ -2,7 +2,7 @@
 layout: skill
 title: 外部 NOR Flash 掉电安全记录存储与稀疏迁移 (nor-flash-powerfail-record-store)
 skill_id: nor-flash-powerfail-record-store
-description: 外部 SPI NOR Flash（如 W25Q128）掉电安全 64B 定长记录存储、两阶段提交、单条原位墓碑删除、3 扇区世代控制环与稀疏扇区非阻塞迁移。
+description: 在 SPI NOR Flash 中保存定长记录，处理两阶段提交、单条删除、逻辑清空和稀疏扇区迁移。
 category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
@@ -28,13 +28,13 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`mcu-baremetal`
 - **使用范围 (Scope)**：`global`（全平台通用，提炼自 N32G455 + W25Q128 量产项目）
 - **适用硬件与场景**：SPI NOR Flash（W25Q128 / GD25Qxx 等，页 256B、扇区擦除 4 KiB），裸机协作式主循环（含 1 s 独立看门狗 IWDG），严禁 `malloc/free` 动态内存。
 
-## 2. 核心架构法则 (Core Architecture Principles)
+## 2. 存储结构与更新规则
 
 1. **驱动与业务严格分层**：
    - `DRV` 层（如 `drv_w25q128`）只负责 SPI 时序、JEDEC ID 校验、256B 页边界拆分、4 KiB 对齐检查，以及**非阻塞启动 + 单次 `BUSY(WIP)` 查询接口**（`PageProgramStart` / `SectorEraseStart` / `PollOperation`）。
@@ -52,7 +52,7 @@ description: >-
 
 > 详细的 64B 槽字节布局、扇区状态转移表与 7 类断电位置恢复矩阵请参阅 [references/slot-layout-and-compaction.md](#ref-slot-layout)。
 
-## 3. 核心执行流程 (Step-by-Step Workflow)
+## 3. 操作步骤
 
 1. **首次擦写前安全门禁**：
    - 检查目标分区地址范围是否与固件代码、升级区重叠；首次上板擦写前必须先**只读检查目标分区现有内容与状态寄存器写保护位**，未经用户确认不得自动把非空历史分区当作空白擦除。
@@ -74,7 +74,7 @@ description: >-
 - [ ] **保存与归零联锁**：测试完成瞬间冻结不可变快照（`Snapshot`）与 `completionToken` 去重令牌；保存事务进行中锁存结果，失败时保留快照供重试，不因后台擦除暂时 `BUSY` 记为永久失败。
 - [ ] **单事务所有者**：保存、列表分页扫描、单条删除、稀疏迁移与后台擦除共享同一个记录服务状态机，严禁并发访问 SPI Flash。
 
-## 5. 验证与调试方法 (Verification)
+## 5. 验证方法
 
 1. **编译与资源审计**：
    - 检查 `Code / RO-data / RW-data / ZI-data` 增量，确认列表仅缓存当前页（如 5 条）及最多 21 条迁移槽位清单，且栈涂漆最低余量充足（建议 `> 512 B`）。

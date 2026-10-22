@@ -2,7 +2,7 @@
 layout: skill
 title: 单片机片内 Flash 掉电安全参数存储 (mcu-flash-param-storage)
 skill_id: mcu-flash-param-storage
-description: 单片机片内 Flash（Internal Flash）双页乒乓掉电安全参数存储、页内定长槽追加磨损均衡、同 Bank 擦写 CPU 取指停顿（Stall）中断评估与链接脚本边界保护。
+description: 在片内 Flash 中用双页追加保存参数，检查擦写停顿、掉电恢复和链接脚本中的分区边界。
 category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
@@ -26,7 +26,7 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`mcu-baremetal`
 - **使用范围 (Scope)**：`global`（适用于 STM32、GD32、N32G455、NXP 等无独立数据 EEPROM 或使用片内 Flash 模拟 EEPROM 的 MCU）
@@ -34,7 +34,7 @@ description: >-
   1. **同体取指停顿（Bus Stall）**：当 CPU 从同一片内 Flash Bank 执行代码并对其发起页擦除（`20~40 ms`）或字编程（`20~50 μs`）时，**总线会挂起 CPU 取指（包括中断向量表读取和 ISR 执行）**，直到该次物理操作完成！
   2. **擦除粒度大、寿命较短**：片内 Flash 最小擦除单元通常为 `1 KiB / 2 KiB / 4 KiB`（或大扇区 `16~128 KiB`），擦写寿命多为 `10,000 ~ 100,000` 次。
 
-## 2. 核心设计模式 (Core Architecture)
+## 2. 实现方式
 
 1. **链接脚本（`.sct` / `.ld`）硬隔离防代码覆盖**：
    - 将片内 Flash 末尾的 **2 个独立最小擦除页（Page A 与 Page B）** 划为参数专用区，并**同步从工程 `IROM1` Size（或 `.ld` 的 `FLASH LENGTH`）中扣除**，防止固件膨胀后静默覆盖参数区或烧录时误擦除。
@@ -50,7 +50,7 @@ description: >-
 
 > 双页乒乓追加布局、状态转移与片内 Flash 编程加锁模板详见 [references/internal-flash-ab-layout.md](#ref-internal-flash)。
 
-## 3. 核心执行流程 (Step-by-Step Workflow)
+## 3. 操作步骤
 
 1. **核查芯片手册 Flash 物理参数**：
    - 确认片内 Flash 页/扇区大小、擦除态值（通常 `0xFF`）、最小编程位宽（16-bit / 32-bit / 64-bit）、单页擦除最大耗时 `t_ERASE`、以及编程前是否要求 `HSI` 开启。
@@ -65,10 +65,10 @@ description: >-
 ## 4. 关键安全与并发约束检查清单
 
 - [ ] **禁止指针直接强转未对齐结构体**：按 32-bit Word 编程源缓冲时，源 RAM 缓冲区必须使用 `__align(4)` 或 `uint32_t` 数组承载，防止 Cortex-M0 或编译优化产生非对齐访存异常。
-- [ ] **擦写前清标志铁律**：STM32/N32G45x 的 Flash 控制器若残留上一次的 `PGERR`（对非 `0xFFFF` 地址编程触发），后续所有编程指令都会静默失败，每次 `Unlock` 后必须先清除全部状态位。
+- [ ] **擦写前清除状态标志**：STM32/N32G45x 的 Flash 控制器若残留上一次的 `PGERR`（对非 `0xFFFF` 地址编程触发），后续所有编程指令都会静默失败，每次 `Unlock` 后必须先清除全部状态位。
 - [ ] **函数防跑飞保护**：永远不要在正常代码流中裸留 `FLASH_Unlock()`；低压掉电瞬间 CPU PC 指针可能跑飞，保持 `FLASH_Lock()` 是防止片内程序区被意外改写的最后防线。
 
-## 5. 验证与调试方法 (Verification)
+## 5. 验证方法
 
 1. **链接边界核对**：编译后打开 `.map` 文件，确认 `Execution Region ER_IROM1` 的最高使用地址小于 `PARAM_FLASH_PAGE_A_ADDR`。
 2. **换页与掉电恢复验证**：

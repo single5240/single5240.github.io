@@ -2,7 +2,7 @@
 layout: skill
 title: Clash Verge AI-Code 分流与 TUN 规则模式排障 (clash-tun-antigravity)
 skill_id: clash-tun-antigravity
-description: Clash Verge 的 AI-Code 前置分流规则配置（Antigravity / Cursor / Codex / Copilot），以及通过 TUN 虚拟网卡加规则模式修复直连超时与国内/GitHub 分流冲突。
+description: 配置 Clash Verge 的 AI-Code 分流，排查 TUN 与规则模式下的连接超时和路由问题。
 category: common
 category_label: 通用与工程基建
 scope: project

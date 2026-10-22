@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: 嵌入式开发在线工具箱
-description: 纯前端零依赖的嵌入式联调工作台：进制/字节序/IEEE-754 浮点转换、CRC8/16/32 与 Modbus RTU 帧拆包、32-bit 寄存器位域与 HardFault 解码、24-bit ADC 换算与定时器分频、RGB565 调色与 1-bit 字模预览。
+description: 嵌入式开发常用计算工具：进制转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 解码、ADC 与分频计算、RGB565 调色及字模预览。
 section: tools
 wide: true
 permalink: /tools/index.html
@@ -9,7 +9,7 @@ permalink: /tools/index.html
 <header class="page-heading">
   <p class="eyebrow">EMBEDDED WORKBENCH · OFFLINE-READY</p>
   <h1>嵌入式开发在线工具箱</h1>
-  <p class="lede">将单片机裸机开发、串口/Modbus 联调、Cortex-M 异常排障与 LCD 显示驱动中最常用的计算器整合在同一工作台。所有运算均在浏览器本地实时完成，不上传任何报文或工程数据，并可直接一键复制 C99 宏定义与数组字面量。</p>
+  <p class="lede">输入数值或报文即可计算，结果可复制为 C99 宏或数组。计算在浏览器本地完成，不上传输入内容。</p>
 </header>
 
 <nav class="tools-nav" aria-label="工具模块快速跳转">
@@ -26,7 +26,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">01 · RADIX / ENDIANNESS / IEEE-754 FLOAT</p>
       <h2 id="title-radix">进制、字节序与 IEEE-754 浮点/定点转换器</h2>
-      <p>支持 32-bit 无符号/有符号整数、十六进制、二进制（4-bit 分组）、八进制与 IEEE-754 单精度 <code>float</code> 任意框输入实时双向同步。</p>
+      <p>支持 32-bit 无符号/有符号整数、十六进制、二进制（4-bit 分组）、八进制与 IEEE-754 单精度 <code>float</code> 在任一输入框修改数值，其他框随之更新。</p>
     </div>
   </div>
 
@@ -248,7 +248,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">03 · 32-BIT REGISTER BITFIELD &amp; CORTEX-M HARDFAULT DECODER</p>
       <h2 id="title-reg">32-bit 寄存器位域可视化编辑器 &amp; HardFault 状态解码</h2>
-      <p>点击任意 Bit 位翻转 0/1，实时生成无副作用的 C99 掩码与置位代码；下方支持一键解码 Cortex-M3/M4/M7 的 <code>SCB-&gt;CFSR</code> 与 <code>SCB-&gt;HFSR</code> 崩溃原因。</p>
+      <p>点击任意 Bit 位翻转 0/1，生成 C99 掩码与置位代码；下方支持一键解码 Cortex-M3/M4/M7 的 <code>SCB-&gt;CFSR</code> 与 <code>SCB-&gt;HFSR</code> 崩溃原因。</p>
     </div>
   </div>
 
@@ -335,7 +335,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">04 · PRECISION ADC &amp; MCU TIMER / UART CALCULATOR</p>
       <h2 id="title-adc">24-bit/12-bit ADC 码值换算 &amp; 定时器 PWM / 串口分频计算器</h2>
-      <p>支持 AD7190/ADS1256 等 Σ-Δ ADC 的双极性偏移二进制（<code>0x800000 = 0V</code>）、补码与单极性码值双向换算，以及定时器 <code>PSC/ARR</code> 零误差整数配参。</p>
+      <p>支持 AD7190/ADS1256 等 Σ-Δ ADC 的双极性偏移二进制（<code>0x800000 = 0V</code>）、补码与单极性码值双向换算，以及定时器 <code>PSC/ARR</code> 整数分频组合搜索。</p>
     </div>
   </div>
 
@@ -543,6 +543,6 @@ permalink: /tools/index.html
   </div>
 </section>
 
-<p class="end-note">关联实战笔记：<a class="text-link" href="{{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }}">ST7789 RGB565 色彩异常与字节序排查</a> · <a class="text-link" href="{{ '/articles/embedded-1bit-bitmap-font-pipeline.html' | relative_url }}">嵌入式 1-bit 点阵字库生成与基线对齐管线</a> · <a class="text-link" href="{{ '/articles/n32g455-spi-dma-guide.html' | relative_url }}">N32G455 SPI + DMA 采集与刷屏工程指南</a></p>
+<p class="end-note">相关笔记：<a class="text-link" href="{{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }}">ST7789 RGB565 色彩异常与字节序排查</a> · <a class="text-link" href="{{ '/articles/embedded-1bit-bitmap-font-pipeline.html' | relative_url }}">嵌入式 1-bit 点阵字库生成与基线对齐管线</a> · <a class="text-link" href="{{ '/articles/n32g455-spi-dma-guide.html' | relative_url }}">N32G455 SPI + DMA 采集与刷屏工程指南</a></p>
 
 <script src="{{ '/assets/js/embedded-tools.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>

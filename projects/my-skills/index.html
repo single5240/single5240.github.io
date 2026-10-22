@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: 嵌入式与研发 AI Skills 中心库
-description: 面向通用软件工程与嵌入式系统开发（单片机裸机、RTOS、Linux 驱动、通信协议与硬件联调）的 16 项实战 AI Agent Skills 完整文档与参考源码。
+description: 16 个嵌入式与开发工具 Agent Skills，按通用工具、单片机裸机、通信与调试分类，附使用说明和参考代码。
 section: projects
 wide: true
 permalink: /projects/my-skills/index.html
@@ -9,7 +9,7 @@ permalink: /projects/my-skills/index.html
 <header class="page-heading">
   <a class="eyebrow" href="{{ '/projects/index.html' | relative_url }}">← 返回项目实验室</a>
   <h1>嵌入式与通用研发 AI Skills 中心库</h1>
-  <p class="lede">采用<strong>“一级按技术方向划分，内部通过标签与前缀区分使用范围（Scope）”</strong>的架构管理 AI Agent Skills，支持在 Claude Code、Cursor、Codex 与 Antigravity 中按需继承或挂载。点击任意 Skill 可查阅完整的 <code>SKILL.md</code> 指令、安全门禁清单及配套 C99 / 脚本源码。</p>
+  <p class="lede">这里收集了<strong>外设驱动、存储、通信和调试</strong>任务用到的 Agent Skills。按技术方向分类，<code>Scope</code> 标明使用范围。每页列出使用说明、检查清单和参考代码；接入 Claude Code、Cursor、Codex 或 Antigravity 的配置见页末。</p>
 </header>
 
 {% assign all_skills = site.skills | sort: 'order' %}
@@ -39,7 +39,7 @@ permalink: /projects/my-skills/index.html
       <button type="button" data-scope-filter="project" aria-pressed="false">Scope: project (项目级)</button>
     </div>
   </div>
-  <p class="search-status" id="skill-search-status" role="status" aria-live="polite">共收录 {{ all_skills.size }} 个实战 Skill · 涵盖 3 个已发布方向与 2 个预留扩展方向</p>
+  <p class="search-status" id="skill-search-status" role="status" aria-live="polite">共 {{ all_skills.size }} 个 Skill · 分为通用工具、单片机裸机、通信与调试</p>
 </section>
 
 <div id="skill-results">
@@ -48,7 +48,7 @@ permalink: /projects/my-skills/index.html
       <h2 id="title-common">1. 通用与工程基建 (<code>common/</code>)</h2>
       <span class="mono">共 {{ common_skills.size }} 项技能</span>
     </div>
-    <p class="skills-category-desc">跨项目、跨平台的嵌入式软件研发六阶段门禁工作流、Keil MDK 命令行构建与 <code>.map</code> 内存审计、点阵屏固件 1:1 网页模拟器及可视化架构图解工具。</p>
+    <p class="skills-category-desc">固件开发流程、Keil 构建与 <code>.map</code> 检查、点阵屏网页演示、HTML 图解和代理排障。</p>
     {% for skill in common_skills %}
     <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
       <div class="item-date">{{ skill.category }}/</div>
@@ -72,7 +72,7 @@ permalink: /projects/my-skills/index.html
       <h2 id="title-mcu">2. 单片机裸机开发 (<code>mcu-baremetal/</code>)</h2>
       <span class="mono">共 {{ mcu_skills.size }} 项技能</span>
     </div>
-    <p class="skills-category-desc">面向无操作系统（Bare-Metal / 前后台系统）的微控制器底层外设驱动、AD7190 Σ-Δ ADC 高速 DMA 采样、ST7789 8 行条带异步刷屏、NOR Flash / EEPROM / 片内 Flash 掉电安全存储与 C99 表驱动状态机架构。</p>
+    <p class="skills-category-desc">裸机工程中的 AD7190 采样、LCD 刷新、NOR Flash / EEPROM / 片内 Flash 存储，以及状态机和菜单。</p>
     {% for skill in mcu_skills %}
     <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
       <div class="item-date">{{ skill.category }}/</div>
@@ -96,7 +96,7 @@ permalink: /projects/my-skills/index.html
       <h2 id="title-proto">3. 通信协议与硬件联调 (<code>protocols-debug/</code>)</h2>
       <span class="mono">共 {{ proto_skills.size }} 项技能</span>
     </div>
-    <p class="skills-category-desc">面向现场总线协议栈（UART / RS-485 / Modbus RTU / DMX512）、J-Link SEGGER RTT 表驱动交互式 CLI 与板级硬件在环（HIL）故障注入，以及 Cortex-M <code>HardFault</code> 栈帧与 <code>.map</code> 源码定位。</p>
+    <p class="skills-category-desc">串口 DMA 接收与拆包、J-Link RTT 调试和故障注入，以及 Cortex-M <code>HardFault</code> 定位。</p>
     {% for skill in proto_skills %}
     <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
       <div class="item-date">{{ skill.category }}/</div>
@@ -120,14 +120,14 @@ permalink: /projects/my-skills/index.html
 
 <section class="skills-category" id="cat-architecture" aria-labelledby="title-arch">
   <div class="skills-category-head">
-    <h2 id="title-arch">4. 仓库目录架构、预留方向与按需挂载配置</h2>
+    <h2 id="title-arch">4. 目录与接入配置</h2>
     <span class="mono">AGENTS.md · skills.json · sync-skills.ps1</span>
   </div>
-  <p class="skills-category-desc">除已上线的三大方向外，中心库还预留了 <code>rtos/</code>（FreeRTOS / ThreadX / RT-Thread / Zephyr）与 <code>linux-driver/</code>（设备树 DTS / 字符与总线驱动 / U-Boot / Yocto）两个一级方向，以及标准的 <code>_templates/skill-template</code> 模板与跨工具一键同步脚本。</p>
+  <p class="skills-category-desc">除上面的三类技能外，仓库预留了 <code>rtos/</code>（FreeRTOS / ThreadX / RT-Thread / Zephyr）与 <code>linux-driver/</code>（设备树 DTS / 字符与总线驱动 / U-Boot / Yocto）两个目录，以及 <code>_templates/skill-template</code> 模板和同步脚本。</p>
 
   <div class="skills-arch-grid">
     <div class="skills-arch-card">
-      <h3>目录树与五大技术方向</h3>
+      <h3>仓库目录</h3>
       <p>一级目录按技术栈边界划分，内部通过 <code>global</code> / <code>vendor</code> / <code>project</code> / <code>experimental</code> 四个 Scope 区分复用层级：</p>
       <pre><code>mySkills/
 ├── AGENTS.md              # 全局规则与维护指南
@@ -144,7 +144,7 @@ permalink: /projects/my-skills/index.html
 
     <div class="skills-arch-card">
       <h3>在其他项目中按需挂载 (<code>skills.json</code>)</h3>
-      <p>支持全量继承或按项目类型（如 MCU 裸机项目 vs 嵌入式 Linux 项目）精准挂载指定目录，并自动过滤 <code>exp-*</code> 实验技能：</p>
+      <p>支持全量继承或按项目类型（如 MCU 裸机项目 vs 嵌入式 Linux 项目）加载指定目录，并自动过滤 <code>exp-*</code> 实验技能：</p>
       <pre><code>{
   "entries": [
     { "path": "common", "exclude": ["exp-.*"] },
@@ -158,7 +158,7 @@ permalink: /projects/my-skills/index.html
 
     <div class="skills-arch-card">
       <h3>新建 Skill 标准模板 (<code>_templates/skill-template</code>)</h3>
-      <p>每个 Skill 遵循渐进式披露原则：<code>SKILL.md</code> 聚焦触发条件、核心流程与安全门禁清单，长篇寄存器表与代码范例放入 <code>references/</code> 与 <code>examples/</code>：</p>
+      <p>每个 Skill 将内容分开放置：<code>SKILL.md</code> 说明触发条件、操作步骤和检查项，长篇寄存器表与代码范例放入 <code>references/</code> 与 <code>examples/</code>：</p>
       <pre><code>---
 name: template-skill-name
 description: >-
@@ -173,8 +173,8 @@ description: >-
     </div>
 
     <div class="skills-arch-card">
-      <h3>多工具一键同步脚本 (<code>sync-skills.ps1</code>)</h3>
-      <p>利用 Windows 目录联接（Junction <code>mklink /J</code>）将五大目录下的所有 Skill 自动挂载到 Codex、Cursor、Claude Code 与 Antigravity：</p>
+      <h3>多工具同步脚本 (<code>sync-skills.ps1</code>)</h3>
+      <p>利用 Windows 目录联接（Junction <code>mklink /J</code>）将各分类目录下的 Skill 挂载到 Codex、Cursor、Claude Code 与 Antigravity：</p>
       <pre><code>$Categories = @("common", "mcu-baremetal", "rtos", "linux-driver", "protocols-debug")
 $TargetToolDirs = @(
   (Join-Path $env:USERPROFILE ".codex\skills"),
@@ -222,7 +222,7 @@ cmd /c mklink /J "$linkPath" "$sourcePath" | Out-Null</code></pre>
     emptyEl.hidden = visibleCount > 0;
     statusEl.textContent = (query || activeCat || activeScope)
       ? `匹配到 ${visibleCount} / ${items.length} 个 Skill`
-      : `共收录 ${items.length} 个实战 Skill · 涵盖 3 个已发布方向与 2 个预留扩展方向`;
+      : `共 ${items.length} 个 Skill · 分为通用工具、单片机裸机、通信与调试`;
   }
 
   input.addEventListener('input', applyFilter);

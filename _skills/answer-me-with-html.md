@@ -2,7 +2,7 @@
 layout: skill
 title: 单页 HTML 可视化图解与视频生成 (answer-me-with-html)
 skill_id: answer-me-with-html
-description: 借助无依赖单文件脚本 am.mjs，将复杂架构、通信协议时序、状态机或方案对比渲染为单页交互式 HTML 图解看板或 3b1b 风格讲解视频。
+description: 用 am.mjs 将 Markdown 草稿生成 HTML 讲解页，支持架构图、协议时序、状态机和讲解视频。
 category: common
 category_label: 通用与工程基建
 scope: global
@@ -82,7 +82,7 @@ AM_EOF
 
 ### 在本博客中导入与统一 AI 日报风格
 
-本站的「AI 资讯日报」基于 answer-me-with-html 生成，并通过站点脚本深度融入主站复古工程质感：
+本站的「AI 资讯日报」由 answer-me-with-html 生成，再通过导入脚本添加导航、主题样式和归档索引：
 
 1. **生成看板**：使用 `am.mjs` 渲染出基础 HTML 文件（如 `ai-news/YYYY-MM-DD.html`）。
 2. **导入与样式桥接**：执行 `node scripts/import-ai-news.mjs ai-news`。

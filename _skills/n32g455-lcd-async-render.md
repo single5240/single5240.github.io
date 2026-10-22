@@ -2,7 +2,7 @@
 layout: skill
 title: N32G455 LCD DMA 异步条带渐进刷新 (n32g455-lcd-async-render)
 skill_id: n32g455-lcd-async-render
-description: 将 N32G455 上的 ST7789 等 SPI LCD 页面绘制改为 DMA 异步条带渐进刷新，并在不干扰 AD7190 高优先级采集 DMA 的前提下完成 Keil 验证。
+description: 在 N32G455 上用 DMA 分条刷新 SPI LCD，检查缓冲区占用和与 AD7190 采样的并发关系。
 category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: vendor

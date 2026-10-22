@@ -2,7 +2,7 @@
 layout: skill
 title: Keil MDK 命令行构建与 .map 资源审计 (keil-armcc-build-analyzer)
 skill_id: keil-armcc-build-analyzer
-description: Keil MDK-ARM (ARMCC 5 / ARMClang 6) 命令行无头构建、.build_log.htm 警告分类审查与 .map 内存占用（Code/RO/RW/ZI 及栈水位）自动对比分析。
+description: 从命令行构建 Keil 工程，解析警告和 .map 文件，对比修改前后的 Flash 与 RAM 占用。
 category: common
 category_label: 通用与工程基建
 scope: global
@@ -26,17 +26,17 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`common`
 - **使用范围 (Scope)**：`global`（适用于所有使用 Keil MDK-ARM `.uvprojx` / `.uvproj` 的 MCU 工程）
 - **适用工具链**：Keil μVision (`UV4.exe`)，ARM Compiler 5 (`armcc` V5.06) 与 ARM Compiler 6 (`armclang`)。
 
-## 2. 核心设计准则 (Core Principles)
+## 2. 设计要求
 
 1. **绝不盲目宣称“编译通过”或“零警告”**：
    - `UV4.exe -b` 或 `-r` 的进程退出码（Exit Code）：`0` 表示 0 Error / 0 Warning，`1` 表示仅存在 Warning（无 Error），`>= 2` 表示存在 Error。
-   - **铁律**：退出码为 `1` 时虽然生成了 `.axf/.hex`，但必须逐行解析 `.build_log.htm` 区分**本次新增警告**与**历史遗留警告**（如历史 GBK/UTF-8 特殊字符警告），严禁新增任何警告，也严禁在存在历史警告时笼统汇报“零警告”。
+   - **警告处理**：退出码为 `1` 时虽然生成了 `.axf/.hex`，但必须逐行解析 `.build_log.htm` 区分**本次新增警告**与**历史遗留警告**（如历史 GBK/UTF-8 特殊字符警告），严禁新增任何警告，也严禁在存在历史警告时笼统汇报“零警告”。
 2. **强制量化每次改动的 Flash / RAM 增量 (`Code / RO / RW / ZI`)**：
    - 在嵌入式裸机工程中新增缓冲、字库、状态表后，必须从 `.build_log.htm` 或 `.map` 提取四项核心指标并计算增量（Δ）：
      - **Flash 占用** = `Code + RO-data + RW-data`
@@ -46,7 +46,7 @@ description: >-
 
 > 可直接运行的构建日志与 `.map` 对比脚本见 [scripts/analyze_keil_build.ps1](#script-ps1)（Windows 免依赖首选）与 [scripts/analyze_keil_build.py](#script-py)；ARMCC 5 高频警告修复与 `.map` 符号审计指南见 [references/armcc5-common-warnings-and-map.md](#ref-armcc5-map)。
 
-## 3. 核心执行流程 (Step-by-Step Workflow)
+## 3. 操作步骤
 
 1. **修改前采集基线（Baseline Snapshot）**：
    - 修改代码前先运行分析脚本读取现有 `Objects/*.build_log.htm` 与 `Listings/*.map`（或 `Objects/*.map`），保存基线 JSON：
@@ -86,7 +86,7 @@ description: >-
   - `ZI-data`: `28,776 B (+16 B)`
   - **总 Flash**: `162,504 B` | **总静态 RAM**: `29,080 B`
 
-<h2 id="ref-armcc5-map">参考文档：ARMCC 5 高频警告排查与 .map 深度审计指南 (references/armcc5-common-warnings-and-map.md)</h2>
+<h2 id="ref-armcc5-map">参考文档：ARMCC 5 高频警告排查与 .map 检查指南 (references/armcc5-common-warnings-and-map.md)</h2>
 
 ### 1. ARMCC V5.06 高频编译警告与标准修复法
 

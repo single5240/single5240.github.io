@@ -2,7 +2,7 @@
 layout: skill
 title: AD7190 DOUT/RDY 复用中断 + SPI DMA 连续采集与自愈 (ad7190-exti-spi-dma-acquisition)
 skill_id: ad7190-exti-spi-dma-acquisition
-description: AD7190 等 24-bit Σ-Δ 高精度 ADC 的 DOUT/RDY 引脚 EXTI+SPI MISO 双模无竞态切换、SPI DMA 连续采样、256 槽无锁环形队列与 40-bit 自动软复位自愈。
+description: 处理 AD7190 的 DOUT/RDY 共脚中断、SPI DMA 连续采样、环形队列和超时复位恢复。
 category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: vendor
@@ -28,17 +28,17 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`mcu-baremetal`
 - **使用范围 (Scope)**：`vendor`（适用于 ADI AD7190/AD7192/AD779x 系列 + N32G455/STM32 Cortex-M MCU）
 - **典型硬件配置**：SPI Mode 3（`CPOL=1, CPHA=1`），软件片选 `CS`；`DOUT/RDY` 共用同一引脚（同时接 SPI `MISO` 与 `EXTI` 下降沿中断）；SPI RX/TX 绑定双通道 DMA（高抢占优先级，如优先级 1）。
 
-## 2. 核心硬件痛点与解决架构
+## 2. 共脚中断与 DMA 配合
 
 1. **`DOUT/RDY` 引脚双模复用竞态控制**：
    - AD7190 在 Continuous Read（`0x5C`）模式下，转换完成时将 `DOUT/RDY` 拉低作为就绪中断信号；一旦主机发送 SCLK，该脚立即切换为 `SPI MISO` 输出 24-bit 数据 + 8-bit 状态字节（共 4 字节）。
-   - **铁律**：在 `SPI MISO` 输出数据比特流期间，引脚会产生大量高低电平跳变，**若不关闭 EXTI，会引发灾难性的中断风暴与重入**！
+   - **传输期间关闭 EXTI**：`SPI MISO` 输出数据时会反复跳变，若 EXTI 仍然开启，这些跳变会被误判为 RDY 中断，导致重复进入 ISR。
    - **标准状态流**：
      - **等待就绪态**：`CS` 保持低电平，开启 `EXTI` 下降沿中断，`dma_busy = 0`。
      - **`EXTI` 触发 ISR**：确认 `DOUT/RDY` 为低电平且 `dma_busy == 0` → **立即在 ISR 中屏蔽本通道 `EXTI` 中断并清挂起位** → 启动 4 字节 SPI RX/TX DMA（TX 发送 `0x00` 产生 32 个时钟）。
@@ -56,7 +56,7 @@ description: >-
 
 > 寄存器位域定义、2402 Hz 采样率计算与恢复时序详见 [references/ad7190-register-and-timing.md](#ref-ad7190-timing)。
 
-## 3. 核心执行流程 (Step-by-Step Workflow)
+## 3. 操作步骤
 
 1. **分阶段上电初始化（防启动期队列溢出）**：
    - 在 `main()` 前半段调用 `AppAd7190_Init()`：仅完成 GPIO/SPI2/DMA 初始化、40-bit 软复位、ID 校验与寄存器写入，**暂不开启连续读取**。
@@ -64,16 +64,16 @@ description: >-
 2. **主循环排空与去皮/标定解算 (`AppAd7190_Process`)**：
    - 主循环每次调用 `ad7190_service()`（处理超时恢复），随后循环调用 `ad7190_pop_sample()` 排空环形队列。
    - 检查样本 `status` 字节：丢弃 `ERR` 或 `NOREF` 置位的异常帧，校验通道号 `status & 0x07U` 与预期一致。
-3. **暴露六大可观测健康计数器**：
+3. **记录六项采样计数器**：
    - 驱动内置 `rdy_irq_count`、`dma_complete_count`、`dma_error_count`、`dma_timeout_count`、`recovery_count`、`overrun_count`，接入 RTT `stat` 命令实时监控。
 
 ## 4. 关键安全与并发约束检查清单
 
-- [ ] **重使能 EXTI 前先清 Pending**：DMA 传输 4 字节期间 MISO 脚翻转必然再次置位 `EXTI->PEND`；DMA 完成 ISR 中必须**先 `EXTI_ClrITPendBit()`，再置位 `EXTI->IMASK`**，否则会立即误触发一次伪造的 RDY 中断！
+- [ ] **重使能 EXTI 前先清 Pending**：DMA 传输 4 字节期间 MISO 脚翻转必然再次置位 `EXTI->PEND`；DMA 完成 ISR 中必须**先 `EXTI_ClrITPendBit()`，再置位 `EXTI->IMASK`**，否则会立即误触发一次错误的 RDY 中断。
 - [ ] **退出连续读模式约束**：要把 AD7190 从 `CREAD (0x5C)` 切回寄存器读写模式，必须在 `DOUT/RDY` 变低后发送 `0x58`（`READ_DATA_NOCREAD`），或直接发送 ≥ 40 个 `1` 软复位。
 - [ ] **恢复期采样空窗容忍**：一次自动软复位约产生 `11 ms` 采样空窗，上层滤波和峰值捕捉算法不得假定样本严格等间隔到达。
 
-## 5. 验证与调试方法 (Verification)
+## 5. 验证方法
 
 1. **RTT 计数器稳态判据**：
    - 芯片在线 `ad7190_is_online() == 1`；稳态运行下 `rdy_irq_count` 与 `dma_complete_count` 按标称 ODR（如 `2402 Hz`）同步增长，差值恒为 `0` 或 `1`；`error / timeout / recovery / overrun` 保持 `0`。

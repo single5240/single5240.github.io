@@ -2,7 +2,7 @@
 layout: skill
 title: Cortex-M HardFault 栈回溯与 .map 故障定位 (cortex-m-hardfault-map-decoder)
 skill_id: cortex-m-hardfault-map-decoder
-description: ARM Cortex-M0/M3/M4/M7 HardFault 异常栈帧（MSP/PSP PC/LR）提取、SCB 故障状态寄存器（CFSR/HFSR/BFAR/MMFAR）解码与 Keil .map / 反汇编精确定位。
+description: 提取 Cortex-M 异常栈和故障寄存器，结合 Keil .map 与反汇编查找故障指令。
 category: protocols-debug
 category_label: 通信协议与硬件联调
 scope: global
@@ -26,7 +26,7 @@ description: >-
 ---
 ```
 
-## 1. 适用范围与背景 (Metadata)
+## 1. 适用范围
 
 - **技术方向**：`protocols-debug`
 - **使用范围 (Scope)**：`global`（全平台 ARM Cortex-M0/M0+/M3/M4/M7/M33 通用）
@@ -63,14 +63,14 @@ Low Address
 
 > 适配 ARMCC 5 / GCC 的零栈污染 `HardFault_Handler` 汇编+RTT 打印模板见 [examples/hardfault_rtt_dump.c](#example-hardfault-c)；完整 `CFSR` 位域速查表与 `fromelf` 反汇编命令见 [references/cfsr-bitfield-and-map-lookup.md](#ref-cfsr-lookup)。
 
-## 3. 核心执行流程 (Step-by-Step Workflow)
+## 3. 操作步骤
 
 1. **植入汇编级故障栈捕获 (`HardFault_Handler`)**：
    - **严禁直接在 C 函数 `void HardFault_Handler(void)` 开头定义局部变量并读取 `MSP`**：编译器生成的函数序言（`PUSH {r4, lr}`）会先修改 `MSP`，导致读出的 `sp[0..7]` 发生偏移错位！
    - 必须使用裸汇编（ARMCC 5 `__asm` 或 GCC `__attribute__((naked))`）先提取 `MSP/PSP` 作为 `R0` 参数传给 C 函数 `HardFault_DumpC(uint32_t *stackFrame, uint32_t excReturn)`。
 2. **解析非精确总线故障 (`IMPRECISERR`, `CFSR[10] == 1`)**：
    - 写缓冲（Write Buffer）导致写非法地址滞后几个周期才报错，此时 `PC` 已滑过真实故障指令且 `BFARVALID == 0`。
-   - **排障绝招**：在调试初始化时临时置位 `SCB->ACTLR |= (1UL << 1)`（`DISDEFWBUF`，关闭 Cortex-M3/M4 默认写缓冲），将所有非精确写故障强制转化为**精确总线故障 (`PRECISERR`, `BFARVALID = 1`)**，直接抓出真凶指令！
+   - **调试写缓冲**：在调试初始化时临时置位 `SCB->ACTLR |= (1UL << 1)`（`DISDEFWBUF`，关闭 Cortex-M3/M4 默认写缓冲），再复现故障，观察是否变为**精确总线故障 (`PRECISERR`)**，并检查 `BFARVALID` 和 PC。
 3. **开启除零与非对齐陷阱（可选诊断增强）**：
    - 默认 Cortex-M3/M4 除以 0 不会触发异常（结果静默为 0）；排查数学异常时可设置 `SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk`。
 
@@ -79,7 +79,7 @@ Low Address
 - [ ] **异常内停用危险输出并安全停机**：进入 `HardFault` 后，先将高危功率/加热/电机 GPIO 置为安全关断电平，打印完 RTT/串口寄存器快照后执行断点 `if (CoreDebug->DHCSR & 1) __breakpoint(0);` 并死循环等待 IWDG 复位。
 - [ ] **检查栈溢出破坏 (`MSP < Stack_Bottom`)**：若提取出的 `MSP` 已跌破 `.map` 中的 `STACK` 段起始地址，说明是栈溢出踩坏了上下文，此时应扩大 `startup_*.s` 中的 `Stack_Size` 或排查函数内大局部数组。
 
-## 5. 验证与调试方法 (Verification)
+## 5. 验证方法
 
 1. **故障注入验证**：
    - 临时写入 `*(volatile uint32_t *)0xCCCCCCCCUL = 1UL;`（触发 `PRECISERR` / `IMPRECISERR`）或调用 `((void (*)(void))0x00000000UL)();`（触发 `INVSTATE`），验证 RTT 准确打印出故障函数地址，且与 `.map` 完全吻合。

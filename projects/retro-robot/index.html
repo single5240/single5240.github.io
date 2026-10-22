@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: 复古示波器伴读小机器人交互实验台
-description: 纯原生 Canvas 2D 与 SVG 物理动效打造的嵌入式硬件伴读工作台，集成 18 种工程波形实时发生、参数调谐、视线追踪与自适应语料系统。
+description: Canvas 与 SVG 绘制的示波器和小机器人，支持 18 种模拟波形、参数调节、鼠标跟随和预设对话。
 section: projects
 wide: true
 permalink: /projects/retro-robot/index.html
@@ -12,9 +12,9 @@ permalink: /projects/retro-robot/index.html
     <a class="eyebrow" href="{{ '/projects/index.html' | relative_url }}">← 返回项目实验室</a>
     <h1>复古示波器伴读小机器人 (S5·BOT)</h1>
     <p class="lede">
-      从单片机仪器调试与固件研发实战中提炼出的<strong>纯前端无依赖交互式伴读工作台</strong>。
-      融合了经典电子测试设备（阴极射线管 CRT 示波器、动圈指针表头、BNC 接口）的复古工业质感，
-      与现代前端动画技术（原生 Canvas 2D 60FPS 双缓冲矢量合成、Hooke 弹簧阻尼物理视线追踪、多层嵌入式语料状态机及视口脱离自动悬浮机制）。
+      一个用 <strong>Canvas 和 SVG</strong> 绘制的示波器与小机器人。
+      可以切换模拟波形，调整时基、增益和噪声，也可以点击机器人查看预设对话。
+      波形由函数生成，频率和电压是示例参数，不是设备采集值。
     </p>
   </header>
 
@@ -28,7 +28,7 @@ permalink: /projects/retro-robot/index.html
         <div class="lab-crt-brand">
           <span class="crt-brand-dot"></span>
           <span class="crt-brand-title">TEK-S5000 DUAL-TRACE OSCILLOSCOPE</span>
-          <span class="crt-tag">60 FPS REALTIME</span>
+          <span class="crt-tag">CANVAS DEMO</span>
         </div>
         <div class="lab-crt-metrics">
           <span class="lab-metric-item" id="metricFreq">50.0 Hz</span>
@@ -93,13 +93,13 @@ permalink: /projects/retro-robot/index.html
         <div class="station-header">
           <span class="station-status-dot"></span>
           <span class="station-title">S5·BOT 伴侣工作站</span>
-          <span class="station-meta">FW: v3.2 · C99</span>
+          <span class="station-meta">浏览器演示</span>
         </div>
 
         <!-- 对话气泡 -->
         <div class="station-bubble" id="stationBubble" aria-live="polite">
           <span class="bubble-prefix">&gt;</span>
-          <span id="stationSpeechText">你好！我是驻守在单片机与工程笔记侧栏的 S5·BOT，正在为你进行示波器波形采样 ~</span>
+          <span id="stationSpeechText">你好，我是 S5·BOT。选一种波形，看看它在屏幕上的样子。</span>
         </div>
 
         <!-- 机器人模型容器 -->
@@ -132,8 +132,8 @@ permalink: /projects/retro-robot/index.html
        ======================================================================== -->
   <section class="lab-section" aria-label="18 种工程波形矩阵">
     <div class="section-title-wrap">
-      <h2>18 种经典硬件与嵌入式波形矩阵</h2>
-      <p>点击任意波形即刻注入示波器 CRT，观察时域特征、谐波构成及工程应用场景。</p>
+      <h2>18 种模拟波形</h2>
+      <p>选择波形后，可调整时基、增益和噪声，查看形状与说明。</p>
     </div>
 
     <!-- 分类筛选标签 -->
@@ -155,10 +155,10 @@ permalink: /projects/retro-robot/index.html
         <span class="detail-spec" id="detailSpec">50Hz · 1.0V/div</span>
       </div>
       <p class="detail-desc" id="detailDesc">
-        纯基准单音频信号，全频段总谐波失真 THD &lt; 0.05%。在单片机数据采集系统中常用作高精度 ADC（如 AD7190）有效位数（ENOB）标定与滤波器通带平坦度校准基准。
+        用 sin(θ) 生成的正弦波，用来观察周期、幅度与噪声变化。
       </p>
       <div class="detail-formula-box">
-        <span class="formula-label">实时数学建模方程：</span>
+        <span class="formula-label">波形公式：</span>
         <code id="detailFormula">f(θ) = sin(θ)</code>
       </div>
     </div>
@@ -169,51 +169,51 @@ permalink: /projects/retro-robot/index.html
        ======================================================================== -->
   <section class="lab-section" aria-label="底层工程架构解析">
     <div class="section-title-wrap">
-      <h2>S5·BOT 核心前端工程架构</h2>
-      <p>为个人博客打造的零依赖纯原生前端组件，以极其严苛的资源与性能预算运行在全端设备。</p>
+      <h2>绘制与交互实现</h2>
+      <p>组件使用浏览器的 Canvas、SVG 和动画 API，没有引入图表库。</p>
     </div>
 
     <div class="arch-cards-grid">
       <article class="arch-card">
         <div class="arch-icon">⚡</div>
-        <h3>1. 零依赖 60FPS 双缓冲渲染管道</h3>
+        <h3>1. Canvas 波形绘制</h3>
         <p>
-          摒弃臃肿的庞大图表库，直接基于浏览器原生 <code>CanvasRenderingContext2D</code> 编写。
-          采用 <code>requestAnimationFrame</code> 驱动与 <code>window.devicePixelRatio</code> 硬件视网膜屏物理像素点对点匹配，
-          单帧计算控制在 0.8ms 内，全速 60FPS 运行无微卡顿，CPU 占用率低于 1.5%。
+          波形通过 <code>CanvasRenderingContext2D</code> 绘制。
+          用 <code>requestAnimationFrame</code> 驱动重绘，并按 <code>window.devicePixelRatio</code> 调整画布像素尺寸。
+          实际帧率与开销取决于设备、画布尺寸和浏览器。
         </p>
         <div class="arch-meta">技术点：双缓冲 · 批量 Path 构建 · DPR 自适应</div>
       </article>
 
       <article class="arch-card">
         <div class="arch-icon">🎯</div>
-        <h3>2. Hooke's Law 弹簧阻尼视线跟随物理引擎</h3>
+        <h3>2. 弹簧阻尼跟随</h3>
         <p>
-          小机器人的天线与眼球追踪并非简单的鼠标相对坐标映射，而是基于经典胡克弹性力学与阻尼方程：
-          <code>a = (-k · Δx - c · v) / m</code> 进行微积分数值求解。
-          光标急速掠过时产生柔和过冲与微颤阻尼，静止时平滑归位，赋予机械体鲜活的生命感。
+          机器人的天线与眼球用弹簧阻尼方程跟随光标：
+          <code>a = (-k · Δx - c · v) / m</code> 逐帧更新位置。
+          光标移动时会有轻微过冲，停止后逐渐回到稳定位置。
         </p>
         <div class="arch-meta">技术点：二阶微分方程 · 弹性力学 · 非线性插值</div>
       </article>
 
       <article class="arch-card">
         <div class="arch-icon">📐</div>
-        <h3>3. 18 种硬件波形的纯数学解析合成</h3>
+        <h3>3. 用函数生成波形</h3>
         <p>
-          所有波形完全由时域角频率 <code>θ</code> 的显式数学函数实时生成。
-          方波通过有限级奇次谐波傅里叶级数合成，逼真复现吉布斯振铃效应；
-          SVPWM 马鞍波精确注入 1/6 三次谐波；UART/I2C/CAN 按照真实协议位图与指数上升沿 RC 滤波时序逐 bit 编码。
+          波形由相位变量 <code>θ</code> 对应的函数逐帧生成。
+          方波通过有限级奇次谐波傅里叶级数合成，展示截断级数带来的边沿过冲；
+          马鞍波叠加 1/6 三次谐波；UART、I2C 和 CAN 用预设位序列示意电平变化。
         </p>
-        <div class="arch-meta">技术点：傅里叶级数 · SVPWM 调制 · 协议时钟恢复</div>
+        <div class="arch-meta">技术点：傅里叶级数 · SVPWM 调制 · 预设位序列</div>
       </article>
 
       <article class="arch-card">
         <div class="arch-icon">🚀</div>
-        <h3>4. 零侵入式自适应视口 Dock 状态机</h3>
+        <h3>4. 阅读时停靠右下角</h3>
         <p>
-          利用现代浏览器 <code>IntersectionObserver</code> 监听顶栏舞台视口相交状态。
-          当读者滑动文章向下阅读离开屏幕时，小机器人无需跳转页面，即可瞬间从文档流“蜕变”为固定在屏幕右下角玻璃拟态的悬浮伴读助手，
-          并无缝集成平滑一键回到顶部功能。
+          使用 <code>IntersectionObserver</code> 监听顶栏舞台视口相交状态。
+          当原位置滚出视口时，小机器人切换为右下角悬浮卡片，
+          卡片上可以点击返回页顶。
         </p>
         <div class="arch-meta">技术点：IntersectionObserver · 状态机解耦 · 玻璃拟态</div>
       </article>
@@ -226,7 +226,7 @@ permalink: /projects/retro-robot/index.html
   <section class="lab-section" aria-label="全站引入与复用指南">
     <div class="section-title-wrap">
       <h2>如何在博客任意页面引入 S5·BOT？</h2>
-      <p>模块化设计已将样式放入 <code>base.css</code>，交互逻辑放入 <code>robot-rainbow.js</code>，引入仅需 1 行代码。</p>
+      <p>样式放在 <code>base.css</code>，交互逻辑放入 <code>robot-rainbow.js</code>，页面通过 Liquid include 引入。</p>
     </div>
 
     <div class="integration-code-block">
@@ -258,22 +258,22 @@ permalink: /projects/retro-robot/index.html
       <a class="related-card" href="{{ '/projects/n32g455-tensile/index.html' | relative_url }}">
         <span class="rel-tag">项目实验室</span>
         <strong>数显式拉力计 240×320 仪表界面交互演示 ↗</strong>
-        <p>体验条带化双缓冲刷屏、C99 裸机多级菜单状态机与双层传感器标定算法。</p>
+        <p>操作拉力计菜单、测试模式、记录列表和校正流程。</p>
       </a>
       <a class="related-card" href="{{ '/projects/my-skills/index.html' | relative_url }}">
         <span class="rel-tag">AI Skills</span>
         <strong>嵌入式与研发 AI Skills 库 (16项技能) ↗</strong>
-        <p>收录 AD7190、ST7789 DMA、W25Q128、六阶段门禁等完整实战 Agent Skills 与 C99 源码。</p>
+        <p>收集 AD7190、ST7789 DMA、W25Q128 和固件开发流程等 Skill，附参考代码。</p>
       </a>
       <a class="related-card" href="{{ '/articles/n32g455-spi-dma-guide.html' | relative_url }}">
         <span class="rel-tag">技术笔记</span>
-        <strong>N32G455 SPI DMA 连续采集与双缓冲实战 ↗</strong>
-        <p>深入探究硬件中断、DMA 环形无锁队列与故障自愈机制。</p>
+        <strong>N32G455 SPI 与 DMA 配置参考 ↗</strong>
+        <p>核对三路 SPI、DMA 通道、中断优先级和调用顺序。</p>
       </a>
       <a class="related-card" href="{{ '/articles/c99-table-driven-state-machine.html' | relative_url }}">
         <span class="rel-tag">技术笔记</span>
         <strong>C99 表驱动有限状态机 (FSM) 架构 ↗</strong>
-        <p>零动态分配安全架构，与 S5·BOT 对话引擎底层设计理念一脉相承。</p>
+        <p>用转移表和静态队列组织事件，附 C99 实现与示例。</p>
       </a>
     </div>
     <div class="end-note">
@@ -1007,13 +1007,13 @@ permalink: /projects/retro-robot/index.html
       name: "正弦波",
       cat: "analog",
       catLabel: "模拟信号",
-      spec: "50Hz · 1.0V/div · THD<0.05%",
+      spec: "50Hz · 1.0V/div · 模拟",
       formula: "f(θ) = sin(θ)",
-      desc: "纯基准单音频信号，全频段总谐波失真 THD < 0.05%。单片机高精度 24-bit ADC（如 AD7190）有效位数（ENOB）标定与滤波器通带平坦度校准基准。",
+      desc: "用 sin(θ) 生成的正弦波，用来观察周期、幅度与噪声变化。",
       cycles: 3.0,
       vpp: "2.82 V",
       freq: "50.0 Hz",
-      comment: "背后正在采样【正弦波】：纯基准信号，THD < 0.05%，谐波干干净净 ~",
+      comment: "正在显示【正弦波】：试着调节增益，看看幅度变化。",
       sample: (th) => Math.sin(th)
     },
     {
@@ -1023,11 +1023,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "SVPWM · +1/6·3rd · 10kHz",
       formula: "f(θ) = (sin(θ) + 1/6·sin(3θ)) · 1.1547",
-      desc: "经典空间矢量脉宽调制 (SVPWM) 鞍形相电压波。通过在线注入 1/6 峰值的三次谐波平顶削峰，将直流母线电压利用率从 SPWM 的 86.6% 极限拉满到 100%。",
+      desc: "在正弦波中叠加 1/6 幅度的三次谐波，展示马鞍形轮廓。",
       cycles: 2.5,
       vpp: "3.30 V",
       freq: "10.0 kHz",
-      comment: "背后正在采样【马鞍波】：三次谐波注入 SVPWM，母线电压利用率拉满 ⚡",
+      comment: "正在显示【马鞍波】：正弦波叠加三次谐波后的形状。",
       sample: (th) => (Math.sin(th) + (1 / 6) * Math.sin(3 * th)) * 1.1547
     },
     {
@@ -1037,11 +1037,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "模拟信号",
       spec: "CLK · 3.3V · 5 级谐波振铃",
       formula: "f(θ) = ∑ (4/π)·sin((2k-1)θ)/(2k-1)",
-      desc: "MCU 外部高速晶振或 SPI CLK 信号。基于有限级奇次谐波傅里叶级数合成，逼真重现 PCB 寄生走线引起的吉布斯（Gibbs）边沿过冲与微弱振铃。",
+      desc: "用五项奇次谐波叠加近似方波，边沿过冲来自有限级数截断。",
       cycles: 3.0,
       vpp: "3.30 V",
       freq: "1.00 MHz",
-      comment: "背后正在采样【方波】：3.3V 时钟信号，上升沿还带一点点吉布斯振铃 ~",
+      comment: "正在显示【方波】：3.3V 时钟信号，上升沿还带一点点吉布斯振铃 ~",
       sample: (th) => {
         const s = Math.sin(th) + Math.sin(3 * th) / 3 + Math.sin(5 * th) / 5 + Math.sin(7 * th) / 7 + Math.sin(9 * th) / 9;
         return Math.max(-1.05, Math.min(1.05, s * (4 / Math.PI) * 0.88));
@@ -1054,11 +1054,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "模拟信号",
       spec: "CARRIER · 20kHz · 恒流积分",
       formula: "f(θ) = (2/π)·arcsin(sin(θ))",
-      desc: "开关电源恒流充放电积分载波。斜率线性度极佳，是 MCU 定时器 PWM 发生器做对称中心对齐比较的最忠实搭档。",
+      desc: "幅度线性上升、下降的三角波，可用来示意 PWM 比较载波。",
       cycles: 3.5,
       vpp: "2.50 V",
       freq: "20.0 kHz",
-      comment: "背后正在采样【三角波】：线性对称载波，PWM 比较器最忠实的搭档！",
+      comment: "正在显示【三角波】：上升和下降两段斜率相反。",
       sample: (th) => (2 / Math.PI) * Math.asin(Math.sin(th))
     },
     {
@@ -1068,11 +1068,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "模拟信号",
       spec: "TIM_CNT · 0→ARR 周期复位",
       formula: "f(θ) = 2·(u - ⌊u⌋) - 1",
-      desc: "单片机通用定时器向上计数器寄存器（TIMx_CNT）的线性攀升与自动重装载（ARR）中断复位过程，广泛用于开关电源斜坡补偿。",
+      desc: "幅度逐渐上升后回落的锯齿波，可类比定时器向上计数并周期重装。",
       cycles: 3.5,
       vpp: "3.00 V",
       freq: "10.0 kHz",
-      comment: "背后正在采样【锯齿波】：定时器向上计数斜坡，到 ARR 准时触发更新中断！",
+      comment: "正在显示【锯齿波】：定时器向上计数斜坡，到 ARR 准时触发更新中断！",
       sample: (th) => {
         const u = th / (Math.PI * 2);
         const frac = u - Math.floor(u);
@@ -1086,11 +1086,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "TIM1_CH1 · 互补调制 · 20kHz",
       formula: "Pulse = tanh(6·(sin(θ) - 三角载波))",
-      desc: "正弦脉宽调制。通过调制波与高频三角载波在单片机捕获比较寄存器中交汇，生成等效于正弦连续基波的变频脉冲序列。",
+      desc: "以正弦波和三角载波生成脉冲轮廓，示意脉宽随正弦包络变化。",
       cycles: 2.0,
       vpp: "3.30 V",
       freq: "20.0 kHz",
-      comment: "背后正在采样【SPWM 波】：正弦包络调制脉冲，准备驱动 H 桥逆变器！",
+      comment: "正在显示【SPWM 波】：正弦包络调制脉冲，准备驱动 H 桥逆变器！",
       sample: (th) => {
         const mod = Math.sin(th);
         const carrier = (2 / Math.PI) * Math.asin(Math.sin(th * 9));
@@ -1105,11 +1105,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "模拟信号",
       spec: "Lead II · 60BPM · P-QRS-T",
       formula: "f(θ) = ∑ a_i · exp(-((u - c_i)/w_i)²)",
-      desc: "医疗电子生物电模拟信号。由高斯基函数叠加合成完整的 P 波、QRS 复合波与 T 波，用于评估可穿戴传感器前端共模抑制比（CMRR）。",
+      desc: "用高斯函数叠加示意 P、QRS 和 T 波形状，不对应实际心电采样。",
       cycles: 2.0,
       vpp: "1.20 mV",
       freq: "1.00 Hz",
-      comment: "背后正在采样【心电波】：P-Q-R-S-T 窦性心律，单片机和你的心脏都在有力跳动！",
+      comment: "正在显示【心电波】：P-Q-R-S-T 窦性心律，单片机和你的心脏都在有力跳动！",
       sample: (th) => {
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
         const g = (c, w, a) => a * Math.exp(-Math.pow((u - c) / w, 2));
@@ -1123,11 +1123,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "模拟信号",
       spec: "RLC · 10MHz Ringing · 衰减",
       formula: "f(t) = ±(1 - e^(-4.2x)·cos(8πx))",
-      desc: "高速开关边沿打在长线感抗引起的瞬态欠阻尼振荡。在硬件调试中指示必须追加磁珠、串联匹配电阻或 RC 吸收缓冲网络。",
+      desc: "用衰减振荡函数示意阶跃后的过冲与振铃。",
       cycles: 2.0,
       vpp: "4.50 V",
       freq: "12.5 MHz",
-      comment: "背后正在采样【欠阻尼振荡波】：走线寄生 LC 触发的边沿振铃，快加上磁珠和端接电阻！",
+      comment: "正在显示【欠阻尼振荡波】：看看边沿过冲怎样逐渐衰减。",
       sample: (th) => {
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
         if (u < 0.5) {
@@ -1146,11 +1146,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "Carrier 1000kHz · m=65%",
       formula: "f(θ) = (1 + 0.65·cos(θ)) · sin(8θ)",
-      desc: "高频正弦载波受低频基带信号调制改变振幅包络，是早期无线电广播与矿石收音机的标志性波形。",
+      desc: "用低频信号改变高频载波的幅度，观察包络随时间变化。",
       cycles: 2.0,
       vpp: "2.00 V",
       freq: "1.00 MHz",
-      comment: "背后正在采样【AM 调幅波】：高频载波带上音频包络，无线电矿石收音机的复古浪漫 📻",
+      comment: "正在显示【AM 调幅波】：高频载波带上音频包络，无线电矿石收音机的复古浪漫 📻",
       sample: (th) => ((1 + 0.65 * Math.cos(th)) * Math.sin(th * 8)) / 1.65
     },
     {
@@ -1160,11 +1160,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "10.7MHz 中频 · Δf=75kHz",
       formula: "f(θ) = sin(6θ + 2.5·sin(θ))",
-      desc: "瞬时角频率随音频幅度线性偏移，振幅恒定不变，具备出色的抗幅度衰减与抗脉冲电磁干扰性能。",
+      desc: "幅度保持不变，通过相位变化展示载波疏密变化。",
       cycles: 2.0,
       vpp: "1.80 V",
       freq: "10.7 MHz",
-      comment: "背后正在采样【FM 调频波】：载波疏密变化传递音频信息，抗干扰能力比 AM 强悍得多！",
+      comment: "正在显示【FM 调频波】：幅度不变，载波时疏时密。",
       sample: (th) => Math.sin(th * 6 + 2.5 * Math.sin(th))
     },
     {
@@ -1174,11 +1174,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "FMCW · 1M→20MHz · 脉冲压缩",
       formula: "f(u) = sin(π·u) · sin(2π(1.5u + 4.5u²))",
-      desc: "瞬间载波频率随时间线性递增，广泛用于 LoRa 扩频通信、FMCW 毫米波雷达测距与超声波脉冲压缩探测。",
+      desc: "展示一个周期内频率逐渐升高的波形。",
       cycles: 2.0,
       vpp: "2.20 V",
       freq: "Sweep",
-      comment: "背后正在采样【线性调频 Chirp 波】：频率随时间线性攀升，LoRa 扩频通信与雷达测距的绝技！",
+      comment: "正在显示【Chirp 波】：从左往右，波形越来越密。",
       sample: (th) => {
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
         return Math.sin(Math.PI * u) * Math.sin(Math.PI * 2 * (1.5 * u + 4.5 * u * u));
@@ -1191,11 +1191,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "模拟信号",
       spec: "一阶惯性滤波 · τ = R·C",
       formula: "V(t) = 1 - 2·e^(-t/τ)",
-      desc: "单片机 GPIO 上拉电阻对电容的充放电响应。时间常数 τ = RC，经历 3τ 达到 95% 电压，常用于硬件按键 RC 滤波消抖。",
+      desc: "用指数曲线示意一阶 RC 电路的充放电过程，时间常数为 τ = RC。",
       cycles: 2.5,
       vpp: "3.30 V",
       freq: "500 Hz",
-      comment: "背后正在采样【RC 充放电波】：一阶惯性滤波电路，τ = RC，3 个时间常数充到 95%！",
+      comment: "正在显示【RC 充放电波】：一阶惯性滤波电路，τ = RC，3 个时间常数充到 95%！",
       sample: (th) => {
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
         if (u < 0.5) return 1 - 2 * Math.exp(-4 * (u / 0.5));
@@ -1209,11 +1209,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "Bridge Rectifier · 100Hz",
       formula: "f(θ) = |sin(θ)| · 1.7 - 0.85",
-      desc: "220V/50Hz 交流电经过二极管整流桥后的脉动直流波形，后续配合大容量电解电容滤除低频纹波。",
+      desc: "用正弦波的绝对值示意全波整流后的脉动波形。",
       cycles: 3.0,
       vpp: "12.0 V",
       freq: "100.0 Hz",
-      comment: "背后正在采样【全波整流波】：桥式整流二极管输出的馒头波，后面滤波电容正全力蓄能！",
+      comment: "正在显示【全波整流波】：桥式整流二极管输出的馒头波，后面滤波电容正全力蓄能！",
       sample: (th) => Math.abs(Math.sin(th)) * 1.7 - 0.85
     },
     {
@@ -1223,11 +1223,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "数字总线",
       spec: "115200 Baud · 8-N-1 · TXD",
       formula: "Bitstream: [START=0, 8-DATA, STOP=1]",
-      desc: "单片机 USART 异步串口总线帧。包含下降沿起始位、8-bit 数据载荷（低位先发 LSB）及高电平停止位，含真实 RC 上升沿指数缓和。",
+      desc: "用预设数据位展示 UART 起始位、数据位和停止位的电平变化。",
       cycles: 1.5,
       vpp: "3.30 V",
       freq: "115.2 kbps",
-      comment: "背后正在采样【UART 串口波】：波特率 115200 8-N-1，正在向控制台吐出调试日志！",
+      comment: "正在显示【UART 串口波】：波特率 115200 8-N-1，正在向控制台吐出调试日志！",
       sample: (th) => {
         const BITS = [0.8, -0.8, -0.8, 0.8, -0.8, 0.8, 0.8, -0.8, 0.8, -0.8, 0.8, 0.8];
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
@@ -1247,11 +1247,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "数字总线",
       spec: "400kHz Fast Mode · 开漏上拉",
       formula: "SDA/SCL 联锁 · 起始与 ACK",
-      desc: "I2C 开漏总线时钟与数据配合。SCL 高电平期间 SDA 下跳产生 START 信号，并在第 9 个时钟周期由从机将 SDA 拉低确认 ACK 应答。",
+      desc: "用预设时序示意 I2C 时钟和数据电平。",
       cycles: 1.5,
       vpp: "3.30 V",
       freq: "400 kHz",
-      comment: "背后正在采样【I2C 总线波】：SCL 时钟与 SDA 数据线正在打配合，检测到了设备 ACK 应答！",
+      comment: "正在显示【I2C 总线波】：SCL 时钟与 SDA 数据线正在打配合，检测到了设备 ACK 应答！",
       sample: (th) => {
         const BITS = [0.8, -0.8, -0.8, 0.8, -0.8, 0.8, -0.8, 0.8, -0.8, -0.8, 0.8, 0.8];
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
@@ -1271,11 +1271,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "数字总线",
       spec: "500kbps / 2Mbps · 显性隐性电平",
       formula: "V_diff = CAN_H - CAN_L",
-      desc: "车载与工业自动化核心总线。通过差分电平（显性 Dominant = 0 / 隐性 Recessive = 1）执行非破坏性按位仲裁，共模抑制能力极强。",
+      desc: "用预设位序列示意 CAN 显性与隐性电平，不生成完整协议报文。",
       cycles: 1.5,
       vpp: "2.00 V",
       freq: "500 kbps",
-      comment: "背后正在采样【CAN 总线波】：500kbps 差分仲裁段，显性电平覆盖隐性，车载通信稳如磐石！",
+      comment: "正在显示【CAN 总线波】：这里用预设序列示意电平变化。",
       sample: (th) => {
         const BITS = [0.85, -0.25, -0.25, -0.25, -0.25, 0.85, -0.25, -0.25, 0.85, 0.85, 0.85, -0.25, 0.85, -0.25];
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
@@ -1295,11 +1295,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "调制电机",
       spec: "Composite PAL · 15.625kHz 行频",
       formula: "Sync(-0.85V) + Burst + Video",
-      desc: "模拟阴极射线管 (CRT) 复合视频信号。包含 -0.3V 行同步电平、4.43MHz 色副载波基准爆发展（Color Burst）及 0~0.7V 灰度有效视频。",
+      desc: "用分段函数示意复合视频中的行同步、色同步和有效视频区。",
       cycles: 1.5,
       vpp: "1.00 Vpp",
       freq: "15.625 kHz",
-      comment: "背后正在采样【模拟视频复合波】：行同步头 + 4.43MHz 色副载波群，复古阴极射线管 CRT 的灵魂！",
+      comment: "正在显示【模拟视频复合波】：行同步头 + 4.43MHz 色副载波群，复古阴极射线管 CRT 的灵魂！",
       sample: (th) => {
         const u = ((th % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI * 2);
         if (u < 0.12) return -0.85;
@@ -1322,11 +1322,11 @@ permalink: /projects/retro-robot/index.html
       catLabel: "数字总线",
       spec: "24-bit Σ-Δ ADC · 白噪声频谱",
       formula: "f(θ) = ∑ a_k · sin(ω_k · θ + φ_k)",
-      desc: "高精度 24 位 Σ-Δ ADC 模拟输入短路时测得的微弱 Johnson-Nyquist 热噪声基底，反映电路板模拟电源域的去耦滤波洁净度。",
+      desc: "用多个函数叠加模拟噪声轮廓，不代表 ADC 的实测噪声或有效位数。",
       cycles: 2.5,
       vpp: "18.5 μV",
       freq: "Random",
-      comment: "背后正在采样【ADC 采样底噪】：24位 Σ-Δ 高精度 ADC 测得的白噪声基底，有效位数 ENOB 在线巡检！",
+      comment: "正在显示【模拟噪声】：这组曲线由函数生成。",
       sample: (th) => Math.sin(th * 19) * 0.38 + Math.sin(th * 37 + 1.2) * 0.32 + Math.sin(th * 61 + 2.4) * 0.22 + Math.sin(th * 97 + 0.5) * 0.15
     }
   ];
@@ -1554,7 +1554,7 @@ permalink: /projects/retro-robot/index.html
     iwdg: [
       "【看门狗】嘀！已在主循环执行 IWDG_ReloadCounter()，计数器重新满血！",
       "【安全提醒】千万别在定时器 ISR 里喂狗，否则主循环死锁了狗还在摇尾巴！",
-      "【看门狗】IWDG 窗口计时已重置，当前系统栈水位安全，继续写代码吧！"
+      "【看门狗】看门狗检查的是程序能否按时推进；栈水位需要另行测量。"
     ],
     exti: [
       "【EXTI 中断】下降沿触发！NVIC 抢占优先级 1 立即响应，打断当前主循环！",
@@ -1563,8 +1563,8 @@ permalink: /projects/retro-robot/index.html
     ],
     dma: [
       "【DMA 双缓冲】Ping-Pong 缓冲区切换！CPU 零拷贝处理第 1 帧，DMA 正在后台搬运第 2 帧！",
-      "【SPI DMA】全速 36MHz 连续发送，ST7789 屏幕正在满帧条带刷屏，CPU 占用率 0%！",
-      "【DMA 安全】已确认外设 BUSY 标志彻底清零，片选 CS 安全拉高，无尾部数据截断！"
+      "【SPI DMA】DMA 搬运像素期间，CPU 还需要准备条带并处理传输收尾。",
+      "【DMA 安全】释放片选 CS 前，需要确认 SPI BUSY 已清零。"
     ],
     random: [
       "听说嵌入式工程师最怕两件事：一是野指针踩内存，二是示波器接地夹夹到了火线！",
