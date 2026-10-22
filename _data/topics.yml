@@ -4,6 +4,7 @@
   color: "#2c4554"
   color_end: "#1c303c"
   articles:
+    - battery-management-portable-design
     - nor-flash-powerfail-record-store
     - n32g455-lcd-strip-rendering
     - embedded-1bit-bitmap-font-pipeline
