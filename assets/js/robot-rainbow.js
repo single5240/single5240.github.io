@@ -776,11 +776,12 @@
   const updateFloatingDock = () => {
     if (!dock || !stage) return;
 
-    // 桌面端文章页：侧边栏本身已是 sticky 贴顶跟随，目录上方的小机器人一直可见，不脱离为右下角悬浮
-    const isDesktopArticleSidebar =
-      document.querySelector("#reading-sidebar") && window.innerWidth > 1000;
+    // 桌面文章侧栏保持 sticky；手机文章收起机器人，均不切换为悬浮卡片。
+    const isArticleSidebar = document.querySelector("#reading-sidebar");
+    const keepDockInSidebar = isArticleSidebar &&
+      (window.innerWidth > 1000 || window.innerWidth <= 620);
 
-    if (isDesktopArticleSidebar) {
+    if (keepDockInSidebar) {
       if (isFloating) {
         isFloating = false;
         dock.classList.remove("is-docked-float");

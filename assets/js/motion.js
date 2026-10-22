@@ -2,6 +2,11 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const finePointer = window.matchMedia("(pointer: fine)");
 
+  // 手机端先展示项目本身，长笔记列表由读者按需展开。
+  if (window.matchMedia("(max-width: 620px)").matches) {
+    document.querySelectorAll(".project-notes").forEach((notes) => { notes.open = false; });
+  }
+
   // 1. 内容淡入动画
   const revealItems = [...document.querySelectorAll(".article-card, .panel, .article-item, .project-feature")];
   revealItems.forEach((item) => {

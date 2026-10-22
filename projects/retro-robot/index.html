@@ -720,6 +720,7 @@ permalink: /projects/retro-robot/index.html
 }
 
 .wave-card {
+  text-align: left;
   background: var(--raised-bg, #1a2226);
   border: 1px solid var(--line, #28373e);
   border-radius: 10px;
@@ -994,6 +995,32 @@ permalink: /projects/retro-robot/index.html
   .lab-stage-container {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 620px) {
+  .robot-lab-page { padding-top: 0; }
+  .lab-stage-container { margin: 22px 0 32px; gap: 18px; }
+  .lab-crt-frame { min-width: 0; padding: 14px 12px; }
+  .lab-crt-brand, .lab-crt-metrics { flex-wrap: wrap; gap: 8px; }
+  .lab-screen-wrapper { min-height: 0; height: 220px; }
+  .lab-scope-controls { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .scope-ctrl-group, .range-wrap { min-width: 0; }
+  .range-wrap input[type="range"] { min-width: 0; height: 32px; }
+  .scope-btn-group { flex-wrap: wrap; }
+  .scope-btn, .wave-tab, .bot-act-btn, .copy-btn { min-height: 44px; }
+  .scope-btn { flex: 1; justify-content: center; }
+  .wave-cat-tabs { gap: 8px; }
+  .wave-tab { padding-inline: 10px; }
+  .wave-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .wave-card { min-width: 0; padding: 12px 10px; overflow-wrap: anywhere; }
+  .wave-detail-panel { padding: 18px 14px; }
+  .wave-detail-head, .detail-formula-box { flex-wrap: wrap; }
+  .detail-formula-box code { overflow-wrap: anywhere; }
+  .arch-cards-grid, .related-links-grid { grid-template-columns: minmax(0, 1fr); }
+  .arch-card { min-width: 0; padding: 20px 16px; }
+  .arch-card p, .section-title-wrap p { overflow-wrap: anywhere; }
+  .integration-code-block { min-width: 0; }
+  .integration-code-block pre { overscroll-behavior-x: contain; }
 }
 </style>
 
@@ -1376,15 +1403,18 @@ permalink: /projects/retro-robot/index.html
     waveGrid.innerHTML = "";
     WAVES.forEach((w, idx) => {
       if (filterCat !== "all" && w.cat !== filterCat) return;
-      const card = document.createElement("div");
+      const card = document.createElement("button");
+      card.type = "button";
+      card.dataset.waveIndex = String(idx);
+      card.setAttribute("aria-pressed", String(idx === currentWaveIdx));
       card.className = `wave-card ${idx === currentWaveIdx ? "is-active" : ""}`;
       card.innerHTML = `
-        <div class="wave-card-top">
+        <span class="wave-card-top">
           <span class="wave-card-idx">[W${String(idx + 1).padStart(2, "0")}]</span>
           <span class="wave-card-cat">${w.catLabel}</span>
-        </div>
-        <div class="wave-card-name">${w.name}</div>
-        <div class="wave-card-spec">${w.spec.split("·")[0]}</div>
+        </span>
+        <span class="wave-card-name">${w.name}</span>
+        <span class="wave-card-spec">${w.spec.split("·")[0]}</span>
       `;
       card.addEventListener("click", () => switchWaveform(idx));
       waveGrid.appendChild(card);
@@ -1411,8 +1441,10 @@ permalink: /projects/retro-robot/index.html
     stationSpeechText.textContent = w.comment;
 
     // 更新矩阵高亮
-    document.querySelectorAll(".wave-card").forEach((c, i) => {
-      c.classList.toggle("is-active", i === currentWaveIdx);
+    document.querySelectorAll(".wave-card").forEach((card) => {
+      const selected = Number(card.dataset.waveIndex) === currentWaveIdx;
+      card.classList.toggle("is-active", selected);
+      card.setAttribute("aria-pressed", String(selected));
     });
   }
 

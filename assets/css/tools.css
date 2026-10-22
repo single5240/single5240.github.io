@@ -510,6 +510,12 @@
 }
 
 @media (max-width: 560px) {
+  .tool-card { padding: 18px 14px; min-width: 0; }
+  .tool-card h3 { flex-wrap: wrap; }
+  .tool-input, .tool-select, .tool-textarea { font-size: 16px; }
+  .tools-tab-btn, .tool-btn { min-height: 44px; }
+  .tools-nav { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; }
+  .tools-tab-btn { flex-shrink: 0; }
   .bit-grid-wrap,
   .swatch-grid {
     grid-template-columns: 1fr;

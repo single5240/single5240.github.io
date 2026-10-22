@@ -2662,6 +2662,60 @@
   }
 }
 
+/* Small screens keep the reading column wide and auxiliary controls compact. */
+@media (max-width: 620px) {
+  .reading-layout { width: calc(100% - 24px); padding-top: 20px; }
+  .article-header { padding: 20px 16px; margin-bottom: 18px; }
+  .article-header h1 { font-size: 26px; line-height: 1.45; margin: 12px 0; overflow-wrap: anywhere; }
+  .article-header .eyebrow { display: inline-flex; align-items: center; min-height: 36px; }
+  .description { font-size: 14px; line-height: 1.8; margin-bottom: 16px; }
+  .article-meta { gap: 8px 12px; overflow-wrap: anywhere; }
+  .reading-grid { gap: 16px; }
+  .reading-main { padding: 22px 16px; }
+  .reading-sidebar .article-robot-card { display: none; }
+  .toc { padding: 4px 14px; max-height: 55svh; }
+  .toc summary { display: list-item; min-height: 44px; padding-block: 12px; }
+  .toc[open] summary { margin-bottom: 4px; }
+  .toc li { margin: 0; }
+  .toc a { min-height: 44px; padding-block: 10px; font-size: 13px; }
+  .content h2 { font-size: 22px; margin-top: 34px; padding-top: 18px; }
+  .content h3 { font-size: 19px; }
+  .content :is(h2,h3,h4) { scroll-margin-top: 125px; }
+  .content pre { font-size: 13px; padding: 14px; overscroll-behavior-x: contain; }
+  .copy-code { min-height: 44px; padding-inline: 14px; }
+  .code-toolbar { padding: 4px 10px; }
+  .code-toolbar > span::after { content: " · 横滑查看"; color: var(--code-ink); opacity: .7; }
+  .content .table-scroll { overscroll-behavior-x: contain; }
+  .content th, .content td { padding: 10px; min-width: 110px; }
+  .article-navigation { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .article-navigation a, .article-navigation a:last-child { text-align: left; padding: 12px 0; line-height: 1.7; }
+  .article-navigation > span:empty { display: none; }
+  .article-context a, .back { min-height: 44px; padding-block: 10px; }
+  .series-nav-top { margin-top: 16px; padding-top: 12px; gap: 8px; }
+  .series-nav-status { width: 100%; justify-content: space-between; }
+  .series-dropdown-toggle { min-height: 44px; padding-inline: 12px; }
+  .series-item-link { min-height: 44px; padding-block: 6px; }
+  .series-dropdown-panel { max-height: 50svh; }
+  .series-nav-bottom { padding: 16px 12px; }
+  .series-bottom-title-group { flex-wrap: wrap; }
+  .series-step-card { padding: 14px 12px; }
+  .aiw-header, .aiw-body { padding: 14px 12px; }
+  .aiw-section-title { flex-wrap: wrap; gap: 6px; }
+  .aiw-btn { min-height: 44px; }
+  .aiw-controls .aiw-btn { flex: 1 1 130px; }
+  .ecat-demo-root, .font-demo-root { padding: 14px 12px; }
+  .ecat-grid, .font-editor-grid { grid-template-columns: minmax(0, 1fr); }
+  .ecat-card, .font-grid-wrap { min-width: 0; }
+  .ecat-card { padding: 12px; }
+  .ecat-card-title, .ecat-module-row { flex-wrap: wrap; gap: 8px; }
+  .ecat-module-row label { min-width: 0; min-height: 44px; }
+  .ecat-module-row input { flex-shrink: 0; }
+  .ecat-btn-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ecat-btn, .font-btn, .font-tab-btn, .font-palette-btn { min-height: 44px; }
+  .font-grid-wrap { overflow-x: auto; align-items: stretch; overscroll-behavior-x: contain; }
+  .font-grid-16 { align-self: flex-start; flex-shrink: 0; }
+}
+
 @media print {
   .site-header,
   .site-footer,
