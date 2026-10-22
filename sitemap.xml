@@ -6,7 +6,7 @@ layout: null
   <url>
     <loc>{{ '/' | absolute_url }}</loc>
   </url>
-  {% assign new_pages = '/articles/index.html,/tools/index.html,/daily/index.html,/about/index.html,/topics/mcu.html,/topics/linux.html,/topics/qt.html,/topics/industrial.html' | split: ',' %}
+  {% assign new_pages = '/articles/index.html,/tools/index.html,/tools/kanban.html,/daily/index.html,/about/index.html,/topics/mcu.html,/topics/linux.html,/topics/qt.html,/topics/industrial.html' | split: ',' %}
   {% for path in new_pages %}
   <url><loc>{{ path | absolute_url }}</loc></url>
   {% endfor %}

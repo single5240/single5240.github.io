@@ -1,4 +1,8 @@
 /* Embedded Toolbox styles reusing shared theme tokens from base.css & site.css */
+.kb-tool-entry { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 20px; margin-bottom: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--accent-dark); }
+.kb-tool-entry:hover { border-color: var(--accent); }
+.kb-tool-entry strong { display: block; color: var(--ink); font-size: 18px; }
+.kb-tool-entry small { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
 .tools-nav {
   display: flex;
   flex-wrap: wrap;

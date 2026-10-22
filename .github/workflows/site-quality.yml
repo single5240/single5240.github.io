@@ -35,6 +35,8 @@ jobs:
           for file in assets/js/*.js scripts/*.mjs; do node --check "$file"; done
       - name: Check report import regression
         run: node --test scripts/import-ai-news.test.mjs
+      - name: Check temporary kanban data and expiry
+        run: node --test scripts/kanban.test.mjs
       - name: Upload verified Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4

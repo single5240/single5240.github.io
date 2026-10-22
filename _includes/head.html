@@ -33,3 +33,6 @@
 {% if page.section == 'tools' %}
 <link rel="stylesheet" href="{{ '/assets/css/tools.css' | relative_url }}?v={{ site.time | date: '%s' }}">
 {% endif %}
+{% if page.kanban %}
+<link rel="stylesheet" href="{{ '/assets/css/kanban.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+{% endif %}
