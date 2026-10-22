@@ -326,7 +326,8 @@ for (const file of htmlFiles) {
   if (!/<meta\s+name=["']description["']/i.test(html)) failures.push(`${label}: missing description`);
   if (html.includes('class="site-header"')) {
     if (html.indexOf("/assets/js/theme.js") > html.indexOf("/assets/css/base.css")) failures.push(`${label}: theme bootstrap must precede base CSS`);
-    const activeLinks = [...html.matchAll(/aria-current="page"/g)].length;
+    const header = html.match(/<header\b[^>]*class="site-header"[^>]*>[\s\S]*?<\/header>/i)?.[0] || "";
+    const activeLinks = [...header.matchAll(/aria-current="page"/g)].length;
     if (activeLinks > 1) failures.push(`${label}: multiple active navigation links`);
   }
 

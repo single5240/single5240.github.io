@@ -12,7 +12,7 @@ tags:
   - DMA
 ---
 
-> 本文总结数显式拉力计 HW1.4 在驱动 240×320 SPI 彩屏过程中遇到的真实色彩反转案例，并给出覆盖**显示反相、RGB/BGR 通道互换、RGB565 高低字节错序、条带缓冲区竞争与高频 SPI 信号完整性**的标准排查方法。驱动协议与条带渲染细节可配合阅读 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }}) 与 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})。
+数显式拉力计 HW1.4 的 240×320 SPI 彩屏曾出现颜色反转。排查时需要区分显示反相、RGB/BGR 互换、RGB565 字节错序、缓冲区竞争和 SPI 信号问题，避免看到颜色不对就修改字节序。驱动协议与条带渲染细节可配合阅读 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }}) 与 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})。
 
 ## 真实案例：红蓝绿纯色显示为青黄紫
 
@@ -225,7 +225,7 @@ spiInit.BaudRatePres = SPI_BR_PRESCALER_4;
 
 ## 板级验收清单
 
-修改 LCD 驱动或升级 SPI 频率后，需通过以下检查项闭环：
+修改 LCD 驱动或升级 SPI 频率后，检查以下项目：
 
 - [ ] Keil Rebuild 零错误、零新增警告，确认烧录 HEX 为当前最新产物。
 - [ ] 多次冷启动、复位与热重启后，黑、白、红、绿、蓝、黄、青、紫八色显示一致且无首帧闪屏。

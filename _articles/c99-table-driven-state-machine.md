@@ -11,16 +11,16 @@ tags:
   - 嵌入式软件
 ---
 
-> 本文整理自数显式拉力计 HW1.4 固件中的通用状态机组件（`state_machine.h/.c`）。该模块采用纯静态内存设计，不依赖具体 MCU 外设、RTOS、系统时钟或动态内存（`malloc/free`），可直接复制到任何 C99 嵌入式工程中复用。
+`state_machine.h/.c` 来自数显式拉力计 HW1.4 固件，使用静态内存，不依赖 MCU 外设、RTOS 或系统时钟。移植到其他 C99 工程时，需要提供状态转移表、事件队列和业务动作函数。
 
 ## 模块特性与适用场景
 
-在裸机主循环（Super-Loop）中，随着业务状态和异步事件增多，多层嵌套的 `switch-case` 和散落的标志位极易演化为难以维护的状态迷宫。本模块通过轻量表驱动架构提供以下能力：
+业务状态和事件增多后，分散的 `switch-case` 与标志位不便检查。这个组件把状态转移集中放在表中，事件按队列顺序处理：
 
 - **声明式状态转移表**：以静态常量表集中描述“当前状态 + 触发事件 → 动作函数 + 下一状态”；
 - **内置静态 FIFO 事件队列**：队列数组由调用方显式提供，零堆内存分配；
 - **空闲自环事件（Loop Event）**：当外部事件队列为空时，自动执行当前状态绑定的周期循环事件；
-- **有界非阻塞调度**：每次调用 `StateMachine_Process()` 最多消费并执行一个事件，保证主循环单圈耗时可预测；
+- **有界非阻塞调度**：每次调用 `StateMachine_Process()` 最多消费并执行一个事件，单圈耗时还取决于动作函数是否及时返回；
 - **业务上下文解耦**：通过 `void *userContext` 向动作函数传递业务数据，状态机内核不保存任何业务全局变量；
 - **初始化期配置自检**：在 `StateMachine_Init()` 阶段自动拦截越界状态、越界事件、重复转移项和缺失的循环转移。
 
@@ -51,11 +51,11 @@ tags:
   │                         (c) 返回 STATE_MACHINE_PROCESS_HANDLED
 ```
 
-需要注意一个关键语义：**动作函数 `action()` 在 `currentState` 更新之前执行**。因此动作函数内部读取 `StateMachine_GetState()` 得到的是转移前的源状态；动作函数中通过 `StateMachine_PostEvent()` 投递的新事件会进入 FIFO 队列尾部，留待后续的 `Process()` 调用处理，不会在当前调用栈中发生递归重入。
+这里的执行顺序是：**动作函数 `action()` 在 `currentState` 更新之前执行**。因此动作函数内部读取 `StateMachine_GetState()` 得到的是转移前的源状态；动作函数中通过 `StateMachine_PostEvent()` 投递的新事件会进入 FIFO 队列尾部，留待后续的 `Process()` 调用处理，不会在当前调用栈中发生递归重入。
 
 ## 交互式内核演示：状态转移与事件调度
 
-为直观理解表驱动状态机在单圈主循环中的流转机制，下方提供了一个可在浏览器中实时交互的内核模拟器。你可以向 8 槽静态 FIFO 队列投递外部事件、单步推进 `StateMachine_Process()`、观察空闲自环（Loop Event）的自动保活机制，以及转移表匹配行的高亮与动作函数执行顺序：
+向下面的 8 槽 FIFO 投递事件后，单步执行 `StateMachine_Process()`，可以看到匹配的转移表行和动作执行顺序。队列为空时，演示会执行当前状态的循环事件。
 
 <div class="article-interactive-widget" id="fsm-demo-app" aria-label="C99 表驱动状态机交互演示">
   <div class="aiw-header">
@@ -483,7 +483,7 @@ StateMachineState StateMachine_GetState(const StateMachine *machine)
 
 ## 最小可运行示例
 
-下面演示一个包含 `IDLE` 和 `RUNNING` 两个状态的最小闭环：收到 `START` 事件后进入 `RUNNING`，执行 3 次循环动作后自动投递 `STOP` 事件切回 `IDLE`。
+下面演示一个包含 `IDLE` 和 `RUNNING` 两个状态的例子：收到 `START` 事件后进入 `RUNNING`，执行 3 次循环动作后自动投递 `STOP` 事件切回 `IDLE`。
 
 ```c
 #include "state_machine.h"
@@ -604,7 +604,7 @@ int main(void)
 
 ### 2. 动作函数保持非阻塞与无符号超时计算
 
-动作函数必须快速返回，任何耗时的外设等待（如 Flash 擦写、传感器稳定等待）都应拆分为循环事件中的非阻塞轮询，并使用无符号差值计算超时以天然兼容 32 位计数器回绕：
+动作函数必须快速返回，任何耗时的外设等待（如 Flash 擦写、传感器稳定等待）都应拆分为循环事件中的非阻塞轮询，并使用无符号差值计算超时以处理 32 位计数器回绕：
 
 ```c
 static void Action_WaitLoop(StateMachine *machine, void *userContext)

@@ -10,7 +10,7 @@ tags:
   - SSH
   - nginx
 ---
-> 这份文档整理的是 ATK-IMX6U Linux 板子网页控制项目中实际用到的基础命令。重点围绕网络连通、SSH 登录、nginx、Python API、硬件接口和常见问题排查。
+这里收集 ATK-IMX6U 网页控制项目用到的命令，按网络、SSH、nginx、Python API 和硬件接口分类，方便部署和排错时查找。
 
 ## 一、项目链路
 

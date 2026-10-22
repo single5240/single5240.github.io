@@ -12,7 +12,7 @@ tags:
   - 非阻塞驱动
 ---
 
-> 本文记录数显式拉力计 HW1.4 固件中的 W25Q128 SPI NOR Flash 驱动（`DRV/drv_w25q128.c/.h`），重点说明 SPI3 引脚重映射、256 字节跨页编程拆分、状态寄存器（SR1/SR2/SR3）写保护核查，以及如何在不阻塞主循环与看门狗的前提下推进 4 KiB 扇区擦除与页编程。SPI 与 DMA 总线全景见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
+W25Q128 驱动位于数显式拉力计 HW1.4 的 `DRV/drv_w25q128.c/.h`，使用 SPI3 轮询收发。下面记录引脚映射、跨页拆分、写保护检查，以及将页编程和扇区擦除拆为启动、查询两步的做法。SPI 与 DMA 配置总表见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
 
 ## 芯片特性与驱动概览
 
@@ -66,7 +66,7 @@ SPI3 工作在双线全双工模式，即使只向 Flash 发送命令或地址�
 | 扇区（Sector） | 4 KiB | 4,096 | `W25q128_SectorErase()` 与 `W25q128_SectorEraseStart()`（要求 4096 字节对齐） |
 | 32K / 64K 块与全片 | 32K / 64K / 16M | — | 未实现（全片擦除耗时数秒，会突破 1 s 看门狗窗口） |
 
-使用 NOR Flash 必须遵守三条硬件底线：
+读写时需要注意三个限制：
 
 1. **先擦后写（只允许 1 → 0）**：扇区擦除后所有位变为 `1`（字节为 `0xFF`），页编程只能把 `1` 改写为 `0`；若要把 `0` 变回 `1`，必须先擦除整个 4 KiB 扇区。驱动层 `W25q128_Write()` 不会隐式替调用方擦除扇区。
 2. **256 字节页回绕边界**：单次 `Page Program (0x02)` 若跨越 256 字节页尾（`address & 0xFF` 溢出），芯片内部地址会回绕覆盖当前页首部。因此 `W25q128_Write()` 每次计算 `pageRemain = 256 - (address & 255)`，在页边界处自动拆分为多笔页编程事务。
@@ -114,7 +114,7 @@ SPI3 工作在双线全双工模式，即使只向 Flash 发送命令或地址�
 - AD7190 的 255 帧环形队列可能逼近高水位；
 - 连续擦除多个扇区时直接触发看门狗复位。
 
-而拆分看物理过程可以发现：
+一次擦写包含两个阶段：
 
 - **SPI 命令下发阶段**：发送 `0x06` + `0x20` + 3 字节地址仅占几个微秒；即使是 256 字节满页编程，在 8 MHz SCLK 下线上数据传输也仅需 **约 0.256 ms**；
 - **芯片内部电荷擦写阶段**：拉高 `/CS` 后，Flash 内部高压泵独自工作数毫秒至数百毫秒，此时完全不需要占用 MCU。
@@ -146,7 +146,7 @@ bool             W25q128_IsOperationActive(void);
    └─ 若 BUSY == 1 且超出截止时间：返回 TIMEOUT，但保持事务隔离直到物理 BUSY 真正清零
 ```
 
-在非阻塞事务活动期间（`W25q128_IsOperationActive() == true`），任何普通 `Read`、重复 `Start` 或同步擦写都会被驱动拦截并返回 `W25Q128_STATUS_BUSY`，从而在单执行上下文下实现严密的事务互斥。
+在非阻塞事务活动期间（`W25q128_IsOperationActive() == true`），任何普通 `Read`、重复 `Start` 或同步擦写都会被驱动拦截并返回 `W25Q128_STATUS_BUSY`，避免同一执行上下文中的事务交叉。
 
 <div id="w25q-demo-app" class="w25q-demo-root">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">

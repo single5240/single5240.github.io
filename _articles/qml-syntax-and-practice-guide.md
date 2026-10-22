@@ -1,7 +1,7 @@
 ---
 layout: article
 title: QML 语法与实战指南：从声明式界面到 C++ 集成
-description: 系统讲解 Qt 6 QML 的对象、属性绑定、信号、组件、布局、模型视图、动画、模块化和 C++ 交互，并附完整工程示例。
+description: Qt 6 QML 的对象、属性绑定、信号、布局、组件和 C++ 接口写法，附常见错误与工程示例。
 date: 2026-07-20
 category: Qt 工具
 tags:
@@ -13,7 +13,7 @@ tags:
 
 QML 是 Qt 的声明式语言，主要用来构建桌面、移动端和嵌入式界面。它描述“界面由哪些对象组成，以及对象之间如何关联”，而不是逐条命令系统创建控件。
 
-> 学习 QML 最重要的三个抓手：用对象树表达结构，用属性绑定表达状态关系，用信号表达事件。
+对象树描述界面结构，属性绑定维持数据关系，信号处理点击等事件。下面从这三部分开始。
 
 本文以 Qt 6 的现代写法为主。旧版 Qt 5 项目常在 `import` 后写版本号，核心概念仍然相通。
 
@@ -926,7 +926,7 @@ QtObject {
 
 CMake 中还需在 `qt_add_qml_module()` 前将该文件标记为 `QT_QML_SINGLETON_TYPE TRUE`。现代 CMake 工程通常自动生成 `qmldir`，不必手工维护。
 
-## 20. 常见错误与最佳实践
+## 20. 常见错误
 
 1. **把绑定变成一次赋值。** 在事件处理器中执行 `width = ...` 会覆盖旧绑定；需要持续关系时应保留声明式绑定。
 2. **绑定中产生副作用。** 绑定会反复计算，不要在其中修改状态或执行 I/O。
@@ -987,5 +987,3 @@ cmake --build build --target all_qmllint
 - [QML and C++ Integration](https://doc.qt.io/qt-6/qtqml-cppintegration-overview.html)
 - [Exposing Attributes of C++ Types to QML](https://doc.qt.io/qt-6/qtqml-cppintegration-exposecppattributes.html)
 - [qmllint](https://doc.qt.io/qt-6/qtqml-tooling-qmllint.html)
-
-QML 真正的优势不是少写几行界面代码，而是把“状态之间的关系”直接写进界面定义中。只要始终保持数据源清晰、绑定单向、组件接口明确，QML 项目即使规模扩大，也能保持良好的可读性和可维护性。

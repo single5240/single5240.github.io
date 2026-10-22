@@ -1,7 +1,7 @@
 ---
 layout: article
 title: ATK-IMX6U 开机自启动 LCD UI 配置教程
-description: 记录 ATK-IMX6U 开发板通过 /etc/rc.local 在系统启动时后台启动 /opt/ui/systemui 的完整流程。
+description: 在 ATK-IMX6U 的 /etc/rc.local 中配置 /opt/ui/systemui 开机启动，并检查 framebuffer、进程和日志。
 date: 2026-07-17
 category: 嵌入式
 tags:
@@ -10,7 +10,7 @@ tags:
   - Qt
   - framebuffer
 ---
-> 本文记录 ATK-IMX6U 开发板通过 `/etc/rc.local` 在系统启动时后台启动 `/opt/ui/systemui` 的配置方法，并包含 SSH 连接、屏幕检查、手动启动、日志查看和排错步骤。
+ATK-IMX6U 上的 `/opt/ui/systemui` 可以手动显示到 LCD 后，再把启动命令放进 `/etc/rc.local`。先检查 framebuffer 和运行参数，再配置自启动；启动失败时从进程和日志查起。
 
 ## 一、适用场景
 
@@ -169,7 +169,7 @@ QFontDatabase: Cannot find font directory /usr/lib/fonts.
 | 开机后没有 `systemui` 进程 | `rc.local` 未执行、脚本语法错误、路径错误 | 检查 `/etc/inittab`、`sh -n /etc/rc.local`、`/tmp/systemui.log` |
 | `exit: 0\r: numeric argument required` | 脚本是 Windows CRLF 换行 | 执行 `sed -i 's/\r$//' /etc/rc.local` |
 
-## 七、最终推荐版 /etc/rc.local
+## 七、/etc/rc.local 配置示例
 
 ```bash
 #!/bin/sh -e

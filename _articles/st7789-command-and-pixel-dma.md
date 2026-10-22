@@ -12,7 +12,7 @@ tags:
   - 驱动移植
 ---
 
-> 本文面向嵌入式 LCD 驱动移植，专注 **ST7789 控制器协议、RS/CS 事务时序、窗口配置与像素 DMA 传输**。上层 UI 条带裁剪与帧快照机制见 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})，花屏与反色问题见 [嵌入式 RGB565 LCD 颜色反转、字节错序与花屏排查指南]({{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }})。
+移植 ST7789 驱动时，需要先核对命令、RS/CS 时序和显示窗口，再接入像素 DMA。下面按这个顺序整理接口与传输流程。上层 UI 条带裁剪与帧快照机制见 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})，花屏与反色问题见 [嵌入式 RGB565 LCD 颜色反转、字节错序与花屏排查指南]({{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }})。
 
 ## 可迁移边界与最小驱动接口
 

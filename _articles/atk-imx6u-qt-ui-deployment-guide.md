@@ -1,7 +1,7 @@
 ---
 layout: article
 title: ATK-IMX6U Qt/QML UI 部署与排障指南
-description: 从 Windows QML 调试、WSL 交叉编译到 i.MX6U 板子部署、字体与 tslib 触摸排障的完整实战流程。
+description: 在 Windows 调试 QML，用 WSL 交叉编译并部署到 i.MX6U，处理字体缺失和 tslib 触摸问题。
 date: 2026-07-20
 category: 嵌入式 Linux
 tags:
@@ -12,7 +12,7 @@ tags:
   - tslib
 ---
 
-本文记录在 ATK-IMX6U 开发板上，从 Windows 桌面调试到 WSL 交叉编译、部署 QML 触摸 UI，并控制 LED 与蜂鸣器的完整过程。
+这套 QML 触摸界面先在 Windows 上调试，再用 WSL 交叉编译后部署到 ATK-IMX6U，控制板上的 LED 和蜂鸣器。部署时主要遇到了字体缺失和触摸无响应两个问题，下面记录环境、命令和处理办法。
 
 ## 1. 最终架构
 
@@ -397,7 +397,7 @@ cat /tmp/vincent_ui.log
 
 并使用第 12 节的完整环境变量。修改前保留旧启动命令，便于出现问题时回退。
 
-## 15. 日常开发：修改 UI 到板子验证的标准流程
+## 15. 修改 UI 后如何部署验证
 
 这一节用于日常迭代。每次修改界面或 C++ 后端后，按以下顺序执行。
 

@@ -11,7 +11,7 @@ tags:
   - 协议栈移植
 ---
 
-> 本文整理自 STM32F407 + LAN9252（或 ET1100/ET1200）平台的 Beckhoff SSC（Slave Stack Code）从站协议栈移植笔记，重点梳理硬件抽象层适配、CoE 对象字典与动态 PDO 映射机制、ETG.5001 模块化设备（Slot/Module）地址偏移规则，以及 EtherCAT 状态机（ESM）转换条件与常见 `AL Status Code` 报错排查。
+这份 Beckhoff SSC（Slave Stack Code）移植笔记以 STM32F407 + LAN9252 为主，也涉及 ET1100/ET1200。内容分为硬件接口、动态 PDO 与 Slot/Module、状态机报错排查三部分。
 
 ## 从站协议栈移植
 
@@ -122,7 +122,7 @@ TOBJECT;
 
 ### SDO 配置与 PDO 三级映射关系
 
-许多初学者容易混淆 SDO 和 PDO 的关系：
+SDO 和 PDO 分别承担配置与周期数据传输：
 
 - **SDO（Service Data Object）** 是走邮箱（SM0/SM1）的**非周期性配置通道**，用于在 `Pre-Op` 阶段按 `Index:SubIndex` 读写对象字典中的任意条目。
 - **PDO（Process Data Object）** 是走过程数据 RAM（SM2/SM3）的**周期性实时数据通道**，传输时不携带索引头，主从站直接按事先约定好的字节排布解析数据。
@@ -154,7 +154,7 @@ TOBJECT;
 
 ### ETG.5001 模块化设备（Slot 与 Module）工作原理
 
-先完全掌握上面的三级 PDO 映射，再看 **ETG.5001 模块化设备（Modular Device Profile）** 就会非常清晰。
+**ETG.5001 模块化设备（Modular Device Profile）** 在上述 PDO 映射基础上，为多个 Slot 分配对象索引。
 
 在网关、耦合器或多轴/多通道 IO 从站中，一个从站下包含多个**插槽（Slot）**，每个插槽可以灵活挂载不同类型的功能**模块（Module）**。为了避免为每个插槽手动静态定义几十个重复的对象字典条目，ETG.5001 规定了基于**步进偏移（Increment）**的动态地址分配机制：
 
@@ -178,7 +178,7 @@ TOBJECT;
 
 ### ESI XML 文件与 EEPROM（SII）一致性
 
-- **ESI（EtherCAT Slave Information）XML 文件**是连接从站固件开发与主站工程组态的桥梁。
+- **ESI（EtherCAT Slave Information）XML 文件**描述从站信息，供主站工程组态使用。
 - **双重作用**：
   1. 放入主站配置目录（如 `C:\TwinCAT\3.1\Config\Io\EtherCAT`），供 TwinCAT 解析从站的身份信息、SM0~SM3 参数、对象字典以及 Slot/Module 组合规则。
   2. 用于生成并烧写从站板载 **EEPROM（SII，Slave Information Interface）** 二进制镜像。LAN9252 上电复位时会首先读取外部 I2C EEPROM 来初始化 PDI 接口模式（如 SPI 或 HBI）、Vendor ID 和 Product Code。

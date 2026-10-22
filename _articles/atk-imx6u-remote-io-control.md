@@ -11,11 +11,11 @@ tags:
   - Cloudflare Tunnel
 ---
 
-> 本文记录从 Windows 电脑直连 ATK-IMX6U Linux 板子，到通过 Tailscale 自用维护、Cloudflare Tunnel 临时分享、网页 IO 控制台控制灯和显示输入状态的完整流程。
+Windows 与 ATK-IMX6U 通过网线直连，板子上的网页控制 LED、蜂鸣器并显示输入状态。远程维护走 Tailscale，临时分享走 Cloudflare Tunnel。下面分别记录这几部分的配置。
 
-## 一、目标与最终效果
+## 一、访问方式
 
-目标是让家里的 ATK-IMX6U Linux 板子具备两类访问方式：
+远程访问分为自用维护和临时分享，另外保留板子本地控制台：
 
 - 自用维护通道：通过 Tailscale 访问板子所在的 `192.168.10.0/24` 子网，可 SSH 登录、调试、维护。
 - 分享访问通道：通过 Cloudflare Tunnel 暴露一个 HTTPS 登录页，登录后访问板子的 IO 控制台。

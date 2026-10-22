@@ -12,11 +12,11 @@ tags:
   - 裸机UI
 ---
 
-> 本文结合数显式拉力计 HW1.4 当前工程源码，梳理从“力值变化”到“LCD 像素更新”的全部关键步骤，重点覆盖条带缓冲裁剪、帧快照一致性、SPI1 TX/RX 全双工 DMA 协同以及主循环非阻塞收尾机制。控制器底层命令与移植清单可参考 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }})，SPI 与 DMA 通道总表见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
+数显式拉力计 HW1.4 用一块 8 行缓冲区分批刷新 LCD。下面沿着力值更新、帧快照、条带绘制和 SPI1 DMA 发送这条路径，说明各模块如何配合。控制器底层命令与移植清单可参考 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }})，SPI 与 DMA 通道总表见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
 
 ## 阅读目标与相关文件
 
-本文围绕以下问题展开：
+阅读时可以对照这几个问题：
 
 - UI 数据、页面状态和 LCD 驱动之间如何分层；
 - 为什么没有使用整屏帧缓冲，而是使用 8 行高的渲染条带；
@@ -233,7 +233,7 @@ nextY += stripHeight
 
 ### 交互式在线演示：240×8 条带渲染与帧快照防撕裂模拟
 
-为直观理解嵌入式微控制器如何在极小 SRAM 限制下驱动彩屏、以及帧快照如何消除画面撕裂（Tearing），下方提供了一个纯前端条带渲染模拟沙箱。你可以观察 8 行条带高亮光带如何从第 0 条带（`y=0..7`）逐步扫描至第 39 条带（`y=312..319`），对比整屏 153.6 KB 显存与 3.84 KB 条带画布的显存落差，并通过开关“帧快照”模拟中途中断导致数字断裂的经典翻车现象：
+下面的演示每次绘制 8 行，从第 0 条带（`y=0..7`）推进到第 39 条带（`y=312..319`）。关闭“帧快照”后，可以观察数据在一帧中途变化时，数字上下部分不一致的现象。整屏缓冲区需要 153.6 KB，条带缓冲区为 3.84 KB。
 
 <div class="article-interactive-widget" id="strip-demo-app" aria-label="LCD 条带渲染与帧快照防撕裂交互演示">
   <div class="aiw-header">
@@ -387,7 +387,7 @@ LCD_ASYNC_WAIT_SPI（主循环等待 SPI BUSY 清零）
 - RX DMA 完成时置 `lcdAsyncDmaDone = 1`；
 - 清除 DMA1_CH1 全局中断挂起位。
 
-ISR 不等待 `SPI BUSY`、不切 SPI 位宽、不打日志，也不启动下一条带。这样可以确保抢占优先级为 3 的 LCD 中断极快退出，绝不阻塞抢占优先级为 1 的 AD7190 称重采样中断。真正的收尾动作全部交给主循环中的 `LcdSt7789_Process()` 执行。
+ISR 不等待 `SPI BUSY`、不切 SPI 位宽、不打日志，也不启动下一条带。LCD 中断的抢占优先级为 3，AD7190 采样中断为 1；这里只记录标志，收尾交给主循环中的 `LcdSt7789_Process()` 执行。
 
 ## 单条带完整时序与主循环串联
 
