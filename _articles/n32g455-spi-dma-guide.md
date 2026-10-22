@@ -245,7 +245,7 @@ DMA 未结束前，发送缓冲区不得被修改或离开作用域，接收缓�
           </div>
           <div class="spi-eval" id="spi3-eval">
             <span class="spi-eval-icon success">●</span>
-            <span class="spi-eval-text" id="spi3-eval-text">W25Q128 支持高达 104 MHz。8 MHz 处于高度稳定抗干扰的轮询安全区间。</span>
+            <span class="spi-eval-text" id="spi3-eval-text">W25Q128 标称最高支持 104 MHz；此处使用 8 MHz 轮询，时序裕量充足。</span>
           </div>
         </div>
       </div>
@@ -254,7 +254,7 @@ DMA 未结束前，发送缓冲区不得被修改或离开作用域，接收缓�
     <!-- 02: DMA1 硬件仲裁时序 -->
     <div class="spi-dma-view" id="spi-view-arbiter" role="tabpanel" hidden>
       <div class="arbiter-overview">
-        <p class="aiw-hint">N32G455 的 DMA1 内部硬件仲裁器按 <strong>Very High &gt; High &gt; Medium &gt; Low</strong> 判定总线控制权。当 LCD (Medium) 与 AD7190 (Very High/High) 同时请求总线时，仲裁器在每个 AHB 传输槽插队抢占，确保高精度采样绝不丢包。</p>
+        <p class="aiw-hint">N32G455 的 DMA1 内部硬件仲裁器按 <strong>Very High &gt; High &gt; Medium &gt; Low</strong> 裁定控制权。当 LCD (Medium) 与 AD7190 (Very High/High) 并发请求时，高优先级通道优先获得 AHB 传输槽，降低采样丢包风险。</p>
       </div>
 
       <div class="dma-channels-grid">

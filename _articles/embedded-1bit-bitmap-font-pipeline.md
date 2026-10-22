@@ -64,7 +64,7 @@ tags:
 
 <div id="font-demo-app" class="font-demo-root">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-    <h3 style="margin:0; font-size:16px;">🎨 1-bit 点阵字库生成与光栅化排障实验室</h3>
+    <h3 style="margin:0; font-size:16px;">1-bit 点阵字库生成与光栅化排障实验室</h3>
     <span style="font-size:12px; color:var(--muted);">纯前端交互演示</span>
   </div>
 

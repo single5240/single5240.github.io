@@ -26,7 +26,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">01 · RADIX / ENDIANNESS / IEEE-754 FLOAT</p>
       <h2 id="title-radix">进制、字节序与 IEEE-754 浮点/定点转换器</h2>
-      <p>支持 32-bit 无符号/有符号整数、十六进制、二进制（4-bit 分组）、八进制与 IEEE-754 单精度 <code>float</code> 在任一输入框修改数值，其他框随之更新。</p>
+      <p>支持 32-bit 无符号/有符号整数、十六进制、二进制（4-bit 分组）、八进制与 IEEE-754 单精度 <code>float</code>。修改任一输入框，其余各框同步更新。</p>
     </div>
   </div>
 
@@ -147,7 +147,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">02 · CRC SUITE &amp; MODBUS RTU INSPECTOR</p>
       <h2 id="title-crc">CRC8/16/32 计算器与 Modbus RTU 帧构造/拆包校验器</h2>
-      <p>输入十六进制字节流或 ASCII 字符串，同步计算 7 种嵌入式常用校验值，支持一键构造 Modbus RTU 读写请求帧或对抓包报文做 CRC 诊断。</p>
+      <p>输入十六进制字节流或 ASCII 字符串，计算 7 种常用校验值，支持构造 Modbus RTU 读写请求帧与诊断抓包报文。</p>
     </div>
   </div>
 
@@ -248,7 +248,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">03 · 32-BIT REGISTER BITFIELD &amp; CORTEX-M HARDFAULT DECODER</p>
       <h2 id="title-reg">32-bit 寄存器位域可视化编辑器 &amp; HardFault 状态解码</h2>
-      <p>点击任意 Bit 位翻转 0/1，生成 C99 掩码与置位代码；下方支持一键解码 Cortex-M3/M4/M7 的 <code>SCB-&gt;CFSR</code> 与 <code>SCB-&gt;HFSR</code> 崩溃原因。</p>
+      <p>点击位格子切换 0/1 生成 C99 掩码与置位代码；下方支持解码 Cortex-M3/M4/M7 的 <code>SCB-&gt;CFSR</code> 与 <code>SCB-&gt;HFSR</code> 崩溃原因。</p>
     </div>
   </div>
 
@@ -335,7 +335,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">04 · PRECISION ADC &amp; MCU TIMER / UART CALCULATOR</p>
       <h2 id="title-adc">24-bit/12-bit ADC 码值换算 &amp; 定时器 PWM / 串口分频计算器</h2>
-      <p>支持 AD7190/ADS1256 等 Σ-Δ ADC 的双极性偏移二进制（<code>0x800000 = 0V</code>）、补码与单极性码值双向换算，以及定时器 <code>PSC/ARR</code> 整数分频组合搜索。</p>
+      <p>支持 AD7190、ADS1256 等 Σ-Δ ADC 的双极性偏移二进制（<code>0x800000 = 0V</code>）、补码与单极性码值双向换算，以及定时器 <code>PSC/ARR</code> 整数分频组合搜索。</p>
     </div>
   </div>
 
@@ -439,7 +439,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">05 · RGB565 COLOR &amp; 1-BIT BITMAP FONT INSPECTOR</p>
       <h2 id="title-display">RGB888 ↔ RGB565 调色板（含 DMA 字节序交换）与 1-bit 字模预览器</h2>
-      <p>直观对比 ST7789/ILI9341 屏幕在 8-bit SPI DMA 发送时未交换高低字节导致的偏色现象；右侧支持手绘或粘贴 C 语言数组反查 1-bit 单色字模点阵。</p>
+      <p>对比 ST7789、ILI9341 在 8-bit SPI DMA 传输时的高低字节序差异与偏色原因；右侧支持手绘或粘贴 C 数组反查 1-bit 单色点阵字模。</p>
     </div>
   </div>
 

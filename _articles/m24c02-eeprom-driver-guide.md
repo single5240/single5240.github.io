@@ -132,8 +132,8 @@ M24C02 共有 16 页，每页 16 字节，页起始地址依次为 `0x00, 0x10, 
         <span class="aiw-hint">测试从 0x0E 连续写入 4 字节 [0x11, 0x22, 0x33, 0x44]</span>
       </div>
       <div class="aiw-controls">
-        <button type="button" class="aiw-btn danger" id="eeprom-btn-raw-bug">原生裸写 (无页拆分，触发回绕篡改Bug)</button>
-        <button type="button" class="aiw-btn primary" id="eeprom-btn-driver-safe">驱动智能拆分写入 (Page Chunking)</button>
+        <button type="button" class="aiw-btn danger" id="eeprom-btn-raw-bug">未分页直接写（演示回绕现象）</button>
+        <button type="button" class="aiw-btn primary" id="eeprom-btn-driver-safe">按页拆分写入（Page Chunking）</button>
       </div>
     </div>
 

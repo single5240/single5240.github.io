@@ -246,13 +246,13 @@ nextY += stripHeight
       <div class="strip-mem-card bad">
         <span class="aiw-stat-label">方案一：传统整屏全帧缓冲 (Full Framebuffer)</span>
         <div class="strip-mem-val">153.60 KiB</div>
-        <small style="color: #d32f2f; font-size: 11px;">240×320×2 字节 ➔ 超过 N32G455 144 KiB 总 SRAM 硬件上限，无法分配！❌</small>
+        <small style="color: #d32f2f; font-size: 11px;">240×320×2 字节，超过 N32G455 144 KiB 总 SRAM 上限。</small>
       </div>
 
       <div class="strip-mem-card good">
         <span class="aiw-stat-label">方案二：HW1.4 8 行局部条带画布 (Strip Canvas)</span>
         <div class="strip-mem-val">3.84 KiB</div>
-        <small style="color: var(--accent-dark); font-size: 11px;">240×8×2 字节 ➔ 仅占 MCU SRAM 2.6%，留足内存给算法与协议栈！✅</small>
+        <small style="color: var(--accent-dark); font-size: 11px;">240×8×2 字节，约占 SRAM 2.67%，为采集队列与协议栈预留内存。</small>
       </div>
     </div>
 
@@ -306,7 +306,7 @@ nextY += stripHeight
           </div>
           <label class="rgb-toggle-label">
             <input type="checkbox" id="strip-chk-snapshot" checked>
-            <span><strong>开启帧快照机制 (推荐)</strong>：条带 0 开始时锁定当前数据快照，整帧 40 个条带未绘制完毕前禁止数据突变，杜绝上下半屏脱节。</span>
+            <span><strong>开启帧快照机制</strong>：条带 0 开始时锁定当前数据快照，整帧 40 个条带绘制完成前保持快照不变，避免上下半屏数据不一致。</span>
           </label>
         </div>
 

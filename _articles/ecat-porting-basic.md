@@ -263,7 +263,7 @@ SSC 协议栈中处理状态转换请求的核心入口函数是 `AL_ControlInd(
 
 <div id="ecat-esm-demo-app" class="ecat-demo-root">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-    <h3 style="margin:0; font-size:16px;">🔄 EtherCAT 从站状态机（ESM）与动态 PDO 诊断控制台</h3>
+    <h3 style="margin:0; font-size:16px;">EtherCAT 从站状态机（ESM）与动态 PDO 诊断控制台</h3>
     <span style="font-size:12px; color:var(--muted);">纯前端交互演示</span>
   </div>
 
@@ -310,7 +310,7 @@ SSC 协议栈中处理状态转换请求的核心入口函数是 `AL_ControlInd(
       </div>
 
       <button class="ecat-btn danger" id="ecat-btn-fault-wd" style="width:100%; margin-bottom:12px;">
-        ⚡ 故障注入：在 OP 状态制造看门狗超时 (0x001B)
+        故障注入：在 OP 状态模拟看门狗超时 (0x001B)
       </button>
 
       <div class="ecat-card-title" style="margin-top:12px;">

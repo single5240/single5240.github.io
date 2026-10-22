@@ -150,7 +150,7 @@ bool             W25q128_IsOperationActive(void);
 
 <div id="w25q-demo-app" class="w25q-demo-root">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-    <h3 style="margin:0; font-size:16px;">⏱️ W25Q128 非阻塞状态机 vs 阻塞轮询抖动模拟器</h3>
+    <h3 style="margin:0; font-size:16px;">W25Q128 非阻塞状态机与阻塞轮询对比演示</h3>
     <span style="font-size:12px; color:var(--muted);">纯前端交互演示</span>
   </div>
 
@@ -165,7 +165,7 @@ bool             W25q128_IsOperationActive(void);
         <span class="w25q-flag"><span id="w25q-led-wel" class="w25q-led" style="margin-right:4px;"></span>WEL</span>
         <span class="w25q-flag">BUSY</span>
       </div>
-      <span id="w25q-mode-badge" class="ecat-status-val">当前模式：非阻塞状态机 (推荐)</span>
+      <span id="w25q-mode-badge" class="ecat-status-val">当前模式：非阻塞状态机</span>
       <button class="ecat-btn" id="w25q-mode-toggle" style="background:#2a2a2a; border-color:#444; color:#fff;">切换为：阻塞轮询 while(BUSY)</button>
     </div>
   </div>
