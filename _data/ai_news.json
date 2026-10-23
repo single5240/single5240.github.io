@@ -15,6 +15,24 @@
           "weekday": "周二",
           "title": "AI 资讯日报 · 10月20日（周二）",
           "summary": "Codex 第 14 天可编辑历史消息，第 15 天是直播，没有宣布重置。ChatGPT 上线 Slides 和 GPT-6 Pro 更新。Pro 200 额度下调 10/30 生效，还有 10 天。"
+        },
+        {
+          "date": "2026-10-21",
+          "weekday": "周三",
+          "title": "AI 资讯日报 · 10月21日（周三）",
+          "summary": "Codex 第 15 天补发了全额重置。约 4 万个账号的 Codex 用量扣错。Synaptics 发布 Astra SR200 系列 xMCU，带 Coral NPU。"
+        },
+        {
+          "date": "2026-10-22",
+          "weekday": "周四",
+          "title": "AI 资讯日报 · 10月22日（周四）",
+          "summary": "Codex 第 16 天是改进：Codex 和 Work 的缓存永久保留，没有重置。OpenAI 模型上 Google Cloud，Anthropic 推出 Claude Duet。"
+        },
+        {
+          "date": "2026-10-23",
+          "weekday": "周五",
+          "title": "AI 资讯日报 · 10月23日（周五）",
+          "summary": "Lead: Codex 第 17 天是全额重置日，累计第 7 次。OpenAI Decisions API 正式可用。Claude 下周起默认 auto mode。"
         }
       ]
     },
