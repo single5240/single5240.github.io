@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-22",
+  "sentence": "We choose to go to the Moon in this decade and do the other things, not because they are easy, but because they are hard.",
+  "source": {
+    "author": "John F. Kennedy",
+    "work": "Address at Rice University on the Nation's Space Effort",
+    "year": "1962",
+    "detail": "1962 年 9 月 12 日，美国休斯顿莱斯大学演讲"
+  },
+  "translation": "我们决定在这个十年内登上月球，并去做其他的事，不是因为它们轻而易举，而是因为它们困难重重。",
+  "grammar": [
+    "句子主干：We（主语）+ choose（谓语）+ to go to the Moon ... and do the other things（不定式作宾语）。choose to do sth 表示“决定/选择去做某事”，这里用一般现在时，显得坚定、像在当场宣布决心。and 连接两个并列不定式 to go 和 (to) do，第二个 to 省略了。",
+    "not because ..., but because ...：“不是因为……，而是因为……”，是 not A but B 结构的一种，A 和 B 都是 because 引导的原因状语从句。先否定一个常见理由，再给出真正理由，形成强烈对比；两个从句结构完全对称（they are easy / they are hard），读起来有节奏感，是演讲中典型的排比修辞。"
+  ],
+  "vocab": [
+    {
+      "word": "choose to do sth",
+      "phonetic": "/tʃuːz/",
+      "pos": "v. 短语",
+      "meaning": "决定做某事，选择做某事（强调主动意愿）",
+      "collocation": "choose to stay / choose to leave / choose between A and B",
+      "example": "She chose to learn C before Python."
+    },
+    {
+      "word": "decade",
+      "phonetic": "/ˈdekeɪd/",
+      "pos": "n.",
+      "meaning": "十年",
+      "collocation": "in this decade / over the past decade / for decades",
+      "example": "Embedded chips have become much cheaper over the past decade."
+    },
+    {
+      "word": "not because ... but because ...",
+      "phonetic": "",
+      "pos": "连词结构",
+      "meaning": "不是因为……而是因为……",
+      "collocation": "not A but B / not only A but also B",
+      "example": "I debug at night not because I like it, but because it's quiet."
+    },
+    {
+      "word": "nation",
+      "phonetic": "/ˈneɪʃn/",
+      "pos": "n.",
+      "meaning": "国家，民族（出自演讲标题 the Nation's Space Effort）",
+      "collocation": "the whole nation / national / international",
+      "example": "The whole nation watched the launch on TV."
+    }
+  ],
+  "note": "小练习：用 not because ... but because ... 说说你为什么学英语，比如 “I learn English not because it's easy, but because it opens more doors.” 遇到难的寄存器手册或英文文档时，也可以想想这句话。"
+}

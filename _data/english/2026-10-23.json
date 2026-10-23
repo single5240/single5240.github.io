@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-23",
+  "sentence": "Tell me, what is it you plan to do / with your one wild and precious life?",
+  "source": {
+    "author": "Mary Oliver",
+    "work": "The Summer Day",
+    "year": "1990",
+    "detail": "诗集 House of Light 中《The Summer Day》的最后两行"
+  },
+  "translation": "告诉我，你打算怎样度过你这唯一的、狂野而珍贵的一生？",
+  "grammar": [
+    "主干：Tell me 是祈使句（省略主语 you），后面接一个直接问句 what is it you plan to do with your life? 作为“告诉我”的内容。",
+    "强调问句 what is it (that) ...：把普通问句 What do you plan to do? 套进强调句型 It is ... that ...，再对 what 提问，就成了 What is it (that) you plan to do?。语气更重、更追问，相当于中文的“你到底打算做什么”。that 在口语和诗歌里常省略。",
+    "plan to do sth：plan 后接不定式表示“打算做某事”；do ... with sth 表示“拿……怎么办、如何利用”，所以 do with your life 就是“怎样过你的一生”。",
+    "多个形容词修饰：one wild and precious life 中 one 强调“仅此一次”，wild 和 precious 用 and 并列，层层叠加情感。"
+  ],
+  "vocab": [
+    {
+      "word": "precious",
+      "phonetic": "/ˈpreʃəs/",
+      "pos": "adj.",
+      "meaning": "珍贵的、宝贵的",
+      "collocation": "precious time / precious memories / precious metal",
+      "example": "Don't waste your precious time on things you don't care about."
+    },
+    {
+      "word": "wild",
+      "phonetic": "/waɪld/",
+      "pos": "adj.",
+      "meaning": "狂野的、不受拘束的（这里指生命自由奔放、充满可能）",
+      "collocation": "wild idea / go wild / in the wild",
+      "example": "He had a wild idea: building his own keyboard from scratch."
+    },
+    {
+      "word": "plan to do",
+      "phonetic": "/plæn tə duː/",
+      "pos": "phrase",
+      "meaning": "打算做某事",
+      "collocation": "plan to do sth / plan on doing sth / make plans for",
+      "example": "I plan to read one English article every day."
+    },
+    {
+      "word": "do with",
+      "phonetic": "/duː wɪð/",
+      "pos": "phrasal verb",
+      "meaning": "处理、利用、拿……怎么办",
+      "collocation": "What should I do with ...? / have nothing to do with",
+      "example": "What will you do with your free weekend?"
+    }
+  ],
+  "note": "小练习：用 What is it (that) ... 改写这两个问题，让语气更强调——① What do you want? ② Why did you leave? 参考答案：① What is it (that) you want? ② Why is it (that) you left?"
+}

@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-21",
+  "sentence": "The world breaks every one and afterward many are strong at the broken places.",
+  "source": {
+    "author": "Ernest Hemingway",
+    "work": "A Farewell to Arms",
+    "year": "1929",
+    "detail": "《永别了，武器》第 34 章，叙述者 Frederic Henry 的内心独白"
+  },
+  "translation": "这个世界会击垮每一个人，而之后，许多人会在那些破碎的地方变得坚强。",
+  "grammar": [
+    "主干是两个并列分句，用 and 连接：①The world（主语）breaks（谓语）every one（宾语）；②many（主语）are（系动词）strong（表语）。前一句是“主谓宾”，后一句是“主系表”，一动一静，节奏很有力量。",
+    "一般现在时表示普遍真理：breaks 和 are 都用一般现在时，不是说某件具体的事，而是在陈述“人生规律”，所以读起来像格言。",
+    "every one 与 everyone：海明威原文写成分开的 every one，强调“每一个（人）”，逐个都逃不掉；现代英语里泛指“所有人”一般写 everyone。many 在这里是代词，单独作主语，意思是 many people。",
+    "at the broken places 是介词短语作状语，说明“在哪里”变强；broken 是过去分词作定语，表示“被打碎的”，带被动含义。"
+  ],
+  "vocab": [
+    {
+      "word": "break",
+      "phonetic": "/breɪk/",
+      "pos": "v.",
+      "meaning": "打破；（比喻）击垮、使崩溃",
+      "collocation": "break sb's heart 让人心碎；break down 崩溃/出故障；break the rules 违反规则",
+      "example": "Months of overtime almost broke him."
+    },
+    {
+      "word": "afterward",
+      "phonetic": "/ˈæftərwərd/",
+      "pos": "adv.",
+      "meaning": "之后，后来（英式常写 afterwards）",
+      "collocation": "shortly afterward 不久之后；soon afterward 随后",
+      "example": "We fixed the bug first and wrote the tests afterward."
+    },
+    {
+      "word": "strong",
+      "phonetic": "/strɔːŋ/",
+      "pos": "adj.",
+      "meaning": "坚强的，强大的",
+      "collocation": "stay strong 保持坚强；be strong at/in sth 在某方面强",
+      "example": "She is strong in low-level debugging."
+    },
+    {
+      "word": "broken",
+      "phonetic": "/ˈbroʊkən/",
+      "pos": "adj. / 过去分词",
+      "meaning": "破碎的，损坏的",
+      "collocation": "a broken build 构建失败；broken English 蹩脚的英语；a broken promise 违背的承诺",
+      "example": "Don't push a broken build to main."
+    }
+  ],
+  "note": "小结：海明威用最简单的词说出很深的道理，被打碎的地方反而会长得更结实。小练习：试着用“主谓宾 + and + 主系表”的结构造一个句子，比如：Bugs break every program, and afterward good engineers are stronger at the broken places."
+}
