@@ -12,24 +12,23 @@ tags:
   - 重构
 ---
 
-数显式拉力计 HW1.4 使用 N32G455REL7（Cortex-M4 @ 128 MHz、ARMCC 5），不使用 `malloc/free`。早期主循环和 UI 文件承担了过多职责，这份重构方案按任务周期、页面、菜单和存储拆分职责。底层状态机与外设驱动细节可结合阅读 [裸机 C99 表驱动有限状态机设计与复用指南]({{ '/articles/c99-table-driven-state-machine.html' | relative_url }}) 与 [N32G455 W25Q128 SPI NOR Flash 驱动与非阻塞擦写实践]({{ '/articles/w25q128-spi-flash-driver-guide.html' | relative_url }})。
+在基于 Cortex-M4（如 128 MHz、零动态内存 `malloc/free`）的中小型嵌入式设备中，主循环与 UI 逻辑容易随着功能迭代膨胀为数千行的“巨石文件”，引发周期抖动、按键迟滞与显示阻塞。本文提炼一套通用的裸机分频时间片协作调度架构，通过四级周期分频、无锁静态环形事件总线、页面生命周期契约路由以及 Flash 表驱动菜单引擎，实现业务逻辑、高频测控与条带渲染的彻底解耦。底层状态机与外设驱动细节可结合阅读 [裸机 C99 表驱动有限状态机设计与复用指南]({{ '/articles/c99-table-driven-state-machine.html' | relative_url }}) 与 [N32G455 W25Q128 SPI NOR Flash 驱动与非阻塞擦写实践]({{ '/articles/w25q128-spi-flash-driver-guide.html' | relative_url }})。
 
 ## 运行环境与现有问题
 
-### 硬件与编译资源基线
+### 硬件与资源基线
 
-固件运行于裸机环境，SysTick 提供 1 ms 基础时基，主循环通过协作式大循环（Super-Loop）轮询调度约 20 个业务与驱动模块：
+固件运行于裸机环境，SysTick 提供 1 ms 基础时基，主循环通过协作式大循环（Super-Loop）轮询调度各业务与驱动模块：
 
-- **Flash (ROM)**：已用约 174 KB / 512 KB（利用率约 34%）；
-- **SRAM (RAM)**：已用约 29 KB / 144 KB（利用率约 20%）；
-- **显示通路**：240×320 彩屏，采用 8 行条带局部画布（3.84 KB RAM）结合 SPI1 DMA 异步传输；
-- **硬实时传感器**：AD7190（24-bit 测力 ADC）运行于 SPI2 DMA + EXTI14（抢占优先级 1）。
+- **Flash (ROM) / SRAM**：典型配置如 512 KB Flash / 144 KB SRAM，全程禁止动态堆内存分配；
+- **显示通路**：240×320 彩屏，采用 8 行条带局部画布（3.84 KB RAM）结合 SPI DMA 异步传输；
+- **硬实时传感器**：高精度 ADC 运行于 SPI DMA + 外部引脚中断（高抢占优先级）。
 
-### 需要处理的问题
+### 常见架构痛点
 
-1. **UI 文件过大**：早期 `app_ui_home.c` 达到 **4,200+ 行（约 140 KB）**，将页面跳转、测量主页、5 个设置子页、标定向导、历史记录浏览、字库光栅化、折线裁剪与条带流水线都放在同一个文件中，修改页面时需要反复查找相关逻辑。
-2. **主循环周期无序抖动（Cycle Jitter）**：`main.c` 的 `while(1)` 平铺串行调用所有模块的 `Process()`，缺乏执行周期分频与时间片预算。慢速任务（如复杂页面重算或存储操作）会瞬时拉长单圈耗时，导致 1 ms 按键消抖状态机产生迟滞。
-3. **外部 NOR Flash 物理擦写阻塞风险**：W25Q128 扇区擦除耗时 45～400 ms，若在主循环中同步等待 `WIP/BUSY`，会直接挤压采样消费与看门狗喂狗窗口。
+1. **UI 逻辑过载与巨石文件**：单文件容易达到数千行，页面跳转、测量主页、设置子页、参数校准、字库光栅化与绘图流水线深度耦合，难以维护与独立测试。
+2. **主循环周期无序抖动（Cycle Jitter）**：`main.c` 的 `while(1)` 平铺串行调用所有模块的 `Process()`，缺乏执行周期分频与时间片预算。慢速任务（如存储操作或复杂运算）瞬时拉长单圈耗时，导致 1 ms 按键消抖状态机产生迟滞。
+3. **外部 NOR Flash 物理擦写阻塞风险**：SPI Flash 扇区擦除耗时数十至数百毫秒，若在主循环中同步等待 `BUSY`，会挤压传感器数据消费与看门狗喂狗窗口。
 4. **模块间隐式耦合与硬编码菜单**：各业务模块通过跨层读写全局结构体交互；UI 菜单项的坐标、高亮、步进加减全部硬编码计算，新增参数项需要改动多处绘图代码。
 
 ### 重构设计目标
@@ -271,16 +270,16 @@ static void Sched_Run(void)
 
 ### 模块职责切分
 
-将原 `app_ui_home.c` 按“渲染引擎 + 页面路由 + 独立业务页”拆分为以下模块：
+将巨石 UI 模块按“渲染引擎 + 页面路由 + 独立业务页”拆分为分层子系统：
 
 | 模块名称 | 核心职责 | 外部依赖边界 |
 | --- | --- | --- |
-| `app_ui_engine` | `240×8` 条带画布管理、1-bit 字库光栅化（16/24/40 px）、折线与矩形条带裁剪 | 仅依赖 `drv_lcd_st7789` 与 `font_*` |
-| `app_ui_router` | 顶层页面切换状态机、按键事件分发、顶部公共状态栏与底部按键提示栏绘制 | 依赖抽象 `UiPageInterface` |
-| `app_ui_page_main` | 测量主页：大字体实时读数、主/次峰值、公差判定指示、动态量程波形曲线 | 依赖 `app_waveform`、`app_runtime_data` |
-| `app_ui_page_menu` | 通用表驱动菜单渲染器与基本设定、系统设定等配置表 | 依赖 `app_settings`、`app_param_store` |
-| `app_ui_page_calib` | 传感器标定向导：密码校验、零点与多段载荷采集、保存回退提示 | 依赖 `app_calibration` |
-| `app_ui_page_record` | 测试记录清单：分页浏览、单条选择删除、长按 5 秒整表清空确认 | 依赖 `app_record_store` |
+| `ui_engine` | `240×8` 条带画布管理、1-bit 字库光栅化（16/24/40 px）、折线与矩形条带裁剪 | 仅依赖底层 LCD 驱动与字库常量 |
+| `ui_router` | 顶层页面切换状态机、按键事件分发、顶部公共状态栏与底部按键提示栏绘制 | 依赖抽象 `UiPageInterface` |
+| `ui_page_main` | 测量主页：大字体实时读数、主/次峰值、公差判定指示、动态量程波形曲线 | 依赖运行时测量与波形数据 |
+| `ui_page_menu` | 通用表驱动菜单渲染器与基本设定、系统设定等配置表 | 依赖设置参数管理组件 |
+| `ui_page_calib` | 传感器标定向导：密码校验、零点与多段载荷采集、保存回退提示 | 依赖校准算法模块 |
+| `ui_page_record` | 测试记录清单：分页浏览、单条选择删除、长按 5 秒整表清空确认 | 依赖历史存储引擎 |
 
 ### 页面生命周期契约（`UiPageInterface`）
 
@@ -290,13 +289,39 @@ static void Sched_Run(void)
 typedef struct
 {
     void (*OnEnter)(void);                                      /* 进入页面时初始化局部状态 */
-    bool (*OnEvent)(AppUiEventType event);                      /* 处理按键/系统事件，返回 true 表示已消费 */
+    bool (*OnEvent)(const AppEvent *event);                     /* 处理按键/系统事件，返回 true 表示已消费 */
     void (*OnDrawStrip)(uint16_t stripY, uint16_t stripHeight); /* 绘制当前 8 行条带内的页面内容 */
     void (*OnExit)(void);                                       /* 离开页面时清理或触发保存 */
 } UiPageInterface;
 ```
 
-当条带渲染管线遍历 40 个条带（`stripY` 从 `0` 到 `312`，步进 `8`）时，由 `app_ui_router` 统一编排：
+顶层路由器调度页面切换与事件分发，并内置“跨页物理释放锁存（Wait-Release Latch）”，防止长按切页误触发新页面的长按操作：
+
+```c
+static const UiPageInterface *s_currentPage = NULL;
+static bool s_waitReleaseLatch = false;
+
+void UiRouter_Switch(const UiPageInterface *newPage)
+{
+    if ((newPage == NULL) || (newPage == s_currentPage))
+    {
+        return;
+    }
+    if (s_currentPage != NULL && s_currentPage->OnExit != NULL)
+    {
+        s_currentPage->OnExit();
+    }
+    s_currentPage = newPage;
+    /* 跨页防误触锁存：切页后必须等待所有物理按键松开，才允许新页面响应下一次按键 */
+    s_waitReleaseLatch = true;
+    if (s_currentPage->OnEnter != NULL)
+    {
+        s_currentPage->OnEnter();
+    }
+}
+```
+
+当条带渲染管线遍历 40 个条带（`stripY` 从 `0` 到 `312`，步进 `8`）时，由 `ui_router` 统一编排：
 
 1. 绘制全局公共顶部状态栏（`y ∈ [0, 23]`）；
 2. 调用当前活动页面的 `OnDrawStrip(stripY, 8)` 绘制中部业务区；
@@ -328,7 +353,27 @@ typedef struct
 } MenuItemConfig;
 ```
 
-新增或调整一个菜单项只需在 `const MenuItemConfig[]` 数组中添加一行声明；通用的菜单页面渲染器约 200 行代码，负责焦点移动、视口滚动、编辑态反色高亮、数值边界夹紧与退出保存。
+新增或调整一个菜单项只需在 `const MenuItemConfig[]` 数组中添加一行声明；通用的菜单页面渲染器负责焦点移动、视口滚动、编辑态反色高亮、数值边界夹紧与退出保存：
+
+```c
+void Menu_DrawStrip(const MenuItemConfig *items, uint8_t count, uint8_t focusIndex,
+                    uint16_t stripY, uint16_t stripHeight)
+{
+    for (uint8_t i = 0; i < count; i++)
+    {
+        int16_t itemY = (int16_t)(MENU_TOP_OFFSET + i * MENU_ITEM_HEIGHT);
+        /* 条带裁剪：仅当菜单项垂直区间落在当前条带内时才执行绘制 */
+        if ((itemY + MENU_ITEM_HEIGHT <= (int16_t)stripY) ||
+            (itemY >= (int16_t)(stripY + stripHeight)))
+        {
+            continue;
+        }
+        bool isFocus = (i == focusIndex);
+        /* 在条带画布中渲染菜单文本、反色高亮框与当前绑定数值 */
+        Canvas_DrawMenuItem(items[i].label, itemY, isFocus);
+    }
+}
+```
 
 ## 四、用静态队列传递事件
 
@@ -340,7 +385,8 @@ typedef enum
     EVT_NONE = 0,
     EVT_KEY_CLICK,       /* 参数: KeyID */
     EVT_KEY_LONG_PRESS,  /* 参数: KeyID */
-    EVT_FORCE_OVERLIMIT, /* 参数: 超载方向与力值 */
+    EVT_KEY_RELEASE_ALL, /* 全部按键物理松开 */
+    EVT_DATA_ALARM,      /* 参数: 告警方向与数值 */
     EVT_RECORD_SAVED,    /* 参数: 记录槽位或状态码 */
     EVT_BATTERY_LOW,     /* 参数: 剩余电量百分比 */
     EVT_CALIB_DONE       /* 参数: 标定结果状态码 */
@@ -354,8 +400,50 @@ typedef struct
 } AppEvent;
 ```
 
+完整的环形队列收发逻辑如下，实现生产者与消费者的零动态内存解耦：
+
+```c
+#define EVENT_QUEUE_CAPACITY (16U)
+
+typedef struct
+{
+    AppEvent buffer[EVENT_QUEUE_CAPACITY];
+    uint8_t  head;
+    uint8_t  tail;
+    uint8_t  count;
+} EventQueue;
+
+static EventQueue s_eventQueue;
+
+bool AppEvent_Post(AppEventId id, uint16_t param1, uint32_t param2)
+{
+    if (s_eventQueue.count >= EVENT_QUEUE_CAPACITY)
+    {
+        return false; /* 队列满，丢弃并报警 */
+    }
+    s_eventQueue.buffer[s_eventQueue.tail].id = id;
+    s_eventQueue.buffer[s_eventQueue.tail].param1 = param1;
+    s_eventQueue.buffer[s_eventQueue.tail].param2 = param2;
+    s_eventQueue.tail = (uint8_t)((s_eventQueue.tail + 1U) % EVENT_QUEUE_CAPACITY);
+    s_eventQueue.count++;
+    return true;
+}
+
+bool AppEvent_Poll(AppEvent *outEvent)
+{
+    if ((s_eventQueue.count == 0U) || (outEvent == NULL))
+    {
+        return false;
+    }
+    *outEvent = s_eventQueue.buffer[s_eventQueue.head];
+    s_eventQueue.head = (uint8_t)((s_eventQueue.head + 1U) % EVENT_QUEUE_CAPACITY);
+    s_eventQueue.count--;
+    return true;
+}
+```
+
 - **发布方（Producers）**：按键模块识别到短按/长按、测控模块识别到超载或完成快照时，仅调用 `AppEvent_Post()` 向队列压入事件；
-- **消费方（Dispatcher）**：`AppUi_Process()` 每轮从队列头取出一个事件，优先交给当前活动页面的 `OnEvent()` 处理；若当前页面未消费，再由顶层路由器兜底处理全局事件（如超载提示或低电告警）。
+- **消费方（Dispatcher）**：`UiRouter_Process()` 每轮从队列头取出一个事件，优先交给当前活动页面的 `OnEvent()` 处理；若当前页面未消费，再由顶层路由器兜底处理全局事件（如超载提示或低电告警）。
 
 ## 风险防控与工程验收准则
 
@@ -367,6 +455,6 @@ typedef struct
 
 每次合入重构改动前，检查以下事项：
 
-- [ ] **编译与内存审计**：Keil MDK-ARM（ARMCC V5.06 update 6）全量 Rebuild 达到 `0 Error`，核对 `.map` 文件中 `Code + RO-data` 与 `RW + ZI` 增量符合预算。
-- [ ] **时序确定性验证**：在开启 AD7190 连续采样、LCD 连续翻页刷新与 W25Q128 后台扇区擦除并发条件下，按键短按/长按响应无粘滞，看门狗无复位，AD7190 环形队列 `overrun_count == 0`。
+- [ ] **编译与内存审计**：编译器全量构建达到 `0 Error`，核对 `.map` 文件中 `Code + RO-data` 与 `RW + ZI` 增量符合预算。
+- [ ] **时序确定性验证**：在开启高频传感器连续采样（如 2 kHz+）、LCD 连续翻页刷新与外部 Flash 后台扇区擦除并发条件下，按键短按/长按响应无粘滞，看门狗无复位，采样队列无溢出（`overrun == 0`）。
 - [ ] **前端演示同步**：涉及可见 UI 布局或交互规则变更时，同步更新网页交互模拟器并运行自检脚本。

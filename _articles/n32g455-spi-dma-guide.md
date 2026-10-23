@@ -1,7 +1,7 @@
 ---
 layout: article
 title: N32G455 SPI 与 DMA 配置参考
-description: 基于数显式拉力计 HW1.4 当前固件的 SPI、DMA、EXTI 与中断配置整理，涵盖 LCD、AD7190、W25Q128 的资源分配、调用流程与联调检查项。
+description: 多路 SPI 与 DMA 外设资源冲突与并发调度方案：面向 Cortex-M4（以 N32G455 为例），涵盖高速彩屏 DMA、高精度 ADC EXTI+DMA 连续采样与 SPI Flash 存储的资源分配、优先级仲裁与联调检查项。
 date: 2026-09-26
 category: 嵌入式
 tags:
@@ -12,22 +12,46 @@ tags:
   - ST7789
 ---
 
-这份参考表按数显式拉力计 HW1.4 的固件源码整理，用来核对 SPI、DMA 配置和接口调用。引脚连接以《引脚与外设接口说明.md》为准；LCD 控制器、SPI 时序上限和 AD7190 最终采样参数仍需结合器件资料与实测确认。源码配置不等于板级验证结果。
+在单颗 MCU 上同时驱动高速彩屏、高精度 ADC 与非易失存储时，多路 SPI 外设与 DMA 控制器极易发生总线竞争与中断死锁。本文以 Cortex-M4（N32G455）架构为例，系统整理 SPI、DMA、EXTI 与中断优先级的资源分配与调用流程，并给出仲裁配置与联调检查项。
 
 ## 资源概览
 
-### 相关代码
+### 并发子系统划分与外设映射
 
-| 功能 | 文件 | 主要职责 |
+| 子系统 | 核心外设组合 | 主要职责与实时性要求 |
 | --- | --- | --- |
-| 系统时钟 | `USER/src/n32g45x_cfg.c` | 配置 HCLK、PCLK1、PCLK2 和 1 ms SysTick |
-| 中断入口 | `USER/src/n32g45x_it.c` | 转发 EXTI15_10、DMA1_CH1、DMA1_CH4 中断 |
-| AD7190 驱动 | `DRV/drv_ad7190.c/.h` | SPI2、DMA1_CH4/CH5、EXTI14、连续采样队列 |
-| LCD 驱动 | `DRV/drv_lcd_st7789.c/.h` | SPI1、DMA1_CH1/CH2、轮询命令和异步像素传输 |
-| W25Q128 驱动 | `DRV/drv_w25q128.c/.h` | SPI3 轮询读写、页编程和扇区擦除 |
-| AD7190 应用 | `APP/app_ad7190.c/.h` | 初始化、持续取样、去皮和力值换算 |
-| LCD 应用 | `APP/app_ui_home.c` | 以 8 行条带生成并提交像素缓冲 |
-| 程序入口 | `USER/src/main.c` | 初始化顺序和主循环调度 |
+| 异步显示流 | SPI1 + DMA1_CH1(RX) / CH2(TX) | 240×320 彩屏条带像素异步搬运，允许被高优先级采集打断 |
+| 硬实时连续采样 | SPI2 + DMA1_CH4(RX) / CH5(TX) + EXTI | 24-bit 测力 ADC 连续采样（~2.4 kHz），最高中断抢占级 |
+| 块存储持久化 | SPI3 轮询模式（重映射引脚） | 16 MiB SPI Flash 测试记录与日志存储，大块操作需分片推进 |
+
+#### 优先级仲裁与 NVIC 分组配置实现
+
+为防止 LCD 刷屏 DMA 中断阻塞高频 ADC 连续采样，系统采用 `NVIC_PriorityGroup_4`（4 位全用于抢占优先级）：
+
+```c
+void Sys_NVIC_Configuration(void)
+{
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+    /* 优先级 1: 硬实时测控传感器 (EXTI14 & SPI2 DMA) - 最高实时性，保证采样零丢包 */
+    NVIC_InitType nvicAdc = {
+        .NVIC_IRQChannel = EXTI15_10_IRQn,
+        .NVIC_IRQChannelPreemptionPriority = 1,
+        .NVIC_IRQChannelSubPriority = 0,
+        .NVIC_IRQChannelCmd = ENABLE
+    };
+    NVIC_Init(&nvicAdc);
+
+    /* 优先级 3: 异步显示流 (SPI1 LCD DMA RX 中断) - 允许被传感器中断抢占 */
+    NVIC_InitType nvicLcd = {
+        .NVIC_IRQChannel = DMA1_Channel1_IRQn,
+        .NVIC_IRQChannelPreemptionPriority = 3,
+        .NVIC_IRQChannelSubPriority = 0,
+        .NVIC_IRQChannelCmd = ENABLE
+    };
+    NVIC_Init(&nvicLcd);
+}
+```
 
 ### 时钟树与 SPI 时钟
 

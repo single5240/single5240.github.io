@@ -1,7 +1,7 @@
 ---
 layout: article
 title: N32G455 LCD 条带渲染与异步刷新实现分析
-description: 结合数显式拉力计 HW1.4 固件源码，解析从力值变化到 240×8 局部条带画布、帧快照、SPI1 全双工 DMA 与主循环非阻塞刷屏的完整链路。
+description: 针对小内存 Cortex-M MCU，解析从数据变化到 240×8 局部条带画布、不可变帧快照防撕裂、SPI 全双工 DMA 与主循环非阻塞刷屏的完整链路。
 date: 2026-10-15
 category: 嵌入式
 tags:
@@ -12,7 +12,7 @@ tags:
   - 裸机UI
 ---
 
-数显式拉力计 HW1.4 用一块 8 行缓冲区分批刷新 LCD。下面沿着力值更新、帧快照、条带绘制和 SPI1 DMA 发送这条路径，说明各模块如何配合。控制器底层命令与移植清单可参考 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }})，SPI 与 DMA 通道总表见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
+在 SRAM 极度受限的嵌入式系统（如仅 144 KB RAM）中驱动 240×320 彩屏时，整屏显存高达 153.6 KB，无法开辟整帧缓冲区。本文系统解析用一块 8 行缓冲区分批刷新 LCD 的架构链路，深入剖析条带画布裁剪、不可变帧快照防撕裂与 SPI DMA 异步收尾机制。控制器底层命令可参考 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }})，多外设 SPI 与 DMA 调度参考见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
 
 ## 阅读目标与相关文件
 
@@ -27,16 +27,14 @@ tags:
 - 屏幕方向切换、背光、超时恢复分别在什么时机执行；
 - 当前实现的性能、边界和仍需硬件确认的事项。
 
-涉及的核心源码文件如下：
+核心显示链路分为四个解耦的子系统：
 
-| 文件 | 主要职责 |
-| --- | --- |
-| `APP/app_ui_home.c` | 页面状态、全屏坐标绘图、8 行条带裁剪与帧快照管理 |
-| `APP/app_ui_display.c` | UI 到具体 LCD 驱动之间的显示适配层 |
-| `DRV/drv_lcd_st7789.c` | GPIO、SPI1、DMA1_CH1/CH2、窗口命令与异步状态机 |
-| `USER/src/n32g45x_it.c` | `DMA1_Channel1_IRQHandler` 中断入口 |
-| `USER/src/main.c` | 主循环中的调度顺序 |
-| `USER/src/n32g45x_cfg.c` | 系统与外设总线时钟配置 |
+| 子系统模块 | 核心职责 | 依赖与设计约束 |
+| --- | --- | --- |
+| `StripCanvas` | 240×8 局部条带像素缓冲（3,840 字节）、全屏到局部坐标动态裁剪 | 零整屏显存分配，仅管理当前 8 行 RGB565 像素 |
+| `FrameSnapshot` | 逻辑帧不可变快照抓取、重绘请求合并（脏标记） | 解决 40 次主循环分批渲染期间数据跳变撕裂 |
+| `LcdDriver` | 窗口命令下发、SPI 全双工 DMA 异步传输与三态状态机 | 极简中断服务程序，主循环等待 SPI BUSY 清零 |
+| `PageRenderer` | 业务页面布局、1-bit 字库光栅化与基础图元绘制 | 绘制逻辑使用全屏坐标，由 Canvas 自动裁剪 |
 
 ## 整体显示分层模型
 
@@ -68,7 +66,7 @@ tags:
 
 ## 硬件连接与信号含义
 
-当前驱动在 `DRV/drv_lcd_st7789.c` 中定义了以下硬件引脚：
+在典型的 4 线 SPI 彩屏接口中，包含以下硬件引脚定义：
 
 | MCU 引脚 | 驱动名称 | 作用 |
 | --- | --- | --- |
@@ -220,6 +218,51 @@ nextY += stripHeight
 
 这种“用 CPU 换 RAM”的架构使业务页面无需为条带编写复杂的分段布局代码，代价是同一页面的布局函数在一帧内会执行 40 次。
 
+#### 条带画布上下文与全屏矩形裁剪实现
+
+```c
+typedef struct
+{
+    uint16_t stripY;          /* 当前条带在全屏中的起始 Y 坐标 (0..312, 步进 8) */
+    uint16_t stripHeight;     /* 当前条带高度 (固定为 8) */
+    uint16_t pixels[240 * 8]; /* 8 行 RGB565 像素缓冲 (3,840 字节) */
+} StripCanvas;
+
+static StripCanvas s_canvas;
+
+/* 全屏矩形填充在当前条带上的动态裁剪算法 */
+void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+{
+    int16_t stripTop = (int16_t)s_canvas.stripY;
+    int16_t stripBottom = (int16_t)(stripTop + s_canvas.stripHeight);
+
+    /* 1. 垂直方向快速剔除：若目标矩形完全在当前条带上方或下方，直接跳过 */
+    if ((y + h <= stripTop) || (y >= stripBottom))
+    {
+        return;
+    }
+
+    /* 2. 计算在条带局部的有效扫描行范围 [localY0, localY1) */
+    int16_t localY0 = (y < stripTop) ? 0 : (int16_t)(y - stripTop);
+    int16_t localY1 = (y + h > stripBottom) ? (int16_t)s_canvas.stripHeight : (int16_t)(y + h - stripTop);
+
+    /* 3. 水平方向边界夹紧 [clipX0, clipX1) */
+    int16_t clipX0 = (x < 0) ? 0 : x;
+    int16_t clipX1 = (x + w > 240) ? 240 : (int16_t)(x + w);
+    if (clipX0 >= clipX1) return;
+
+    /* 4. 仅改写落在当前 8 行内的局部缓冲区 */
+    for (int16_t ly = localY0; ly < localY1; ly++)
+    {
+        uint16_t *row = &s_canvas.pixels[ly * 240];
+        for (int16_t lx = clipX0; lx < clipX1; lx++)
+        {
+            row[lx] = color;
+        }
+    }
+}
+```
+
 ### 帧快照与重绘请求合并
 
 一帧由 40 次主循环、40 次绘制和 40 次 DMA 组成。如果每条带都直接读取实时力值或菜单焦点，上半屏可能画旧值、下半屏画新值，造成同一帧内部自相矛盾。
@@ -250,7 +293,7 @@ nextY += stripHeight
       </div>
 
       <div class="strip-mem-card good">
-        <span class="aiw-stat-label">方案二：HW1.4 8 行局部条带画布 (Strip Canvas)</span>
+        <span class="aiw-stat-label">方案二：8 行局部条带画布 (Strip Canvas)</span>
         <div class="strip-mem-val">3.84 KiB</div>
         <small style="color: var(--accent-dark); font-size: 11px;">240×8×2 字节，约占 SRAM 2.67%，为采集队列与协议栈预留内存。</small>
       </div>
@@ -377,6 +420,43 @@ LCD_ASYNC_WAIT_SPI（主循环等待 SPI BUSY 清零）
   ├─ SPI BUSY == 0（或 200 ms 超时恢复）
   ▼
 关闭 DMA 与中断 → 拉高 CS → SPI 恢复 8 bit → 回到 LCD_ASYNC_IDLE
+```
+
+#### 异步传输状态机与中断服务程序
+
+```c
+typedef enum {
+    LCD_STATE_IDLE = 0,     /* 空闲，可接受新条带 */
+    LCD_STATE_TRANSFERRING, /* DMA 搬运像素中 */
+    LCD_STATE_WAIT_SPI_DONE /* DMA 完成，等待 SPI 硬件移位寄存器排空 */
+} LcdAsyncState;
+
+static volatile LcdAsyncState s_lcdState = LCD_STATE_IDLE;
+
+/* DMA 接收完成中断服务程序 (仅更新状态与清除中断挂起，绝不阻塞) */
+void DMA1_Channel1_IRQHandler(void)
+{
+    if (DMA_GetFlagStatus(DMA1_FLAG_TC1))
+    {
+        DMA_ClearFlag(DMA1_FLAG_TC1);
+        s_lcdState = LCD_STATE_WAIT_SPI_DONE;
+    }
+}
+
+/* 主循环非阻塞推进函数 */
+void Lcd_Process(void)
+{
+    if (s_lcdState == LCD_STATE_WAIT_SPI_DONE)
+    {
+        /* 严禁在 DMA ISR 中拉高 CS，必须等待 SPI 硬件 BUSY 清零 */
+        if (!SPI_IsBusy(SPI1))
+        {
+            LCD_CS_HIGH();               /* 拉高片选，结束像素事务 */
+            SPI_SetDataWidth8Bit(SPI1);  /* 恢复 8 位命令模式 */
+            s_lcdState = LCD_STATE_IDLE; /* 释放条带所有权，允许 UI 绘制下一条带 */
+        }
+    }
+}
 ```
 
 ### 极简 ISR 与主循环收尾

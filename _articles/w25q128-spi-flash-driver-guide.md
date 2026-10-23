@@ -1,7 +1,7 @@
 ---
 layout: article
 title: N32G455 W25Q128 SPI NOR Flash 驱动与非阻塞擦写实践
-description: 基于数显式拉力计 HW1.4 固件的 W25Q128（16 MiB SPI NOR Flash）驱动实现，涵盖 SPI3 重映射、256B 页边界拆分、状态寄存器写保护检查及非阻塞擦写轮询设计。
+description: 面向 Cortex-M 裸机系统的 W25Q128（16 MiB SPI NOR Flash）驱动实现，涵盖硬件 SPI 配置、256B 页边界拆分、状态寄存器写保护检查及非阻塞擦写轮询设计。
 date: 2026-10-09
 category: 嵌入式
 tags:
@@ -12,7 +12,7 @@ tags:
   - 非阻塞驱动
 ---
 
-W25Q128 驱动位于数显式拉力计 HW1.4 的 `DRV/drv_w25q128.c/.h`，使用 SPI3 轮询收发。下面记录引脚映射、跨页拆分、写保护检查，以及将页编程和扇区擦除拆为启动、查询两步的做法。SPI 与 DMA 配置总表见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
+W25Q128 驱动使用硬件 SPI 轮询收发。下面系统记录引脚映射、跨页拆分、写保护检查，以及将页编程和扇区擦除拆为启动、查询两步的非阻塞做法。多外设调度参考见 [N32G455 SPI 与 DMA 配置参考]({{ '/articles/n32g455-spi-dma-guide.html' | relative_url }})。
 
 ## 芯片特性与驱动概览
 
@@ -20,7 +20,7 @@ W25Q128 是 Winbond 128 Mbit（16 MiB）标准 SPI NOR Flash，期望 24 位 JED
 
 | 项目 | 当前实现配置 |
 | --- | --- |
-| 源文件 | `DRV/drv_w25q128.c`、`DRV/drv_w25q128.h` |
+| 模块实现 | 纯 C99 驱动（可直接复用于标准 SPI 主机控制器） |
 | 硬件总线 | N32G455 `SPI3` 主机，软件片选（`PA2`），Mode 0，8 bit，MSB first |
 | 传输方式 | 按字节全双工轮询，不占用 DMA 通道与中断 |
 | 串行时钟 `SCLK` | `PCLK1 / 4 = 32 MHz / 4 = 8 MHz` |

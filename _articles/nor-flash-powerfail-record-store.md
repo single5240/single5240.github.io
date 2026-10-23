@@ -12,7 +12,7 @@ tags:
   - N32G455
 ---
 
-数显式拉力计 HW1.4 用 W25Q128 保存测试记录，代码位于 `APP/app_record_store.c/.h`。扇区擦除需要 45～400 ms，页编程只能把位从 `1` 改为 `0`，写入还可能被断电打断。存储层因此采用定长槽、两阶段提交和后台擦除。下面记录存储格式、恢复规则及实板 RTT 故障注入结果。底层 SPI3 非阻塞驱动见 [N32G455 W25Q128 SPI NOR Flash 驱动与非阻塞擦写实践]({{ '/articles/w25q128-spi-flash-driver-guide.html' | relative_url }})。
+在嵌入式裸机与轻量系统中，使用 SPI NOR Flash（如 W25Q128）保存结构化测试记录或日志时，必须直面硬件物理特性的严苛约束：扇区擦除耗时长（45～400 ms）、页编程仅支持将位从 `1` 改为 `0`，以及写入随时可能被意外掉电打断。存储层因此采用定长槽、两阶段原子提交、原位墓碑标记与世代控制环架构。下面系统梳理存储格式、状态转移算法、自愈规则及实机故障注入验证方案。底层 SPI 非阻塞驱动见 [N32G455 W25Q128 SPI NOR Flash 驱动与非阻塞擦写实践]({{ '/articles/w25q128-spi-flash-driver-guide.html' | relative_url }})。
 
 ## 设计目标与物理约束
 
@@ -83,6 +83,65 @@ NOR Flash 页编程如果在写正文中途断电，会留下部分字节已写�
   ├─ 仅对偏移 63 发起 1 字节页编程：0xFF → 0x00
   ├─ 轮询 BUSY 清零后读回确认 commitFlag == 0x00
   └─ 更新 RAM 中的可见记录数、下一内部 ID 与扇区有效计数
+```
+
+#### 定长槽 C99 结构体定义
+
+```c
+#pragma pack(push, 1)
+typedef struct
+{
+    uint32_t magic;          /* 偏移 0..3: ASCII 魔数标识 (如 0x52454344 'RECD') */
+    uint8_t  version;        /* 偏移 4: 格式版本号 (当前为 3) */
+    uint8_t  recordType;     /* 偏移 5: 记录类型 (1=数据记录, 2=世代/迁移控制记录) */
+    uint16_t recordLen;      /* 偏移 6..7: 固定为 64 字节 */
+    uint32_t generation;     /* 偏移 8..11: 世代号 (整表逻辑清空时单调递增) */
+    uint32_t recordId;       /* 偏移 12..15: 世代内稳定自增主键 (1..N，删除不重排) */
+    uint8_t  payload[43];    /* 偏移 16..58: 43 字节通用业务数据载荷 (时间戳、测量结果、状态等) */
+    uint16_t lifecycle;      /* 偏移 59..60: 原位生命周期码 (0xFFFF=有效, 0xA55A=已删除, 0x5AA5=已迁移) */
+    uint16_t crc16;          /* 偏移 61..62: CRC-16/MODBUS (仅覆盖偏移 0..58 正文) */
+    uint8_t  commitFlag;     /* 偏移 63: 独立提交标志 (0xFF=未提交/脏槽, 0x00=已正式提交生效) */
+} RecordSlot64;
+#pragma pack(pop)
+```
+
+#### 两阶段提交核心写入实现
+
+```c
+/* 两阶段安全提交：先写正文与 CRC，校验无误后再单独将 commitFlag 编程为 0x00 */
+bool RecordStore_Write2PC(uint32_t flashAddr, RecordSlot64 *slot)
+{
+    uint8_t readback[64];
+
+    /* 阶段 1：写入偏移 0..62 的正文与 CRC，保持 commitFlag 为 0xFF */
+    slot->commitFlag = 0xFF;
+    slot->crc16 = Crc16_Modbus((const uint8_t *)slot, 59);
+
+    if (!Flash_PageProgram(flashAddr, (const uint8_t *)slot, 63))
+    {
+        return false;
+    }
+    Flash_WaitBusy();
+
+    /* 读回校验阶段 1 数据是否完整写入 */
+    Flash_Read(flashAddr, readback, 64);
+    if (memcmp(readback, slot, 63) != 0 || readback[63] != 0xFF)
+    {
+        return false; /* 发生半写或断电，当前槽成为 DIRTY 脏槽，绝不提交 */
+    }
+
+    /* 阶段 2：单独对偏移 63 发起 1 字节编程：0xFF -> 0x00 */
+    uint8_t commitByte = 0x00;
+    if (!Flash_PageProgram(flashAddr + 63, &commitByte, 1))
+    {
+        return false;
+    }
+    Flash_WaitBusy();
+
+    /* 读回确认 commitFlag 是否成功变为 0x00 */
+    Flash_Read(flashAddr + 63, &commitByte, 1);
+    return (commitByte == 0x00);
+}
 ```
 
 启动扫描时，每个 64 字节槽被严格归为三类：
@@ -208,6 +267,31 @@ NOR Flash 页编程如果在写正文中途断电，会留下部分字节已写�
 - 单条删除只需对目标槽偏移 `59..60` 执行 2 字节页编程（`0xFFFF → 0xA55A`）并读回验证，耗时仅约 **4 ms**；
 - 一旦 `0xA55A` 读回确认成功，逻辑删除立即生效，后续即便稀疏整理因空间或异常延后，已删除记录也绝不会在重启后“复活”。
 
+#### 原位单条删除核心实现
+
+```c
+/* 单条记录原位墓碑删除：利用 NOR Flash 1->0 特性将 lifecycle 编为 0xA55A */
+bool RecordStore_DeleteInPlace(uint32_t slotAddr)
+{
+    uint16_t currentLife = 0;
+    Flash_Read(slotAddr + 59, (uint8_t *)&currentLife, 2);
+    if (currentLife != 0xFFFF)
+    {
+        return false; /* 已被删除或非有效记录 */
+    }
+
+    uint16_t tombstone = 0xA55A;
+    if (!Flash_PageProgram(slotAddr + 59, (const uint8_t *)&tombstone, 2))
+    {
+        return false;
+    }
+    Flash_WaitBusy();
+
+    Flash_Read(slotAddr + 59, (uint8_t *)&currentLife, 2);
+    return (currentLife == 0xA55A);
+}
+```
+
 ## 稀疏扇区非阻塞迁移与掉电续作
 
 ### 触发条件与目标扇区选择
@@ -249,6 +333,54 @@ NOR Flash 页编程如果在写正文中途断电，会留下部分字节已写�
 | **边界 3：源记录已全部标为 `0x5AA5`，`MIGRATE_COMMIT` 未提交** | 核对目标副本数量与身份无误后，补写 `MIGRATE_COMMIT` 并继续擦除源扇区 |
 | **边界 4：`MIGRATE_COMMIT` 已提交，源扇区尚未擦除或擦除中断** | 目标副本已生效；忽略源扇区残留内容，直接重新对源扇区执行 4 KiB 擦除与全 `0xFF` 逐页校验 |
 
+#### 上电扫描分类与容灾状态机
+
+```c
+typedef enum {
+    SLOT_STATE_ERASED = 0, /* 全 0xFF 空槽，可用于追加新记录 */
+    SLOT_STATE_VALID,      /* 正常提交的有效记录 */
+    SLOT_STATE_DELETED,    /* 逻辑墓碑已删除记录 (0xA55A / 0x5AA5) */
+    SLOT_STATE_DIRTY       /* 校验失败或掉电半写脏槽，直接跳过并在整扇区回收时擦除 */
+} SlotState;
+
+SlotState RecordStore_ScanSlot(uint32_t slotAddr, RecordSlot64 *outSlot)
+{
+    RecordSlot64 slot;
+    Flash_Read(slotAddr, (uint8_t *)&slot, sizeof(RecordSlot64));
+
+    /* 1. 检查是否为全 0xFF 干净擦除槽 */
+    if (IsAllErased((const uint8_t *)&slot, sizeof(RecordSlot64)))
+    {
+        return SLOT_STATE_ERASED;
+    }
+
+    /* 2. 检查两阶段提交标志 */
+    if (slot.commitFlag != 0x00)
+    {
+        return SLOT_STATE_DIRTY; /* 断电半写脏槽，直接跳过 */
+    }
+
+    /* 3. 校验魔数、版本与正文 CRC-16 */
+    if (slot.magic != 0x52454344 || slot.recordLen != 64 ||
+        slot.crc16 != Crc16_Modbus((const uint8_t *)&slot, 59))
+    {
+        return SLOT_STATE_DIRTY; /* CRC 损坏，判定为无效脏槽 */
+    }
+
+    /* 4. 检查生命周期码 */
+    if (slot.lifecycle == 0xA55A || slot.lifecycle == 0x5AA5)
+    {
+        return SLOT_STATE_DELETED; /* 已被原位删除或已迁移 */
+    }
+
+    if (outSlot != NULL)
+    {
+        *outSlot = slot;
+    }
+    return SLOT_STATE_VALID;
+}
+```
+
 ## 基于 J-Link RTT 的板级故障注入与 HIL 验收
 
 为在不破坏量产固件安全性的前提下验证上述状态机，工程通过默认关闭的编译开关 `APP_RECORD_STORE_VALIDATION_ENABLE` 隔离测试状态机，在 J-Link RTT Channel 0 上提供非阻塞验证指令集。
@@ -270,7 +402,7 @@ record_test inject erase_start|erase_timeout|erase_verify                 # 3 �
 
 ### 实机目标板（N32G455 + W25Q128）验证结果汇总
 
-在数显式拉力计 HW1.4 实板上，使用 ARMCC V5.06 update 6 构建并执行全套 RTT 验证，关键实测数据如下：
+在基于 Cortex-M4 与 SPI NOR Flash 的实机硬件测试板上，执行全套 RTT 故障注入与压力验证，关键实测数据如下：
 
 | 验证场景 | 实测表现与介质复查结论 |
 | --- | --- |

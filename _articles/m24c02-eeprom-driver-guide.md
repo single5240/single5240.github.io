@@ -1,7 +1,7 @@
 ---
 layout: article
 title: N32G455 M24C02 I2C EEPROM 驱动与页边界处理
-description: 基于数显式拉力计 HW1.4 固件的 M24C02（256B I2C EEPROM）驱动实现，详解 I2C3 寄存器配置、16 字节页写自动拆分、ACK 轮询与 A/B 双槽参数存储协同。
+description: 面向小型嵌入式系统的 M24C02（256B I2C EEPROM）驱动实现，详解硬件 I2C 寄存器配置、16 字节页写自动拆分、ACK 轮询与 A/B 双槽掉电安全参数存储设计。
 date: 2026-10-13
 category: 嵌入式
 tags:
@@ -12,7 +12,7 @@ tags:
   - 参数存储
 ---
 
-M24C02 驱动位于数显式拉力计 HW1.4 的 `DRV/drv_m24c02.c/.h`。写入时按 16 字节页边界拆分，并用 ACK 轮询等待内部编程完成；上层将 256 字节空间分为 A/B 两槽保存参数。下面先看驱动，再看双槽更新和故障恢复。
+M24C02 驱动是小型嵌入式设备持久化参数的常用方案。写入时按 16 字节页边界拆分，并用 ACK 轮询等待内部编程完成；上层将 256 字节空间分为 A/B 两槽保存关键参数。下面系统梳理硬件配置、跨页拆分、ACK 轮询，以及上层 A/B 双槽掉电安全存储的完整代码实现。
 
 ## 芯片特性与驱动概览
 
@@ -20,7 +20,7 @@ M24C02 是 2 Kbit（`256 × 8 bit`）串行 I2C EEPROM，内部按 16 页 × 16 
 
 | 项目 | 当前实现配置 |
 | --- | --- |
-| 源文件 | `DRV/drv_m24c02.c`、`DRV/drv_m24c02.h` |
+| 模块实现 | 纯 C99 驱动（可直接对接标准外设库或硬件 I2C 控制器） |
 | 硬件总线 | N32G455 `I2C3` 主机，7 位寻址，轮询模式（无中断、无 DMA） |
 | 通信速率 | 100 kHz（`PCLK2 = 64 MHz`） |
 | 容量与地址范围 | 256 字节，字节地址 `0x00`～`0xFF` |
@@ -261,12 +261,107 @@ static void Eeprom_Demo(void)
 
 ## 与上层 A/B 双槽掉电安全参数存储的协同
 
-驱动层只负责可靠的字节数组读写，不感知业务数据结构。上层 `APP/app_param_store.c` 将 M24C02 的 256 字节对半划分为两个 128 字节的乒乓槽位：
+驱动层只负责可靠的字节数组读写，不感知具体业务数据结构。上层参数管理模块将 M24C02 的 256 字节空间对半划分为两个 128 字节的乒乓备份槽位：
 
 | 槽位 | 地址范围 | 职责说明 |
 | --- | --- | --- |
 | 槽 A（Slot A） | `0x00`～`0x7F`（128 B） | 保存完整的魔数、版本号、递增序号、用户设置、标定曲线及 CRC-16/MODBUS |
 | 槽 B（Slot B） | `0x80`～`0xFF`（128 B） | 与槽 A 结构完全相同，每次保存总是写入**非活动槽** |
+
+#### A/B 双槽结构体定义与完整 C99 实现
+
+```c
+#include <string.h>
+
+#define PARAM_SLOT_SIZE (128U)
+#define PARAM_MAGIC     (0x5041524DU) /* 'PARM' ASCII 魔数 */
+
+#pragma pack(push, 1)
+typedef struct
+{
+    uint32_t magic;          /* 4B: 魔数标识 */
+    uint16_t version;        /* 2B: 参数结构版本号 */
+    uint32_t sequence;       /* 4B: 单调递增序号，越大表示版本越新 */
+    uint8_t  payload[116];   /* 116B: 业务配置与标定曲线参数 */
+    uint16_t crc16;          /* 2B: CRC-16/MODBUS 校验码 (覆盖偏移 0..125) */
+} ParamSlot;
+#pragma pack(pop)
+
+/* 上电扫描：校验 A/B 两槽，自动选择版本最新且无损的镜像恢复 */
+bool ParamStore_Load(ParamSlot *outParams, bool *outActiveIsSlotA)
+{
+    ParamSlot slotA, slotB;
+    bool validA = false;
+    bool validB = false;
+
+    if (M24c02_Read(0x00, (uint8_t *)&slotA, sizeof(ParamSlot)) == M24C02_STATUS_OK)
+    {
+        validA = (slotA.magic == PARAM_MAGIC) &&
+                 (slotA.crc16 == Crc16_Modbus((const uint8_t *)&slotA, sizeof(ParamSlot) - 2));
+    }
+
+    if (M24c02_Read(0x80, (uint8_t *)&slotB, sizeof(ParamSlot)) == M24C02_STATUS_OK)
+    {
+        validB = (slotB.magic == PARAM_MAGIC) &&
+                 (slotB.crc16 == Crc16_Modbus((const uint8_t *)&slotB, sizeof(ParamSlot) - 2));
+    }
+
+    if (validA && validB)
+    {
+        /* 两个槽位均完整有效，选用序号较大（较新）的槽 */
+        if (slotA.sequence >= slotB.sequence)
+        {
+            *outParams = slotA;
+            if (outActiveIsSlotA) *outActiveIsSlotA = true;
+        }
+        else
+        {
+            *outParams = slotB;
+            if (outActiveIsSlotA) *outActiveIsSlotA = false;
+        }
+        return true;
+    }
+    else if (validA)
+    {
+        *outParams = slotA;
+        if (outActiveIsSlotA) *outActiveIsSlotA = true;
+        return true;
+    }
+    else if (validB)
+    {
+        *outParams = slotB;
+        if (outActiveIsSlotA) *outActiveIsSlotA = false;
+        return true;
+    }
+
+    return false; /* 两槽均损坏（初次上电或硬件故障），应写入出厂默认值 */
+}
+
+/* 掉电安全写入：始终写入非活动槽，并整槽读回校验 */
+bool ParamStore_Save(const ParamSlot *inParams, bool currentIsSlotA)
+{
+    uint16_t targetAddr = currentIsSlotA ? 0x80 : 0x00; /* 写入交替备用槽 */
+    ParamSlot newSlot = *inParams;
+    newSlot.magic = PARAM_MAGIC;
+    newSlot.sequence++;
+    newSlot.crc16 = Crc16_Modbus((const uint8_t *)&newSlot, sizeof(ParamSlot) - 2);
+
+    /* 1. 跨 8 页写入目标槽 */
+    if (M24c02_Write(targetAddr, (const uint8_t *)&newSlot, sizeof(ParamSlot)) != M24C02_STATUS_OK)
+    {
+        return false;
+    }
+
+    /* 2. 写后整槽读回逐字节校验，确保物理无损 */
+    ParamSlot readback;
+    if (M24c02_Read(targetAddr, (uint8_t *)&readback, sizeof(ParamSlot)) != M24C02_STATUS_OK)
+    {
+        return false;
+    }
+
+    return (memcmp(&newSlot, &readback, sizeof(ParamSlot)) == 0);
+}
+```
 
 这样设计的工程价值在于：
 

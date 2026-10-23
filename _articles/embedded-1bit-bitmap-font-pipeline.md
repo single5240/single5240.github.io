@@ -12,7 +12,7 @@ tags:
   - Python脚本
 ---
 
-数显式拉力计 HW1.4 的界面包含简体中文、台湾繁体中文和英文。字库按 UI 文案提取字符子集，使用 16 px 原生点阵和 24 px/40 px 定制字形；五套字库共占 **约 19.2 KB Flash**，分别用于标题、菜单和主读数。页面条带渲染原理见 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})。
+在小内存嵌入式 MCU（如片内 Flash 512 KB、RAM 144 KB）的多语言界面中，直接嵌入完整中文字库会迅速耗尽 Flash 空间。本文介绍一套按需提取 UI 字符子集的 1-bit 点阵字库生成与光栅化流水线，使用 16 px 原生点阵和 24 px/40 px 定制字形，五套字库仅占约 19.2 KB Flash，即可实现高清晰度多语言显示。页面条带渲染原理见 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})。
 
 ## 字号规划与 Flash 体积预算
 
@@ -60,7 +60,7 @@ tags:
 | 台湾繁体标题汉字 `24×24` | Noto Serif TC Regular（23 px 栅格化） | 24 px 空间充足；先在带 8 px 外扩安全区的画布中完整绘制再裁入 `24×24` 字框，若任一有效像素越界则脚本直接报错中断 |
 | 主读数大数字 `24×40` | JetBrains Mono Bold 定制点阵 | 等宽数字与小数点/负号，保证力值快速跳变时数字列绝不左右晃动 |
 
-此外，预生成脚本将提取后的繁体子集保存为仓库内的 `sources/unifont_t_ui_16.bdf` 与 `sources/noto_serif_tc_ui_24.bdf`，并对上游源文件执行 **SHA-256 哈希强校验**，确保团队在任何机器上重新运行 `python3 gen_fonts.py` 都能得到逐字节完全一致的 C 源码。
+此外，构建脚本对上游标准字库文件执行 **SHA-256 哈希强校验**，确保在不同开发环境或 CI 中重新生成都能得到逐字节完全一致的 C 源码数组。
 
 <div id="font-demo-app" class="font-demo-root">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -247,20 +247,72 @@ static void AppUi_DrawGlyphBits(int16_t x, int16_t y,
 }
 ```
 
-## 字库更新与生成工作流
+## Unicode 二分查找与字形索引检索
 
-当 UI 新增或修改显示文案时，按以下步骤更新字库并合入工程：
+子集化字库按 Unicode 码点升序存储。在嵌入式 C 端，使用二分查找在 `O(log N)` 时间内完成字形定位：
 
-```powershell
-# 1. 若修改了台湾繁体文案 (strings_zh_tw.txt)，先更新繁体 BDF 子集
-powershell -ExecutionPolicy Bypass -File gen_noto_tc_bdf.ps1
+```c
+/* Unicode 升序索引表二分查找字形偏移 */
+int32_t Font_FindGlyphIndex(const uint16_t *unicodeTable, uint16_t count, uint16_t codePoint)
+{
+    int32_t low = 0;
+    int32_t high = (int32_t)count - 1;
 
-# 2. 运行 Python 生成器（仅依赖 Python 3 标准库），生成 font_*.c/.h 与 charset.txt
-python3 gen_fonts.py
+    while (low <= high)
+    {
+        int32_t mid = low + ((high - low) >> 1);
+        if (unicodeTable[mid] == codePoint)
+        {
+            return mid; /* 命中字形偏移索引 */
+        }
+        else if (unicodeTable[mid] < codePoint)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid - 1;
+        }
+    }
+    return -1; /* 未收录字符，触发缺字回退 */
+}
 ```
 
-生成后的核查要点：
+## 自动化字库提取与代码生成脚本
 
-- [ ] 检查 `charset.txt` 确认新增字符已全部收录，且生成器无缺字或像素越界报错。
-- [ ] 查看生成的预览图（`preview_font16.png`、`preview_font16_tw.png`、`preview_font24.png`、`preview_font24_tw.png`、`preview_font_num40.png`），确认无笔画粘连或基线偏移。
-- [ ] 如需同步到纯前端网页模拟器，一并导出更新 `js/fonts_font16.js`、`js/fonts_font24.js` 与 `js/fonts_num40.js`。
+通过标准 Python 脚本解析 BDF/TTF 字体，提取文案涉及的字符并生成 C99 数组：
+
+```python
+# bdf_subset_generator.py (轻量生成流水线核心实现)
+def bdf_glyph_to_c_bytes(hex_lines, width, height):
+    stride = (width + 7) // 8
+    c_bytes = []
+    for line in hex_lines:
+        row_val = int(line, 16)
+        # 按 stride 拆分字节，高位在左 (MSB leftmost)
+        for i in range(stride - 1, -1, -1):
+            c_bytes.append((row_val >> (i * 8)) & 0xFF)
+    return c_bytes
+
+def generate_font_c_file(chars, bdf_dict, font_name, width, height):
+    # 1. 按 Unicode 码点严格升序排序
+    sorted_chars = sorted(list(set(chars)), key=lambda c: ord(c))
+    stride = (width + 7) // 8
+    print(f"/* 自动生成的 {font_name} 1-bit 点阵字库 */")
+    print(f"const uint16_t {font_name}_Index[{len(sorted_chars)}] = {{")
+    print("    " + ", ".join(f"0x{ord(c):04X}" for c in sorted_chars))
+    print("};
+")
+    print(f"const uint8_t {font_name}_Bitmaps[{len(sorted_chars)} * {stride * height}] = {")
+    for c in sorted_chars:
+        bytes_list = bdf_glyph_to_c_bytes(bdf_dict[c], width, height)
+        hex_str = ", ".join(f"0x{b:02X}" for b in bytes_list)
+        print(f"    /* '{c}' U+{ord(c):04X} */ {hex_str},")
+    print("};")
+```
+
+生成后的工程核查要点：
+
+- [ ] 确认新增字符已全部收录在升序索引表中，且生成器无字符越界或缺字报警。
+- [ ] 检查字模预览图，确认极小字号繁体字无笔画重叠粘连，且西文与中文字符基线对齐一致。
+- [ ] 固件支持整句缺字回退保护机制，当目标语言字库缺失任一汉字时安全降级，避免屏幕显示乱码或空白块。

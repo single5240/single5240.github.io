@@ -20,9 +20,9 @@ tags:
 
 | 可直接带走 | 必须按新板重绑 | 不要一起带走 |
 | --- | --- | --- |
-| 命令码、参数格式、初始化顺序与延时 | GPIO / SPI / DMA 通道 / 时钟分频 | `AppUiContext`、条带画布、字库 |
+| 命令码、参数格式、初始化顺序与延时 | GPIO / SPI / DMA 通道 / 时钟分频 | 上层 UI 业务页面、具体图元画布、字库 |
 | `RS` / `CS` / `RST` 事务规则 | NVIC 与 `DmaRxIrqHandler` 中断入口 | 业务页面布局 |
-| `CASET` / `RASET` / `RAMWR` 窗口写 GRAM | 背光有效极性与调光定时器 | AD7190 的采样 DMA 通道 |
+| `CASET` / `RASET` / `RAMWR` 窗口写 GRAM | 背光有效极性与调光定时器 | 无关传感器的 DMA 通道 |
 | 命令 8 bit、像素 16 bit RGB565 切换 | 由实际 `PCLK` 与分频算出的 `SCK` | Mem2Mem DMA 模式 |
 | TX DMA 发像素 + RX DMA 丢弃全双工回读 | 与高优先级采样 DMA 的抢占关系 | |
 | DMA 完成后再等 `SPI BUSY = 0` 才拉高 `CS` | | |
@@ -46,9 +46,9 @@ void LcdXxx_FillRect(uint16_t x, uint16_t y,
 
 ## 电气接口与安全初始化电平
 
-当前数显式拉力计 HW1.4 使用 N32G455 SPI1 默认引脚连接 240×320 LCD：
+在典型的 4 线 SPI 硬件连接中，MCU 与 240×320 LCD 的连接关系如下：
 
-| 信号 | 本板 MCU | 作用 | 有效电平与约束 |
+| 信号 | 典型 MCU 引脚 | 作用 | 有效电平与约束 |
 | --- | --- | --- | --- |
 | `SCL` | PA5 | SPI1 SCK | Mode 0：空闲低电平 |
 | `SDA` | PA7 | SPI1 MOSI，命令/参数/像素 | MSB first |
@@ -56,7 +56,7 @@ void LcdXxx_FillRect(uint16_t x, uint16_t y,
 | `RS`（D/C） | PC4 | 命令/数据选择 | `0` = 命令，`1` = 参数或像素 |
 | `CS` | PC5 | 片选 | 低有效，软件 GPIO 控制（`SPI_NSS_SOFT`） |
 | `RST` | PB0 | 硬件复位 | 低有效 |
-| `BL` | PC2 | 背光控制 | 本板高电平点亮 |
+| `BL` | PC2 | 背光控制 | 高电平点亮（或接入 PWM 调光） |
 
 GPIO 初始化必须**先写安全输出电平，再切换为推挽输出模式**：
 
@@ -174,6 +174,29 @@ SPI1 恢复为 8-bit 模式
 ```
 
 若新模组内部 GRAM 大于可视区域（如 240×240 模组复用 240×320 GRAM），需按屏幕规格书在 `CASET/RASET` 中加上 `colstart/rowstart` 偏移。
+
+```c
+/* 矩形窗口配置：发送 CASET (0x2A) + RASET (0x2B) + RAMWR (0x2C) */
+void LcdSt7789_SetWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+    uint8_t colData[4] = {
+        (uint8_t)(x0 >> 8), (uint8_t)(x0 & 0xFF),
+        (uint8_t)(x1 >> 8), (uint8_t)(x1 & 0xFF)
+    };
+    uint8_t rowData[4] = {
+        (uint8_t)(y0 >> 8), (uint8_t)(y0 & 0xFF),
+        (uint8_t)(y1 >> 8), (uint8_t)(y1 & 0xFF)
+    };
+
+    Lcd_WriteCommand(0x2AU); /* CASET: 列起始/终止地址 */
+    Lcd_WriteData(colData, 4);
+
+    Lcd_WriteCommand(0x2BU); /* RASET: 行起始/终止地址 */
+    Lcd_WriteData(rowData, 4);
+
+    Lcd_WriteCommand(0x2CU); /* RAMWR: 显存写入 */
+}
+```
 
 ### 路径一：阻塞填色（`Fill` / `FillRect`）
 

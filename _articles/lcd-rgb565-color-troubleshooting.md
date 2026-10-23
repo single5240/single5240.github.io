@@ -12,7 +12,7 @@ tags:
   - DMA
 ---
 
-数显式拉力计 HW1.4 的 240×320 SPI 彩屏曾出现颜色反转。排查时需要区分显示反相、RGB/BGR 互换、RGB565 字节错序、缓冲区竞争和 SPI 信号问题，避免看到颜色不对就修改字节序。驱动协议与条带渲染细节可配合阅读 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }}) 与 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})。
+在嵌入式 SPI 彩屏（如 ST7789 240×320）的联调过程中，屏幕颜色异常是高频出现的典型问题。排查时必须清晰区分光学显示反相（`INVON/INVOFF`）、RGB/BGR 通道互换、RGB565 高低字节错序、缓冲区数据竞争与 SPI 总线时序问题，避免盲目猜测修改。驱动协议与条带渲染细节可配合阅读 [ST7789 命令时序、窗口配置与像素 DMA 传输参考]({{ '/articles/st7789-command-and-pixel-dma.html' | relative_url }}) 与 [N32G455 LCD 条带渲染与异步刷新实现分析]({{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }})。
 
 ## 真实案例：红蓝绿纯色显示为青黄紫
 
@@ -42,7 +42,7 @@ tags:
 
 ### 修复方式
 
-将 `DRV/drv_lcd_st7789.c` 初始化序列中的反相控制命令由 `INVOFF (0x20)` 改为 `INVON (0x21)`：
+在屏幕驱动初始化序列中，将反相控制命令由 `INVOFF (0x20)` 改为 `INVON (0x21)`：
 
 ```diff
 -#define LCD_CMD_INVOFF (0x20U)
@@ -179,6 +179,25 @@ tags:
 
 若八色纯色正常而复杂界面异常，可进一步绘制 **1 像素黑白棋盘格**与**四象限色块**，用于暴露漏时钟、窗口右边界计算错误（`width - 1` 写成 `width`）或 DMA 计数减半问题。
 
+在排查阶段，可通过以下纯 C 函数做软件辅助诊断，快速验证到底是通道颠倒还是字节序颠倒：
+
+```c
+/* 1. 软件字节序翻转（验证是否因大小端或 DMA 位宽导致高低字节错序） */
+static inline uint16_t SwapBytes16(uint16_t color)
+{
+    return (uint16_t)((color << 8) | (color >> 8));
+}
+
+/* 2. RGB565 与 BGR565 软件通道对调（验证 MADCTL 寄存器 Bit 3 效果） */
+static inline uint16_t SwapRgbBgr565(uint16_t color)
+{
+    uint16_t r = (color >> 11) & 0x1FU;
+    uint16_t g = (color >> 5) & 0x3FU;
+    uint16_t b = color & 0x1FU;
+    return (uint16_t)((b << 11) | (g << 5) | r);
+}
+```
+
 ### 第二步：用逻辑分析仪核对初始化序列与字节序
 
 将逻辑分析仪连接到 `PA5 (SCK)`、`PA7 (MOSI)`、`PC5 (CS)`、`PC4 (RS/DC)`，采样率需显著高于 32 MHz（建议 ≥ 100 MS/s）：
@@ -231,4 +250,4 @@ spiInit.BaudRatePres = SPI_BR_PRESCALER_4;
 - [ ] 多次冷启动、复位与热重启后，黑、白、红、绿、蓝、黄、青、紫八色显示一致且无首帧闪屏。
 - [ ] 1 像素黑白棋盘格与四边 1 像素边框无漏点、无行列偏移。
 - [ ] 逻辑分析仪确认 `COLMOD=0x55`、`INVON=0x21`、像素期 `CS` 在 `SPI BUSY = 0` 后才拉高。
-- [ ] 开启 AD7190 连续采样并快速切换 UI 页面、滚动历史记录，RTT 无 `ST7789 asynchronous DMA timeout or transfer error` 日志，页面无条带错色。
+- [ ] 开启高优先级后台采集任务并快速切换 UI 页面、滚动历史记录，无 DMA timeout 报错，页面无条带撕裂或错色。
