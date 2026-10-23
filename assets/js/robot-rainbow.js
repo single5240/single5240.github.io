@@ -785,6 +785,7 @@
       if (isFloating) {
         isFloating = false;
         dock.classList.remove("is-docked-float");
+        document.body.classList.remove("has-docked-robot");
       }
       return;
     }
@@ -797,10 +798,12 @@
       isFloating = shouldFloat;
       if (isFloating) {
         dock.classList.add("is-docked-float");
+        document.body.classList.add("has-docked-robot");
         inView = true;
         startLoop();
       } else {
         dock.classList.remove("is-docked-float");
+        document.body.classList.remove("has-docked-robot");
       }
     }
   };
@@ -808,7 +811,7 @@
   if (toTopBtn) {
     toTopBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
     });
   }
 

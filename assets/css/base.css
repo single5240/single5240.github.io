@@ -267,6 +267,20 @@ html {
     box-shadow: var(--shadow-hover);
   }
 }
+/* 当悬浮示波器工作台激活时，隐藏全局回到顶部按钮，避免与工作台内置的 #dockToTop 发生视觉层叠与遮挡 */
+body.has-docked-robot .back-to-top {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(10px) !important;
+}
+
+@supports selector(:has(*)) {
+  body:has(.robot-dock.is-docked-float) .back-to-top {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(10px) !important;
+  }
+}
 
 body {
   margin: 0;
