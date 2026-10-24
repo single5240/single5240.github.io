@@ -6804,6 +6804,13 @@ permalink: /projects/ai-asmr/index.html
     updateUIPlayState();
   }
 
+  // 调度器与触发器兼容别名映射
+  const triggerRaindrop = triggerBinauralRainDrop;
+  const triggerTapNote = triggerSingleTap;
+  const scheduleNextTapEvent = scheduleNextTap;
+  const scheduleNextFrictionEvent = scheduleNextFrictionStroke;
+  const scheduleNextWaterEvent = scheduleNextWaterBubble;
+
   function updateAcousticNodes() {
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
@@ -9144,9 +9151,9 @@ permalink: /projects/ai-asmr/index.html
         const rect = canvas.getBoundingClientRect();
         const clickAz = Math.max(-0.95, Math.min(0.95, ((e.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1));
         if (state.activeCategory === "rain") {
-          triggerRaindrop();
+          triggerBinauralRainDrop(clickAz);
         } else if (state.activeCategory === "tapping") {
-          triggerTapNote(clickAz, 0.95);
+          triggerSingleTap(clickAz, 0.95);
         } else if (state.activeCategory === "friction") {
           triggerFrictionStroke(clickAz, -clickAz * 0.5, 0.85, 0.95);
         } else if (state.activeCategory === "water") {
@@ -9190,9 +9197,12 @@ permalink: /projects/ai-asmr/index.html
         generatePrompt();
 
         if (state.isPlaying && state.activeCategory === "rain") {
-          triggerRaindrop();
-          if (RAIN_PRESETS[state.currentRain].thunder && !thunderTimerId) {
-            thunderTimerId = setTimeout(scheduleNextThunder, 1200);
+          triggerBinauralRainDrop();
+          if (RAIN_PRESETS[state.currentRain].thunder) {
+            if (!thunderTimerId) thunderTimerId = setTimeout(scheduleNextThunder, 1200);
+          } else if (thunderTimerId) {
+            clearTimeout(thunderTimerId);
+            thunderTimerId = null;
           }
         }
       });
@@ -9213,7 +9223,7 @@ permalink: /projects/ai-asmr/index.html
         generatePrompt();
 
         if (state.isPlaying && state.activeCategory === "rain") {
-          triggerRaindrop();
+          triggerBinauralRainDrop();
         }
       });
     });
@@ -9234,8 +9244,8 @@ permalink: /projects/ai-asmr/index.html
 
         if (state.isPlaying && state.activeCategory === "tapping") {
           if (tapTimerId) clearTimeout(tapTimerId);
-          triggerTapNote((Math.random() * 1.2 - 0.6), 0.95);
-          scheduleNextTapEvent();
+          triggerSingleTap((Math.random() * 1.2 - 0.6), 0.95);
+          scheduleNextTap();
         }
       });
     });
@@ -9255,7 +9265,7 @@ permalink: /projects/ai-asmr/index.html
 
         if (state.isPlaying && state.activeCategory === "tapping") {
           if (tapTimerId) clearTimeout(tapTimerId);
-          scheduleNextTapEvent();
+          scheduleNextTap();
         }
       });
     });
@@ -9276,7 +9286,7 @@ permalink: /projects/ai-asmr/index.html
 
         if (state.isPlaying && state.activeCategory === "friction") {
           if (fricTimerId) clearTimeout(fricTimerId);
-          scheduleNextFrictionEvent();
+          scheduleNextFrictionStroke();
         }
       });
     });
@@ -9296,7 +9306,7 @@ permalink: /projects/ai-asmr/index.html
 
         if (state.isPlaying && state.activeCategory === "friction") {
           if (fricTimerId) clearTimeout(fricTimerId);
-          scheduleNextFrictionEvent();
+          scheduleNextFrictionStroke();
         }
       });
     });
@@ -9321,7 +9331,7 @@ permalink: /projects/ai-asmr/index.html
 
         if (state.isPlaying && state.activeCategory === "water") {
           if (waterTimerId) clearTimeout(waterTimerId);
-          scheduleNextWaterEvent();
+          scheduleNextWaterBubble();
           if (WATER_SCENARIOS[state.currentWaterScene].shishi) {
             shishiTimerId = setTimeout(scheduleNextShishiOdoshi, 1200);
           }
@@ -9344,7 +9354,7 @@ permalink: /projects/ai-asmr/index.html
 
         if (state.isPlaying && state.activeCategory === "water") {
           if (waterTimerId) clearTimeout(waterTimerId);
-          scheduleNextWaterEvent();
+          scheduleNextWaterBubble();
         }
       });
     });
