@@ -21,7 +21,7 @@
   boundary: 力值由滑块模拟，不是真实计量结果。
 - id: my-skills
   title: 嵌入式与研发 AI Skills 库
-  subtitle: 按技术方向分类的 16 个 Agent Skills
+  subtitle: 按技术方向分类的 18 个 Agent Skills
   description: 收集外设驱动、存储、状态机、通信和调试任务的 Skill，提供使用说明、检查清单与参考代码。
   url: /projects/my-skills/index.html
   image: /assets/images/skills-preview.svg

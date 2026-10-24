@@ -7,7 +7,7 @@ category: protocols-debug
 category_label: 通信协议与硬件联调
 scope: global
 target: UART / RS-232 / RS-485 / Modbus RTU / DMX512
-order: 15
+order: 17
 tags:
   - UART-DMA
   - RS-485

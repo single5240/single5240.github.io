@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
 target: All MCU (STM32 / GD32 / N32G455 / NXP 片内 Flash)
-order: 12
+order: 14
 tags:
   - 片内Flash
   - 磨损均衡

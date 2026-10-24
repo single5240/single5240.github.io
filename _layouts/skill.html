@@ -24,7 +24,7 @@ layout: default
       <aside class="article-context" aria-label="相关内容">
         <p>相关入口</p>
         <a href="{{ '/projects/my-skills/index.html#cat-' | append: page.category | relative_url }}">{{ page.category_label }}（{{ page.category }}/） ↗</a>
-        <a href="{{ '/projects/my-skills/index.html' | relative_url }}">全部 16 个 AI Skills 索引 ↗</a>
+        <a href="{{ '/projects/my-skills/index.html' | relative_url }}">全部 {{ site.skills.size }} 个 AI Skills 索引 ↗</a>
         {% if page.related_article %}<a href="{{ '/articles/' | append: page.related_article | append: '.html' | relative_url }}">关联技术笔记 ↗</a>{% endif %}
         {% if page.related_demo %}<a href="{{ page.related_demo | relative_url }}">数显式拉力计交互演示 ↗</a>{% endif %}
       </aside>

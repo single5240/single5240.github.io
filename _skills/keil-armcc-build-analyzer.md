@@ -7,7 +7,7 @@ category: common
 category_label: 通用与工程基建
 scope: global
 target: Keil MDK-ARM (UV4.exe / ARMCC 5 / ARMClang 6)
-order: 2
+order: 3
 tags:
   - Keil
   - ARMCC5

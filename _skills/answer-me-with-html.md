@@ -7,7 +7,7 @@ category: common
 category_label: 通用与工程基建
 scope: global
 target: Node.js 20+ / 架构图解与协议时序可视化
-order: 4
+order: 6
 tags:
   - HTML图解
   - 架构可视化

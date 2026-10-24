@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
 target: All MCU + SPI NOR Flash (W25Q128 / GD25Qxx)
-order: 8
+order: 10
 tags:
   - NOR-Flash
   - W25Q128
