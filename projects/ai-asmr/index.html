@@ -2619,6 +2619,7 @@ permalink: /projects/ai-asmr/index.html
   let squishCyclePhase = 0;
   let squishPanSide = -0.75;
   let squishBlobs = [];
+  let squishRipples = [];
   let squishCompression = 0;
 
   function initAudioEngine() {
@@ -4095,7 +4096,8 @@ permalink: /projects/ai-asmr/index.html
     const now = audioCtx.currentTime;
     const mat = SQUISH_MATERIALS[state.currentSquishMat];
     const effectiveCutoff = Math.min(state.userLowpass, mat.warmthCutoff * (0.65 + (1 - state.squishViscosity) * 0.7));
-    const buf = fricNoiseBuffer || createFrictionNoiseBuffer(audioCtx);
+    const buf = getFrictionNoiseBuffer();
+    if (!buf) return;
 
     if (state.currentSquishMat === "memory_foam") {
       // 1. 慢回弹记忆海绵：深沉微气孔慢吸气与舒展 (Pore Breathing & Viscous Decompression)
@@ -4593,15 +4595,16 @@ permalink: /projects/ai-asmr/index.html
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
     } else if (state.activeCategory === "squish") {
       // 触觉揉捏模式：微弱低频粘弹性微声底 (Viscoelastic Soft Bed)
-      const targetFreq = Math.min(state.userLowpass, 140 + state.squishViscosity * 180);
+      const mat = SQUISH_MATERIALS[state.currentSquishMat];
+      const targetFreq = Math.min(state.userLowpass, (mat ? mat.warmthCutoff * 0.22 : 180) + state.squishViscosity * 120);
       if (noiseFilterL && noiseFilterR) {
         noiseFilterL.frequency.setTargetAtTime(targetFreq, now, 0.08);
         noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
-        noiseFilterL.Q.setTargetAtTime(1.4, now, 0.08);
-        noiseFilterR.Q.setTargetAtTime(1.4, now, 0.08);
+        noiseFilterL.Q.setTargetAtTime(1.2, now, 0.08);
+        noiseFilterR.Q.setTargetAtTime(1.2, now, 0.08);
       }
       if (noiseGain) {
-        const bedVol = 0.12 * state.squishViscosity;
+        const bedVol = 0.035 * state.squishViscosity;
         noiseGain.gain.setTargetAtTime(bedVol, now, 0.1);
       }
       const hudFreq = document.getElementById("hudFilterFreq");
@@ -5067,22 +5070,36 @@ permalink: /projects/ai-asmr/index.html
     }
 
     // 产生形变微泡与粘滞凝胶水珠 (Viscous Micro-Blobs & Beads)
-    if (squishBlobs.length < 50) {
-      const beadCount = type === "soft_slime" ? 6 : (type === "memory_foam" ? 5 : 4);
+    if (squishBlobs.length < 60) {
+      const beadCount = type === "soft_slime" ? 8 : (type === "memory_foam" ? 6 : 5);
       for (let i = 0; i < beadCount; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const spd = 0.6 + Math.random() * 1.8 * vel;
+        const spd = 1.0 + Math.random() * 2.2 * vel;
         squishBlobs.push({
-          x: posX + (Math.random() * 18 - 9),
-          y: centerY + (Math.random() * 18 - 9),
+          x: posX + (Math.random() * 24 - 12),
+          y: centerY + (Math.random() * 24 - 12),
           vx: Math.cos(angle) * spd,
           vy: Math.sin(angle) * spd,
-          r: 2.2 + Math.random() * 3.6 * vel,
-          alpha: 0.90,
-          decay: 0.955 + Math.random() * 0.02,
+          r: 2.6 + Math.random() * 3.8 * vel,
+          alpha: 0.95,
+          decay: 0.95 + Math.random() * 0.02,
           color: gelColor
         });
       }
+    }
+
+    // 产生柔润粘弹性形变扩散环 (Viscoelastic Soft Rebound Rings)
+    if (squishRipples.length < 15) {
+      squishRipples.push({
+        x: posX,
+        y: centerY,
+        rx: 16,
+        ry: 10,
+        maxR: 90 + vel * 50,
+        alpha: 0.85,
+        expandSpeed: 2.0 + vel * 1.5,
+        color: gelColor
+      });
     }
 
     if (isLeft) {
@@ -5304,28 +5321,41 @@ permalink: /projects/ai-asmr/index.html
         // 阻尼回弹动力学 (Spring Damping Rebound)
         squishCompression *= 0.94;
 
-        const gelGrad = ctx.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
-        if (isDark) {
-          gelGrad.addColorStop(0, "rgba(52, 211, 153, 0.14)");
-          gelGrad.addColorStop(0.45, "rgba(167, 139, 250, 0.05)");
-          gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        } else {
-          gelGrad.addColorStop(0, "rgba(5, 150, 105, 0.12)");
-          gelGrad.addColorStop(0.45, "rgba(124, 58, 237, 0.04)");
-          gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        // 根据当前所选材质动态定制柔光色调
+        let coreColor1 = isDark ? "rgba(52, 211, 153, " : "rgba(5, 150, 105, ";
+        let coreColor2 = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, ";
+        if (state.currentSquishMat === "warm_beeswax") {
+          coreColor1 = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, ";
+          coreColor2 = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, ";
+        } else if (state.currentSquishMat === "soft_slime") {
+          coreColor1 = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, ";
+          coreColor2 = isDark ? "rgba(236, 72, 153, " : "rgba(219, 39, 119, ";
+        } else if (state.currentSquishMat === "linen_parchment") {
+          coreColor1 = isDark ? "rgba(251, 191, 36, " : "rgba(180, 83, 9, ";
+          coreColor2 = isDark ? "rgba(217, 119, 6, " : "rgba(161, 98, 7, ";
+        } else if (state.currentSquishMat === "kinetic_sand") {
+          coreColor1 = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, ";
+          coreColor2 = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, ";
         }
+
+        const breath = Math.sin(Date.now() / 950) * 4;
+        const gelGrad = ctx.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
+        gelGrad.addColorStop(0, coreColor1 + (isDark ? "0.16)" : "0.14)"));
+        gelGrad.addColorStop(0.45, coreColor2 + (isDark ? "0.06)" : "0.05)"));
+        gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
         ctx.fillStyle = gelGrad;
         ctx.beginPath();
-        const radiusX = (logicalWidth * 0.34) * (1 + squishCompression * 0.18);
-        const radiusY = 78 * (1 - squishCompression * 0.22);
+        const radiusX = (logicalWidth * 0.34 + breath) * (1 + squishCompression * 0.22);
+        const radiusY = Math.max(20, (78 - breath * 0.5) * (1 - squishCompression * 0.25));
         ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // 柔润凝胶外层粘滞虚线形变环
         ctx.beginPath();
-        ctx.ellipse(centerX, centerY, 88 * (1 + squishCompression * 0.25), 65 * (1 - squishCompression * 0.25), 0, 0, Math.PI * 2);
-        ctx.strokeStyle = isDark ? "rgba(52, 211, 153, 0.28)" : "rgba(5, 150, 105, 0.38)";
-        ctx.lineWidth = 1.2;
+        ctx.ellipse(centerX, centerY, (88 + breath * 0.8) * (1 + squishCompression * 0.28), Math.max(15, (65 - breath * 0.4) * (1 - squishCompression * 0.28)), 0, 0, Math.PI * 2);
+        ctx.strokeStyle = coreColor1 + (isDark ? "0.32)" : "0.42)");
+        ctx.lineWidth = 1.4;
         ctx.setLineDash([4, 6]);
         ctx.stroke();
 
@@ -5475,6 +5505,27 @@ permalink: /projects/ai-asmr/index.html
 
       if (e.alpha < 0.02 || e.y < -10) {
         fireEmbers.splice(i, 1);
+      }
+    }
+
+    // 绘制触觉揉捏专属慢回弹形变环 (Viscoelastic Soft Rebound Rings)
+    for (let i = squishRipples.length - 1; i >= 0; i--) {
+      const r = squishRipples[i];
+      r.rx += r.expandSpeed * 1.35;
+      r.ry += r.expandSpeed * 0.85;
+      r.alpha *= 0.955;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = r.color + r.alpha.toFixed(3) + ")";
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([4, 6]);
+      ctx.stroke();
+      ctx.restore();
+
+      if (r.alpha < 0.02 || r.rx > r.maxR) {
+        squishRipples.splice(i, 1);
       }
     }
 
@@ -6050,6 +6101,7 @@ permalink: /projects/ai-asmr/index.html
     toolVisualEvents = [];
     fireEmbers = [];
     squishBlobs = [];
+    squishRipples = [];
     squishCompression = 0;
 
     if (wasPlaying) {
@@ -6378,6 +6430,12 @@ permalink: /projects/ai-asmr/index.html
 
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "squish") {
+          if (squishTimerId) clearTimeout(squishTimerId);
+          triggerSquishEvent(Math.random() * 0.6 - 0.3, 1.0);
+          scheduleNextSquishEvent();
+        }
       });
     });
 
@@ -6393,6 +6451,12 @@ permalink: /projects/ai-asmr/index.html
         state.currentSquishStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "squish") {
+          if (squishTimerId) clearTimeout(squishTimerId);
+          triggerSquishEvent(Math.random() * 0.6 - 0.3, 1.0);
+          scheduleNextSquishEvent();
+        }
       });
     });
 
