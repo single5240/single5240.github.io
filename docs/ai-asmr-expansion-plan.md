@@ -5,6 +5,8 @@
 - 技术栈：纯原生 HTML5 / CSS3 / ES2022 Vanilla JavaScript + Web Audio API + Canvas 2D
 - 设计基准：零外部音频依赖、纯本地实时算法合成、双耳 3Dio 假人头立体声学、全主题自适应（默认深色 / 默认浅色 / 瑞士网格 / 深空终端 / 极简单色）
 
+后续功能执行方案：[多轨混音与无缝持续播放](ai-asmr-multitrack-execution-plan.md)（待实施，包含首版范围、迁移步骤与验收清单）。
+
 ---
 
 ## 1. 声音体系全景盘点 (Ten Soundstage Categories)
