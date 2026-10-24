@@ -168,7 +168,10 @@ permalink: /projects/ai-asmr/index.html
     <!-- 底部主控条 -->
     <div class="stage-toolbar">
       <button type="button" class="main-play-btn" id="btnMainPlay" aria-pressed="false">
-        <span class="play-icon" aria-hidden="true">▶</span>
+        <span class="play-icon" id="playBtnIcon" aria-hidden="true">
+          <svg class="icon-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="m4.5 2.5 9 5.5-9 5.5z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3.5 2.5h3.5v11H3.5zm5.5 0H12.5v11H9z"/></svg>
+        </span>
         <span class="play-text" id="playBtnText">播放雨声 (Space)</span>
       </button>
 
@@ -1689,10 +1692,38 @@ permalink: /projects/ai-asmr/index.html
 .main-play-btn.playing {
   background: var(--warm);
   border-color: var(--warm);
-  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
+  box-shadow: 0 4px 14px rgba(217, 130, 43, 0.3);
+}
+.main-play-btn.playing:hover {
+  filter: brightness(0.92);
+  transform: translateY(-1px);
 }
 .play-icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.play-icon svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  display: block;
+}
+.main-play-btn .icon-play {
+  display: block;
+}
+.main-play-btn .icon-pause {
+  display: none;
+}
+.main-play-btn.playing .icon-play {
+  display: none;
+}
+.main-play-btn.playing .icon-pause {
+  display: block;
 }
 
 .quick-timer {
@@ -2096,7 +2127,8 @@ permalink: /projects/ai-asmr/index.html
   .amb-media-btn:hover,
   .amb-style-btn:hover,
   .cat-tab-btn:hover,
-  .main-play-btn:hover {
+  .main-play-btn:hover,
+  .main-play-btn.playing:hover {
     transform: none;
   }
 }
@@ -6777,7 +6809,7 @@ permalink: /projects/ai-asmr/index.html
     const now = audioCtx.currentTime;
 
     // 1. 总音量与全局高频柔化防线同步更新
-    masterGain.gain.setTargetAtTime(state.masterVol, now, 0.05);
+    masterGain.gain.setTargetAtTime(state.isPlaying ? state.masterVol : 0.0001, now, 0.05);
     if (masterWarmthFilter) {
       masterWarmthFilter.frequency.setTargetAtTime(Math.min(4800, state.userLowpass * 1.65), now, 0.08);
     }
@@ -6799,7 +6831,7 @@ permalink: /projects/ai-asmr/index.html
       // 雨声模式：启动粉红噪声底噪 + 碰撞介质共振峰温润塑形
       const rain = RAIN_PRESETS[state.currentRain];
       const surf = RAIN_SURFACES[state.currentSurface];
-      if (noiseGain) noiseGain.gain.setTargetAtTime(rain.baseVolume, now, 0.1);
+      if (noiseGain) noiseGain.gain.setTargetAtTime(state.isPlaying ? rain.baseVolume : 0.0001, now, 0.1);
 
       const targetFreq = Math.min(rain.filterFreq, state.userLowpass);
       if (noiseFilterL && noiseFilterR) {
@@ -6850,7 +6882,7 @@ permalink: /projects/ai-asmr/index.html
         bedPeakingR.gain.setTargetAtTime(scene.peakingGain || 3.5, now, 0.08);
       }
       if (noiseGain) {
-        const streamVol = scene.baseVolume * 0.72;
+        const streamVol = state.isPlaying ? (scene.baseVolume * 0.72) : 0.0001;
         noiseGain.gain.setTargetAtTime(streamVol, now, 0.1);
       }
       const hudFreq = document.getElementById("hudFilterFreq");
@@ -6881,7 +6913,7 @@ permalink: /projects/ai-asmr/index.html
         noiseFilterR.Q.setTargetAtTime(1.2, now, 0.08);
       }
       if (noiseGain) {
-        const convectionVol = 0.22 * state.fireWarmth;
+        const convectionVol = state.isPlaying ? (0.22 * state.fireWarmth) : 0.0001;
         noiseGain.gain.setTargetAtTime(convectionVol, now, 0.1);
       }
       const hudFreq = document.getElementById("hudFilterFreq");
@@ -6897,7 +6929,7 @@ permalink: /projects/ai-asmr/index.html
         noiseFilterR.Q.setTargetAtTime(1.2, now, 0.08);
       }
       if (noiseGain) {
-        const bedVol = 0.035 * state.squishViscosity;
+        const bedVol = state.isPlaying ? (0.035 * state.squishViscosity) : 0.0001;
         noiseGain.gain.setTargetAtTime(bedVol, now, 0.1);
       }
       const hudFreq = document.getElementById("hudFilterFreq");
@@ -6926,7 +6958,7 @@ permalink: /projects/ai-asmr/index.html
         bedPeakingR.gain.setTargetAtTime(3.2, now, 0.1);
       }
       if (noiseGain) {
-        const bedVol = 0.12 * state.ambDepth + 0.16 * state.ambGrain;
+        const bedVol = state.isPlaying ? (0.12 * state.ambDepth + 0.16 * state.ambGrain) : 0.0001;
         noiseGain.gain.setTargetAtTime(bedVol, now, 0.12);
       }
       if (ambDroneOsc1 && ambDroneOsc2 && ambSubOsc && ambDroneFilter && ambDroneGain) {
@@ -8863,10 +8895,12 @@ permalink: /projects/ai-asmr/index.html
   // --------------------------------------------------------------------------
   function switchCategory(cat) {
     if (state.activeCategory === cat) return;
-    const wasPlaying = state.isPlaying;
 
-    if (wasPlaying) {
+    // 切换大类时自动停止当前播放
+    if (state.isPlaying) {
       stopAudio();
+    } else {
+      clearAllCategoryTimers();
     }
 
     state.activeCategory = cat;
@@ -9009,9 +9043,7 @@ permalink: /projects/ai-asmr/index.html
     keycapVisualEvents = [];
     cosmicVisualEvents = [];
 
-    if (wasPlaying) {
-      startAudio();
-    }
+    updateUIPlayState();
   }
 
   function updateUIPlayState() {
@@ -9033,15 +9065,19 @@ permalink: /projects/ai-asmr/index.html
     const catName = catMap[state.activeCategory] || "声音";
 
     if (state.isPlaying) {
-      btn.classList.add("playing");
-      btn.setAttribute("aria-pressed", "true");
-      pulse.classList.add("active");
-      playText.textContent = "暂停" + catName + " (Space)";
+      if (btn) {
+        btn.classList.add("playing");
+        btn.setAttribute("aria-pressed", "true");
+      }
+      if (pulse) pulse.classList.add("active");
+      if (playText) playText.textContent = "暂停" + catName + " (Space)";
     } else {
-      btn.classList.remove("playing");
-      btn.setAttribute("aria-pressed", "false");
-      pulse.classList.remove("active");
-      playText.textContent = "播放" + catName + " (Space)";
+      if (btn) {
+        btn.classList.remove("playing");
+        btn.setAttribute("aria-pressed", "false");
+      }
+      if (pulse) pulse.classList.remove("active");
+      if (playText) playText.textContent = "播放" + catName + " (Space)";
     }
   }
 
