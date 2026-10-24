@@ -13,8 +13,8 @@ permalink: /projects/ai-asmr/index.html
     <h1>AI-ASMR 声音实验室</h1>
     <p class="lede">
       基于 <strong>Web Audio API 纯本地物理算法合成</strong> 的双耳声音发生器，无需加载外部音频文件。
-      提供雨声、敲击、摩擦、流水、钵铃、伴读工具、壁炉炭火、软胶揉捏、机械键盘与复古氛围共 10 类声学体系，
-      内置双耳立体声定位、非周期自然律动与低通柔化滤波，呈现平稳、柔和、无尖锐杂音的声音细节，并提供配套的 AI 提示词参考。
+      <span class="lab-intro-detail">提供雨声、敲击、摩擦、流水、钵铃、伴读工具、壁炉炭火、软胶揉捏、机械键盘与复古氛围共 10 类声学体系，
+      内置双耳立体声定位、非周期自然律动与低通柔化滤波，呈现平稳、柔和、无尖锐杂音的声音细节，并提供配套的 AI 提示词参考。</span>
     </p>
     <div class="head-badges" role="region" aria-label="核心声学特性">
       <span class="badge-item">🎧 3Dio 双耳立体声</span>
@@ -27,7 +27,8 @@ permalink: /projects/ai-asmr/index.html
   <!-- ========================================================================
        1. 核心大类切换导航 (Rain / Tapping / Friction / Water / Bowls / Tools / Fire / Squish)
        ======================================================================== -->
-  <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择">
+  <p class="category-scroll-hint" id="categoryScrollHint">左右滑动选择声音 · 选好后点击播放</p>
+  <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择" aria-describedby="categoryScrollHint">
     <button type="button" class="cat-tab-btn active" id="tabRainCategory" role="tab" aria-selected="true" data-cat="rain">
       <span class="cat-tab-icon">🌧️</span>
       <span class="cat-tab-content">
@@ -1350,7 +1351,8 @@ permalink: /projects/ai-asmr/index.html
   font-weight: 500;
 }
 
-/* 核心大类切换导航：自适应多排网格（桌面端 4 列 × 2 排，平板 2 列，移动端 1 列） */
+/* 宽屏网格，小屏横向声音选择器。 */
+.category-scroll-hint { display: none; }
 .category-switch-bar {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -1365,11 +1367,6 @@ permalink: /projects/ai-asmr/index.html
 @media (max-width: 760px) {
   .category-switch-bar {
     grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 520px) {
-  .category-switch-bar {
-    grid-template-columns: 1fr;
   }
 }
 .cat-tab-btn {
@@ -2082,8 +2079,111 @@ permalink: /projects/ai-asmr/index.html
   font-size: 0.75rem;
 }
 
-/* 动效适配 */
+/* 设备适配：控件保持可触达，窄屏只在分类栏和参数表内横向滚动。 */
+.asmr-lab-page :is(button, select, input, textarea):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+.asmr-lab-page :is(button, select) { touch-action: manipulation; }
+.asmr-lab-page input[type="range"] {
+  min-width: 0;
+  min-height: 44px;
+  accent-color: var(--accent);
+}
+.asmr-lab-page :is(.control-card, .tweak-item, .guide-item, .master-vol-group) { min-width: 0; }
+.asmr-lab-page :is(.preset-name, .preset-desc, .card-head, .stage-title) { overflow-wrap: anywhere; }
+.stage-brand { min-width: 0; flex-wrap: wrap; }
+.stage-title { flex: 1; }
+.stage-pill { white-space: nowrap; }
+.card-head { flex-wrap: wrap; gap: 0.5rem; }
+.tweak-controls-grid { grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); }
+.guide-cards-grid { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+.master-vol-group input { flex: 1; width: 100%; }
+.stage-hud { gap: 1rem; }
+.hud-left, .hud-right { max-width: 32%; }
+.hud-center { flex-shrink: 0; }
+.stage-viewport:is(.mode-radar, .mode-minimal) { --ink: #e2e8f0; --muted: #94a3b8; --accent: #5eead4; }
+.stage-viewport.mode-radar .stage-hud { display: none; }
+.stage-visual-modes button { min-height: 36px; }
+
+@media (pointer: coarse) {
+  .asmr-lab-page :is(button, select) { min-height: 44px; }
+  .asmr-lab-page :is(select, textarea) { font-size: 16px; }
+}
+@media (max-width: 1000px) {
+  .hud-center { display: none; }
+  .hud-left, .hud-right { max-width: 48%; }
+}
+@media (max-width: 760px) {
+  .asmr-lab-page { padding-bottom: calc(10rem + env(safe-area-inset-bottom, 0px)); }
+  .lab-intro-detail { display: none; }
+  .head-badges { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .badge-item { padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: 8px; }
+  .category-scroll-hint { display: block; font-size: 0.8125rem; color: var(--muted); margin: 1rem 0 0; }
+  .category-switch-bar {
+    display: flex;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding: 0.5rem 0.2rem 0.75rem;
+    margin-top: 0;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 0.2rem;
+  }
+  .cat-tab-btn { flex: 0 0 auto; width: auto; max-width: 85%; padding: 0.65rem 0.85rem; gap: 0.5rem; scroll-snap-align: start; }
+  .cat-tab-icon { font-size: 1.3rem; }
+  .cat-tab-desc { display: none; }
+  .cat-tab-title { font-size: 0.875rem; }
+  .stage-header { padding: 0.85rem; }
+  .stage-brand { width: 100%; gap: 0.5rem; }
+  .stage-title { min-width: 0; font-size: 0.75rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .stage-visual-modes { width: 100%; }
+  .stage-visual-modes button { flex: 1; min-height: 44px; }
+  .stage-viewport { height: clamp(240px, 42svh, 320px); }
+  .stage-hud { padding: 0.85rem; }
+  .hud-val { font-size: 0.875rem; }
+  .hud-sub { display: none; }
+  .stage-toolbar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.35rem 0.75rem;
+    padding: 0.65rem max(1rem, env(safe-area-inset-right, 0px)) calc(0.5rem + env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+    background: var(--panel);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+  }
+  .main-play-btn { padding: 0.65rem 0.5rem; justify-content: center; min-height: 44px; font-size: 0.875rem; }
+  .quick-timer { flex-wrap: wrap; gap: 0.15rem; }
+  .quick-timer label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .quick-timer select { width: 100%; min-width: 0; min-height: 44px; font-size: 16px; }
+  .timer-countdown:empty { display: none; }
+  .timer-countdown { font-size: 0.75rem; }
+  .master-vol-group { grid-column: 1 / -1; }
+  .master-vol-group label { white-space: nowrap; }
+  .control-card, .acoustic-tweak-card, .prompt-lab-card { padding: 1rem; }
+  .asmr-matrix-grid { gap: 1rem; }
+  .prompt-display-panel { padding: 0.75rem; }
+  .prompt-textarea { font-size: 16px; }
+  .asmr-lab-page { scroll-margin-bottom: 10rem; }
+  .asmr-lab-page :is(button, select, input, textarea) { scroll-margin-block: 6rem 11rem; }
+}
+@media (max-width: 420px) {
+  .stage-pill, .hud-tag { display: none; }
+  .stage-visual-modes button { padding-inline: 0.2rem; font-size: 0.6875rem; white-space: nowrap; }
+}
+@media (min-width: 560px) and (max-width: 760px) and (max-height: 500px) {
+  .stage-toolbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr); }
+  .master-vol-group { grid-column: auto; }
+  .master-vol-group label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .asmr-lab-page { padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* 动效适配：减少动态效果时保留文字声场信息，关闭画布动画。 */
 @media (prefers-reduced-motion: reduce) {
+  #asmrCanvas { visibility: hidden; }
+  .stage-viewport.mode-radar .stage-hud { display: flex; }
+  .asmr-lab-page *, .asmr-lab-page *::before, .asmr-lab-page *::after { transition: none !important; }
   .pulse-indicator.active {
     animation: none;
   }
@@ -7870,6 +7970,7 @@ permalink: /projects/ai-asmr/index.html
     }
 
     // 驱动 3Dio 声学雷达、双耳 VU 电平表与人耳波纹
+    if (document.hidden || reducedMotion.matches) return;
     registerAcousticEvent(azimuth, velScale * 0.85, "keyboard", "Key · " + state.currentKeySwitch);
     if (azimuth < 0) {
       earWavesL.push({ r: 6, maxR: 42 + velScale * 26, alpha: 0.8 });
@@ -8171,6 +8272,7 @@ permalink: /projects/ai-asmr/index.html
       iceChime.stop(now + 0.22);
     }
 
+    if (document.hidden || reducedMotion.matches) return;
     registerAcousticEvent(azimuth, velScale * 0.65, "ambient", "Cosmic · " + state.currentAmbMedia);
     if (azimuth < 0) {
       earWavesL.push({ r: 6, maxR: 40 + velScale * 24, alpha: 0.72 });
@@ -8766,6 +8868,9 @@ permalink: /projects/ai-asmr/index.html
   let earWavesL = [];
   let earWavesR = [];
   let animFrameId = null;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const compactViewport = window.matchMedia("(max-width: 760px)");
+  let lastRenderTime = 0;
 
   // 3Dio 双耳空间全景声学雷达与实时声场监视器状态
   let radarSweepAngle = -Math.PI / 2;
@@ -8837,7 +8942,7 @@ permalink: /projects/ai-asmr/index.html
 
   function initParticles() {
     rainParticles = [];
-    const count = 110;
+    const count = Math.round(Math.min(110, Math.max(35, logicalWidth / 8)));
     for (let i = 0; i < count; i++) {
       rainParticles.push(new RainStreak());
     }
@@ -8845,6 +8950,7 @@ permalink: /projects/ai-asmr/index.html
 
   // 统一声学事件注册（驱动 3Dio 声学雷达、双耳电平表、示波器）
   function registerAcousticEvent(azimuth, vel, category = "ambient", label = "Sound") {
+    if (document.hidden || reducedMotion.matches) return;
     const isDark = isDarkThemeActive();
     const az = Math.max(-1, Math.min(1, azimuth));
     const leftWeight = Math.max(0.15, (1 - az) / 2);
@@ -8902,6 +9008,7 @@ permalink: /projects/ai-asmr/index.html
 
   // 接收 Web Audio 触发可视化事件 (主题自适应高对比色调)
   function createVisualEvent(azimuth, vel, type = "rain") {
+    if (document.hidden || reducedMotion.matches) return;
     registerAcousticEvent(azimuth, vel, type, type === "rain" ? "Raindrop" : "Tapping");
 
     const isDark = isDarkThemeActive();
@@ -8948,6 +9055,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createFrictionVisualStroke(panStart, panEnd, duration, matKey, styleKey, velScale = 0.85, panMid = null) {
+    if (document.hidden || reducedMotion.matches) return;
     const midPan = panMid !== null ? panMid : (panStart + panEnd) / 2;
     const normVel = Math.max(0.35, Math.min(1.0, velScale * 0.82));
     registerAcousticEvent(midPan, normVel, "friction", "Friction · " + matKey);
@@ -9026,6 +9134,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createWaterVisualEvent(azimuth, vel, baseFreq, isClack = false, visualKind = "bubble") {
+    if (document.hidden || reducedMotion.matches) return;
     const labelMap = {
       clack: "Shishi-odoshi",
       ripple: "Water Ripple · " + Math.round(baseFreq || 480) + "Hz",
@@ -9096,6 +9205,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createBowlVisualEvent(azimuth, vel, baseFreq) {
+    if (document.hidden || reducedMotion.matches) return;
     registerAcousticEvent(azimuth, vel, "bowls", "Bowl · " + Math.round(baseFreq) + "Hz");
 
     const isDark = isDarkThemeActive();
@@ -9152,6 +9262,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createToolVisualEvent(type, azimuth, vel) {
+    if (document.hidden || reducedMotion.matches) return;
     registerAcousticEvent(azimuth, vel, "tools", "Tool · " + type);
 
     const isDark = isDarkThemeActive();
@@ -9252,6 +9363,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createFireVisualEvent(type, azimuth, vel, visualKind = "spark") {
+    if (document.hidden || reducedMotion.matches) return;
     const labelSuffix = visualKind === "glow" ? "Warm Draft" : "Micro-Fracture";
     registerAcousticEvent(azimuth, vel, "fire", "Fire · " + type + " (" + labelSuffix + ")");
 
@@ -9302,6 +9414,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createSquishVisualEvent(type, azimuth, vel) {
+    if (document.hidden || reducedMotion.matches) return;
     registerAcousticEvent(azimuth, vel, "squish", "Squish · " + type);
 
     const isDark = isDarkThemeActive();
@@ -9371,7 +9484,7 @@ permalink: /projects/ai-asmr/index.html
   function draw3DioRadarScope(context, isDark) {
     const centerX = logicalWidth / 2;
     const centerY = logicalHeight / 2 - 10;
-    const maxR = Math.min(160, logicalHeight * 0.40);
+    const maxR = Math.min(160, logicalHeight * 0.40, logicalWidth * 0.30);
 
     // 0. 电平表阻尼回落与峰值衰减
     meterLevelL *= 0.91;
@@ -9775,13 +9888,13 @@ permalink: /projects/ai-asmr/index.html
     context.font = "9px monospace";
     context.fillStyle = isDark ? "rgba(148, 163, 184, 0.5)" : "rgba(71, 85, 105, 0.65)";
     context.textAlign = "left";
-    context.fillText("● 3Dio ACOUSTIC RADAR // 360° SPATIAL TRACKER", 54, 24);
-    context.fillText("SAMPLING: 48kHz 32-BIT // ITD ACTIVE", 54, 38);
+    context.fillText(logicalWidth < 600 ? "3Dio RADAR" : "● 3Dio ACOUSTIC RADAR // 360° SPATIAL TRACKER", 54, 24);
+    if (logicalWidth >= 600) context.fillText("SAMPLING: 48kHz 32-BIT // ITD ACTIVE", 54, 38);
 
     context.textAlign = "right";
     const widthPct = state.stereoWidth || 100;
-    context.fillText("STEREO WIDTH: " + widthPct + "% // HRTF ENGAGED", logicalWidth - 54, 24);
-    context.fillText("ACTIVE SOURCES: " + radarBeacons.length + " BEACONS", logicalWidth - 54, 38);
+    context.fillText(logicalWidth < 600 ? widthPct + "% HRTF" : "STEREO WIDTH: " + widthPct + "% // HRTF ENGAGED", logicalWidth - 54, 24);
+    if (logicalWidth >= 600) context.fillText("ACTIVE SOURCES: " + radarBeacons.length + " BEACONS", logicalWidth - 54, 38);
 
     context.restore();
   }
@@ -10453,7 +10566,14 @@ permalink: /projects/ai-asmr/index.html
   // ==========================================================================
   // 主渲染循环调度器 (Master Animation Render Loop)
   // ==========================================================================
-  function renderLoop() {
+  function renderLoop(timestamp = 0) {
+    animFrameId = null;
+    if (document.hidden || reducedMotion.matches) return;
+    animFrameId = requestAnimationFrame(renderLoop);
+    // 小屏按 30fps 绘制，高刷设备也保持原有的 60fps 动画速度。
+    const interval = compactViewport.matches ? 1000 / 30 : 1000 / 60;
+    if (timestamp - lastRenderTime < interval - 1) return;
+    lastRenderTime = timestamp;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -10468,14 +10588,20 @@ permalink: /projects/ai-asmr/index.html
       drawScenicParticleView(ctx, isDark);
     }
 
-    animFrameId = requestAnimationFrame(renderLoop);
+  }
+
+  function syncVisualPlayback() {
+    if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+    animFrameId = null;
+    lastRenderTime = 0;
+    if (!document.hidden && !reducedMotion.matches) animFrameId = requestAnimationFrame(renderLoop);
   }
 
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     logicalWidth = rect.width || 960;
     logicalHeight = rect.height || 380;
-    dpr = window.devicePixelRatio || 1;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     canvas.width = Math.round(logicalWidth * dpr);
     canvas.height = Math.round(logicalHeight * dpr);
@@ -10720,6 +10846,7 @@ permalink: /projects/ai-asmr/index.html
       const match = btn.getAttribute("data-cat") === cat;
       btn.classList.toggle("active", match);
       btn.setAttribute("aria-selected", match ? "true" : "false");
+      btn.tabIndex = match ? 0 : -1;
     });
 
     // 切换控制面板
@@ -10880,14 +11007,14 @@ permalink: /projects/ai-asmr/index.html
         btn.setAttribute("aria-pressed", "true");
       }
       if (pulse) pulse.classList.add("active");
-      if (playText) playText.textContent = "暂停" + catName + " (Space)";
+      if (playText) playText.textContent = "暂停" + catName + (compactViewport.matches ? "" : " (Space)");
     } else {
       if (btn) {
         btn.classList.remove("playing");
         btn.setAttribute("aria-pressed", "false");
       }
       if (pulse) pulse.classList.remove("active");
-      if (playText) playText.textContent = "播放" + catName + " (Space)";
+      if (playText) playText.textContent = "播放" + catName + (compactViewport.matches ? "" : " (Space)");
     }
   }
 
@@ -10927,9 +11054,35 @@ permalink: /projects/ai-asmr/index.html
   function setupEventBindings() {
     // 0. 大类 Tab 切换
     document.querySelectorAll(".cat-tab-btn").forEach(btn => {
+      const panelId = btn.id.replace(/^tab/, "panel");
+      btn.tabIndex = btn.getAttribute("aria-selected") === "true" ? 0 : -1;
+      btn.setAttribute("aria-controls", panelId);
+      const panel = document.getElementById(panelId);
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", btn.id);
       btn.addEventListener("click", () => {
         const cat = btn.getAttribute("data-cat");
         switchCategory(cat);
+      });
+      btn.addEventListener("keydown", (e) => {
+        const tabs = Array.from(document.querySelectorAll(".cat-tab-btn"));
+        const index = tabs.indexOf(btn);
+        let next;
+        if (e.key === "ArrowRight") next = (index + 1) % tabs.length;
+        else if (e.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+        else if (e.key === "Home") next = 0;
+        else if (e.key === "End") next = tabs.length - 1;
+        else return;
+        e.preventDefault();
+        tabs[next].click();
+        tabs[next].focus({ preventScroll: true });
+        // 只移动横向分类栏，避免切换声音时整页跳动。
+        const bar = btn.parentElement;
+        const target = tabs[next];
+        const bounds = bar.getBoundingClientRect();
+        const item = target.getBoundingClientRect();
+        if (item.left < bounds.left) bar.scrollLeft += item.left - bounds.left;
+        else if (item.right > bounds.right) bar.scrollLeft += item.right - bounds.right;
       });
     });
 
@@ -10983,7 +11136,8 @@ permalink: /projects/ai-asmr/index.html
 
     // 空格键快捷播放
     window.addEventListener("keydown", (e) => {
-      if (e.code === "Space" && e.target.tagName !== "INPUT" && e.target.tagName !== "TEXTAREA") {
+      if (e.code === "Space" && !e.repeat && !e.altKey && !e.ctrlKey && !e.metaKey &&
+          !e.target.closest("input, textarea, select, button, a, [contenteditable], [role='button']")) {
         e.preventDefault();
         btnMainPlay.click();
       }
@@ -11345,7 +11499,9 @@ permalink: /projects/ai-asmr/index.html
     function applyVisualMode(mode) {
       state.visualMode = mode;
       document.querySelectorAll(".mode-btn").forEach(b => {
-        b.classList.toggle("active", b.getAttribute("data-mode") === mode);
+        const selected = b.getAttribute("data-mode") === mode;
+        b.classList.toggle("active", selected);
+        b.setAttribute("aria-pressed", String(selected));
       });
       if (stageVp) {
         stageVp.classList.remove("mode-scenic", "mode-radar", "mode-minimal");
@@ -11750,11 +11906,19 @@ permalink: /projects/ai-asmr/index.html
   // --------------------------------------------------------------------------
   // F. 启动初始化
   // --------------------------------------------------------------------------
-  window.addEventListener("resize", resizeCanvas);
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(resizeCanvas).observe(document.getElementById("stageViewport"));
+  } else {
+    window.addEventListener("resize", resizeCanvas);
+  }
+  document.addEventListener("visibilitychange", syncVisualPlayback);
+  reducedMotion.addEventListener("change", syncVisualPlayback);
+  compactViewport.addEventListener("change", updateUIPlayState);
   resizeCanvas();
   setupEventBindings();
   generatePrompt();
-  renderLoop();
+  updateUIPlayState();
+  syncVisualPlayback();
 
 })();
 </script>
