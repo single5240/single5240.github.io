@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: AI-ASMR 沉浸式声音实验室
-description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声、钝感敲击声、细腻摩擦声、清润水流声、能量泛音钵铃声、理发伴读微机械与暖冬壁炉炭火碎裂（松木炭火/干燥落叶/营火余烬/松果微压/炭火微风）七大体系，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
+description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声、钝感敲击声、细腻摩擦声、清润水流声、能量泛音钵铃声、理发伴读微机械、暖冬壁炉炭火碎裂与触觉揉捏软胶（慢回弹海绵/天然蜂蜡/水晶泥软胶/亚麻油纸微褶/流沙解压）八大体系，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
 section: projects
 wide: true
 permalink: /projects/ai-asmr/index.html
@@ -13,14 +13,15 @@ permalink: /projects/ai-asmr/index.html
     <h1>AI-ASMR 沉浸式声音实验室</h1>
     <p class="lede">
       基于 <strong>Web Audio API 纯原生程序化物理声学合成</strong> 打造的双耳 3Dio 沉浸式声音触发台。
-      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>、<strong>「轻柔敲击声」</strong>、<strong>「细腻摩擦声」</strong>、<strong>「清润水流声」</strong>、<strong>「能量泛音与音疗钵铃」</strong>、<strong>「理发伴读微机械」</strong>与<strong>「暖冬壁炉与自然碎裂」</strong>七大声音体系，
+      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>、<strong>「轻柔敲击声」</strong>、<strong>「细腻摩擦声」</strong>、<strong>「清润水流声」</strong>、<strong>「能量泛音与音疗钵铃」</strong>、<strong>「理发伴读微机械」</strong>、<strong>「暖冬壁炉与自然碎裂」</strong>与<strong>「触觉揉捏与软胶」</strong>八大声音体系，
       涵盖从<strong>微雨、小雨、大雨、倾盆到远雷暴风雨</strong>的连续声场，
       <strong>空心木盒、精装书、软硅胶、厚陶杯与天然竹节</strong>等吸音钝感轻叩，
       <strong>蓬松软毛刷、天鹅绒与指腹轻摩</strong>的柔和剪切抚摩，
       <strong>山涧清泉、鹅卵石细流、幽潭微涌、粘稠气泡与添水竹韵</strong>等自然水相流体，
       <strong>西藏手工颂钵、柯西和弦风铃、432Hz双耳疗愈音叉、水晶石英钵与禅意碰铃</strong>等高阶泛音与 Theta 慢波冥想共振，
       <strong>理发轻剪、密齿发梳、棉纸素描铅笔、复古打字机与细密雾化水喷</strong>等近耳沉浸护理与伴读专注心流，
-      以及<strong>松木壁炉炭火慢爆、秋日干燥落叶踩踏、营火余烬微风、干燥松果微压断裂与竹炭慢烘</strong>等温暖治愈的自然有机物泊松微碎裂。
+      <strong>松木壁炉炭火慢爆、秋日干燥落叶踩踏、营火余烬微风、干燥松果微压断裂与竹炭慢烘</strong>等温暖治愈的自然有机物泊松微碎裂，
+      以及<strong>慢回弹记忆海绵、温热天然蜂蜡、水晶泥软胶微气泡、亚麻烘焙油纸微褶与流沙解压魔方</strong>等具有强烈触觉联觉（Tactile Synesthesia）的软组织挤压、微孔吸气舒展与微塑性形变。
       全频段柔化滤波彻底消除高频毛刺与尖锐杂音，呈现<strong>细腻（delicate）、轻柔（gentle）、钝感（cushioned）与平稳规律（rhythmic &amp; repetitive）</strong>的纯净白噪音，并附带专业级 <strong>AI ASMR 提示词工坊</strong>。
     </p>
     <div class="head-badges" role="region" aria-label="核心声学特性">
@@ -32,13 +33,14 @@ permalink: /projects/ai-asmr/index.html
       <span class="badge-item">🔔 能量泛音钵铃</span>
       <span class="badge-item">✂️ 理发伴读微机械</span>
       <span class="badge-item">🔥 暖冬壁炉炭火</span>
+      <span class="badge-item">🧼 触觉揉捏软胶</span>
       <span class="badge-item">🛡️ 零尖锐刺耳 / 软限幅防爆音</span>
       <span class="badge-item">⚡ 离线即开即听 / 零音频文件依赖</span>
     </div>
   </header>
 
   <!-- ========================================================================
-       1. 核心大类切换导航 (Rain / Tapping / Friction / Water / Bowls / Tools / Fire)
+       1. 核心大类切换导航 (Rain / Tapping / Friction / Water / Bowls / Tools / Fire / Squish)
        ======================================================================== -->
   <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择">
     <button type="button" class="cat-tab-btn active" id="tabRainCategory" role="tab" aria-selected="true" data-cat="rain">
@@ -88,6 +90,13 @@ permalink: /projects/ai-asmr/index.html
       <span class="cat-tab-content">
         <strong class="cat-tab-title">暖冬壁炉碎裂声 (Fireplace Stage)</strong>
         <span class="cat-tab-desc">松木炭火 · 干燥落叶踩踏 · 营火余烬 · 松果微压 · 竹炭慢烘</span>
+      </span>
+    </button>
+    <button type="button" class="cat-tab-btn" id="tabSquishCategory" role="tab" aria-selected="false" data-cat="squish">
+      <span class="cat-tab-icon">🧼</span>
+      <span class="cat-tab-content">
+        <strong class="cat-tab-title">触觉揉捏与软胶 (Squish Stage)</strong>
+        <span class="cat-tab-desc">慢回弹海绵 · 蜂蜡 · 水晶泥 · 亚麻纸褶 · 流沙</span>
       </span>
     </button>
   </nav>
@@ -658,6 +667,76 @@ permalink: /projects/ai-asmr/index.html
     </div>
   </section>
 
+  <!-- 3.8 触觉揉捏、微塑性形变与软胶大类控制区 (Tactile Squish & Deformation Stage) -->
+  <section class="asmr-matrix-grid category-panel" id="panelSquishCategory" aria-label="触觉揉捏与软胶调控面板" hidden>
+    <!-- 左卡片：揉捏软体材质选择 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>1. 触觉揉捏材质与介质 (Squish &amp; Foam Materials)</h2>
+        <span class="card-badge">微塑性形变吸音</span>
+      </div>
+      <p class="card-intro">精选超柔软多孔聚合物、天然蜂蜡与凝胶，强烈的触觉联觉，全频段去高频尖锐摩擦：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="揉捏材质选择">
+        <button type="button" class="squish-mat-btn active" data-mat="memory_foam" role="radio" aria-checked="true">
+          <span class="preset-icon">🧽</span>
+          <span class="preset-name">慢回弹记忆海绵 (Memory Foam Slow Rebound)</span>
+          <span class="preset-desc">深压微孔排气与缓慢吸气舒展微流（~240Hz~580Hz），深沉包裹与松弛回弹</span>
+        </button>
+        <button type="button" class="squish-mat-btn" data-mat="warm_beeswax" role="radio" aria-checked="false">
+          <span class="preset-icon">🍯</span>
+          <span class="preset-name">温热天然蜂蜡 (Warm Beeswax Kneading)</span>
+          <span class="preset-desc">高阻尼软膏体深层折叠揉压（~180Hz~320Hz），柔润厚实肉感沉闷钝音</span>
+        </button>
+        <button type="button" class="squish-mat-btn" data-mat="soft_slime" role="radio" aria-checked="false">
+          <span class="preset-icon">🫧</span>
+          <span class="preset-name">柔韧水晶泥软胶 (Soft Slime Micro-Pops)</span>
+          <span class="preset-desc">软胶拉伸按压时微小气泡钝感破裂（~360Hz~620Hz），极致酥麻解压</span>
+        </button>
+        <button type="button" class="squish-mat-btn" data-mat="linen_parchment" role="radio" aria-checked="false">
+          <span class="preset-icon">📜</span>
+          <span class="preset-name">柔和亚麻纸褶 (Soft Linen &amp; Parchment)</span>
+          <span class="preset-desc">天然植物纤维微褶皱微沙声（~680Hz~1250Hz），轻柔棉软，杜绝塑料尖叫</span>
+        </button>
+        <button type="button" class="squish-mat-btn" data-mat="kinetic_sand" role="radio" aria-checked="false">
+          <span class="preset-icon">⏳</span>
+          <span class="preset-name">流沙解压魔方 (Kinetic Sand Compression)</span>
+          <span class="preset-desc">微聚合物沙粒切变贴合微流（~420Hz~850Hz），细腻黄油般推切质感</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右卡片：揉捏手法与节奏 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>2. 揉捏手法与节奏 (Kneading Styles &amp; Cadence)</h2>
+        <span class="card-badge">3Dio 粘弹性形变</span>
+      </div>
+      <p class="card-intro">模拟指尖深压、左右双耳交替揉抚或微泡密集挤压，双耳粘弹性声学包裹与形变：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="揉捏手法选择">
+        <button type="button" class="squish-style-btn active" data-style="deep_slow_press" role="radio" aria-checked="true">
+          <span class="preset-icon">🤲</span>
+          <span class="preset-name">深沉慢速按压 (Deep Slow Compression)</span>
+          <span class="preset-desc">约 4.5 秒呼吸周期的深压与渐进舒展回弹，带来深度下沉与安抚感</span>
+        </button>
+        <button type="button" class="squish-style-btn" data-style="alternating_knead" role="radio" aria-checked="false">
+          <span class="preset-icon">🔄</span>
+          <span class="preset-name">双耳交替揉抚 (Alternating Ear Knead)</span>
+          <span class="preset-desc">左右双耳（Pan -0.75 / +0.75）以 ~48 BPM 舒缓交替揉捏推压</span>
+        </button>
+        <button type="button" class="squish-style-btn" data-style="micro_bubble_bursts" role="radio" aria-checked="false">
+          <span class="preset-icon">🫧</span>
+          <span class="preset-name">密集微孔破泡 (Micro-Pore Pop Clusters)</span>
+          <span class="preset-desc">指尖深压时 3~6 颗微气泡连环钝响挤压破裂，细腻微瞬态</span>
+        </button>
+        <button type="button" class="squish-style-btn" data-style="gentle_fold_roll" role="radio" aria-checked="false">
+          <span class="preset-icon">🥐</span>
+          <span class="preset-name">缓慢折叠翻卷 (Gentle Fold &amp; Roll)</span>
+          <span class="preset-desc">柔润连续折叠翻动，绵长微阻尼表面形变与微风气隙</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- ========================================================================
        4. 3Dio 双耳声学微调面板
        ======================================================================== -->
@@ -817,6 +896,25 @@ permalink: /projects/ai-asmr/index.html
         <input type="range" id="rangeFireWarmth" min="0" max="1" step="0.05" value="0.75" aria-label="壁炉火苗低频醇厚度与吸音">
         <small class="tweak-hint">向右滑动增强次低频热浪对流与沉厚包裹感，向左显现松脆碎裂脆响</small>
       </div>
+
+      <!-- 触觉揉捏与软胶模式专属微调项 -->
+      <div class="tweak-item squish-tweak" id="tweakItemSquishCadence" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeSquishCadence">揉捏形变节拍与速度 (Knead Cadence)</label>
+          <span class="tweak-val" id="valSquishCadence">适中 (1.0x)</span>
+        </div>
+        <input type="range" id="rangeSquishCadence" min="0.4" max="2.0" step="0.1" value="1.0" aria-label="揉捏形变节拍速度">
+        <small class="tweak-hint">调节手部按压舒展周期的快慢，越慢催眠感与下沉感越强</small>
+      </div>
+
+      <div class="tweak-item squish-tweak" id="tweakItemSquishViscosity" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeSquishViscosity">粘稠阻尼与慢回弹肉感 (Viscous Cushioning)</label>
+          <span class="tweak-val" id="valSquishViscosity">软糯温润 (75%)</span>
+        </div>
+        <input type="range" id="rangeSquishViscosity" min="0" max="1" step="0.05" value="0.75" aria-label="软体阻尼与吸音缓冲">
+        <small class="tweak-hint">向右滑动增加深沉软垫吸音与长尾回弹，向左显现细润微气孔微风</small>
+      </div>
     </div>
   </section>
 
@@ -830,7 +928,7 @@ permalink: /projects/ai-asmr/index.html
     </div>
     <p class="card-intro">
       如果你希望在 <strong>Stable Audio、ElevenLabs、AudioLDM2 或 Suno/Udio</strong> 中用 AI 生成高品质 ASMR 声音，
-      下方已根据你当前选定的<strong>大类（雨声/敲击声/摩擦声/水流声/钵铃声/微机械/壁炉炭火）、材质/器皿、手法与声学特性</strong>实时计算出工业级提示词：
+      下方已根据你当前选定的<strong>大类（雨声/敲击声/摩擦声/水流声/钵铃声/微机械/壁炉炭火/触觉揉捏软胶）、材质/器皿、手法与声学特性</strong>实时计算出工业级提示词：
     </p>
 
     <!-- 动态 Prompt 生成展示区 -->
@@ -955,21 +1053,21 @@ permalink: /projects/ai-asmr/index.html
 /* 核心大类切换导航 */
 .category-switch-bar {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 0.85rem;
   margin: 1.5rem 0 1rem;
 }
-@media (max-width: 1400px) {
+@media (max-width: 1560px) {
   .category-switch-bar {
     grid-template-columns: repeat(4, 1fr);
   }
 }
-@media (max-width: 960px) {
+@media (max-width: 1050px) {
   .category-switch-bar {
     grid-template-columns: repeat(3, 1fr);
   }
 }
-@media (max-width: 680px) {
+@media (max-width: 720px) {
   .category-switch-bar {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1354,7 +1452,9 @@ permalink: /projects/ai-asmr/index.html
 .tool-inst-btn,
 .tool-style-btn,
 .fire-inst-btn,
-.fire-style-btn {
+.fire-style-btn,
+.squish-mat-btn,
+.squish-style-btn {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -1382,7 +1482,9 @@ permalink: /projects/ai-asmr/index.html
 .tool-inst-btn:hover,
 .tool-style-btn:hover,
 .fire-inst-btn:hover,
-.fire-style-btn:hover {
+.fire-style-btn:hover,
+.squish-mat-btn:hover,
+.squish-style-btn:hover {
   border-color: var(--accent);
   background: var(--alt-bg);
   transform: translateX(2px);
@@ -1400,7 +1502,9 @@ permalink: /projects/ai-asmr/index.html
 .tool-inst-btn.active,
 .tool-style-btn.active,
 .fire-inst-btn.active,
-.fire-style-btn.active {
+.fire-style-btn.active,
+.squish-mat-btn.active,
+.squish-style-btn.active {
   border-color: var(--accent);
   background: var(--soft);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -1624,6 +1728,8 @@ permalink: /projects/ai-asmr/index.html
   .tool-style-btn:hover,
   .fire-inst-btn:hover,
   .fire-style-btn:hover,
+  .squish-mat-btn:hover,
+  .squish-style-btn:hover,
   .cat-tab-btn:hover,
   .main-play-btn:hover {
     transform: none;
@@ -2334,8 +2440,89 @@ permalink: /projects/ai-asmr/index.html
     }
   };
 
+  // 触觉揉捏与软体材质 (Squish Materials)
+  const SQUISH_MATERIALS = {
+    memory_foam: {
+      name: "慢回弹记忆海绵 (Memory Foam Slow Rebound)",
+      enName: "dense memory foam slowly decompressing and inhaling air micro-bubbles",
+      zhPrompt: "慢回弹记忆海绵深压微孔排气与缓慢吸气舒展微流",
+      baseRate: 2800,
+      reboundDuration: 2.2,
+      warmthCutoff: 1400,
+      desc: "Memory Foam Deep Rebound · Viscoelastic Pore Breathing"
+    },
+    warm_beeswax: {
+      name: "温热天然蜂蜡 (Warm Beeswax Kneading)",
+      enName: "warm natural beeswax being slowly kneaded, folded and stretched",
+      zhPrompt: "温热天然蜂蜡深层折叠揉压与厚实肉感阻尼微形变",
+      baseRate: 2200,
+      reboundDuration: 1.4,
+      warmthCutoff: 950,
+      desc: "Warm Beeswax Heavy Dough · High Acoustic Damping"
+    },
+    soft_slime: {
+      name: "柔韧水晶泥软胶 (Soft Slime Micro-Pops)",
+      enName: "viscous crystal slime squished between fingertips with soft micro-bubble pops",
+      zhPrompt: "柔韧水晶泥软胶拉伸按压时微小气泡钝感破裂",
+      baseRate: 1500,
+      reboundDuration: 0.9,
+      warmthCutoff: 1800,
+      desc: "Soft Crystal Slime · Muffled Micro-Bubble Squelches"
+    },
+    linen_parchment: {
+      name: "柔和亚麻纸褶 (Soft Linen & Parchment)",
+      enName: "soft linen fabric and gentle baking parchment paper crinkled softly",
+      zhPrompt: "柔和亚麻布与烘焙油纸微褶皱纤维微沙声，无塑料尖锐感",
+      baseRate: 1900,
+      reboundDuration: 1.1,
+      warmthCutoff: 1600,
+      desc: "Soft Linen & Parchment Crinkle · Powdery Organic Fibers"
+    },
+    kinetic_sand: {
+      name: "流沙解压魔方 (Kinetic Sand Compression)",
+      enName: "kinetic polymer sand sliced, compressed and flowing like butter",
+      zhPrompt: "流沙解压魔方微聚合物沙粒切变贴合与黄油般推切微流",
+      baseRate: 2400,
+      reboundDuration: 1.6,
+      warmthCutoff: 1300,
+      desc: "Kinetic Sand Shear · Buttery Cohesive Flow"
+    }
+  };
+
+  // 揉捏手法与节奏 (Squish Styles)
+  const SQUISH_STYLES = {
+    deep_slow_press: {
+      name: "深沉慢速按压 (Deep Slow Compression)",
+      enName: "deep slow compression with gradual viscoelastic rebound in steady 4.5s breathing cycle",
+      zhPrompt: "约 4.5 秒呼吸周期的深沉慢速按压与渐进舒展回弹",
+      mode: "deep",
+      desc: "Deep Slow Breathing Compression · Relaxing Gravitas"
+    },
+    alternating_knead: {
+      name: "双耳交替揉抚 (Alternating Ear Knead)",
+      enName: "rhythmic left-right alternating ear kneading at relaxing 48 BPM cadence",
+      zhPrompt: "左右双耳以约 48 BPM 舒缓交替揉捏推压",
+      mode: "alternate",
+      desc: "Binaural Alternating Knead · 48 BPM Gentle Cadence"
+    },
+    micro_bubble_bursts: {
+      name: "密集微孔破泡 (Micro-Pore Pop Clusters)",
+      enName: "dense clusters of delicate cushioned micro-pops as soft dough or slime is squeezed",
+      zhPrompt: "指尖深压时 3~6 颗微气泡连环钝响挤压破裂",
+      mode: "bursts",
+      desc: "Dense Micro-Pore Clusters · Tingling Micro-Pops"
+    },
+    gentle_fold_roll: {
+      name: "缓慢折叠翻卷 (Gentle Fold & Roll)",
+      enName: "smooth continuous rolling and folding with velvety cushioned friction and soft deformation",
+      zhPrompt: "柔润连续折叠翻动与绵长微阻尼表面形变",
+      mode: "fold",
+      desc: "Smooth Continuous Rolling · Velvet Viscoelasticity"
+    }
+  };
+
   let state = {
-    activeCategory: "rain", // "rain" | "tapping" | "friction" | "water" | "bowls" | "tools" | "fire"
+    activeCategory: "rain", // "rain" | "tapping" | "friction" | "water" | "bowls" | "tools" | "fire" | "squish"
     isPlaying: false,
 
     // 雨声参数
@@ -2381,6 +2568,12 @@ permalink: /projects/ai-asmr/index.html
     fireRateMultiplier: 1.0,
     fireWarmth: 0.75, // 0 (松脆清亮) ~ 1 (温厚深沉低频对流)
 
+    // 触觉揉捏与软胶参数
+    currentSquishMat: "memory_foam",
+    currentSquishStyle: "deep_slow_press",
+    squishCadenceMultiplier: 1.0,
+    squishViscosity: 0.75, // 0 (较清透微气孔) ~ 1 (极深沉软糯阻尼)
+
     // 通用声学
     visualMode: "scenic", // scenic | radar | minimal
     stereoWidth: 1.0,
@@ -2425,6 +2618,11 @@ permalink: /projects/ai-asmr/index.html
   let fireConvectionPhase = 0;
   let fireStepPan = -0.6;
   let fireEmbers = [];
+  let squishTimerId = null;
+  let squishCyclePhase = 0;
+  let squishPanSide = -0.75;
+  let squishBlobs = [];
+  let squishCompression = 0;
 
   function initAudioEngine() {
     if (audioCtx) return;
@@ -3893,6 +4091,360 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
+  // B7. 触觉揉捏、微塑性形变与软胶声学物理合成器 (Squish & Micro-Deformation Engine)
+  // --------------------------------------------------------------------------
+  function triggerSquishEvent(azimuth, velScale = 1.0) {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const mat = SQUISH_MATERIALS[state.currentSquishMat];
+    const effectiveCutoff = Math.min(state.userLowpass, mat.warmthCutoff * (0.65 + (1 - state.squishViscosity) * 0.7));
+    const buf = fricNoiseBuffer || createFrictionNoiseBuffer(audioCtx);
+
+    if (state.currentSquishMat === "memory_foam") {
+      // 1. 慢回弹记忆海绵：深沉微气孔慢吸气与舒展 (Pore Breathing & Viscous Decompression)
+      const thudOsc = audioCtx.createOscillator();
+      thudOsc.type = "sine";
+      thudOsc.frequency.setValueAtTime(130, now);
+      thudOsc.frequency.exponentialRampToValueAtTime(50, now + 0.18);
+
+      const thudGain = audioCtx.createGain();
+      thudGain.gain.setValueAtTime(0.0001, now);
+      thudGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.018);
+      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+      const breathSrc = audioCtx.createBufferSource();
+      breathSrc.buffer = buf;
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.setValueAtTime(220, now);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 560), now + 0.65);
+      bp.Q.setValueAtTime(1.6, now);
+
+      const breathGain = audioCtx.createGain();
+      const breathPeak = (0.24 + (1 - state.squishViscosity) * 0.12) * velScale;
+      breathGain.gain.setValueAtTime(0.0001, now);
+      breathGain.gain.linearRampToValueAtTime(breathPeak, now + 0.15);
+      breathGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      thudOsc.connect(thudGain);
+      breathSrc.connect(bp);
+      bp.connect(breathGain);
+
+      if (panner) {
+        thudGain.connect(panner);
+        breathGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        thudGain.connect(masterLimiter);
+        breathGain.connect(masterLimiter);
+      }
+
+      thudOsc.start(now);
+      thudOsc.stop(now + 0.25);
+      breathSrc.start(now, Math.random() * 2.0);
+      breathSrc.stop(now + 0.8);
+
+      createSquishVisualEvent("memory_foam", azimuth, velScale);
+
+    } else if (state.currentSquishMat === "warm_beeswax") {
+      // 2. 温热天然蜂蜡：高阻尼软膏体深层折叠揉压 (Dual-sine 90Hz & 190Hz + brown damping)
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      osc1.type = "sine";
+      osc2.type = "sine";
+      osc1.frequency.setValueAtTime(85, now);
+      osc2.frequency.setValueAtTime(185, now);
+
+      const oscGain = audioCtx.createGain();
+      oscGain.gain.setValueAtTime(0.0001, now);
+      oscGain.gain.linearRampToValueAtTime(0.38 * velScale, now + 0.024);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+
+      const doughSrc = audioCtx.createBufferSource();
+      doughSrc.buffer = buf;
+      const lpf = audioCtx.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.setValueAtTime(Math.min(effectiveCutoff, 240 + (1 - state.squishViscosity) * 120), now);
+      lpf.Q.setValueAtTime(0.8, now);
+
+      const doughGain = audioCtx.createGain();
+      doughGain.gain.setValueAtTime(0.0001, now);
+      doughGain.gain.linearRampToValueAtTime(0.26 * velScale, now + 0.035);
+      doughGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      osc1.connect(oscGain);
+      osc2.connect(oscGain);
+      doughSrc.connect(lpf);
+      lpf.connect(doughGain);
+
+      if (panner) {
+        oscGain.connect(panner);
+        doughGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        oscGain.connect(masterLimiter);
+        doughGain.connect(masterLimiter);
+      }
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.3);
+      osc2.stop(now + 0.3);
+      doughSrc.start(now, Math.random() * 2.0);
+      doughSrc.stop(now + 0.35);
+
+      createSquishVisualEvent("warm_beeswax", azimuth, velScale);
+
+    } else if (state.currentSquishMat === "soft_slime") {
+      // 3. 柔韧水晶泥软胶：软胶按压微气泡钝感破裂 (2~4 muffled micro-bubble pops)
+      const popCount = 2 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < popCount; i++) {
+        const popTime = now + i * (0.02 + Math.random() * 0.03);
+        const osc = audioCtx.createOscillator();
+        osc.type = "sine";
+        const startF = 260 + Math.random() * 120;
+        osc.frequency.setValueAtTime(startF, popTime);
+        osc.frequency.exponentialRampToValueAtTime(startF * 1.5, popTime + 0.022);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.0001, popTime);
+        gain.gain.linearRampToValueAtTime(0.25 * velScale, popTime + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.03);
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 480 + Math.random() * 180), popTime);
+        bp.Q.setValueAtTime(3.0, popTime);
+
+        let panner = null;
+        if (audioCtx.createStereoPanner) {
+          panner = audioCtx.createStereoPanner();
+          panner.pan.setValueAtTime(azimuth + (i * 0.04 - 0.06), popTime);
+        }
+
+        osc.connect(bp);
+        bp.connect(gain);
+
+        if (panner) {
+          gain.connect(panner);
+          panner.connect(masterLimiter);
+        } else {
+          gain.connect(masterLimiter);
+        }
+
+        osc.start(popTime);
+        osc.stop(popTime + 0.035);
+      }
+
+      // 底层粘滞挤压沉音
+      const squelchOsc = audioCtx.createOscillator();
+      squelchOsc.type = "sine";
+      squelchOsc.frequency.setValueAtTime(170, now);
+      squelchOsc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+
+      const squelchGain = audioCtx.createGain();
+      squelchGain.gain.setValueAtTime(0.0001, now);
+      squelchGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.01);
+      squelchGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      squelchOsc.connect(squelchGain);
+      if (panner) {
+        squelchGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        squelchGain.connect(masterLimiter);
+      }
+
+      squelchOsc.start(now);
+      squelchOsc.stop(now + 0.1);
+
+      createSquishVisualEvent("soft_slime", azimuth, velScale);
+
+    } else if (state.currentSquishMat === "linen_parchment") {
+      // 4. 柔和亚麻纸褶：3~5 段柔和纤维微折叠断续沙沙声 (680Hz~1150Hz)
+      const crinkleCount = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < crinkleCount; i++) {
+        const crinkleTime = now + i * (0.016 + Math.random() * 0.022);
+        const src = audioCtx.createBufferSource();
+        src.buffer = buf;
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 750 + Math.random() * 450), crinkleTime);
+        bp.Q.setValueAtTime(2.2, crinkleTime);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.0001, crinkleTime);
+        gain.gain.linearRampToValueAtTime(0.24 * velScale, crinkleTime + 0.004);
+        gain.gain.exponentialRampToValueAtTime(0.0001, crinkleTime + 0.026);
+
+        let panner = null;
+        if (audioCtx.createStereoPanner) {
+          panner = audioCtx.createStereoPanner();
+          panner.pan.setValueAtTime(azimuth + (i * 0.03 - 0.05), crinkleTime);
+        }
+
+        src.connect(bp);
+        bp.connect(gain);
+
+        if (panner) {
+          gain.connect(panner);
+          panner.connect(masterLimiter);
+        } else {
+          gain.connect(masterLimiter);
+        }
+
+        src.start(crinkleTime, Math.random() * 2.0);
+        src.stop(crinkleTime + 0.03);
+      }
+
+      const thud = audioCtx.createOscillator();
+      thud.type = "sine";
+      thud.frequency.setValueAtTime(140, now);
+      thud.frequency.exponentialRampToValueAtTime(60, now + 0.06);
+
+      const thudGain = audioCtx.createGain();
+      thudGain.gain.setValueAtTime(0.0001, now);
+      thudGain.gain.linearRampToValueAtTime(0.2 * velScale, now + 0.006);
+      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      thud.connect(thudGain);
+      if (panner) {
+        thudGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        thudGain.connect(masterLimiter);
+      }
+
+      thud.start(now);
+      thud.stop(now + 0.08);
+
+      createSquishVisualEvent("linen_parchment", azimuth, velScale);
+
+    } else if (state.currentSquishMat === "kinetic_sand") {
+      // 5. 流沙解压魔方：微聚合物沙粒切变贴合与黄油般推切微流
+      const sandSrc = audioCtx.createBufferSource();
+      sandSrc.buffer = buf;
+
+      const bp1 = audioCtx.createBiquadFilter();
+      bp1.type = "bandpass";
+      bp1.frequency.setValueAtTime(Math.min(effectiveCutoff, 420), now);
+      bp1.Q.setValueAtTime(2.0, now);
+
+      const bp2 = audioCtx.createBiquadFilter();
+      bp2.type = "bandpass";
+      bp2.frequency.setValueAtTime(Math.min(effectiveCutoff, 680), now);
+      bp2.Q.setValueAtTime(2.2, now);
+
+      const sandGain = audioCtx.createGain();
+      sandGain.gain.setValueAtTime(0.0001, now);
+      sandGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.05);
+      sandGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+      const subOsc = audioCtx.createOscillator();
+      subOsc.type = "sine";
+      subOsc.frequency.setValueAtTime(110, now);
+      subOsc.frequency.exponentialRampToValueAtTime(55, now + 0.2);
+
+      const subGain = audioCtx.createGain();
+      subGain.gain.setValueAtTime(0.0001, now);
+      subGain.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.02);
+      subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      sandSrc.connect(bp1);
+      sandSrc.connect(bp2);
+      bp1.connect(sandGain);
+      bp2.connect(sandGain);
+      subOsc.connect(subGain);
+
+      if (panner) {
+        sandGain.connect(panner);
+        subGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        sandGain.connect(masterLimiter);
+        subGain.connect(masterLimiter);
+      }
+
+      sandSrc.start(now, Math.random() * 2.0);
+      sandSrc.stop(now + 0.42);
+      subOsc.start(now);
+      subOsc.stop(now + 0.28);
+
+      createSquishVisualEvent("kinetic_sand", azimuth, velScale);
+    }
+  }
+
+  function scheduleNextSquishEvent() {
+    if (!state.isPlaying || state.activeCategory !== "squish") return;
+
+    const mat = SQUISH_MATERIALS[state.currentSquishMat];
+    const style = SQUISH_STYLES[state.currentSquishStyle];
+    const baseInterval = (mat.baseRate / Math.max(0.4, state.squishCadenceMultiplier));
+
+    if (style.mode === "alternate") {
+      // 左右双耳交替揉抚 (Pan -0.75 / +0.75)
+      squishPanSide = -squishPanSide;
+      const az = squishPanSide * (0.85 + Math.random() * 0.15);
+      triggerSquishEvent(az, 0.95);
+      const nextDelay = baseInterval * (0.88 + Math.random() * 0.24);
+      squishTimerId = setTimeout(scheduleNextSquishEvent, nextDelay);
+
+    } else if (style.mode === "bursts") {
+      // 密集微孔破泡 (短间隔连环触发)
+      const az = (Math.random() * 1.2 - 0.6);
+      triggerSquishEvent(az, 0.85 + Math.random() * 0.3);
+      const nextDelay = baseInterval * 0.55 * (0.75 + Math.random() * 0.5);
+      squishTimerId = setTimeout(scheduleNextSquishEvent, nextDelay);
+
+    } else if (style.mode === "fold") {
+      // 缓慢连续折叠翻动
+      squishCyclePhase += 0.4;
+      const pan = Math.sin(squishCyclePhase) * 0.7;
+      triggerSquishEvent(pan, 0.8 + Math.random() * 0.25);
+      const nextDelay = baseInterval * (0.8 + Math.random() * 0.3);
+      squishTimerId = setTimeout(scheduleNextSquishEvent, nextDelay);
+
+    } else {
+      // 深沉慢速按压 (deep_slow_press)
+      const az = (Math.random() * 0.6 - 0.3);
+      triggerSquishEvent(az, 1.0);
+      const nextDelay = baseInterval * (0.9 + Math.random() * 0.2);
+      squishTimerId = setTimeout(scheduleNextSquishEvent, nextDelay);
+    }
+  }
+
+  // --------------------------------------------------------------------------
   // B8. 启停与节点更新
   // --------------------------------------------------------------------------
   function startAudio() {
@@ -3924,6 +4476,8 @@ permalink: /projects/ai-asmr/index.html
       scheduleNextToolEvent();
     } else if (state.activeCategory === "fire") {
       scheduleNextFireEvent();
+    } else if (state.activeCategory === "squish") {
+      scheduleNextSquishEvent();
     }
 
     updateUIPlayState();
@@ -3941,6 +4495,7 @@ permalink: /projects/ai-asmr/index.html
     if (bowlTimerId) clearTimeout(bowlTimerId);
     if (toolTimerId) clearTimeout(toolTimerId);
     if (fireTimerId) clearTimeout(fireTimerId);
+    if (squishTimerId) clearTimeout(squishTimerId);
 
     if (audioCtx && audioCtx.state === "running") {
       masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
@@ -4036,6 +4591,21 @@ permalink: /projects/ai-asmr/index.html
       if (noiseGain) {
         const convectionVol = 0.22 * state.fireWarmth;
         noiseGain.gain.setTargetAtTime(convectionVol, now, 0.1);
+      }
+      const hudFreq = document.getElementById("hudFilterFreq");
+      if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
+    } else if (state.activeCategory === "squish") {
+      // 触觉揉捏模式：微弱低频粘弹性微声底 (Viscoelastic Soft Bed)
+      const targetFreq = Math.min(state.userLowpass, 140 + state.squishViscosity * 180);
+      if (noiseFilterL && noiseFilterR) {
+        noiseFilterL.frequency.setTargetAtTime(targetFreq, now, 0.08);
+        noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
+        noiseFilterL.Q.setTargetAtTime(1.4, now, 0.08);
+        noiseFilterR.Q.setTargetAtTime(1.4, now, 0.08);
+      }
+      if (noiseGain) {
+        const bedVol = 0.12 * state.squishViscosity;
+        noiseGain.gain.setTargetAtTime(bedVol, now, 0.1);
       }
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
@@ -4479,6 +5049,52 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
+  function createSquishVisualEvent(type, azimuth, vel) {
+    const isDark = isDarkThemeActive();
+    const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.74) + (logicalWidth * 0.13);
+    const centerY = logicalHeight / 2 - 12;
+    const isLeft = azimuth < 0;
+
+    // 粘弹性形变物理脉冲 (Squash & Stretch)
+    squishCompression = Math.min(1.0, squishCompression + 0.65 * vel);
+
+    let gelColor = isDark ? "rgba(52, 211, 153, " : "rgba(5, 150, 105, "; // 记忆海绵/翡翠薄荷绿
+    if (type === "warm_beeswax") {
+      gelColor = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, "; // 蜂蜡金琥珀
+    } else if (type === "soft_slime") {
+      gelColor = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, "; // 水晶泥丁香紫
+    } else if (type === "linen_parchment") {
+      gelColor = isDark ? "rgba(251, 191, 36, " : "rgba(180, 83, 9, "; // 亚麻暖沙金
+    } else if (type === "kinetic_sand") {
+      gelColor = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, "; // 流沙珊瑚橙
+    }
+
+    // 产生形变微泡与粘滞凝胶水珠 (Viscous Micro-Blobs & Beads)
+    if (squishBlobs.length < 50) {
+      const beadCount = type === "soft_slime" ? 6 : (type === "memory_foam" ? 5 : 4);
+      for (let i = 0; i < beadCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 0.6 + Math.random() * 1.8 * vel;
+        squishBlobs.push({
+          x: posX + (Math.random() * 18 - 9),
+          y: centerY + (Math.random() * 18 - 9),
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd,
+          r: 2.2 + Math.random() * 3.6 * vel,
+          alpha: 0.90,
+          decay: 0.955 + Math.random() * 0.02,
+          color: gelColor
+        });
+      }
+    }
+
+    if (isLeft) {
+      earWavesL.push({ r: 6, maxR: 44 + vel * 30, alpha: 0.85 });
+    } else {
+      earWavesR.push({ r: 6, maxR: 44 + vel * 30, alpha: 0.85 });
+    }
+  }
+
   function renderLoop() {
     // 1. 绝对物理清屏：重置变换矩阵为 1:1，抹除整个物理像素缓冲区，彻底杜绝任何边缘累积
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -4682,6 +5298,41 @@ permalink: /projects/ai-asmr/index.html
         ctx.stroke();
 
         ctx.restore();
+      } else if (state.activeCategory === "squish") {
+        // 触觉揉捏与软胶模式：绘制中央粘弹性形变软体基底 (Viscoelastic Gel Core)
+        ctx.save();
+        const centerX = logicalWidth / 2;
+        const centerY = logicalHeight / 2 - 12;
+
+        // 阻尼回弹动力学 (Spring Damping Rebound)
+        squishCompression *= 0.94;
+
+        const gelGrad = ctx.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
+        if (isDark) {
+          gelGrad.addColorStop(0, "rgba(52, 211, 153, 0.14)");
+          gelGrad.addColorStop(0.45, "rgba(167, 139, 250, 0.05)");
+          gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        } else {
+          gelGrad.addColorStop(0, "rgba(5, 150, 105, 0.12)");
+          gelGrad.addColorStop(0.45, "rgba(124, 58, 237, 0.04)");
+          gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        }
+        ctx.fillStyle = gelGrad;
+        ctx.beginPath();
+        const radiusX = (logicalWidth * 0.34) * (1 + squishCompression * 0.18);
+        const radiusY = 78 * (1 - squishCompression * 0.22);
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 柔润凝胶外层粘滞虚线形变环
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, 88 * (1 + squishCompression * 0.25), 65 * (1 - squishCompression * 0.25), 0, 0, Math.PI * 2);
+        ctx.strokeStyle = isDark ? "rgba(52, 211, 153, 0.28)" : "rgba(5, 150, 105, 0.38)";
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+
+        ctx.restore();
       }
     }
 
@@ -4827,6 +5478,36 @@ permalink: /projects/ai-asmr/index.html
 
       if (e.alpha < 0.02 || e.y < -10) {
         fireEmbers.splice(i, 1);
+      }
+    }
+
+    // 绘制触觉揉捏专属凝胶微珠与慢回弹微泡 (Viscous Gel Blobs & Beads)
+    for (let i = squishBlobs.length - 1; i >= 0; i--) {
+      const b = squishBlobs[i];
+      b.x += b.vx;
+      b.y += b.vy;
+      b.vx *= 0.94; // 粘滞阻尼迅速减速
+      b.vy *= 0.94;
+      b.alpha *= b.decay;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, Math.max(0.8, b.r), 0, Math.PI * 2);
+      ctx.fillStyle = b.color + (b.alpha * 0.45).toFixed(3) + ")";
+      ctx.fill();
+      ctx.strokeStyle = b.color + b.alpha.toFixed(3) + ")";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 微凝胶高光
+      ctx.beginPath();
+      ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, Math.max(0.6, b.r * 0.28), 0, Math.PI * 2);
+      ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${(b.alpha * 0.75).toFixed(3)})` : `rgba(255, 255, 255, ${(b.alpha * 0.85).toFixed(3)})`;
+      ctx.fill();
+      ctx.restore();
+
+      if (b.alpha < 0.02) {
+        squishBlobs.splice(i, 1);
       }
     }
 
@@ -4978,35 +5659,29 @@ permalink: /projects/ai-asmr/index.html
     ctx.beginPath();
     ctx.ellipse(0, 0, 32, 44, 0, 0, Math.PI * 2);
     ctx.fillStyle = isDark ? "rgba(22, 38, 44, 0.75)" : "rgba(255, 255, 255, 0.92)";
-    if (isDark) {
-      ctx.strokeStyle = state.activeCategory === "rain"
-        ? "rgba(45, 212, 191, 0.28)"
-        : (state.activeCategory === "tapping"
-          ? "rgba(241, 166, 90, 0.28)"
-          : (state.activeCategory === "friction"
-            ? "rgba(244, 114, 182, 0.28)"
-            : (state.activeCategory === "water"
-              ? "rgba(56, 189, 248, 0.35)"
-              : (state.activeCategory === "bowls"
-                ? "rgba(245, 158, 11, 0.35)"
-                : (state.activeCategory === "tools"
-                  ? "rgba(56, 189, 248, 0.40)"
-                  : "rgba(249, 115, 22, 0.40)")))));
-    } else {
-      ctx.strokeStyle = state.activeCategory === "rain"
-        ? "rgba(15, 129, 141, 0.42)"
-        : (state.activeCategory === "tapping"
-          ? "rgba(217, 119, 6, 0.42)"
-          : (state.activeCategory === "friction"
-            ? "rgba(190, 24, 93, 0.42)"
-            : (state.activeCategory === "water"
-              ? "rgba(2, 132, 199, 0.45)"
-              : (state.activeCategory === "bowls"
-                ? "rgba(217, 119, 6, 0.45)"
-                : (state.activeCategory === "tools"
-                  ? "rgba(2, 132, 199, 0.50)"
-                  : "rgba(194, 65, 12, 0.50)")))));
-    }
+    const headStrokeDark = {
+      rain: "rgba(45, 212, 191, 0.28)",
+      tapping: "rgba(241, 166, 90, 0.28)",
+      friction: "rgba(244, 114, 182, 0.28)",
+      water: "rgba(56, 189, 248, 0.35)",
+      bowls: "rgba(245, 158, 11, 0.35)",
+      tools: "rgba(56, 189, 248, 0.40)",
+      fire: "rgba(249, 115, 22, 0.40)",
+      squish: "rgba(52, 211, 153, 0.45)"
+    };
+    const headStrokeLight = {
+      rain: "rgba(15, 129, 141, 0.42)",
+      tapping: "rgba(217, 119, 6, 0.42)",
+      friction: "rgba(190, 24, 93, 0.42)",
+      water: "rgba(2, 132, 199, 0.45)",
+      bowls: "rgba(217, 119, 6, 0.45)",
+      tools: "rgba(2, 132, 199, 0.50)",
+      fire: "rgba(194, 65, 12, 0.50)",
+      squish: "rgba(5, 150, 105, 0.50)"
+    };
+    ctx.strokeStyle = isDark
+      ? (headStrokeDark[state.activeCategory] || "rgba(52, 211, 153, 0.45)")
+      : (headStrokeLight[state.activeCategory] || "rgba(5, 150, 105, 0.50)");
     ctx.lineWidth = 1.5;
     ctx.fill();
     ctx.stroke();
@@ -5204,7 +5879,7 @@ permalink: /projects/ai-asmr/index.html
       const hudDesc = document.getElementById("hudPresetDesc");
       if (hudTitle) hudTitle.textContent = inst.name + " · " + style.name;
       if (hudDesc) hudDesc.textContent = inst.desc;
-    } else {
+    } else if (state.activeCategory === "fire") {
       // 暖冬壁炉与自然碎裂提示词
       const inst = FIRE_INSTRUMENTS[state.currentFireInst];
       const style = FIRE_STYLES[state.currentFireStyle];
@@ -5223,6 +5898,25 @@ permalink: /projects/ai-asmr/index.html
       const hudDesc = document.getElementById("hudPresetDesc");
       if (hudTitle) hudTitle.textContent = inst.name + " · " + style.name;
       if (hudDesc) hudDesc.textContent = inst.desc;
+    } else {
+      // 触觉揉捏、微塑性形变与软胶提示词
+      const mat = SQUISH_MATERIALS[state.currentSquishMat];
+      const style = SQUISH_STYLES[state.currentSquishStyle];
+
+      en = "ASMR, binaural 3Dio style recording, " + style.enName + " with " + mat.enName + " in extreme close-up. ";
+      en += "Delicate tactile micro-textures, ultra-gentle and cushioned viscoelastic deformation, mellow low-mid acoustic warmth, deep slow rebound, repetitive and hypnotic cadence. ";
+      en += "Intimate ear-to-ear stereophonic immersion, zero high-frequency squeaks, zero harsh plastic crinkles, zero loud sticky smacks, pure dry soundproof studio acoustics, no reverberation.";
+
+      zh = "ASMR双耳3Dio录音，以" + style.zhPrompt + "在耳畔极近距离体验" + mat.zhPrompt + "。";
+      zh += "细腻触觉联觉微质感，柔润且具有厚实软垫包裹的微塑性形变钝响，深沉缓慢的微孔吸气舒展回弹，深度催眠下沉。";
+      zh += "极致贴耳双耳空间穿梭，无塑料尖锐沙沙声，无刺耳橡胶尖叫，无突兀响亮黏腻拍打声，消音室纯净干燥声学。";
+
+      neg = "harsh plastic crinkles, sharp squeaks, loud sticky smacks, chalkboard screech, ear-piercing clicks, rubber screeching, high-frequency distortion, digital clipping, muddy bass rumble, cavernous echo, noisy background hiss";
+
+      const hudTitle = document.getElementById("hudPresetTitle");
+      const hudDesc = document.getElementById("hudPresetDesc");
+      if (hudTitle) hudTitle.textContent = mat.name + " · " + style.name;
+      if (hudDesc) hudDesc.textContent = mat.desc;
     }
 
     const txtEn = document.getElementById("txtGeneratedEnPrompt");
@@ -5261,6 +5955,7 @@ permalink: /projects/ai-asmr/index.html
     const panelBowls = document.getElementById("panelBowlsCategory");
     const panelTools = document.getElementById("panelToolsCategory");
     const panelFire = document.getElementById("panelFireCategory");
+    const panelSquish = document.getElementById("panelSquishCategory");
     if (panelRain) {
       panelRain.classList.toggle("active", cat === "rain");
       panelRain.hidden = cat !== "rain";
@@ -5289,6 +5984,10 @@ permalink: /projects/ai-asmr/index.html
       panelFire.classList.toggle("active", cat === "fire");
       panelFire.hidden = cat !== "fire";
     }
+    if (panelSquish) {
+      panelSquish.classList.toggle("active", cat === "squish");
+      panelSquish.hidden = cat !== "squish";
+    }
 
     // 切换调音台控件可见性
     document.querySelectorAll(".rain-tweak").forEach(el => el.hidden = (cat !== "rain"));
@@ -5298,6 +5997,7 @@ permalink: /projects/ai-asmr/index.html
     document.querySelectorAll(".bowls-tweak").forEach(el => el.hidden = (cat !== "bowls"));
     document.querySelectorAll(".tools-tweak").forEach(el => el.hidden = (cat !== "tools"));
     document.querySelectorAll(".fire-tweak").forEach(el => el.hidden = (cat !== "fire"));
+    document.querySelectorAll(".squish-tweak").forEach(el => el.hidden = (cat !== "squish"));
 
     // 切换标题与文字
     const stageTitle = document.getElementById("stageMainTitle");
@@ -5328,10 +6028,14 @@ permalink: /projects/ai-asmr/index.html
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL GROOMING & TOOLS SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放微机械声 (Space)";
       if (badge) badge.textContent = "微机械提示词已联动";
-    } else {
+    } else if (cat === "fire") {
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL FIREPLACE & HEARTH SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放壁炉炭火声 (Space)";
       if (badge) badge.textContent = "壁炉炭火提示词已联动";
+    } else {
+      if (stageTitle) stageTitle.textContent = "3Dio BINAURAL SQUISH & DEFORMATION SOUNDSTAGE";
+      if (playBtnText) playBtnText.textContent = "播放揉捏软胶声 (Space)";
+      if (badge) badge.textContent = "揉捏软胶提示词已联动";
     }
 
     updateAcousticNodes();
@@ -5348,6 +6052,8 @@ permalink: /projects/ai-asmr/index.html
     chimeSparkles = [];
     toolVisualEvents = [];
     fireEmbers = [];
+    squishBlobs = [];
+    squishCompression = 0;
 
     if (wasPlaying) {
       startAudio();
@@ -5365,7 +6071,8 @@ permalink: /projects/ai-asmr/index.html
       water: "水流声",
       bowls: "钵铃声",
       tools: "微机械声",
-      fire: "炭火声"
+      fire: "炭火声",
+      squish: "揉捏软胶声"
     };
     const catName = catMap[state.activeCategory] || "声音";
 
@@ -5661,6 +6368,37 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
+    // 5.12 触觉揉捏与软体材质选择
+    document.querySelectorAll(".squish-mat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".squish-mat-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentSquishMat = btn.getAttribute("data-mat");
+
+        updateAcousticNodes();
+        generatePrompt();
+      });
+    });
+
+    // 5.13 揉捏手法与节奏选择
+    document.querySelectorAll(".squish-style-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".squish-style-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentSquishStyle = btn.getAttribute("data-style");
+
+        generatePrompt();
+      });
+    });
+
     // 6. 视觉模式切换
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -5859,6 +6597,28 @@ permalink: /projects/ai-asmr/index.html
         state.fireWarmth = parseFloat(rangeFireW.value);
         const pct = Math.round(state.fireWarmth * 100);
         valFireW.textContent = pct > 65 ? `温厚暖意 (${pct}%)` : `松脆清透 (${pct}%)`;
+        updateAcousticNodes();
+      });
+    }
+
+    // 14.12 触觉揉捏节拍与速度
+    const rangeSquishC = document.getElementById("rangeSquishCadence");
+    const valSquishC = document.getElementById("valSquishCadence");
+    if (rangeSquishC && valSquishC) {
+      rangeSquishC.addEventListener("input", () => {
+        state.squishCadenceMultiplier = parseFloat(rangeSquishC.value);
+        valSquishC.textContent = state.squishCadenceMultiplier.toFixed(1) + "x";
+      });
+    }
+
+    // 14.13 粘稠阻尼与慢回弹肉感
+    const rangeSquishV = document.getElementById("rangeSquishViscosity");
+    const valSquishV = document.getElementById("valSquishViscosity");
+    if (rangeSquishV && valSquishV) {
+      rangeSquishV.addEventListener("input", () => {
+        state.squishViscosity = parseFloat(rangeSquishV.value);
+        const pct = Math.round(state.squishViscosity * 100);
+        valSquishV.textContent = pct > 65 ? `软糯温润 (${pct}%)` : `细润微孔 (${pct}%)`;
         updateAcousticNodes();
       });
     }
