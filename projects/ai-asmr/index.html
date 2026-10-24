@@ -27,7 +27,7 @@ permalink: /projects/ai-asmr/index.html
   <!-- ========================================================================
        1. 核心大类切换导航 (Rain / Tapping / Friction / Water / Bowls / Tools / Fire / Squish)
        ======================================================================== -->
-  <p class="category-scroll-hint" id="categoryScrollHint">选择声音加入混音 · 浏览分类不会中断播放</p>
+  <p class="category-scroll-hint" id="categoryScrollHint">选择声音独立试听 · 右侧可展开混音</p>
   <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择" aria-describedby="categoryScrollHint">
     <button type="button" class="cat-tab-btn active" id="tabRainCategory" role="tab" aria-selected="true" data-cat="rain">
       <span class="cat-tab-icon">🌧️</span>
@@ -101,23 +101,31 @@ permalink: /projects/ai-asmr/index.html
     </button>
   </nav>
 
-  <section class="mixer-panel" aria-labelledby="mixerTitle">
-    <div class="mixer-heading">
-      <div>
-        <h2 id="mixerTitle">我的声音混音</h2>
-        <p>最多四轨同时聆听，可叠加同类的不同材质。先选声音，再加入混音。</p>
+  <aside class="mixer-dock" id="mixerDock" data-expanded="false" aria-label="声音混音器">
+    <button type="button" class="mixer-toggle" id="btnMixerToggle" aria-expanded="false" aria-controls="mixerBody">
+      <strong>混音</strong>
+      <span id="mixerCompactStatus">0 / 4 轨</span>
+      <span id="mixerToggleLabel">展开混音</span>
+    </button>
+    <section class="mixer-panel" id="mixerBody" aria-labelledby="mixerTitle" hidden>
+      <div class="mixer-heading">
+        <div>
+          <h2 id="mixerTitle">我的声音混音</h2>
+          <p>选择主区域的声音，加入右侧混音。最多四轨，可叠加不同材质。</p>
+        </div>
+        <span id="mixerTrackCount">0 / 4 轨</span>
       </div>
-      <span id="mixerTrackCount">0 / 4 轨</span>
-    </div>
-    <ul class="mixer-tracks" id="mixerTracks" aria-label="混音轨道"></ul>
-    <div class="mixer-editor">
-      <span id="mixerEditorLabel" tabindex="-1">浏览声音 · 选择后加入混音</span>
-      <button type="button" id="btnLeaveTrackEditor" hidden>返回浏览</button>
-      <button type="button" id="btnAddToMix">将当前声音加入混音</button>
-    </div>
-    <p class="mixer-status" id="mixerStatus" role="status">空混音点击播放，将自动加入当前声音。</p>
-    <p class="mixer-hint">粒子画面跟随浏览分类，声场雷达汇总混音。声音在本地持续合成；手机锁屏播放取决于浏览器支持。</p>
-  </section>
+      <button type="button" class="mixer-play" id="btnMixPlay" aria-pressed="false">播放混音</button>
+      <ul class="mixer-tracks" id="mixerTracks" aria-label="混音轨道"></ul>
+      <div class="mixer-editor">
+        <span id="mixerEditorLabel" tabindex="-1">浏览声音 · 选择后加入混音</span>
+        <button type="button" id="btnLeaveTrackEditor" hidden>返回浏览</button>
+        <button type="button" id="btnAddToMix">将当前声音加入混音</button>
+      </div>
+      <p class="mixer-status" id="mixerStatus">空混音点击这里播放，将自动加入当前声音。</p>
+      <p class="mixer-hint">启动混音会自动关闭独立播放。总音量、柔化与定时沿用主区域控制；收纳面板不会停止混音。</p>
+    </section>
+  </aside>
 
   <!-- ========================================================================
        2. 核心交互舞台：Canvas 双耳声场可视化 + 雨丝/敲击波纹动画
@@ -172,7 +180,7 @@ permalink: /projects/ai-asmr/index.html
           <svg class="icon-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="m4.5 2.5 9 5.5-9 5.5z"/></svg>
           <svg class="icon-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3.5 2.5h3.5v11H3.5zm5.5 0H12.5v11H9z"/></svg>
         </span>
-        <span class="play-text" id="playBtnText">播放混音 (Space)</span>
+        <span class="play-text" id="playBtnText">播放雨声 (Space)</span>
       </button>
 
       <div class="quick-timer">
@@ -193,6 +201,7 @@ permalink: /projects/ai-asmr/index.html
         <span class="val-badge" id="valMasterVol">75%</span>
       </div>
     </div>
+    <p class="playback-status" id="playbackStatus" role="status">主区域独立试听，右侧组合混音，两种播放自动互斥。</p>
   </section>
 
   <!-- ========================================================================
@@ -2237,31 +2246,53 @@ permalink: /projects/ai-asmr/index.html
      6. 核心脚本：Web Audio API 程序化声学合成 (雨声 + 敲击声) + Canvas 动画
      ======================================================================== -->
 <style>
-  .mixer-panel { margin: 1.5rem 0; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--line); border-radius: 16px; background: var(--panel); color: var(--ink); }
-  .mixer-heading, .mixer-editor { display: flex; align-items: center; gap: 1rem; justify-content: space-between; flex-wrap: wrap; }
-  .mixer-heading h2 { margin: 0 0 .4rem; font-size: 1.2rem; }
-  .mixer-heading p, .mixer-hint { color: var(--muted); font-size: .85rem; }
+  .mixer-dock { position: fixed; right: 1rem; top: 6rem; z-index: 60; width: auto; max-width: calc(100vw - 2rem); color: var(--ink); }
+  .mixer-dock[data-expanded="true"] { width: 370px; }
+  .mixer-dock button { min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); cursor: pointer; font: inherit; font-size: .85rem; }
+  .mixer-dock .mixer-toggle { display: flex; align-items: center; justify-content: space-between; gap: .75rem; width: 100%; border-radius: 12px; box-shadow: var(--shadow-small); }
+  .mixer-toggle strong { color: var(--accent); }
+  #mixerCompactStatus { font-size: .75rem; font-variant-numeric: tabular-nums; }
+  #mixerToggleLabel { font-size: .75rem; color: var(--muted); }
+  .mixer-panel { max-height: calc(100dvh - 10rem); overflow-y: auto; overscroll-behavior: contain; margin-top: .5rem; padding: 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); box-shadow: var(--shadow); scrollbar-gutter: stable; }
+  .mixer-heading, .mixer-editor { display: flex; align-items: center; gap: .75rem; justify-content: space-between; flex-wrap: wrap; }
+  .mixer-heading h2 { margin: 0 0 .4rem; font-size: 1.1rem; }
+  .mixer-heading p, .mixer-hint { color: var(--muted); font-size: .8rem; }
   .mixer-heading p { margin: 0; }
-  .mixer-tracks { margin: 1rem 0; padding: 0; list-style: none; }
-  .mixer-track { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(180px, 1fr) auto; align-items: center; gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--line); }
-  .mixer-track strong { font-size: .9rem; overflow-wrap: anywhere; }
+  #mixerTrackCount { font-size: .8rem; }
+  .mixer-dock .mixer-play { position: sticky; top: 0; z-index: 1; width: 100%; margin-top: 1rem; background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .mixer-tracks { margin: .75rem 0; padding: 0; list-style: none; }
+  .mixer-track { display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; padding: .85rem 0; border-top: 1px solid var(--line); }
+  .mixer-track strong { font-size: .85rem; overflow-wrap: anywhere; }
   .mixer-track label { display: flex; align-items: center; gap: .5rem; font-size: .8rem; }
-  .mixer-track input { width: 100%; min-width: 60px; flex: 1; accent-color: var(--accent); }
+  .mixer-track input { width: 100%; min-width: 0; min-height: 44px; flex: 1; accent-color: var(--accent); }
   .mixer-track output { min-width: 3ch; font-variant-numeric: tabular-nums; }
-  .mixer-track-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
-  .mixer-panel button { min-height: 40px; padding: .45rem .75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); cursor: pointer; font: inherit; font-size: .85rem; }
-  .mixer-panel button[aria-pressed="true"], #btnAddToMix { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-  .mixer-panel button[aria-disabled="true"] { opacity: .6; }
-  .mixer-panel :is(button, input, [tabindex]):focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+  .mixer-track-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; }
+  .mixer-track-actions button { padding-inline: .2rem; }
+  .mixer-dock button[aria-pressed="true"], #btnAddToMix { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .mixer-dock button[aria-disabled="true"] { opacity: .6; }
+  .mixer-dock :is(button, input, [tabindex]):focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
   .mixer-track[data-audible="false"] strong { color: var(--muted); }
   .mixer-editor { justify-content: flex-start; padding-top: .75rem; border-top: 1px solid var(--line); }
-  #mixerEditorLabel { flex: 1; min-width: 160px; font-size: .9rem; }
-  .mixer-status { margin: .8rem 0 .4rem; font-size: .85rem; min-height: 1.4em; }
+  #mixerEditorLabel { width: 100%; font-size: .85rem; }
+  .mixer-editor button { flex: 1; }
+  .mixer-status { margin: .8rem 0 .4rem; font-size: .8rem; min-height: 1.4em; }
   .mixer-hint { margin: 0; }
-  @media (max-width: 900px) { .mixer-track { grid-template-columns: minmax(0, 1fr) minmax(140px, 1fr); } .mixer-track-actions { grid-column: 1 / -1; } }
-  @media (max-width: 480px) { .mixer-track { grid-template-columns: minmax(0, 1fr); gap: .6rem; } .mixer-editor button { flex: 1; } }
+  .playback-status { padding: 0 1.25rem .75rem; margin: 0; font-size: .8rem; color: var(--muted); }
+  @media (min-width: 1100px) {
+    .asmr-lab-page.mixer-open { margin-right: 390px; }
+    .mixer-open .category-switch-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 760px) {
+    .mixer-dock { right: .5rem; top: 7rem; max-width: calc(100vw - 1rem); }
+    .mixer-dock[data-expanded="true"] { width: 350px; }
+    .mixer-panel { max-height: calc(100dvh - 19rem - env(safe-area-inset-bottom, 0px)); }
+  }
+  @media (max-height: 500px) {
+    .mixer-dock { top: .5rem; }
+    .mixer-panel { max-height: calc(100dvh - 9rem); }
+  }
 </style>
-<script src="{{ '/assets/js/ai-asmr/runtime.js' | relative_url }}?v=20261025"></script>
-<script src="{{ '/assets/js/ai-asmr/presets.js' | relative_url }}?v=20261025"></script>
-<script src="{{ '/assets/js/ai-asmr/voices.js' | relative_url }}?v=20261025"></script>
-<script src="{{ '/assets/js/ai-asmr/lab.js' | relative_url }}?v=20261025"></script>
+<script src="{{ '/assets/js/ai-asmr/runtime.js' | relative_url }}?v=20261025-r2"></script>
+<script src="{{ '/assets/js/ai-asmr/presets.js' | relative_url }}?v=20261025-r2"></script>
+<script src="{{ '/assets/js/ai-asmr/voices.js' | relative_url }}?v=20261025-r2"></script>
+<script src="{{ '/assets/js/ai-asmr/lab.js' | relative_url }}?v=20261025-r2"></script>

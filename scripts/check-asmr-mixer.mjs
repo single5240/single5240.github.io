@@ -55,11 +55,14 @@ const row = i => page.locator(".mixer-track").nth(i);
 const action = (i, name) => row(i).locator(`[data-action="${name}"]`);
 const add = () => page.locator("#btnAddToMix").click();
 const category = name => page.locator(`[data-cat="${name}"]`).click();
-const pause = () => page.locator("#btnMainPlay").click();
+const pause = () => page.locator("#btnMixPlay").click();
 const settle = ms => page.waitForTimeout(ms);
 const resources = () => page.evaluate(() => window.audioTest.scopes.map(s => ({ nodes: s.nodeCount, sources: s.sourceCount, tasks: s.taskCount })));
 try {
   await page.goto(`http://127.0.0.1:${server.address().port}/projects/ai-asmr/index.html`);
+  assert.equal(await page.locator('#btnMixerToggle').getAttribute('aria-expanded'), 'false');
+  assert.equal(await page.locator('#mixerBody').isVisible(), false);
+  await page.locator('#btnMixerToggle').click();
   const acoustic = await page.evaluate(async () => {
     const offline = new OfflineAudioContext(2, 48000 * 168, 48000);
     const noise = AsmrRuntime.circularNoise(offline, 8, 2, AsmrRuntime.random(20261025));
@@ -156,10 +159,36 @@ try {
     scope.dispose();
     if (obsolete || times.length > 2 || times.some(time => time < 2)) throw new Error("Audio scheduler replayed an obsolete backlog");
   });
-  await pause(); // Empty mix adds the browsed sound.
+  // Independent playback remains the primary page action, and never adds a mix layer.
+  await page.locator('#btnMainPlay').click(); await settle(650);
+  assert.equal(await page.locator('.mixer-track').count(), 0);
+  assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'true');
+  assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'false');
+  await page.locator('.surface-btn[data-surface="window"]').click(); await settle(650);
+  assert.equal(await page.locator('.mixer-track').count(), 0, 'Independent parameter changes must not add mix layers');
+  assert.equal((await resources()).filter(scope => scope.nodes).length, 1);
+  await category('tapping'); await settle(600);
+  assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'false', 'Category switching preserves independent stop behavior');
+  assert((await resources()).every(scope => scope.nodes === 0));
+  await category('rain'); await page.locator('#btnMainPlay').click(); await settle(650);
+  await pause(); await settle(700);
+  assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'false');
+  assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'true');
+  assert.equal((await resources()).filter(scope => scope.nodes).length, 1, 'Independent source must be disposed after starting the mix');
+  await page.locator('#btnMixerToggle').click();
+  assert.equal(await page.locator('#mixerBody').isVisible(), false);
+  assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'true');
+  await page.locator('#btnMixerToggle').click();
+  await page.locator('#btnMainPlay').click(); await settle(700);
+  assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'true');
+  assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'false');
+  assert.equal((await resources()).filter(scope => scope.nodes).length, 1, 'Mix source must be disposed after starting independent playback');
+  await action(0, 'remove').click();
+  assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'true', 'Removing a stored mix must not stop independent audio');
+  await pause(); // Switching to an empty mix adds the browsed sound.
   await settle(700);
   assert.equal(await page.locator(".mixer-track").count(), 1);
-  assert.equal(await page.locator("#btnMainPlay").getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator("#btnMixPlay").getAttribute("aria-pressed"), "true");
   await category("fire"); await add();
   await category("tapping"); await page.locator('.tap-mat-btn[data-mat="book"]').click(); await add();
   await category("rain"); await add();
@@ -185,7 +214,7 @@ try {
   await page.locator("#btnLeaveTrackEditor").click();
   // Browsing does not stop playback or change existing names.
   await category("water");
-  assert.equal(await page.locator("#btnMainPlay").getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator("#btnMixPlay").getAttribute("aria-pressed"), "true");
   await settle(1200);
   for (const delay of [500, 2000]) {
     await page.evaluate(delay => { const until = performance.now() + delay; while (performance.now() < until) {} }, delay);
@@ -233,7 +262,10 @@ try {
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "Horizontal overflow at " + width);
     if (process.env.ASMR_SCREENSHOT_DIR && ((width === 390 && theme === "light") || (width === 1280 && theme === "dark"))) {
       mkdirSync(process.env.ASMR_SCREENSHOT_DIR, { recursive: true });
-      await page.locator(".mixer-panel").screenshot({ path: join(process.env.ASMR_SCREENSHOT_DIR, `mixer-${width}-${theme}.png`) });
+      await page.locator("#mixerBody").evaluate(element => element.scrollTop = 0);
+      await page.locator("#mixerDock").screenshot({ path: join(process.env.ASMR_SCREENSHOT_DIR, `mixer-${width}-${theme}.png`) });
+      await page.evaluate(() => scrollTo(0, 0));
+      await page.screenshot({ path: join(process.env.ASMR_SCREENSHOT_DIR, `layout-${width}-${theme}.png`) });
     }
   }
   assert.deepEqual(errors, [], "Browser errors");

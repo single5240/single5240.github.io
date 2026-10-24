@@ -27,7 +27,7 @@
       const event = visualQueue[i];
       if (event.at > audioCtx.currentTime) continue;
       visualQueue.splice(i, 1);
-      const track = tracks.find(t => t.id === event.trackId);
+      const track = independentTrack?.id === event.trackId ? independentTrack : tracks.find(t => t.id === event.trackId);
       if (!track || !track.branch || track.branch.voice.scope !== event.scope || !isAudible(track) || event.at < audioCtx.currentTime - 0.5) continue;
       const before = radarBeacons.length;
       if (event.kind === "keycap") keycapVisualEvents.push({ ...event.args[0], trackId: event.trackId });
@@ -74,6 +74,8 @@
   let transportState = "stopped";
   let cleanupTimer = null;
   let contextTransition = Promise.resolve();
+  let playbackMode = null;
+  let independentTrack = null;
 
   function changeContext(method, version) {
     contextTransition = contextTransition.catch(() => {}).then(() => {
@@ -144,6 +146,7 @@
 
   function announce(message) {
     document.getElementById("mixerStatus").textContent = message;
+    document.getElementById("playbackStatus").textContent = message;
   }
 
   function startTrack(track) {
@@ -190,6 +193,7 @@
   }
 
   function isAudible(track) {
+    if (track === independentTrack) return true;
     return !track.muted && (!tracks.some(t => t.solo) || track.solo);
   }
 
@@ -198,16 +202,17 @@
     for (const track of tracks) {
       if (track.branch) AsmrRuntime.ramp(track.branch.gate.gain, isAudible(track) ? 1 : 0, audioCtx.currentTime, 0.4);
     }
+    if (independentTrack?.branch) AsmrRuntime.ramp(independentTrack.branch.gate.gain, 1, audioCtx.currentTime, 0.4);
   }
 
   function addTrack() {
     if (tracks.length >= 4) { announce("最多同时混合 4 轨，请先移除一个声音。"); return; }
     if (audioCtx) cleanRetiring();
-    if (transportState === "playing" && retiring.size >= 4) { announce("声音正在平滑退出，请稍后再加入。"); return; }
+    if (playbackMode === "mix" && transportState === "playing" && retiring.size >= 4) { announce("声音正在平滑退出，请稍后再加入。"); return; }
     const track = { id: crypto.randomUUID(), category: state.activeCategory,
       config: configFrom(state), volume: 0.65, muted: false, solo: false, branch: null };
     tracks.push(track);
-    if (transportState === "playing") {
+    if (playbackMode === "mix" && transportState === "playing") {
       try { startTrack(track); updateGates(); }
       catch (error) { tracks.pop(); announce("声音加入失败：" + error.message); return; }
     }
@@ -216,35 +221,42 @@
     announce("已加入：" + trackName(track));
   }
 
-  async function startAudio() {
-    if (transportState === "starting" || transportState === "playing") return;
+  async function startAudio(mode = "independent") {
+    if ((transportState === "starting" || transportState === "playing") && playbackMode === mode) return;
+    const switchingMode = playbackMode && playbackMode !== mode;
+    if (transportState === "starting" || transportState === "playing") stopAudio();
     const version = ++playVersion;
     transportState = "starting";
+    playbackMode = mode;
+    announce(mode === "mix" ? "正在启动混音…" : "正在启动独立播放…");
     updateUIPlayState();
     try {
       initAudioEngine();
       await changeContext("resume", version);
       if (version !== playVersion) return;
       if (audioCtx.state !== "running") throw new Error("音频未能启动，请再次点击播放");
-      while (retiring.size > 4) {
+      while (retiring.size > (switchingMode ? 0 : 4)) {
         await new Promise(resolve => setTimeout(resolve, 25));
         if (version !== playVersion) return;
         cleanRetiring();
       }
-      // A previously interrupted, expired sleep session must not restart itself.
-      if (!tracks.length) addTrack();
-      for (const track of tracks) {
-        if (track.branch) { releaseBranch(track.branch); track.branch = null; }
-        startTrack(track);
+      if (mode === "mix") {
+        if (!tracks.length) addTrack();
+        for (const track of tracks) startTrack(track);
+      } else {
+        independentTrack = { id: "independent-" + version, category: state.activeCategory,
+          config: configFrom(state), volume: 1, muted: false, solo: false, branch: null };
+        startTrack(independentTrack);
       }
       state.isPlaying = true;
       transportState = "playing";
       if (state.sleepTimerMinutes > 0) state.sleepTimerEnd = Date.now() + state.sleepTimerMinutes * 60000;
       updateGates();
+      mixInput.gain.setTargetAtTime(mode === "mix" ? 0.45 : 1, audioCtx.currentTime, 0.08);
       AsmrRuntime.ramp(masterGain.gain, state.masterVol, audioCtx.currentTime, 0.4);
       scheduler.start();
       updateSleepTimer();
-      announce("正在播放 " + tracks.length + " 轨混音");
+      announce(mode === "mix" ? "正在播放 " + tracks.length + " 轨混音 · 独立播放已关闭" : "正在独立播放 · 混音已关闭");
     } catch (error) {
       if (version !== playVersion) return;
       stopAudio();
@@ -255,6 +267,7 @@
   }
 
   function stopAudio() {
+    const previousMode = playbackMode;
     const version = ++playVersion;
     state.isPlaying = false;
     transportState = "pausing";
@@ -262,6 +275,10 @@
     clearTimeout(sleepTimerTickId);
     sleepTimerTickId = null;
     for (const track of tracks) retireTrack(track);
+    if (independentTrack) retireTrack(independentTrack);
+    independentTrack = null;
+    playbackMode = null;
+    if (previousMode) announce(previousMode === "mix" ? "混音已暂停" : "独立播放已暂停");
     if (audioCtx) {
       AsmrRuntime.ramp(masterGain.gain, 0, audioCtx.currentTime, 0.4);
       setTimeout(async () => {
@@ -279,6 +296,7 @@
     if (!audioCtx) return;
     masterFilter.frequency.setTargetAtTime(state.userLowpass, audioCtx.currentTime, 0.08);
     for (const track of tracks) if (track.branch) track.branch.voice.update({ userLowpass: state.userLowpass, stereoWidth: state.stereoWidth });
+    if (independentTrack?.branch) independentTrack.branch.voice.update({ userLowpass: state.userLowpass, stereoWidth: state.stereoWidth });
   }
 
   function applyTrackConfig(track, topologyChanged) {
@@ -300,6 +318,14 @@
     catch (error) { announce("更新声音失败：" + error.message); }
   }
 
+  function syncIndependentConfig() {
+    if (playbackMode !== "independent" || !independentTrack) return;
+    const next = configFrom(state);
+    const topologyChanged = PARAM_BUTTONS.some(([, key]) => next[key] !== independentTrack.config[key]);
+    independentTrack.config = next;
+    applyTrackConfig(independentTrack, topologyChanged);
+  }
+
   function syncEditor(config, category) {
     syncingEditor = true;
     try {
@@ -318,6 +344,7 @@
         range.dispatchEvent(new Event("input", { bubbles: true }));
       }
     } finally { syncingEditor = false; }
+    syncIndependentConfig();
     generatePrompt();
   }
 
@@ -339,6 +366,10 @@
   }
 
   function auditionTrack(azimuth) {
+    if (playbackMode === "independent") {
+      independentTrack?.branch?.voice.audition(azimuth);
+      return;
+    }
     const track = tracks.find(t => t.id === selectedTrackId) || tracks.find(t => t.category === state.activeCategory && isAudible(t));
     if (track && track.branch && isAudible(track)) track.branch.voice.audition(azimuth);
     else announce("请先将当前声音加入混音，或选择一个正在播放的轨道。");
@@ -386,7 +417,7 @@
             if (selectedTrackId === track.id) leaveTrackEditor();
             retireTrack(track);
             tracks.splice(tracks.indexOf(track), 1);
-            if (!tracks.length) stopAudio();
+            if (!tracks.length && playbackMode === "mix") stopAudio();
             announce("已移除：" + trackName(track));
           } else track[action] = !track[action];
           updateGates(); renderMixer(); generatePrompt();
@@ -402,10 +433,29 @@
     document.getElementById("btnLeaveTrackEditor").hidden = !selected;
     document.getElementById("mixerTrackCount").textContent = tracks.length + " / 4 轨";
     document.getElementById("btnAddToMix").setAttribute("aria-disabled", String(tracks.length >= 4));
+    updateUIPlayState();
     if (focusTrack && focusAction) list.querySelector(`[data-track="${focusTrack}"] [data-action="${focusAction}"]`)?.focus({ preventScroll: true });
   }
 
   function setupMixer() {
+    const toggle = document.getElementById("btnMixerToggle");
+    const body = document.getElementById("mixerBody");
+    const setExpanded = expanded => {
+      body.hidden = !expanded;
+      toggle.setAttribute("aria-expanded", String(expanded));
+      document.getElementById("mixerDock").dataset.expanded = String(expanded);
+      document.querySelector(".asmr-lab-page").classList.toggle("mixer-open", expanded);
+      document.getElementById("mixerToggleLabel").textContent = expanded ? "收纳混音" : "展开混音";
+      if (!expanded) { leaveTrackEditor(); toggle.focus({ preventScroll: true }); }
+    };
+    toggle.addEventListener("click", () => setExpanded(toggle.getAttribute("aria-expanded") !== "true"));
+    document.getElementById("mixerDock").addEventListener("keydown", event => {
+      if (event.key === "Escape") { event.preventDefault(); setExpanded(false); }
+    });
+    document.getElementById("btnMixPlay").addEventListener("click", () => {
+      if (playbackMode === "mix" && (state.isPlaying || transportState === "starting")) stopAudio();
+      else startAudio("mix");
+    });
     document.getElementById("btnAddToMix").addEventListener("click", addTrack);
     document.getElementById("btnLeaveTrackEditor").addEventListener("click", leaveTrackEditor);
     const paramSelector = [...PARAM_BUTTONS.map(p => p[0]), ...PARAM_RANGES.map(p => "#" + p[0])].join(",");
@@ -421,6 +471,7 @@
         applyTrackConfig(track, topologyChanged);
         if (event.type === "click") renderMixer();
       }
+      syncIndependentConfig();
       generatePrompt();
     };
     document.querySelector(".asmr-lab-page").addEventListener("click", changed);
@@ -2445,6 +2496,7 @@
   function switchCategory(cat) {
     if (!syncingEditor) leaveTrackEditor();
     if (state.activeCategory === cat) return;
+    if (playbackMode === "independent") stopAudio();
 
     state.activeCategory = cat;
 
@@ -2594,23 +2646,28 @@
     const btn = document.getElementById("btnMainPlay");
     const pulse = document.getElementById("statusPulse");
     const playText = document.getElementById("playBtnText");
-    const catName = "混音";
+    const catName = { rain: "雨声", tapping: "敲击声", friction: "摩擦声", water: "水流声",
+      bowls: "钵铃声", tools: "工具声", fire: "壁炉声", squish: "软胶声", keyboard: "键盘声", ambient: "氛围声" }[state.activeCategory];
+    const independentActive = playbackMode === "independent" && (state.isPlaying || transportState === "starting");
+    const mixActive = playbackMode === "mix" && (state.isPlaying || transportState === "starting");
 
-    if (state.isPlaying) {
+    if (independentActive) {
       if (btn) {
         btn.classList.add("playing");
         btn.setAttribute("aria-pressed", "true");
       }
-      if (pulse) pulse.classList.add("active");
       if (playText) playText.textContent = "暂停" + catName + (compactViewport.matches ? "" : " (Space)");
     } else {
       if (btn) {
         btn.classList.remove("playing");
         btn.setAttribute("aria-pressed", "false");
       }
-      if (pulse) pulse.classList.remove("active");
       if (playText) playText.textContent = "播放" + catName + (compactViewport.matches ? "" : " (Space)");
     }
+    if (pulse) pulse.classList.toggle("active", state.isPlaying);
+    document.getElementById("btnMixPlay").setAttribute("aria-pressed", String(mixActive));
+    document.getElementById("btnMixPlay").textContent = mixActive ? "暂停混音" : "播放混音";
+    document.getElementById("mixerCompactStatus").textContent = mixActive ? "播放中 · " + tracks.length + " 轨" : tracks.length + " / 4 轨";
   }
 
   function updateSleepTimer() {
@@ -2684,7 +2741,7 @@
     // 1. 播放/暂停
     const btnMainPlay = document.getElementById("btnMainPlay");
     btnMainPlay.addEventListener("click", () => {
-      if (state.isPlaying || transportState === "starting") {
+      if (playbackMode === "independent" && (state.isPlaying || transportState === "starting")) {
         stopAudio();
       } else {
         startAudio();
@@ -2695,7 +2752,7 @@
     if (canvas) {
       canvas.style.cursor = "pointer";
       canvas.addEventListener("click", (e) => {
-        if (!state.isPlaying) {
+        if (!state.isPlaying || playbackMode !== "independent") {
           startAudio();
           return;
         }
