@@ -1,0 +1,30 @@
+<article class="project-mini-card">
+  <a class="project-mini-link" href="{{ include.project.url | relative_url }}" aria-label="{{ include.project.title }}：{{ include.project.subtitle | default: include.project.cta | default: '打开项目' }}">
+    <div class="project-mini-visual">
+      <img src="{{ include.project.image | relative_url }}" width="320" height="200" alt="{{ include.project.image_alt | default: include.project.title }}" loading="lazy">
+      {% if include.project.tags.size > 0 %}
+      <span class="project-mini-chip">{{ include.project.tags.first }}</span>
+      {% endif %}
+    </div>
+    <div class="project-mini-body">
+      <div class="project-mini-head">
+        <h3 class="project-mini-title">{{ include.project.title }}</h3>
+        <span class="project-mini-arrow" aria-hidden="true">↗</span>
+      </div>
+      <p class="project-mini-subtitle">{{ include.project.subtitle | default: include.project.description }}</p>
+      <div class="project-mini-footer">
+        <span class="project-mini-cta">
+          <span>{{ include.project.cta | default: '快速进入' }}</span>
+          <span class="mini-arrow" aria-hidden="true">→</span>
+        </span>
+        <span class="project-mini-note-count">
+          {% if include.project.articles.size > 0 %}
+            {{ include.project.articles.size }} 篇笔记
+          {% else %}
+            独立实验
+          {% endif %}
+        </span>
+      </div>
+    </div>
+  </a>
+</article>
