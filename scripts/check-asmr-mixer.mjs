@@ -27,7 +27,33 @@ page.setDefaultTimeout(10000);
 const errors = [];
 page.on("pageerror", error => { errors.push(error.message); console.error("Browser:", error.message); });
 await page.addInitScript(() => {
-  window.audioTest = { contexts: [], scopes: [], grooves: [], starts: 0 };
+  window.audioTest = { contexts: [], scopes: [], grooves: [], starts: 0, attacks: 0, shortAttacks: [] };
+  const gainParams = new WeakSet();
+  const envelopeStarts = new WeakMap();
+  const originalGain = BaseAudioContext.prototype.createGain;
+  BaseAudioContext.prototype.createGain = function (...args) {
+    const node = originalGain.apply(this, args);
+    gainParams.add(node.gain);
+    return node;
+  };
+  const originalSetValue = AudioParam.prototype.setValueAtTime;
+  AudioParam.prototype.setValueAtTime = function (value, when) {
+    if (gainParams.has(this)) {
+      if (value === 0.0001) envelopeStarts.set(this, when);
+      else envelopeStarts.delete(this);
+    }
+    return originalSetValue.call(this, value, when);
+  };
+  const originalRamp = AudioParam.prototype.linearRampToValueAtTime;
+  AudioParam.prototype.linearRampToValueAtTime = function (value, when) {
+    if (envelopeStarts.has(this) && value > 0.0001) {
+      const attack = when - envelopeStarts.get(this);
+      audioTest.attacks++;
+      if (attack < 0.0015 - 1e-8 && audioTest.shortAttacks.length < 20) audioTest.shortAttacks.push(attack);
+      envelopeStarts.delete(this);
+    }
+    return originalRamp.call(this, value, when);
+  };
   let grooveLibrary;
   Object.defineProperty(window, "AsmrGroove", {
     get: () => grooveLibrary,
@@ -206,6 +232,13 @@ try {
   assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'false', 'Category switching preserves independent stop behavior');
   assert((await resources()).every(scope => scope.nodes === 0));
   await category('rain'); await page.locator('#btnMainPlay').click(); await settle(650);
+  await pause();
+  await page.evaluate(() => audioTest.contexts[0].suspend());
+  await settle(700);
+  assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'false', 'An interrupted transition must not claim playback is running');
+  assert((await resources()).every(scope => scope.nodes === 0 && scope.tasks === 0), 'Interrupted startup must release all voices');
+  await page.locator('#btnMainPlay').click(); await settle(650);
+  assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'true', 'User must be able to recover after an interrupted transition');
   await pause(); await settle(700);
   assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'false');
   assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'true');
@@ -311,6 +344,10 @@ try {
     }
   }
   assert.deepEqual(errors, [], "Browser errors");
+  const envelopeCheck = await page.evaluate(() => ({ attacks: audioTest.attacks, shortAttacks: audioTest.shortAttacks }));
+  assert(envelopeCheck.attacks > 100, "Transient envelope instrumentation did not observe enough attacks");
+  assert.deepEqual(envelopeCheck.shortAttacks, [], "Transient attack shorter than the 1.5 ms acoustic invariant");
+  console.log("Transient attacks >= 1.5 ms:", envelopeCheck.attacks);
   console.log("ASMR mixer: 4-track controls, independent same-category editing, 10 categories/presets, races, cleanup and responsive layout passed.");
 } finally {
   await browser.close();

@@ -306,6 +306,7 @@
 
       // 辅助函数：触发一段整形宽频噪声脉冲（消除纯正弦波电子音感）
       const spawnShapedNoise = (filterType, freq, q, gainAmt, atk, dur, lpClamp = effectiveLp, delaySec = 0) => {
+        atk = Math.max(0.0015, atk);
         const t0 = now + delaySec;
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
@@ -337,6 +338,7 @@
 
       // 辅助函数：触发极短促高阻尼膜面/腔体低频位移脉冲（仅作物理厚度支撑，无纯音长尾）
       const spawnDampedBodyPulse = (fStart, fEnd, gainAmt, atk, dur, lpCutoff) => {
+        atk = Math.max(0.0015, atk);
         const osc = audioCtx.createOscillator();
         osc.type = "sine";
         osc.frequency.setValueAtTime(fStart, now);
@@ -613,6 +615,7 @@
 
       // 辅助函数 1：整形材质纹理与甲腹接触噪声包络
       const spawnTapNoise = (filterType, freq, q, gainAmt, atk, dur, lpClamp = effectiveCutoff, delaySec = 0) => {
+        atk = Math.max(0.0015, atk);
         const t0 = now + delaySec;
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
@@ -644,6 +647,7 @@
 
       // 辅助函数 2：受控物理阻尼模态脉冲（带微顺应性瞬态降频与独立低通抑制）
       const spawnTapModal = (fStart, fEnd, gainAmt, atk, dur, lpClamp = effectiveCutoff, delaySec = 0) => {
+        atk = Math.max(0.0015, atk);
         const t0 = now + delaySec;
         const osc = audioCtx.createOscillator();
         osc.type = "sine";
@@ -1466,6 +1470,7 @@
 
       // 辅助函数 1：整形宽频水相噪声脉冲（模拟水舌微澜、石面漫流、液膜破裂、水珠溅落）
       const spawnWaterNoise = (filterType, fStart, fEnd, q, gainAmt, atk, dur, lpClamp = cutoff, delaySec = 0) => {
+        atk = Math.max(0.0015, atk);
         const t0 = now + delaySec;
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
@@ -1502,6 +1507,7 @@
 
       // 辅助函数 2：短促高阻尼流体/器皿模态脉冲（用于水面凹陷、石块/竹筒/紫砂/冰块阻尼共鸣）
       const spawnWaterModal = (fStart, fEnd, gainAmt, atk, dur, lpClamp = cutoff, delaySec = 0) => {
+        atk = Math.max(0.0015, atk);
         const t0 = now + delaySec;
         const osc = audioCtx.createOscillator();
         osc.type = "sine";
@@ -2581,7 +2587,7 @@
           hBp.Q.setValueAtTime(4.6, hTime);
           const hGain = audioCtx.createGain();
           hGain.gain.setValueAtTime(0.0001, hTime);
-          hGain.gain.linearRampToValueAtTime(0.14 * velScale * (1 - state.toolWarmth * 0.35), hTime + 0.0012);
+          hGain.gain.linearRampToValueAtTime(0.14 * velScale * (1 - state.toolWarmth * 0.35), hTime + 0.0015);
           hGain.gain.exponentialRampToValueAtTime(0.0001, hTime + 0.0065);
           hSrc.connect(hBp);
           hBp.connect(hGain);

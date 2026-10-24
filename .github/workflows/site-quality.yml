@@ -32,7 +32,10 @@ jobs:
         run: node scripts/check-site.mjs
       - name: Check shared JavaScript syntax
         run: |
-          for file in assets/js/*.js scripts/*.mjs; do node --check "$file"; done
+          shopt -s globstar nullglob
+          for file in assets/js/**/*.js scripts/*.mjs; do node --check "$file"; done
+      - name: Check ASMR groove bounds and continuity
+        run: node scripts/check-asmr-groove.mjs
       - name: Check report import regression
         run: node --test scripts/import-ai-news.test.mjs
       - name: Check temporary kanban data and expiry

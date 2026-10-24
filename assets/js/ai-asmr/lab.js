@@ -272,6 +272,7 @@
         if (version !== playVersion) return;
         cleanRetiring();
       }
+      if (audioCtx.state !== "running") throw new Error("音频在切换期间被中断，请再次点击播放");
       if (mode === "mix") {
         grooveSession = AsmrGroove.create(audioCtx.currentTime, crypto.getRandomValues(new Uint32Array(1))[0]);
         grooveSession.setEnabled(grooveEnabled);
