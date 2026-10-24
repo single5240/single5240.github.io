@@ -22,7 +22,7 @@ const server = createServer((req, res) => {
 });
 await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
 const browser = await chromium.launch({ headless: true, channel: process.env.PLAYWRIGHT_CHANNEL || undefined, args: ["--autoplay-policy=no-user-gesture-required"] });
-const page = await browser.newPage();
+const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 page.setDefaultTimeout(10000);
 const errors = [];
 page.on("pageerror", error => { errors.push(error.message); console.error("Browser:", error.message); });
@@ -109,6 +109,28 @@ const settle = ms => page.waitForTimeout(ms);
 const resources = () => page.evaluate(() => window.audioTest.scopes.map(s => ({ nodes: s.nodeCount, sources: s.sourceCount, tasks: s.taskCount })));
 try {
   await page.goto(`http://127.0.0.1:${server.address().port}/projects/ai-asmr/index.html`);
+  for (const width of [390, 1280, 1920, 2560]) for (const theme of ["light", "dark"]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.evaluate(value => document.documentElement.dataset.theme = value, theme);
+    const layout = () => page.evaluate(() => {
+      const main = document.querySelector(".asmr-lab-page").getBoundingClientRect();
+      const canvas = document.getElementById("asmrCanvas").getBoundingClientRect();
+      return { x: main.x, width: main.width, canvasWidth: canvas.width,
+        columns: getComputedStyle(document.querySelector(".category-switch-bar")).gridTemplateColumns };
+    });
+    const closed = await layout();
+    await page.locator("#btnMixerToggle").click();
+    await settle(50);
+    assert.deepEqual(await layout(), closed, `Mixer expansion changed main layout at ${width}px / ${theme}`);
+    const dock = await page.locator("#mixerDock").boundingBox();
+    assert(dock.x >= 0 && dock.x + dock.width <= width, "Floating mixer must stay in the viewport");
+    if (width >= 1920) assert(dock.x >= closed.x + closed.width, "Wide screens should use the free space beside the unchanged main page");
+    await page.locator("#btnMixerToggle").click();
+    assert.deepEqual(await layout(), closed, "Collapsing the mixer must preserve main layout");
+  }
+  console.log("Floating mixer: main width, position, category columns and canvas unchanged across 390/1280/1920/2560px in light/dark themes.");
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  if (process.env.ASMR_LAYOUT_ONLY !== "1") {
   assert.equal(await page.locator('#btnMixerToggle').getAttribute('aria-expanded'), 'false');
   assert.equal(await page.locator('#mixerBody').isVisible(), false);
   await page.locator('#btnMixerToggle').click();
@@ -343,12 +365,13 @@ try {
       await page.screenshot({ path: join(process.env.ASMR_SCREENSHOT_DIR, `layout-${width}-${theme}.png`) });
     }
   }
-  assert.deepEqual(errors, [], "Browser errors");
   const envelopeCheck = await page.evaluate(() => ({ attacks: audioTest.attacks, shortAttacks: audioTest.shortAttacks }));
   assert(envelopeCheck.attacks > 100, "Transient envelope instrumentation did not observe enough attacks");
   assert.deepEqual(envelopeCheck.shortAttacks, [], "Transient attack shorter than the 1.5 ms acoustic invariant");
   console.log("Transient attacks >= 1.5 ms:", envelopeCheck.attacks);
   console.log("ASMR mixer: 4-track controls, independent same-category editing, 10 categories/presets, races, cleanup and responsive layout passed.");
+  }
+  assert.deepEqual(errors, [], "Browser errors");
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

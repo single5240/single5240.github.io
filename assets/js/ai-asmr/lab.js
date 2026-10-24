@@ -483,7 +483,6 @@
       body.hidden = !expanded;
       toggle.setAttribute("aria-expanded", String(expanded));
       document.getElementById("mixerDock").dataset.expanded = String(expanded);
-      document.querySelector(".asmr-lab-page").classList.toggle("mixer-open", expanded);
       document.getElementById("mixerToggleLabel").textContent = expanded ? "收纳混音" : "展开混音";
       if (!expanded) { leaveTrackEditor(); toggle.focus({ preventScroll: true }); }
     };
