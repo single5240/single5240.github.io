@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: AI-ASMR 沉浸式声音实验室
-description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声、钝感敲击声、细腻摩擦声、清润水流声与能量泛音钵铃声（西藏手工颂钵/柯西和弦风铃/432Hz音叉/水晶石英钵/禅意碰铃）五大体系，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
+description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声、钝感敲击声、细腻摩擦声、清润水流声、能量泛音钵铃声与理发伴读微机械（理发轻剪/密齿发梳/棉纸铅笔/复古打字机/雾化水喷）六大体系，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
 section: projects
 wide: true
 permalink: /projects/ai-asmr/index.html
@@ -13,12 +13,13 @@ permalink: /projects/ai-asmr/index.html
     <h1>AI-ASMR 沉浸式声音实验室</h1>
     <p class="lede">
       基于 <strong>Web Audio API 纯原生程序化物理声学合成</strong> 打造的双耳 3Dio 沉浸式声音触发台。
-      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>、<strong>「轻柔敲击声」</strong>、<strong>「细腻摩擦声」</strong>、<strong>「清润水流声」</strong>与<strong>「能量泛音与音疗钵铃」</strong>五大声音体系，
+      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>、<strong>「轻柔敲击声」</strong>、<strong>「细腻摩擦声」</strong>、<strong>「清润水流声」</strong>、<strong>「能量泛音与音疗钵铃」</strong>与<strong>「理发伴读微机械」</strong>六大声音体系，
       涵盖从<strong>微雨、小雨、大雨、倾盆到远雷暴风雨</strong>的连续声场，
       <strong>空心木盒、精装书、软硅胶、厚陶杯与天然竹节</strong>等吸音钝感轻叩，
       <strong>蓬松软毛刷、天鹅绒与指腹轻摩</strong>的柔和剪切抚摩，
       <strong>山涧清泉、鹅卵石细流、幽潭微涌、粘稠气泡与添水竹韵</strong>等自然水相流体，
-      以及<strong>西藏手工颂钵、柯西和弦风铃、432Hz双耳疗愈音叉、水晶石英钵与禅意碰铃</strong>等高纯正弦波五阶泛音与 Theta 慢波冥想共振。
+      <strong>西藏手工颂钵、柯西和弦风铃、432Hz双耳疗愈音叉、水晶石英钵与禅意碰铃</strong>等高阶泛音与 Theta 慢波冥想共振，
+      以及<strong>理发轻剪、密齿发梳、棉纸素描铅笔、复古打字机与细密雾化水喷</strong>等近耳沉浸护理与伴读专注心流。
       全频段柔化滤波彻底消除高频毛刺与尖锐杂音，呈现<strong>细腻（delicate）、轻柔（gentle）、钝感（cushioned）与平稳规律（rhythmic &amp; repetitive）</strong>的纯净白噪音，并附带专业级 <strong>AI ASMR 提示词工坊</strong>。
     </p>
     <div class="head-badges" role="region" aria-label="核心声学特性">
@@ -28,6 +29,7 @@ permalink: /projects/ai-asmr/index.html
       <span class="badge-item">🪶 细腻触感摩擦</span>
       <span class="badge-item">🫧 清润自然水流</span>
       <span class="badge-item">🔔 能量泛音钵铃</span>
+      <span class="badge-item">✂️ 理发伴读微机械</span>
       <span class="badge-item">🛡️ 零尖锐刺耳 / 软限幅防爆音</span>
       <span class="badge-item">⚡ 离线即开即听 / 零音频文件依赖</span>
     </div>
@@ -70,6 +72,13 @@ permalink: /projects/ai-asmr/index.html
       <span class="cat-tab-content">
         <strong class="cat-tab-title">能量钵铃触发器 (Bowls Stage)</strong>
         <span class="cat-tab-desc">西藏颂钵 · 柯西风铃 · 432Hz音叉 · 水晶钵 · 碰铃</span>
+      </span>
+    </button>
+    <button type="button" class="cat-tab-btn" id="tabToolsCategory" role="tab" aria-selected="false" data-cat="tools">
+      <span class="cat-tab-icon">✂️</span>
+      <span class="cat-tab-content">
+        <strong class="cat-tab-title">理发伴读微机械 (Tools Stage)</strong>
+        <span class="cat-tab-desc">理发轻剪 · 密齿发梳 · 棉纸素描铅笔 · 打字机 · 雾化水喷</span>
       </span>
     </button>
   </nav>
@@ -500,6 +509,76 @@ permalink: /projects/ai-asmr/index.html
     </div>
   </section>
 
+  <!-- 3.6 理发伴读与微机械大类控制区 (Tools & Grooming Stage) -->
+  <section class="asmr-matrix-grid category-panel" id="panelToolsCategory" aria-label="理发伴读与微机械调控面板" hidden>
+    <!-- 左卡片：工具与器械选择 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>1. 伴读工具与微器械选择 (Grooming &amp; Companion Tools)</h2>
+        <span class="card-badge">近耳高斯切片</span>
+      </div>
+      <p class="card-intro">极近距离耳侧生活微机械声，全频段柔化抑制金属与齿音尖啸，还原沉浸沙龙与自习室：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="工具器械选择">
+        <button type="button" class="tool-inst-btn active" data-inst="scissors" role="radio" aria-checked="true">
+          <span class="preset-icon">✂️</span>
+          <span class="preset-name">锋利理发轻剪 (Salon Haircut Scissors)</span>
+          <span class="preset-desc">3Dio 双耳近距离交替开合空剪，金属刃面微滑与剪切微风，轻脆柔润</span>
+        </button>
+        <button type="button" class="tool-inst-btn" data-inst="comb" role="radio" aria-checked="false">
+          <span class="preset-icon">🪮</span>
+          <span class="preset-name">密齿木梳理发 (Fine Wood Hair Comb)</span>
+          <span class="preset-desc">细密梳齿划过发丝的连绵沙沙微流与细微弹拨，极度抚平头皮紧绷</span>
+        </button>
+        <button type="button" class="tool-inst-btn" data-inst="pencil" role="radio" aria-checked="false">
+          <span class="preset-icon">✏️</span>
+          <span class="preset-name">棉纸素描铅笔 (Cotton Paper Pencil)</span>
+          <span class="preset-desc">重质 4B 石墨铅笔在粗纹水彩棉纸上划过的连绵阻尼微沙声，伴读专注</span>
+        </button>
+        <button type="button" class="tool-inst-btn" data-inst="typewriter" role="radio" aria-checked="false">
+          <span class="preset-icon">⌨️</span>
+          <span class="preset-name">复古机械打字机 (Vintage Typewriter)</span>
+          <span class="preset-desc">铅字臂敲击色带的清脆钝音，伴随行末清脆回车小铃（~1760Hz）</span>
+        </button>
+        <button type="button" class="tool-inst-btn" data-inst="spray" role="radio" aria-checked="false">
+          <span class="preset-icon">🧴</span>
+          <span class="preset-name">细密雾化水喷 (Barber Mist Spray)</span>
+          <span class="preset-desc">理发按压喷头，超微水气在耳畔弥散的高斯气流，温和绵柔无刺激</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右卡片：动作节奏与运动轨迹 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>2. 动作节奏与声学轨迹 (Cadence &amp; Motion Trajectory)</h2>
+        <span class="card-badge">3Dio 空间穿梭</span>
+      </div>
+      <p class="card-intro">模拟理发师近耳打理或专注伏案书写动作轨迹，双耳声像精确定位与虚实穿梭：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="动作轨迹选择">
+        <button type="button" class="tool-style-btn active" data-style="binaural_trim" role="radio" aria-checked="true">
+          <span class="preset-icon">🔄</span>
+          <span class="preset-name">双耳交替修剪 (Alternating Ear Attention)</span>
+          <span class="preset-desc">左右两耳极近距离（Pan ±0.85）轮流细致打理，带来极强的颅内安全包裹感</span>
+        </button>
+        <button type="button" class="tool-style-btn" data-style="rhythmic_flow" role="radio" aria-checked="false">
+          <span class="preset-icon">⏳</span>
+          <span class="preset-name">伴读专注心流 (Hypnotic Study Cadence)</span>
+          <span class="preset-desc">约 75 BPM 稳定呼吸节奏匀速书写或打字，沉浸自习室与深度专注</span>
+        </button>
+        <button type="button" class="tool-style-btn" data-style="head_contour" role="radio" aria-checked="false">
+          <span class="preset-icon">🌐</span>
+          <span class="preset-name">耳廓环绕漫游 (Head Contour Orbit)</span>
+          <span class="preset-desc">3Dio 假人头 360° 全方位慢速漫游，从左耳前方平滑过渡至后脑与右侧</span>
+        </button>
+        <button type="button" class="tool-style-btn" data-style="random_flutter" role="radio" aria-checked="false">
+          <span class="preset-icon">🪶</span>
+          <span class="preset-name">随性偶发微拂 (Casual Micro-Interactions)</span>
+          <span class="preset-desc">模拟真实理发师/书写者的随性偶发停顿、微碰触与轻快微动，有机灵动</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- ========================================================================
        4. 3Dio 双耳声学微调面板
        ======================================================================== -->
@@ -620,6 +699,25 @@ permalink: /projects/ai-asmr/index.html
         </div>
         <input type="range" id="rangeBowlWarmth" min="0" max="1" step="0.05" value="0.75" aria-label="金属高频泛音柔化程度">
         <small class="tweak-hint">消除高频金属哨鸣与刺耳声，向右滑动更温厚深沉，向左显现通透清越</small>
+      </div>
+
+      <!-- 工具微机械模式专属微调项 -->
+      <div class="tweak-item tools-tweak" id="tweakItemToolPace" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeToolPace">动作节拍节奏 (Action Pace / BPM)</label>
+          <span class="tweak-val" id="valToolPace">适中 (1.0x)</span>
+        </div>
+        <input type="range" id="rangeToolPace" min="0.5" max="2.0" step="0.1" value="1.0" aria-label="工具动作节拍速度">
+        <small class="tweak-hint">调节剪刀开合频率、发梳梳理速率或铅笔书写速度</small>
+      </div>
+
+      <div class="tweak-item tools-tweak" id="tweakItemToolWarmth" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeToolWarmth">触感柔化与阻尼 (Damping / Warmth)</label>
+          <span class="tweak-val" id="valToolWarmth">柔和吸音 (70%)</span>
+        </div>
+        <input type="range" id="rangeToolWarmth" min="0" max="1" step="0.05" value="0.70" aria-label="工具金属与纸质阻尼柔化程度">
+        <small class="tweak-hint">向右滑动纸阻/发丝更温润厚实，向左滑动机械刃口/笔尖更清透分明</small>
       </div>
     </div>
   </section>
@@ -759,11 +857,11 @@ permalink: /projects/ai-asmr/index.html
 /* 核心大类切换导航 */
 .category-switch-bar {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.85rem;
   margin: 1.5rem 0 1rem;
 }
-@media (max-width: 1100px) {
+@media (max-width: 1280px) {
   .category-switch-bar {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -1149,7 +1247,9 @@ permalink: /projects/ai-asmr/index.html
 .water-scene-btn,
 .water-style-btn,
 .bowl-inst-btn,
-.bowl-style-btn {
+.bowl-style-btn,
+.tool-inst-btn,
+.tool-style-btn {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -1173,7 +1273,9 @@ permalink: /projects/ai-asmr/index.html
 .water-scene-btn:hover,
 .water-style-btn:hover,
 .bowl-inst-btn:hover,
-.bowl-style-btn:hover {
+.bowl-style-btn:hover,
+.tool-inst-btn:hover,
+.tool-style-btn:hover {
   border-color: var(--accent);
   background: var(--alt-bg);
   transform: translateX(2px);
@@ -1187,7 +1289,9 @@ permalink: /projects/ai-asmr/index.html
 .water-scene-btn.active,
 .water-style-btn.active,
 .bowl-inst-btn.active,
-.bowl-style-btn.active {
+.bowl-style-btn.active,
+.tool-inst-btn.active,
+.tool-style-btn.active {
   border-color: var(--accent);
   background: var(--soft);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -1407,6 +1511,8 @@ permalink: /projects/ai-asmr/index.html
   .water-style-btn:hover,
   .bowl-inst-btn:hover,
   .bowl-style-btn:hover,
+  .tool-inst-btn:hover,
+  .tool-style-btn:hover,
   .cat-tab-btn:hover,
   .main-play-btn:hover {
     transform: none;
@@ -1950,8 +2056,89 @@ permalink: /projects/ai-asmr/index.html
     }
   };
 
+  // 伴读工具与微机械 (Tools & Grooming Instruments)
+  const TOOLS_INSTRUMENTS = {
+    scissors: {
+      name: "锋利理发轻剪 (Salon Haircut Scissors)",
+      enName: "ultra-sharp professional barber scissors making delicate close-up snips near the ears",
+      zhPrompt: "专业理发剪刀在双耳极近距离开合轻剪与空气微风",
+      type: "scissors",
+      baseRate: 750, // 基础周期间隔 (ms)
+      warmthCutoff: 2600,
+      desc: "Delicate Scissor Snips · Crisp & Soft Blade Approach"
+    },
+    comb: {
+      name: "密齿木梳理发 (Fine Wood Hair Comb)",
+      enName: "fine wooden comb gently raking through strands of soft hair with repetitive micro-rustles",
+      zhPrompt: "细密木梳齿轻柔梳理发丝的连绵沙沙微流与细微弹拨",
+      type: "comb",
+      baseRate: 1100,
+      warmthCutoff: 2100,
+      desc: "Fine Tooth Comb · Gentle Hair Raking & Scalp Soothing"
+    },
+    pencil: {
+      name: "棉纸素描铅笔 (Cotton Paper Pencil)",
+      enName: "heavy 4B graphite pencil writing and sketching on textured cotton watercolor paper",
+      zhPrompt: "重质 4B 石墨铅笔在粗纹水彩棉纸上划过的连绵阻尼微沙声",
+      type: "pencil",
+      baseRate: 850,
+      warmthCutoff: 1800,
+      desc: "Pencil on Cotton Paper · Textured Graphite Strokes & Cadence"
+    },
+    typewriter: {
+      name: "复古机械打字机 (Vintage Typewriter)",
+      enName: "vintage mechanical typewriter key clacks on ink ribbon with occasional carriage return bell",
+      zhPrompt: "复古机械打字机清脆铅字臂击打色带与行末清脆回车小铃",
+      type: "typewriter",
+      baseRate: 480,
+      warmthCutoff: 2200,
+      desc: "Mechanical Typewriter · Solid Key Thud & Brass Return Chime"
+    },
+    spray: {
+      name: "细密雾化水喷 (Barber Mist Spray)",
+      enName: "fine barber water mist spray bottle dispersing delicate micro-aerosol clouds near ear",
+      zhPrompt: "理发雾化水喷瓶细腻水雾近耳喷洒微气流与水珠弥散",
+      type: "spray",
+      baseRate: 2400,
+      warmthCutoff: 2400,
+      desc: "Barber Fine Mist Atomizer · Soft Hydraulic Air Diffuse"
+    }
+  };
+
+  // 动作节拍与运动轨迹 (Tools Styles)
+  const TOOLS_STYLES = {
+    binaural_trim: {
+      name: "双耳交替修剪 (Alternating Ear Attention)",
+      enName: "alternating between extreme close-up left and right ears for personal grooming attention",
+      zhPrompt: "左右双耳交替进行近距离细致打理与轻剪",
+      mode: "alternate",
+      desc: "Alternating Left/Right Ear Close-up Grooming"
+    },
+    rhythmic_flow: {
+      name: "伴读专注心流 (Hypnotic Study Cadence)",
+      enName: "steady and hypnotic rhythm at comfortable 75 BPM cadence for deep study focus",
+      zhPrompt: "约 75 BPM 稳定呼吸节奏匀速书写或打字伴读心流",
+      mode: "flow",
+      desc: "Steady Repetitive Study Flow · Hypnotic 75 BPM"
+    },
+    head_contour: {
+      name: "耳廓环绕漫游 (Head Contour Orbit)",
+      enName: "smooth circular orbit tracing around the earlobes and back of the head",
+      zhPrompt: "紧贴耳廓与后脑 360° 舒缓环绕轨迹",
+      mode: "orbit",
+      desc: "360° Orbital Path Around Ears and Head Contour"
+    },
+    random_flutter: {
+      name: "随性偶发微拂 (Casual Micro-Interactions)",
+      enName: "organic casual micro-interactions with natural pauses and gentle spontaneous touches",
+      zhPrompt: "模拟真实理发师/书写者的随性偶发停顿与轻盈微动",
+      mode: "random",
+      desc: "Organic Spontaneous Flutters · Natural Hesitations"
+    }
+  };
+
   let state = {
-    activeCategory: "rain", // "rain" | "tapping" | "friction" | "water" | "bowls"
+    activeCategory: "rain", // "rain" | "tapping" | "friction" | "water" | "bowls" | "tools"
     isPlaying: false,
 
     // 雨声参数
@@ -1984,6 +2171,12 @@ permalink: /projects/ai-asmr/index.html
     currentBowlStyle: "single",
     bowlDecayMultiplier: 1.0,
     bowlWarmth: 0.75, // 0 (清透高位微泛音) ~ 1 (极致温润厚重低次谐波)
+
+    // 伴读工具与微机械参数
+    currentToolInst: "scissors",
+    currentToolStyle: "binaural_trim",
+    toolPaceMultiplier: 1.0,
+    toolWarmth: 0.70, // 0 (清透微脆) ~ 1 (温厚阻尼柔和吸音)
 
     // 通用声学
     visualMode: "scenic", // scenic | radar | minimal
@@ -2021,6 +2214,10 @@ permalink: /projects/ai-asmr/index.html
   let waterEddyAngle = 0;
   let bowlTimerId = null;
   let bowlRimPhase = 0;
+  let toolTimerId = null;
+  let toolCycleStep = 0;
+  let toolPanSide = -0.85;
+  let toolTypewriterCount = 0;
 
   function initAudioEngine() {
     if (audioCtx) return;
@@ -2841,7 +3038,363 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
-  // B6. 启停与节点更新
+  // B6. 伴读工具与微机械声物理声学合成核心 (Tools & Grooming Synthesizer Engine)
+  // --------------------------------------------------------------------------
+  function triggerToolEvent(azimuthOverride = null, velScale = 1.0) {
+    if (!audioCtx || !state.isPlaying || state.activeCategory !== "tools") return;
+
+    const inst = TOOLS_INSTRUMENTS[state.currentToolInst];
+    const now = audioCtx.currentTime;
+    const buf = getFrictionNoiseBuffer();
+    if (!buf) return;
+
+    let azimuth = 0;
+    if (azimuthOverride !== null) {
+      azimuth = azimuthOverride * state.stereoWidth;
+    } else {
+      azimuth = (Math.random() * 1.6 - 0.8) * state.stereoWidth;
+    }
+
+    const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.7 + (1 - state.toolWarmth) * 0.6));
+
+    if (state.currentToolInst === "scissors") {
+      // 1. 理发轻剪：刃面滑动微磨 (~28ms) + 刃口闭合软触接触 (~12ms)
+      const dur = 0.045;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2400 + Math.random() * 300), now);
+      bp.Q.setValueAtTime(2.2, now);
+
+      const lpf = audioCtx.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.setValueAtTime(effectiveCutoff, now);
+
+      const gain = audioCtx.createGain();
+      const peak = 0.42 * velScale;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+      // 金属闭合轻碰 (软正弦双音微响 820Hz & 1450Hz)
+      const oscTouch1 = audioCtx.createOscillator();
+      const oscTouch2 = audioCtx.createOscillator();
+      const oscGain = audioCtx.createGain();
+      oscTouch1.type = "sine";
+      oscTouch2.type = "sine";
+      oscTouch1.frequency.setValueAtTime(820, now + 0.008);
+      oscTouch2.frequency.setValueAtTime(1450, now + 0.008);
+
+      oscGain.gain.setValueAtTime(0.0001, now);
+      oscGain.gain.setValueAtTime(0.0001, now + 0.008);
+      oscGain.gain.linearRampToValueAtTime(0.12 * velScale, now + 0.012);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      src.connect(bp);
+      bp.connect(lpf);
+      lpf.connect(gain);
+
+      oscTouch1.connect(oscGain);
+      oscTouch2.connect(oscGain);
+
+      if (panner) {
+        gain.connect(panner);
+        oscGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        gain.connect(masterLimiter);
+        oscGain.connect(masterLimiter);
+      }
+
+      src.start(now, Math.random() * 2.0);
+      src.stop(now + dur + 0.02);
+      oscTouch1.start(now + 0.008);
+      oscTouch2.start(now + 0.008);
+      oscTouch1.stop(now + 0.035);
+      oscTouch2.stop(now + 0.035);
+
+      createToolVisualEvent("scissors", azimuth, velScale);
+
+    } else if (state.currentToolInst === "comb") {
+      // 2. 密齿木梳：5~7 颗微齿弹拨连音 (8~16ms 微间隔)
+      const tickCount = 5 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < tickCount; i++) {
+        const tickTime = now + i * (0.012 + Math.random() * 0.008);
+        const tickSrc = audioCtx.createBufferSource();
+        tickSrc.buffer = buf;
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1400 + Math.random() * 400), tickTime);
+        bp.Q.setValueAtTime(3.5, tickTime);
+
+        const lpf = audioCtx.createBiquadFilter();
+        lpf.type = "lowpass";
+        lpf.frequency.setValueAtTime(effectiveCutoff, tickTime);
+
+        const gain = audioCtx.createGain();
+        const tickPeak = (0.28 + Math.random() * 0.15) * velScale;
+        gain.gain.setValueAtTime(0.0001, tickTime);
+        gain.gain.linearRampToValueAtTime(tickPeak, tickTime + 0.003);
+        gain.gain.exponentialRampToValueAtTime(0.0001, tickTime + 0.016);
+
+        let panner = null;
+        if (audioCtx.createStereoPanner) {
+          panner = audioCtx.createStereoPanner();
+          panner.pan.setValueAtTime(azimuth + (i * 0.02 - 0.05), tickTime);
+        }
+
+        tickSrc.connect(bp);
+        bp.connect(lpf);
+        lpf.connect(gain);
+
+        if (panner) {
+          gain.connect(panner);
+          panner.connect(masterLimiter);
+        } else {
+          gain.connect(masterLimiter);
+        }
+
+        tickSrc.start(tickTime, Math.random() * 2.0);
+        tickSrc.stop(tickTime + 0.02);
+      }
+      createToolVisualEvent("comb", azimuth, velScale);
+
+    } else if (state.currentToolInst === "pencil") {
+      // 3. 棉纸素描铅笔：重质 4B 石墨划线阻尼感 (180ms ~ 320ms)
+      const strokeDur = 0.18 + Math.random() * 0.16;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1050 + Math.random() * 300), now);
+      bp.Q.setValueAtTime(1.8, now);
+
+      const lpf = audioCtx.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.setValueAtTime(effectiveCutoff, now);
+
+      const gain = audioCtx.createGain();
+      const peak = 0.38 * velScale;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.025);
+      gain.gain.setValueAtTime(peak * (0.85 + Math.random() * 0.25), now + strokeDur * 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + strokeDur);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+        panner.pan.linearRampToValueAtTime(azimuth + (Math.random() * 0.15 - 0.075), now + strokeDur);
+      }
+
+      src.connect(bp);
+      bp.connect(lpf);
+      lpf.connect(gain);
+
+      if (panner) {
+        gain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        gain.connect(masterLimiter);
+      }
+
+      src.start(now, Math.random() * 2.0);
+      src.stop(now + strokeDur + 0.03);
+
+      createToolVisualEvent("pencil", azimuth, velScale);
+
+    } else if (state.currentToolInst === "typewriter") {
+      // 4. 复古机械打字机：底板胶辊沉闷下潜 (165Hz) + 铅字臂金属咬合 (1120Hz)
+      const thudOsc = audioCtx.createOscillator();
+      thudOsc.type = "sine";
+      thudOsc.frequency.setValueAtTime(165, now);
+      thudOsc.frequency.exponentialRampToValueAtTime(65, now + 0.045);
+
+      const thudGain = audioCtx.createGain();
+      thudGain.gain.setValueAtTime(0.0001, now);
+      thudGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.004);
+      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+      const clickSrc = audioCtx.createBufferSource();
+      clickSrc.buffer = buf;
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1150 + Math.random() * 200), now);
+      bp.Q.setValueAtTime(3.2, now);
+
+      const clickGain = audioCtx.createGain();
+      clickGain.gain.setValueAtTime(0.0001, now);
+      clickGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.003);
+      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.026);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      thudOsc.connect(thudGain);
+      clickSrc.connect(bp);
+      bp.connect(clickGain);
+
+      if (panner) {
+        thudGain.connect(panner);
+        clickGain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        thudGain.connect(masterLimiter);
+        clickGain.connect(masterLimiter);
+      }
+
+      thudOsc.start(now);
+      thudOsc.stop(now + 0.05);
+      clickSrc.start(now, Math.random() * 2.0);
+      clickSrc.stop(now + 0.035);
+
+      toolTypewriterCount++;
+      // 每 15~18 次触发清脆行末铜铃 (Return Carriage Bell ~1760Hz)
+      if (toolTypewriterCount % 16 === 0) {
+        const bellOsc = audioCtx.createOscillator();
+        bellOsc.type = "sine";
+        bellOsc.frequency.setValueAtTime(1760, now + 0.08); // A6 音高
+        const bellGain = audioCtx.createGain();
+        bellGain.gain.setValueAtTime(0.0001, now + 0.08);
+        bellGain.gain.linearRampToValueAtTime(0.22, now + 0.088);
+        bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+
+        let bellPan = null;
+        if (audioCtx.createStereoPanner) {
+          bellPan = audioCtx.createStereoPanner();
+          bellPan.pan.setValueAtTime(0.75 * state.stereoWidth, now + 0.08);
+        }
+
+        bellOsc.connect(bellGain);
+        if (bellPan) {
+          bellGain.connect(bellPan);
+          bellPan.connect(masterLimiter);
+        } else {
+          bellGain.connect(masterLimiter);
+        }
+        bellOsc.start(now + 0.08);
+        bellOsc.stop(now + 1.2);
+      }
+
+      createToolVisualEvent("typewriter", azimuth, velScale);
+
+    } else if (state.currentToolInst === "spray") {
+      // 5. 雾化水喷：高斯水气微喷弥散 (380ms)
+      const sprayDur = 0.38;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2600), now);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1600), now + sprayDur);
+      bp.Q.setValueAtTime(1.8, now);
+
+      const lpf = audioCtx.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.setValueAtTime(effectiveCutoff, now);
+
+      const gain = audioCtx.createGain();
+      const peak = 0.35 * velScale;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.045);
+      gain.gain.setValueAtTime(peak * 0.85, now + 0.22);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + sprayDur);
+
+      let panner = null;
+      if (audioCtx.createStereoPanner) {
+        panner = audioCtx.createStereoPanner();
+        panner.pan.setValueAtTime(azimuth, now);
+      }
+
+      src.connect(bp);
+      bp.connect(lpf);
+      lpf.connect(gain);
+
+      if (panner) {
+        gain.connect(panner);
+        panner.connect(masterLimiter);
+      } else {
+        gain.connect(masterLimiter);
+      }
+
+      src.start(now, Math.random() * 2.0);
+      src.stop(now + sprayDur + 0.03);
+
+      createToolVisualEvent("spray", azimuth, velScale);
+    }
+  }
+
+  function scheduleNextToolEvent() {
+    if (!state.isPlaying || state.activeCategory !== "tools") return;
+
+    const inst = TOOLS_INSTRUMENTS[state.currentToolInst];
+    const style = TOOLS_STYLES[state.currentToolStyle];
+    const baseInterval = (inst.baseRate / Math.max(0.5, state.toolPaceMultiplier));
+
+    if (style.mode === "alternate") {
+      // 左右耳近距离交替修剪 (Pan -0.85 / +0.85)
+      toolPanSide = -toolPanSide;
+      const az = toolPanSide * (0.8 + Math.random() * 0.2);
+      triggerToolEvent(az, 0.95);
+
+      // 理发剪刀偶发快速跟剪（双剪 snip-snip）
+      if (state.currentToolInst === "scissors" && Math.random() < 0.45) {
+        setTimeout(() => {
+          if (state.isPlaying && state.activeCategory === "tools") {
+            triggerToolEvent(az + (Math.random() * 0.15 - 0.075), 0.75);
+          }
+        }, 110 + Math.random() * 70);
+      }
+
+      const nextDelay = baseInterval * (0.85 + Math.random() * 0.3);
+      toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
+
+    } else if (style.mode === "flow") {
+      // 伴读心流：规律节拍 (微随机 wander)
+      const az = (Math.random() * 0.4 - 0.2);
+      triggerToolEvent(az, 0.9);
+      const nextDelay = baseInterval * (0.95 + Math.random() * 0.1);
+      toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
+
+    } else if (style.mode === "orbit") {
+      // 耳廓环绕漫游 (360° 轨道)
+      toolCycleStep += 0.45;
+      const az = Math.sin(toolCycleStep) * 0.9;
+      triggerToolEvent(az, 0.88);
+      const nextDelay = baseInterval * (0.9 + Math.random() * 0.2);
+      toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
+
+    } else {
+      // 随性偶发微拂 (random)
+      const az = (Math.random() * 1.7 - 0.85);
+      triggerToolEvent(az, 0.7 + Math.random() * 0.4);
+
+      // 偶发自然思考停顿 (25% 概率延长)
+      const pauseMult = Math.random() < 0.25 ? 1.8 : 1.0;
+      const nextDelay = baseInterval * pauseMult * (0.8 + Math.random() * 0.4);
+      toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // B7. 启停与节点更新
   // --------------------------------------------------------------------------
   function startAudio() {
     initAudioEngine();
@@ -2868,6 +3421,8 @@ permalink: /projects/ai-asmr/index.html
       }
     } else if (state.activeCategory === "bowls") {
       scheduleNextBowlEvent();
+    } else if (state.activeCategory === "tools") {
+      scheduleNextToolEvent();
     }
 
     updateUIPlayState();
@@ -2883,6 +3438,7 @@ permalink: /projects/ai-asmr/index.html
     if (waterBubbleTimerId) clearTimeout(waterBubbleTimerId);
     if (shishiTimerId) clearTimeout(shishiTimerId);
     if (bowlTimerId) clearTimeout(bowlTimerId);
+    if (toolTimerId) clearTimeout(toolTimerId);
 
     if (audioCtx && audioCtx.state === "running") {
       masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
@@ -2958,6 +3514,14 @@ permalink: /projects/ai-asmr/index.html
       const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.65 + (1 - state.bowlWarmth) * 0.7));
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(effectiveCutoff) + " Hz";
+    } else if (state.activeCategory === "tools") {
+      // 伴读工具与微机械模式：关闭宽带底噪，保持极度干燥的耳侧直达声
+      if (noiseGain) noiseGain.gain.setTargetAtTime(0.0001, now, 0.1);
+
+      const inst = TOOLS_INSTRUMENTS[state.currentToolInst];
+      const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.7 + (1 - state.toolWarmth) * 0.6));
+      const hudFreq = document.getElementById("hudFilterFreq");
+      if (hudFreq) hudFreq.textContent = "LPF " + Math.round(effectiveCutoff) + " Hz";
     }
   }
 
@@ -2976,6 +3540,7 @@ permalink: /projects/ai-asmr/index.html
   let waterWaveOffset = 0;
   let bowlRings = [];
   let chimeSparkles = [];
+  let toolVisualEvents = [];
   let bowlRimAngle = 0;
   let earWavesL = [];
   let earWavesR = [];
@@ -3255,6 +3820,104 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
+  function createToolVisualEvent(type, azimuth, vel) {
+    const isDark = isDarkThemeActive();
+    const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.74) + (logicalWidth * 0.13);
+    const centerY = logicalHeight / 2 - 12;
+    const isLeft = azimuth < 0;
+
+    let baseColor = isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, "; // 银青/天蓝沙龙色
+    if (type === "pencil") {
+      baseColor = isDark ? "rgba(203, 213, 225, " : "rgba(71, 85, 105, "; // 石墨铅灰
+    } else if (type === "typewriter") {
+      baseColor = isDark ? "rgba(251, 191, 36, " : "rgba(217, 119, 6, "; // 复古打字机琥珀
+    } else if (type === "comb") {
+      baseColor = isDark ? "rgba(244, 114, 182, " : "rgba(219, 39, 119, "; // 柔和玫瑰粉木梳
+    } else if (type === "spray") {
+      baseColor = isDark ? "rgba(45, 212, 191, " : "rgba(15, 118, 110, "; // 清爽水雾青
+    }
+
+    if (type === "scissors") {
+      // 剪刀开合剪切线
+      if (toolVisualEvents.length < 35) {
+        toolVisualEvents.push({
+          type: "scissors",
+          x: posX,
+          y: centerY + (Math.random() * 24 - 12),
+          angle: (Math.random() - 0.5) * 0.6,
+          len: 26 + vel * 18,
+          progress: 0,
+          alpha: 0.95,
+          color: baseColor
+        });
+      }
+    } else if (type === "comb") {
+      // 梳齿细条波纹
+      if (toolVisualEvents.length < 35) {
+        toolVisualEvents.push({
+          type: "comb",
+          x: posX,
+          y: centerY - 15,
+          teeth: 5,
+          spacing: 7,
+          progress: 0,
+          alpha: 0.9,
+          color: baseColor
+        });
+      }
+    } else if (type === "pencil") {
+      // 铅笔素描微弧
+      if (toolVisualEvents.length < 35) {
+        toolVisualEvents.push({
+          type: "pencil",
+          x: posX,
+          y: centerY + (Math.random() * 30 - 15),
+          len: 30 + vel * 20,
+          angle: (Math.random() - 0.5) * 1.2,
+          alpha: 0.88,
+          color: baseColor
+        });
+      }
+    } else if (type === "typewriter") {
+      // 打字机冲击光环
+      if (toolVisualEvents.length < 35) {
+        toolVisualEvents.push({
+          type: "typewriter",
+          x: posX,
+          y: centerY,
+          r: 5,
+          maxR: 35 + vel * 25,
+          alpha: 0.95,
+          color: baseColor
+        });
+      }
+    } else if (type === "spray") {
+      // 雾化水滴群 (10~15 颗水雾)
+      for (let i = 0; i < 12; i++) {
+        const spreadAngle = (Math.random() - 0.5) * 0.9;
+        const dir = isLeft ? 1 : -1;
+        const spd = 1.2 + Math.random() * 2.4;
+        toolVisualEvents.push({
+          type: "spray_drop",
+          x: posX,
+          y: centerY + (Math.random() * 16 - 8),
+          vx: Math.cos(spreadAngle) * spd * dir,
+          vy: Math.sin(spreadAngle) * spd,
+          r: 0.8 + Math.random() * 1.4,
+          alpha: 0.85,
+          decay: 0.95,
+          color: baseColor
+        });
+      }
+    }
+
+    if (isLeft) {
+      earWavesL.push({ r: 6, maxR: 42 + vel * 28, alpha: 0.85 });
+    } else {
+      earWavesR.push({ r: 6, maxR: 42 + vel * 28, alpha: 0.85 });
+    }
+  }
+
   function renderLoop() {
     // 1. 绝对物理清屏：重置变换矩阵为 1:1，抹除整个物理像素缓冲区，彻底杜绝任何边缘累积
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -3395,6 +4058,39 @@ permalink: /projects/ai-asmr/index.html
         ctx.stroke();
 
         ctx.restore();
+      } else if (state.activeCategory === "tools") {
+        // 伴读微机械与理发沙龙模式：绘制沉静工作台桌面暖光与精密标尺光斑
+        ctx.save();
+        const centerX = logicalWidth / 2;
+        const centerY = logicalHeight / 2 - 12;
+
+        const auraGrad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, logicalWidth * 0.38);
+        if (isDark) {
+          auraGrad.addColorStop(0, "rgba(56, 189, 248, 0.10)");
+          auraGrad.addColorStop(0.5, "rgba(148, 163, 184, 0.04)");
+          auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        } else {
+          auraGrad.addColorStop(0, "rgba(2, 132, 199, 0.09)");
+          auraGrad.addColorStop(0.5, "rgba(71, 85, 105, 0.03)");
+          auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        }
+        ctx.fillStyle = auraGrad;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, logicalWidth * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 桌面素描精密虚线十字基准线
+        ctx.beginPath();
+        ctx.moveTo(centerX - 100, centerY);
+        ctx.lineTo(centerX + 100, centerY);
+        ctx.moveTo(centerX, centerY - 60);
+        ctx.lineTo(centerX, centerY + 60);
+        ctx.strokeStyle = isDark ? "rgba(56, 189, 248, 0.12)" : "rgba(2, 132, 199, 0.18)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 6]);
+        ctx.stroke();
+
+        ctx.restore();
       }
     }
 
@@ -3436,6 +4132,91 @@ permalink: /projects/ai-asmr/index.html
       if (sp.alpha < 0.02) {
         chimeSparkles.splice(i, 1);
       }
+    }
+
+    // 绘制伴读工具与微机械专属动态视觉 (Grooming & Tools Visuals)
+    for (let i = toolVisualEvents.length - 1; i >= 0; i--) {
+      const ev = toolVisualEvents[i];
+      ctx.save();
+
+      if (ev.type === "scissors") {
+        ev.progress += 0.08;
+        ev.alpha *= 0.95;
+        const bladeAngle = Math.max(0.04, 0.42 * (1 - ev.progress));
+        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        ctx.lineWidth = 1.6;
+        ctx.lineCap = "round";
+
+        // 上刀刃
+        ctx.beginPath();
+        ctx.moveTo(ev.x, ev.y);
+        ctx.lineTo(ev.x + Math.cos(ev.angle + bladeAngle) * ev.len, ev.y + Math.sin(ev.angle + bladeAngle) * ev.len);
+        ctx.stroke();
+
+        // 下刀刃
+        ctx.beginPath();
+        ctx.moveTo(ev.x, ev.y);
+        ctx.lineTo(ev.x + Math.cos(ev.angle - bladeAngle) * ev.len, ev.y + Math.sin(ev.angle - bladeAngle) * ev.len);
+        ctx.stroke();
+
+        if (ev.alpha < 0.02 || ev.progress >= 1.2) toolVisualEvents.splice(i, 1);
+
+      } else if (ev.type === "comb") {
+        ev.progress += 1.2;
+        ev.alpha *= 0.95;
+        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        ctx.lineWidth = 1.4;
+        ctx.lineCap = "round";
+
+        for (let t = 0; t < ev.teeth; t++) {
+          const tx = ev.x + (t - ev.teeth / 2) * ev.spacing;
+          ctx.beginPath();
+          ctx.moveTo(tx, ev.y + ev.progress);
+          ctx.lineTo(tx, ev.y + ev.progress + 14);
+          ctx.stroke();
+        }
+
+        if (ev.alpha < 0.02 || ev.progress > 38) toolVisualEvents.splice(i, 1);
+
+      } else if (ev.type === "pencil") {
+        ev.alpha *= 0.96;
+        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = "round";
+
+        ctx.beginPath();
+        ctx.moveTo(ev.x - Math.cos(ev.angle) * ev.len * 0.5, ev.y - Math.sin(ev.angle) * ev.len * 0.5);
+        ctx.lineTo(ev.x + Math.cos(ev.angle) * ev.len * 0.5, ev.y + Math.sin(ev.angle) * ev.len * 0.5);
+        ctx.stroke();
+
+        if (ev.alpha < 0.02) toolVisualEvents.splice(i, 1);
+
+      } else if (ev.type === "typewriter") {
+        ev.r += 1.8;
+        ev.alpha *= 0.94;
+        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+        ctx.arc(ev.x, ev.y, ev.r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (ev.alpha < 0.02 || ev.r > ev.maxR) toolVisualEvents.splice(i, 1);
+
+      } else if (ev.type === "spray_drop") {
+        ev.x += ev.vx;
+        ev.y += ev.vy;
+        ev.alpha *= ev.decay;
+
+        ctx.fillStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        ctx.beginPath();
+        ctx.arc(ev.x, ev.y, ev.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (ev.alpha < 0.02) toolVisualEvents.splice(i, 1);
+      }
+
+      ctx.restore();
     }
 
     // 绘制水流专属浮动升腾气泡 (Rising Water Bubbles)
@@ -3595,7 +4376,9 @@ permalink: /projects/ai-asmr/index.html
             ? "rgba(244, 114, 182, 0.28)"
             : (state.activeCategory === "water"
               ? "rgba(56, 189, 248, 0.35)"
-              : "rgba(245, 158, 11, 0.35)")));
+              : (state.activeCategory === "bowls"
+                ? "rgba(245, 158, 11, 0.35)"
+                : "rgba(56, 189, 248, 0.40)"))));
     } else {
       ctx.strokeStyle = state.activeCategory === "rain"
         ? "rgba(15, 129, 141, 0.42)"
@@ -3605,7 +4388,9 @@ permalink: /projects/ai-asmr/index.html
             ? "rgba(190, 24, 93, 0.42)"
             : (state.activeCategory === "water"
               ? "rgba(2, 132, 199, 0.45)"
-              : "rgba(217, 119, 6, 0.45)")));
+              : (state.activeCategory === "bowls"
+                ? "rgba(217, 119, 6, 0.45)"
+                : "rgba(2, 132, 199, 0.50)"))));
     }
     ctx.lineWidth = 1.5;
     ctx.fill();
@@ -3766,7 +4551,7 @@ permalink: /projects/ai-asmr/index.html
       const hudDesc = document.getElementById("hudPresetDesc");
       if (hudTitle) hudTitle.textContent = scene.name + " · " + style.name;
       if (hudDesc) hudDesc.textContent = scene.desc;
-    } else {
+    } else if (state.activeCategory === "bowls") {
       // 能量泛音与音疗钵铃提示词
       const inst = BOWLS_INSTRUMENTS[state.currentBowlInst];
       const style = BOWLS_STYLES[state.currentBowlStyle];
@@ -3780,6 +4565,25 @@ permalink: /projects/ai-asmr/index.html
       zh += "极致贴耳近讲双耳空间环绕，无突兀刺耳金属撞击，无高频哨鸣破音，消音室纯净干燥声学，零混乱混响。";
 
       neg = "harsh metallic clanging, loud dissonant ringing, startling loud chime strikes, ear-piercing high frequencies, digital distortion, clipping, muddy rumble, echo, noisy background hiss, jarring transients";
+
+      const hudTitle = document.getElementById("hudPresetTitle");
+      const hudDesc = document.getElementById("hudPresetDesc");
+      if (hudTitle) hudTitle.textContent = inst.name + " · " + style.name;
+      if (hudDesc) hudDesc.textContent = inst.desc;
+    } else {
+      // 伴读工具与微机械提示词
+      const inst = TOOLS_INSTRUMENTS[state.currentToolInst];
+      const style = TOOLS_STYLES[state.currentToolStyle];
+
+      en = "ASMR, binaural 3Dio style recording, " + inst.enName + " with " + style.enName + " in extreme close-up. ";
+      en += "Delicate micro-textures, crisp yet softened transients, gentle rhythmic cadence, soothing personal grooming attention, dry studio acoustics. ";
+      en += "Intimate ear-to-ear stereophonic immersion, zero harsh metallic clatter, zero startling loud clicks, zero sharp sibilance, soundproof room, pure relaxation.";
+
+      zh = "ASMR双耳3Dio录音，以" + style.zhPrompt + "在耳畔极近距离体验" + inst.zhPrompt + "。";
+      zh += "细腻微质感，柔化高频剪切微风与纸面阻尼，平缓催眠的伴读与梳理节拍，强烈的个人护理陪伴感与安全感。";
+      zh += "极致贴耳双耳空间穿梭，无刺耳金属刮擦，无突兀响亮毛刺，无尖锐齿音，消音室纯净干燥声学。";
+
+      neg = "harsh metallic screech, chalkboard screech, ear-piercing clicks, loud startling snaps, sharp sibilance, distorted clipping, muddy bass rumble, cavernous echo, heavy room reverb, background noise";
 
       const hudTitle = document.getElementById("hudPresetTitle");
       const hudDesc = document.getElementById("hudPresetDesc");
@@ -3821,6 +4625,7 @@ permalink: /projects/ai-asmr/index.html
     const panelFriction = document.getElementById("panelFrictionCategory");
     const panelWater = document.getElementById("panelWaterCategory");
     const panelBowls = document.getElementById("panelBowlsCategory");
+    const panelTools = document.getElementById("panelToolsCategory");
     if (panelRain) {
       panelRain.classList.toggle("active", cat === "rain");
       panelRain.hidden = cat !== "rain";
@@ -3841,6 +4646,10 @@ permalink: /projects/ai-asmr/index.html
       panelBowls.classList.toggle("active", cat === "bowls");
       panelBowls.hidden = cat !== "bowls";
     }
+    if (panelTools) {
+      panelTools.classList.toggle("active", cat === "tools");
+      panelTools.hidden = cat !== "tools";
+    }
 
     // 切换调音台控件可见性
     document.querySelectorAll(".rain-tweak").forEach(el => el.hidden = (cat !== "rain"));
@@ -3848,6 +4657,7 @@ permalink: /projects/ai-asmr/index.html
     document.querySelectorAll(".fric-tweak").forEach(el => el.hidden = (cat !== "friction"));
     document.querySelectorAll(".water-tweak").forEach(el => el.hidden = (cat !== "water"));
     document.querySelectorAll(".bowls-tweak").forEach(el => el.hidden = (cat !== "bowls"));
+    document.querySelectorAll(".tools-tweak").forEach(el => el.hidden = (cat !== "tools"));
 
     // 切换标题与文字
     const stageTitle = document.getElementById("stageMainTitle");
@@ -3870,10 +4680,14 @@ permalink: /projects/ai-asmr/index.html
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL WATER SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放水流声 (Space)";
       if (badge) badge.textContent = "水流声提示词已联动";
-    } else {
+    } else if (cat === "bowls") {
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL SOUND BOWLS STAGE";
       if (playBtnText) playBtnText.textContent = "播放钵铃声 (Space)";
       if (badge) badge.textContent = "钵铃提示词已联动";
+    } else {
+      if (stageTitle) stageTitle.textContent = "3Dio BINAURAL GROOMING & TOOLS SOUNDSTAGE";
+      if (playBtnText) playBtnText.textContent = "播放微机械声 (Space)";
+      if (badge) badge.textContent = "微机械提示词已联动";
     }
 
     updateAcousticNodes();
@@ -3888,6 +4702,7 @@ permalink: /projects/ai-asmr/index.html
     waterRipples = [];
     bowlRings = [];
     chimeSparkles = [];
+    toolVisualEvents = [];
 
     if (wasPlaying) {
       startAudio();
@@ -3903,7 +4718,8 @@ permalink: /projects/ai-asmr/index.html
       tapping: "敲击声",
       friction: "摩擦声",
       water: "水流声",
-      bowls: "钵铃声"
+      bowls: "钵铃声",
+      tools: "微机械声"
     };
     const catName = catMap[state.activeCategory] || "声音";
 
@@ -4137,6 +4953,37 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
+    // 5.8 伴读工具与微机械选择
+    document.querySelectorAll(".tool-inst-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tool-inst-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentToolInst = btn.getAttribute("data-inst");
+
+        updateAcousticNodes();
+        generatePrompt();
+      });
+    });
+
+    // 5.9 工具动作手法与轨迹选择
+    document.querySelectorAll(".tool-style-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tool-style-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentToolStyle = btn.getAttribute("data-style");
+
+        generatePrompt();
+      });
+    });
+
     // 6. 视觉模式切换
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -4291,6 +5138,28 @@ permalink: /projects/ai-asmr/index.html
         state.bowlWarmth = parseFloat(rangeBowlWarm.value);
         const pct = Math.round(state.bowlWarmth * 100);
         valBowlWarm.textContent = pct > 70 ? `极温润 (${pct}%)` : `通透 (${pct}%)`;
+        updateAcousticNodes();
+      });
+    }
+
+    // 14.8 工具动作节拍节奏
+    const rangeToolP = document.getElementById("rangeToolPace");
+    const valToolP = document.getElementById("valToolPace");
+    if (rangeToolP && valToolP) {
+      rangeToolP.addEventListener("input", () => {
+        state.toolPaceMultiplier = parseFloat(rangeToolP.value);
+        valToolP.textContent = state.toolPaceMultiplier.toFixed(1) + "x";
+      });
+    }
+
+    // 14.9 工具触感柔化与阻尼
+    const rangeToolW = document.getElementById("rangeToolWarmth");
+    const valToolW = document.getElementById("valToolWarmth");
+    if (rangeToolW && valToolW) {
+      rangeToolW.addEventListener("input", () => {
+        state.toolWarmth = parseFloat(rangeToolW.value);
+        const pct = Math.round(state.toolWarmth * 100);
+        valToolW.textContent = pct > 65 ? `柔和吸音 (${pct}%)` : `清透微脆 (${pct}%)`;
         updateAcousticNodes();
       });
     }
