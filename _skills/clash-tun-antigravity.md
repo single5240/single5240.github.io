@@ -7,7 +7,7 @@ category: common
 category_label: 通用与工程基建
 scope: project
 target: Windows + Clash Verge (Mihomo 内核) + AI 编程助手
-order: 5
+order: 7
 tags:
   - Clash-Verge
   - TUN模式

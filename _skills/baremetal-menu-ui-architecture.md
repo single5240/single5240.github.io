@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
 target: All MCU (LCD/OLED Key UI, RGB565 条带刷新)
-order: 13
+order: 15
 tags:
   - 菜单架构
   - 按键防误触

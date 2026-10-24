@@ -7,7 +7,7 @@ category: protocols-debug
 category_label: 通信协议与硬件联调
 scope: global
 target: ARM Cortex-M0/M3/M4/M7/M33 + Keil .map / fromelf / GCC
-order: 16
+order: 18
 tags:
   - HardFault
   - Cortex-M

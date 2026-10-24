@@ -7,7 +7,7 @@ category: common
 category_label: 通用与工程基建
 scope: global
 target: 带 LCD/OLED 屏幕与按键的单片机仪器工程
-order: 3
+order: 4
 tags:
   - 网页模拟器
   - 点阵字库

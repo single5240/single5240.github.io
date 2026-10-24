@@ -7,7 +7,7 @@ category: protocols-debug
 category_label: 通信协议与硬件联调
 scope: global
 target: ARM Cortex-M0/M3/M4/M7 + J-Link SEGGER RTT + DWT
-order: 14
+order: 16
 tags:
   - J-Link
   - SEGGER-RTT

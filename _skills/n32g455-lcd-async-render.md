@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: vendor
 target: Nationstech N32G455 (Cortex-M4) + ST7789 SPI LCD
-order: 7
+order: 9
 tags:
   - N32G455
   - ST7789

@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
 target: All MCU (C99 Bare-Metal, ARMCC 5 / ARMClang / GCC / XC8)
-order: 11
+order: 13
 tags:
   - 有限状态机
   - 协作调度器

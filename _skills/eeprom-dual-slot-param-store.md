@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
 target: All MCU + I2C EEPROM (M24C02 / AT24Cxx)
-order: 9
+order: 11
 tags:
   - EEPROM
   - M24C02

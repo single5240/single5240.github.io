@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: vendor
 target: ADI AD7190/AD7192 + N32G455/STM32 Cortex-M
-order: 10
+order: 12
 tags:
   - AD7190
   - SPI-DMA

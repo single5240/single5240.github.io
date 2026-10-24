@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: 嵌入式与研发 AI Skills 中心库
-description: 16 个嵌入式与开发工具 Agent Skills，按通用工具、单片机裸机、通信与调试分类，附使用说明和参考代码。
+description: 18 个嵌入式与开发工具 Agent Skills，按通用工具、单片机裸机、通信与调试分类，附使用说明和参考代码。
 section: projects
 wide: true
 permalink: /projects/my-skills/index.html
@@ -48,7 +48,7 @@ permalink: /projects/my-skills/index.html
       <h2 id="title-common">1. 通用与工程基建 (<code>common/</code>)</h2>
       <span class="mono">共 {{ common_skills.size }} 项技能</span>
     </div>
-    <p class="skills-category-desc">固件开发流程、Keil 构建与 <code>.map</code> 检查、点阵屏网页演示、HTML 图解和代理排障。</p>
+    <p class="skills-category-desc">固件开发流程、AGENTS.md 质量约束、主机逻辑回归、Keil 构建与 <code>.map</code> 检查、点阵屏网页演示、HTML 图解和代理排障。</p>
     {% for skill in common_skills %}
     <article class="article-item" data-skill-item data-category="{{ skill.category }}" data-scope="{{ skill.scope }}" data-search-text="{{ skill.title | escape }} {{ skill.skill_id | escape }} {{ skill.description | escape }} {{ skill.target | escape }} {{ skill.tags | join: ' ' | escape }}">
       <div class="item-date">{{ skill.category }}/</div>
@@ -134,7 +134,7 @@ permalink: /projects/my-skills/index.html
 ├── README.md              # 技能库总览与接入说明
 ├── skills.json            # 根级技能注册清单
 ├── sync-skills.ps1        # 多 Agent 目录联接同步脚本
-├── common/                # 通用与工程基建 (5 skills)
+├── common/                # 通用与工程基建 (7 skills)
 ├── mcu-baremetal/         # 单片机裸机开发 (8 skills)
 ├── protocols-debug/       # 通信协议与硬件联调 (3 skills)
 ├── rtos/                  # 实时操作系统 (FreeRTOS/ThreadX)

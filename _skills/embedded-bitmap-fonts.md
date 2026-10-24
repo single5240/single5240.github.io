@@ -7,7 +7,7 @@ category: mcu-baremetal
 category_label: 单片机裸机开发
 scope: global
 target: All MCU (ARMCC / Keil / GCC) + LCD/OLED/TFT
-order: 6
+order: 8
 tags:
   - 点阵字库
   - BDF
