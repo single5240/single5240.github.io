@@ -1341,113 +1341,119 @@ permalink: /projects/ai-asmr/index.html
   let earWavesR = [];
   let animFrameId = null;
 
+  // 统一逻辑坐标与物理像素分离，杜绝高分屏 DPR 累乘与边缘清屏残留
+  let logicalWidth = 960;
+  let logicalHeight = 380;
+  let dpr = 1;
+
   class RainStreak {
-    constructor(w, h, windSpeed) {
-      this.reset(w, h, windSpeed, true);
+    constructor() {
+      this.reset(true);
     }
-    reset(w, h, windSpeed, randomY = false) {
-      this.x = Math.random() * (w + 120) - 60;
-      this.y = randomY ? Math.random() * h : -20;
-      this.len = 12 + Math.random() * 22;
-      this.speed = 4 + Math.random() * 8;
-      this.wind = (windSpeed || 1) * (0.8 + Math.random() * 0.4);
+    reset(randomY = false) {
+      this.x = Math.random() * (logicalWidth + 60) - 30;
+      this.y = randomY ? Math.random() * logicalHeight : -20;
+      this.len = 10 + Math.random() * 20;
+      this.speed = 3.5 + Math.random() * 6.5;
+      const curRain = RAIN_PRESETS[state.currentRain];
+      this.wind = (curRain ? curRain.windSpeed : 0.7) * (0.8 + Math.random() * 0.4);
       this.alpha = 0.15 + Math.random() * 0.45;
       this.width = 0.8 + Math.random() * 0.8;
     }
-    update(w, h, windSpeed) {
+    update(windSpeed) {
       this.y += this.speed;
       this.x += this.wind;
-      if (this.y > h - 40) {
-        // 偶尔激起地面微涟漪
-        if (Math.random() < 0.12) {
+
+      // 触底或被微风吹出侧边边界时自然重置，杜绝在单侧死角堆叠
+      if (this.y > logicalHeight - 30 || this.x > logicalWidth + 40 || this.x < -40) {
+        if (this.y > logicalHeight - 30 && Math.random() < 0.15 && rippleParticles.length < 45) {
           rippleParticles.push({
-            x: this.x,
-            y: this.y + (Math.random() * 20 - 10),
-            rx: 1,
-            ry: 0.35,
+            x: Math.max(10, Math.min(logicalWidth - 10, this.x)),
+            y: logicalHeight - 35 + (Math.random() * 20 - 10),
+            rx: 2,
+            ry: 0.6,
             maxR: 12 + Math.random() * 18,
-            alpha: 0.35,
+            alpha: 0.4,
             color: "rgba(45, 212, 191,"
           });
         }
-        this.reset(w, h, windSpeed);
+        this.reset(false);
       }
     }
     draw(context) {
       context.beginPath();
       context.moveTo(this.x, this.y);
-      context.lineTo(this.x + this.wind * 2.2, this.y + this.len);
-      context.strokeStyle = "rgba(186, 230, 253, " + this.alpha + ")";
+      context.lineTo(this.x + this.wind * 1.8, this.y + this.len);
+      context.strokeStyle = "rgba(186, 230, 253, " + this.alpha.toFixed(2) + ")";
       context.lineWidth = this.width;
       context.stroke();
     }
   }
 
   function initParticles() {
-    const w = canvas.width;
-    const h = canvas.height;
     rainParticles = [];
     const count = 110;
-    const wind = RAIN_PRESETS[state.currentRain].windSpeed;
     for (let i = 0; i < count; i++) {
-      rainParticles.push(new RainStreak(w, h, wind));
+      rainParticles.push(new RainStreak());
     }
   }
 
   // 接收 Web Audio 双耳触发事件
   function createVisualDrop(azimuth, vel) {
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // 映射方位角 (-1 ~ 1) 到屏幕宽度 (0.1w ~ 0.9w)
-    const posX = ((azimuth + 1) / 2) * (w * 0.8) + (w * 0.1);
-    const posY = h - 60 + (Math.random() * 40 - 20);
+    // 映射方位角 (-1 ~ 1) 到屏幕宽度 (0.08w ~ 0.92w)
+    const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.84) + (logicalWidth * 0.08);
+    const posY = logicalHeight - 50 + (Math.random() * 30 - 15);
 
     const isLeft = azimuth < 0;
     const colorPrefix = isLeft ? "rgba(45, 212, 191," : "rgba(56, 189, 248,";
 
-    // 产生涟漪
-    rippleParticles.push({
-      x: posX,
-      y: posY,
-      rx: 2,
-      ry: 0.7,
-      maxR: 28 + vel * 36,
-      alpha: 0.65,
-      color: colorPrefix
-    });
+    // 产生地面涟漪（设上限防堆积）
+    if (rippleParticles.length < 50) {
+      rippleParticles.push({
+        x: posX,
+        y: posY,
+        rx: 2,
+        ry: 0.7,
+        maxR: 24 + vel * 32,
+        alpha: 0.65,
+        color: colorPrefix
+      });
+    }
 
     // 产生 3Dio 人耳波纹
     if (isLeft) {
-      earWavesL.push({ r: 8, maxR: 50 + vel * 40, alpha: 0.75 });
+      earWavesL.push({ r: 8, maxR: 45 + vel * 35, alpha: 0.75 });
     } else {
-      earWavesR.push({ r: 8, maxR: 50 + vel * 40, alpha: 0.75 });
+      earWavesR.push({ r: 8, maxR: 45 + vel * 35, alpha: 0.75 });
     }
   }
 
   function renderLoop() {
-    const w = canvas.width;
-    const h = canvas.height;
+    // 1. 绝对物理清屏：重置变换矩阵为 1:1，抹除整个物理像素缓冲区，彻底杜绝任何边缘累积
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 2. 切换回基于 DPR 的高精逻辑坐标系
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
     const isPlaying = state.isPlaying;
 
-    // 清屏
-    ctx.clearRect(0, 0, w, h);
-
     if (state.visualMode !== "minimal") {
-      // 1. 绘制雨丝
+      // 绘制雨丝
       const rain = RAIN_PRESETS[state.currentRain];
       const activeCount = isPlaying
         ? Math.floor(rainParticles.length * (rain.dropRate / 100))
         : 25;
 
-      for (let i = 0; i < Math.min(rainParticles.length, Math.max(20, activeCount)); i++) {
+      const limit = Math.min(rainParticles.length, Math.max(18, activeCount));
+      for (let i = 0; i < limit; i++) {
         const p = rainParticles[i];
-        p.update(w, h, rain.windSpeed);
+        p.update(rain.windSpeed);
         p.draw(ctx);
       }
     }
 
-    // 2. 绘制地面柔和涟漪
+    // 绘制地面柔和涟漪
     for (let i = rippleParticles.length - 1; i >= 0; i--) {
       const r = rippleParticles[i];
       r.rx += 1.1;
@@ -1465,11 +1471,10 @@ permalink: /projects/ai-asmr/index.html
       }
     }
 
-    // 3. 绘制 3Dio 双耳声场指示环 (中央区域)
-    const centerX = w / 2;
-    const centerY = h / 2 - 15;
+    // 绘制 3Dio 双耳声场指示环 (中央区域居中)
+    const centerX = logicalWidth / 2;
+    const centerY = logicalHeight / 2 - 12;
 
-    // 3Dio 假人头基底图形
     ctx.save();
     ctx.translate(centerX, centerY);
 
@@ -1532,12 +1537,16 @@ permalink: /projects/ai-asmr/index.html
 
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+    logicalWidth = rect.width || 960;
+    logicalHeight = rect.height || 380;
+    dpr = window.devicePixelRatio || 1;
+
+    canvas.width = Math.round(logicalWidth * dpr);
+    canvas.height = Math.round(logicalHeight * dpr);
+
     initParticles();
   }
+
 
   // --------------------------------------------------------------------------
   // D. AI ASMR 提示词工坊与生成逻辑
