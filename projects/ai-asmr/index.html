@@ -3727,12 +3727,23 @@ permalink: /projects/ai-asmr/index.html
     currentBowlStyle: "single",
     bowlDecayMultiplier: 1.0,
     bowlWarmth: 0.75, // 0 (清透高位微泛音) ~ 1 (极致温润厚重低次谐波)
+    bowlDensityWalk: 1.0,        // 颂钵敲击均值回归密度游走 (0.75 ~ 1.35)
+    bowlRimPressureWalk: 1.0,    // 钵口环磨压力均值回归游走 (0.80 ~ 1.25)
+    bowlRimSpeedWalk: 1.0,       // 钵口环磨转速微律动 (0.85 ~ 1.15)
+    bowlLastPitchNorm: 0.5,      // 上一次风铃/音阶归一化音高，避开相邻同音
+    bowlEarSide: -0.65,          // 敲击或驻留主导耳侧 (-1 左 / +1 右)
+    bowlPhraseRemaining: 3,      // 单侧耳畔敲击驻留次数
 
     // 伴读工具与微机械参数
     currentToolInst: "scissors",
     currentToolStyle: "binaural_trim",
     toolPaceMultiplier: 1.0,
     toolWarmth: 0.70, // 0 (清透微脆) ~ 1 (温厚阻尼柔和吸音)
+    toolDensityWalk: 1.0,        // 工具动作速率均值回归游走 (0.78 ~ 1.28)
+    toolHandSide: -0.75,         // 当前主导耳侧 (-1 左 / +1 右)
+    toolPhraseRemaining: 3,      // 当前单侧耳畔微动作剩余次数
+    toolTypewriterCol: 0,        // 当前打字机行内光标列 (0 ~ 65)
+    toolMusicBoxTempoWalk: 1.0,  // 八音盒发条节拍微律动 (0.97 ~ 1.03)
 
     // 暖冬壁炉与自然碎裂参数
     currentFireInst: "pine_fireplace",
@@ -3767,6 +3778,11 @@ permalink: /projects/ai-asmr/index.html
     keyCadenceMultiplier: 1.0,
     keyThockDamping: 0.75, // 0 (清脆段落触感) ~ 1 (深沉厚润 Thock)
     keyHandAlternation: 0, // 左右手交替索引
+    keyWordKeysLeft: 4,          // 当前单词剩余字符数 (3 ~ 8)
+    keyInTypoCorrection: false,  // 是否正在进行错字回退修正
+    keyTypoBackspacesLeft: 0,    // 剩余退格键次数
+    keyCadenceWalk: 1.0,         // 打字心流均值回归游走 (0.82 ~ 1.22)
+    keyConsecutiveHandCount: 0,  // 同手连续击键计数，模拟手腕微时差
 
     // 复古模拟与深空参数
     currentAmbMedia: "vinyl_record",
@@ -3774,6 +3790,12 @@ permalink: /projects/ai-asmr/index.html
     ambDepth: 0.75, // 0 (轻浅背景) ~ 1 (深邃次低频包裹)
     ambGrain: 0.65, // 0 (极净无杂质) ~ 1 (醇厚模拟微尘颗粒)
     ambOrbitPhase: 0,
+    ambDriftWalk: 0.0,            // 空间与声相均值回归游走 (-0.4 ~ +0.4)
+    ambFilterWalk: 1.0,           // 模拟低通均值回归微漂移 (0.85 ~ 1.15)
+    ambTurntableAngle: 0.0,       // 33⅓ RPM 黑胶转盘角度相位 (0.55 Hz)
+    ambRadioWhistleFreq: 460.0,   // 短波电台外差啸叫连续漫游频率
+    ambRadioWhistleTarget: 460.0, // 短波目标频率
+    ambVinylSpeckRemaining: 0,    // 黑胶划痕连环微爆计数 (模拟周期性微尘)
 
     // 通用声学
     visualMode: "scenic", // scenic | radar | minimal
@@ -5798,9 +5820,10 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
-  // B5. 能量泛音与音疗钵铃声物理声学合成核心 (支持单叩、360° 钵缘连续环磨、双耳 Theta 慢波共振)
+  // B5. 能量泛音与音疗钵铃声物理声学合成核心 (Bowls & Healing Chimes Engine)
+  //     程序化去电子味重构：物理敲槌软冲击/箱体谐振、非对称钵壁微偏频、动态泛音倾斜与真人微律动
   // --------------------------------------------------------------------------
-  function triggerBowlStrike(azimuthOverride = null, velScale = 1.0, pitchShift = 1.0, modeOverride = null) {
+  function triggerBowlStrike(azimuthOverride = null, velScale = 1.0, pitchShift = 1.0, modeOverride = null, isSecondary = false) {
     if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "bowls") return;
 
     const inst = BOWLS_INSTRUMENTS[state.currentBowlInst];
@@ -5813,7 +5836,7 @@ permalink: /projects/ai-asmr/index.html
     if (azimuthOverride !== null) {
       azimuth = azimuthOverride * state.stereoWidth;
     } else {
-      azimuth = (Math.random() * 1.6 - 0.8) * state.stereoWidth;
+      azimuth = (state.bowlEarSide * (0.45 + Math.random() * 0.35)) * state.stereoWidth;
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.65 + (1 - state.bowlWarmth) * 0.7));
@@ -5828,7 +5851,7 @@ permalink: /projects/ai-asmr/index.html
       const attack = isContinuousBeat ? 1.4 : 0.018;
       const dur = isContinuousBeat ? Math.max(8.5, totalDecay * 0.85) : totalDecay;
 
-      // 非连续环拍时添加羊毛毡槌柔和触击声
+      // 432Hz 音叉单叩时添加橡胶激活垫/羊毛毡槌真实物理触击瞬态
       if (!isContinuousBeat) {
         const tapOsc = audioCtx.createOscillator();
         tapOsc.type = "sine";
@@ -5837,14 +5860,38 @@ permalink: /projects/ai-asmr/index.html
 
         const tapGain = audioCtx.createGain();
         tapGain.gain.setValueAtTime(0.0001, now);
-        tapGain.gain.linearRampToValueAtTime(0.16 * velScale, now + 0.004);
-        tapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.036);
+        tapGain.gain.linearRampToValueAtTime(0.16 * velScale, now + 0.003);
+        tapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
 
         tapOsc.connect(tapGain);
         connectTo3DioStage(tapGain, azimuth * 0.3, now);
         tapOsc.start(now);
-        tapOsc.stop(now + 0.042);
+        tapOsc.stop(now + 0.04);
+
+        // 柔和毛毡接触气流微噗 (Contact Noise Puff)
+        const buf = getFrictionNoiseBuffer();
+        if (buf) {
+          const puffSrc = audioCtx.createBufferSource();
+          puffSrc.buffer = buf;
+          const puffBp = audioCtx.createBiquadFilter();
+          puffBp.type = "bandpass";
+          puffBp.frequency.setValueAtTime(420, now);
+          puffBp.Q.setValueAtTime(2.2, now);
+          const puffGain = audioCtx.createGain();
+          puffGain.gain.setValueAtTime(0.0001, now);
+          puffGain.gain.linearRampToValueAtTime(0.07 * velScale, now + 0.002);
+          puffGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
+          puffSrc.connect(puffBp);
+          puffBp.connect(puffGain);
+          connectTo3DioStage(puffGain, azimuth * 0.25, now);
+          puffSrc.start(now, Math.random() * 2.0);
+          puffSrc.stop(now + 0.02);
+        }
       }
+
+      // Theta 脑波呼吸式微波幅起伏 (消除机械冻结感)
+      const thetaBreath = isContinuousBeat ? (0.88 + 0.18 * (0.5 + 0.5 * Math.sin(continuousModPhase * 0.24))) : 1.0;
+      const peak = (isContinuousBeat ? 0.24 : 0.30) * velScale * thetaBreath;
 
       const oscL = audioCtx.createOscillator();
       const oscR = audioCtx.createOscillator();
@@ -5855,7 +5902,6 @@ permalink: /projects/ai-asmr/index.html
 
       const gainL = audioCtx.createGain();
       const gainR = audioCtx.createGain();
-      const peak = (isContinuousBeat ? 0.24 : 0.30) * velScale;
 
       gainL.gain.setValueAtTime(0.0001, now);
       gainL.gain.linearRampToValueAtTime(peak, now + attack);
@@ -5867,8 +5913,11 @@ permalink: /projects/ai-asmr/index.html
 
       oscL.connect(gainL);
       oscR.connect(gainR);
-      connectTo3DioStage(gainL, -0.85 * state.stereoWidth, now);
-      connectTo3DioStage(gainR, 0.85 * state.stereoWidth, now);
+
+      // 双耳空间微摆动 (Subtle Binaural Spatial Sway)
+      const panDrift = isContinuousBeat ? (0.06 * Math.sin(continuousModPhase * 0.18)) : 0;
+      connectTo3DioStage(gainL, Math.max(-0.95, -0.85 + panDrift) * state.stereoWidth, now);
+      connectTo3DioStage(gainR, Math.min(0.95, 0.85 + panDrift) * state.stereoWidth, now);
 
       oscL.start(now);
       oscR.start(now);
@@ -5880,7 +5929,23 @@ permalink: /projects/ai-asmr/index.html
     }
 
     // 模式 B：颂钵 / 水晶钵 / 碰铃 / 柯西风铃 / 晨钟 / 钢舌鼓 / 拇指琴
-    const baseF = (inst.chimeScale ? inst.chimeScale[Math.floor(Math.random() * inst.chimeScale.length)] : inst.baseFreq) * pitchShift;
+    let baseF;
+    if (inst.chimeScale) {
+      // 避免连续触发同一颗风铃管或钢舌鼓音瓣，保持声学灵动性
+      const scaleLen = inst.chimeScale.length;
+      let pickIdx = Math.floor(Math.random() * scaleLen);
+      const lastIdx = Math.round(state.bowlLastPitchNorm * (scaleLen - 1));
+      if (pickIdx === lastIdx && scaleLen > 1) {
+        pickIdx = (pickIdx + 1 + Math.floor(Math.random() * (scaleLen - 1))) % scaleLen;
+      }
+      state.bowlLastPitchNorm = pickIdx / (scaleLen - 1);
+      baseF = inst.chimeScale[pickIdx] * pitchShift;
+    } else {
+      // 手工铜钵与古钟非对称钵壁微偏频 (±0.7% Rim Asymmetry Micro-Detuning)
+      const strikeDetune = 0.993 + Math.random() * 0.014;
+      baseF = inst.baseFreq * pitchShift * strikeDetune;
+    }
+
     const isRimRub = (playMode === "rim");
 
     const sharedFilter = audioCtx.createBiquadFilter();
@@ -5890,17 +5955,36 @@ permalink: /projects/ai-asmr/index.html
 
     const panner = connectTo3DioStage(sharedFilter, azimuth, now);
     if (panner && isRimRub) {
-      // 双耳环磨颂唱：声像在 4.2 秒内沿 3Dio 双耳圆周平滑环绕迁移
-      panner.pan.linearRampToValueAtTime(-azimuth, now + 4.2);
+      // 双耳环磨颂唱：声像沿 3Dio 双耳圆周平滑环绕迁移 (时长与转速微律动解耦)
+      panner.pan.linearRampToValueAtTime(-azimuth, now + 4.2 / (state.bowlRimSpeedWalk || 1.0));
     }
 
-    // 实体器皿激发瞬态 (Physical Mallet / Thumb Excitation)
+    // 实体器皿激发瞬态 (Physical Mallet / Contact Excitation Acoustics)
     if (!isRimRub) {
       if (state.currentBowlInst === "wood_kalimba") {
-        // 相思木拇指琴：指甲拨动弹片微声 + 相思木共鸣箱温暖空腔 (220Hz)
+        // 相思木拇指琴：指甲拨动弹片微声 (1650Hz 窄带微触) + 温暖木盒空气谐振 (220Hz->160Hz)
+        const buf = getFrictionNoiseBuffer();
+        if (buf) {
+          const nailSrc = audioCtx.createBufferSource();
+          nailSrc.buffer = buf;
+          const nailBp = audioCtx.createBiquadFilter();
+          nailBp.type = "bandpass";
+          nailBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1650 + Math.random() * 240), now);
+          nailBp.Q.setValueAtTime(3.2, now);
+          const nailGain = audioCtx.createGain();
+          nailGain.gain.setValueAtTime(0.0001, now);
+          nailGain.gain.linearRampToValueAtTime(0.12 * velScale, now + 0.002);
+          nailGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.014);
+          nailSrc.connect(nailBp);
+          nailBp.connect(nailGain);
+          nailGain.connect(sharedFilter);
+          nailSrc.start(now, Math.random() * 2.0);
+          nailSrc.stop(now + 0.02);
+        }
+
         const boxOsc = audioCtx.createOscillator();
         boxOsc.type = "sine";
-        boxOsc.frequency.setValueAtTime(235, now);
+        boxOsc.frequency.setValueAtTime(235 * (0.96 + Math.random() * 0.08), now);
         boxOsc.frequency.exponentialRampToValueAtTime(165, now + 0.045);
         const boxGain = audioCtx.createGain();
         boxGain.gain.setValueAtTime(0.0001, now);
@@ -5910,24 +5994,69 @@ permalink: /projects/ai-asmr/index.html
         boxGain.connect(sharedFilter);
         boxOsc.start(now);
         boxOsc.stop(now + 0.06);
+
+      } else if (state.currentBowlInst === "tingsha") {
+        // 纯铜双面碰铃：初始双铃对击脆响瞬态 (3100Hz 窄带极短微咬合) + 羊皮系绳微阻尼
+        const buf = getFrictionNoiseBuffer();
+        if (buf) {
+          const clinkSrc = audioCtx.createBufferSource();
+          clinkSrc.buffer = buf;
+          const clinkBp = audioCtx.createBiquadFilter();
+          clinkBp.type = "bandpass";
+          clinkBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 3100 + Math.random() * 320), now);
+          clinkBp.Q.setValueAtTime(4.5, now);
+          const clinkGain = audioCtx.createGain();
+          clinkGain.gain.setValueAtTime(0.0001, now);
+          clinkGain.gain.linearRampToValueAtTime(0.25 * velScale * (1 - state.bowlWarmth * 0.35), now + 0.0015);
+          clinkGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.011);
+          clinkSrc.connect(clinkBp);
+          clinkBp.connect(clinkGain);
+          clinkGain.connect(sharedFilter);
+          clinkSrc.start(now, Math.random() * 2.0);
+          clinkSrc.stop(now + 0.015);
+        }
+
+      } else if (state.currentBowlInst === "crystal") {
+        // 水晶石英钵：软硅胶/麂皮槌触钵柔化上升沿，零硬直角破音
+        // (纯正圆润水晶谐振自然展开)
+
       } else if (state.currentBowlInst === "tibetan" || state.currentBowlInst === "temple_bell" || state.currentBowlInst === "steel_tongue") {
-        // 颂钵/晨钟/钢舌鼓：软羊皮木槌/橡胶槌沉稳触击钝音
+        // 颂钵/晨钟/钢舌鼓：软羊皮木槌/橡胶槌深沉触击钝音 + 毛毡触碰微扑声
         const malletOsc = audioCtx.createOscillator();
         malletOsc.type = "sine";
-        const mFreq = state.currentBowlInst === "temple_bell" ? 95 : 145;
+        const mFreq = (state.currentBowlInst === "temple_bell" ? 88 : 138) * (0.92 + Math.random() * 0.16);
         malletOsc.frequency.setValueAtTime(mFreq, now);
-        malletOsc.frequency.exponentialRampToValueAtTime(mFreq * 0.48, now + 0.032);
+        malletOsc.frequency.exponentialRampToValueAtTime(mFreq * 0.48, now + 0.034);
         const malletGain = audioCtx.createGain();
         malletGain.gain.setValueAtTime(0.0001, now);
-        malletGain.gain.linearRampToValueAtTime(0.20 * velScale, now + 0.004);
+        malletGain.gain.linearRampToValueAtTime(0.20 * velScale, now + 0.0035);
         malletGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
         malletOsc.connect(malletGain);
         malletGain.connect(sharedFilter);
         malletOsc.start(now);
         malletOsc.stop(now + 0.045);
+
+        const buf = getFrictionNoiseBuffer();
+        if (buf) {
+          const puffSrc = audioCtx.createBufferSource();
+          puffSrc.buffer = buf;
+          const puffBp = audioCtx.createBiquadFilter();
+          puffBp.type = "bandpass";
+          puffBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 480 + Math.random() * 120), now);
+          puffBp.Q.setValueAtTime(1.8, now);
+          const puffGain = audioCtx.createGain();
+          puffGain.gain.setValueAtTime(0.0001, now);
+          puffGain.gain.linearRampToValueAtTime(0.11 * velScale, now + 0.003);
+          puffGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+          puffSrc.connect(puffBp);
+          puffBp.connect(puffGain);
+          puffGain.connect(sharedFilter);
+          puffSrc.start(now, Math.random() * 2.0);
+          puffSrc.stop(now + 0.024);
+        }
       }
     } else {
-      // 环磨模式专属：桃木棒沿铜钵/水晶钵边缘摩擦的温润木质沙沙驻波底韵
+      // 环磨模式专属：桃木棒沿铜钵/水晶钵边缘摩擦的温润木质沙沙驻波底韵 (压力随机游走耦合)
       const buf = getFrictionNoiseBuffer();
       if (buf) {
         const rubSrc = audioCtx.createBufferSource();
@@ -5935,11 +6064,12 @@ permalink: /projects/ai-asmr/index.html
         rubSrc.loop = true;
         const rubBp = audioCtx.createBiquadFilter();
         rubBp.type = "bandpass";
-        rubBp.frequency.setValueAtTime(Math.min(effectiveCutoff, baseF * 1.5), now);
-        rubBp.Q.setValueAtTime(4.5, now);
+        const rubF = Math.min(effectiveCutoff, baseF * 1.35 * (state.bowlRimPressureWalk || 1.0));
+        rubBp.frequency.setValueAtTime(rubF, now);
+        rubBp.Q.setValueAtTime(3.8, now);
         const rubGain = audioCtx.createGain();
         rubGain.gain.setValueAtTime(0.0001, now);
-        rubGain.gain.linearRampToValueAtTime(0.055 * velScale, now + 1.5);
+        rubGain.gain.linearRampToValueAtTime(0.055 * velScale * (state.bowlRimPressureWalk || 1.0), now + 1.4);
         rubGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.4);
         rubSrc.connect(rubBp);
         rubBp.connect(rubGain);
@@ -5952,13 +6082,17 @@ permalink: /projects/ai-asmr/index.html
     inst.harmonics.forEach((h, idx) => {
       const osc = audioCtx.createOscillator();
       osc.type = "sine";
-      const hFreq = baseF * h.ratio;
+      // 非谐模态微抖动 (物理铸造微观非均匀性)
+      const modeJitter = 0.998 + Math.random() * 0.004;
+      const hFreq = baseF * h.ratio * modeJitter;
       osc.frequency.setValueAtTime(hFreq, now);
 
       const hGain = audioCtx.createGain();
-      const peak = (isRimRub ? 0.22 : 0.28) * h.gain * velScale;
-      // 环磨模式采用 1.6s 渐强呼吸式涌现，消除突兀敲击感；单叩模式采用羊毛毡槌软淡入
-      const attack = isRimRub ? (1.45 + idx * 0.25) : (0.012 + idx * 0.004);
+      // 动态频谱倾斜：敲击力度越大，高阶金属泛音兴奋度超线性上升；轻敲以基频温润低泛音为主
+      const harmonicVelScale = Math.pow(velScale, 0.85 + idx * 0.35);
+      const peak = (isRimRub ? 0.22 : 0.28) * h.gain * harmonicVelScale;
+      // 环磨模式采用 1.4s 呼吸式涌现；单叩模式采用软上升沿防破音
+      const attack = isRimRub ? (1.35 + idx * 0.22) : (0.012 + idx * 0.004);
       const decay = isRimRub ? Math.max(4.6, totalDecay * 0.48) : (totalDecay * h.decayMul);
 
       hGain.gain.setValueAtTime(0.0001, now);
@@ -5975,7 +6109,8 @@ permalink: /projects/ai-asmr/index.html
       if (inst.beatFreq && idx === 0) {
         const oscBeat = audioCtx.createOscillator();
         oscBeat.type = "sine";
-        oscBeat.frequency.setValueAtTime(hFreq + inst.beatFreq, now);
+        const beatJitter = inst.beatFreq * (0.95 + Math.random() * 0.1);
+        oscBeat.frequency.setValueAtTime(hFreq + beatJitter, now);
 
         const beatGain = audioCtx.createGain();
         beatGain.gain.setValueAtTime(0.0001, now);
@@ -5999,41 +6134,71 @@ permalink: /projects/ai-asmr/index.html
     const style = BOWLS_STYLES[state.currentBowlStyle];
 
     if (style.mode === "rim") {
-      // 钵缘 360° 连续环磨颂唱 (无缝交叠渐变)
-      bowlRimPhase += 0.95;
-      const az = Math.sin(bowlRimPhase) * 0.85;
-      triggerBowlStrike(az, 0.78, 1.0, "rim");
-      const nextDelay = 3000 + Math.random() * 500;
+      // 钵缘 360° 连续环磨颂唱 (结合手腕转速微律动与压力均值回归游走)
+      state.bowlRimPressureWalk = Math.max(0.78, Math.min(1.22, (state.bowlRimPressureWalk || 1.0) * 0.85 + (0.8 + Math.random() * 0.4) * 0.15));
+      state.bowlRimSpeedWalk = Math.max(0.85, Math.min(1.15, (state.bowlRimSpeedWalk || 1.0) * 0.88 + (0.85 + Math.random() * 0.3) * 0.12));
+      const dAngle = 0.82 + 0.28 * state.bowlRimSpeedWalk;
+      bowlRimPhase += dAngle;
+
+      const az = Math.sin(bowlRimPhase) * (0.72 + 0.14 * Math.cos(bowlRimPhase * 0.5)) * state.stereoWidth;
+      triggerBowlStrike(az, 0.72 + 0.16 * state.bowlRimPressureWalk, 1.0, "rim");
+      const nextDelay = (2800 + Math.random() * 600) / state.bowlRimSpeedWalk;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
+
     } else if (style.mode === "breeze") {
-      // 微风偶发随拂风铃
-      const az = (Math.random() * 1.6 - 0.8);
-      triggerBowlStrike(az, 0.65 + Math.random() * 0.42, 1.0, "breeze");
-      if (Math.random() < 0.48) {
+      // 微风偶发随拂风铃：微风掠过风铃阵，在局部空间激起 2~3 颗错落相碰的微风簇 (Poisson Chime Cluster)
+      const az = (Math.random() * 1.6 - 0.8) * state.stereoWidth;
+      triggerBowlStrike(az, 0.65 + Math.random() * 0.40, 1.0, "breeze");
+
+      const subHits = Math.random() < 0.65 ? (Math.random() < 0.45 ? 2 : 1) : 0;
+      for (let s = 1; s <= subHits; s++) {
         scheduleSubTimer(() => {
           if (state.isPlaying && state.activeCategory === "bowls") {
-            triggerBowlStrike(az + (Math.random() * 0.35 - 0.175), 0.56, 1.0, "breeze");
+            const subAz = Math.max(-0.95, Math.min(0.95, az + (Math.random() * 0.36 - 0.18)));
+            triggerBowlStrike(subAz, 0.48 + Math.random() * 0.35, 1.0, "breeze");
           }
-        }, 180 + Math.random() * 240);
+        }, s * (120 + Math.random() * 160));
       }
-      const nextDelay = 2100 + Math.random() * 2400;
+
+      const nextDelay = 2200 + Math.random() * 2600;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
+
     } else if (style.mode === "binauralbeat") {
-      // 双耳慢波律动 (6Hz Theta 持续交叠)
-      triggerBowlStrike(0, 0.88, 1.0, "binauralbeat");
-      const nextDelay = 6800 + Math.random() * 1600;
+      // 双耳慢波律动 (6Hz Theta 深度催眠持续交叠，平缓呼吸间隔)
+      triggerBowlStrike(0, 0.88 + Math.random() * 0.15, 1.0, "binauralbeat");
+      const nextDelay = 6400 + Math.random() * 1800;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
+
     } else {
-      // 悠缓单叩 (single)
-      const az = (Math.random() > 0.5 ? 0.45 : -0.45) * (0.8 + Math.random() * 0.3);
-      triggerBowlStrike(az, 0.95, 1.0, "strike");
-      const nextDelay = (style.baseInterval || 10500) * (0.88 + Math.random() * 0.24);
+      // 悠缓单叩 (single)：模拟声音疗愈师自然呼吸节奏、单侧耳畔温存驻留与轻柔二次微叩
+      state.bowlDensityWalk = Math.max(0.75, Math.min(1.35, (state.bowlDensityWalk || 1.0) * 0.86 + (0.8 + Math.random() * 0.4) * 0.14));
+      state.bowlPhraseRemaining = (state.bowlPhraseRemaining || 3) - 1;
+      if (state.bowlPhraseRemaining <= 0) {
+        state.bowlEarSide = -(state.bowlEarSide || -0.65);
+        state.bowlPhraseRemaining = 2 + Math.floor(Math.random() * 3);
+      }
+
+      const az = (state.bowlEarSide || -0.65) * (0.45 + Math.random() * 0.35);
+      const vel = 0.84 + Math.random() * 0.22;
+      triggerBowlStrike(az, vel, 1.0, "strike");
+
+      // 22% 概率激发疗愈师羊毛毡槌轻触回弹二次微响 (Grace Touch-Up Strike)
+      if (Math.random() < 0.22) {
+        scheduleSubTimer(() => {
+          if (state.isPlaying && state.activeCategory === "bowls") {
+            triggerBowlStrike(az + (Math.random() * 0.16 - 0.08), vel * 0.45, 1.0, "strike", true);
+          }
+        }, 220 + Math.random() * 180);
+      }
+
+      const nextDelay = (style.baseInterval || 10500) * state.bowlDensityWalk;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
     }
   }
 
   // --------------------------------------------------------------------------
-  // B6. 伴读工具与微机械声物理声学合成核心 (消除剪刀电子蜂鸣，优化八音盒音律与书写质感)
+  // B6. 伴读工具与微机械声物理声学合成核心 (Tools & Grooming Synthesizer Engine)
+  //     程序化去同质化重构：发丝剪切微瞬态、加速木梳梳理、铅笔排线簇、打字机行末回车机构与单耳近距驻留
   // --------------------------------------------------------------------------
   function triggerToolEvent(azimuthOverride = null, velScale = 1.0) {
     if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "tools") return;
@@ -6047,7 +6212,7 @@ permalink: /projects/ai-asmr/index.html
     if (azimuthOverride !== null) {
       azimuth = azimuthOverride * state.stereoWidth;
     } else {
-      azimuth = (Math.random() * 1.6 - 0.8) * state.stereoWidth;
+      azimuth = ((state.toolHandSide || -0.75) * (0.68 + Math.random() * 0.26)) * state.stereoWidth;
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.7 + (1 - state.toolWarmth) * 0.6));
@@ -6056,13 +6221,18 @@ permalink: /projects/ai-asmr/index.html
     const panner = connectTo3DioStage(toolBus, azimuth, now);
 
     if (state.currentToolInst === "music_box") {
-      // 发条黄铜八音盒：柔美摇篮曲五声琶音序列 + 音梳拨片瞬态 + 木盒温暖共鸣 + 发条棘轮微响
+      // 发条黄铜八音盒：发条节拍微律动 (Spring Governor Flutter) + 精钢音梳主泛音 + 胡桃木底座温暖共鸣 + 偶发和弦叠音
+      state.toolMusicBoxTempoWalk = Math.max(0.96, Math.min(1.04, (state.toolMusicBoxTempoWalk || 1.0) * 0.92 + (0.97 + Math.random() * 0.06) * 0.08));
+
       const lullabyMelody = [
         523.25, 659.25, 783.99, 1046.50, 880.00, 783.99, 659.25, 587.33,
         523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 392.00
       ];
       const pitch = lullabyMelody[toolMusicBoxStep % lullabyMelody.length];
       toolMusicBoxStep++;
+
+      // 滚筒钢针拨动音梳力度微随机 (Pin Velocity Variance)
+      const noteVel = velScale * (0.86 + Math.random() * 0.28);
 
       // 1) 精钢音梳主泛音与高次金属微泛音
       const osc1 = audioCtx.createOscillator();
@@ -6074,34 +6244,34 @@ permalink: /projects/ai-asmr/index.html
 
       const gain1 = audioCtx.createGain();
       gain1.gain.setValueAtTime(0.0001, now);
-      gain1.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.003);
+      gain1.gain.linearRampToValueAtTime(0.24 * noteVel, now + 0.003);
       gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
 
       const gain2 = audioCtx.createGain();
       gain2.gain.setValueAtTime(0.0001, now);
-      gain2.gain.linearRampToValueAtTime(0.055 * velScale * (1 - state.toolWarmth * 0.5), now + 0.0018);
+      gain2.gain.linearRampToValueAtTime(0.055 * noteVel * (1 - state.toolWarmth * 0.5), now + 0.0018);
       gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
 
       // 2) 八音盒胡桃木底座温暖箱体共鸣 (~260Hz)
       const boxOsc = audioCtx.createOscillator();
       boxOsc.type = "sine";
-      boxOsc.frequency.setValueAtTime(265, now);
+      boxOsc.frequency.setValueAtTime(265 * (0.96 + Math.random() * 0.08), now);
       boxOsc.frequency.exponentialRampToValueAtTime(175, now + 0.032);
       const boxGain = audioCtx.createGain();
       boxGain.gain.setValueAtTime(0.0001, now);
-      boxGain.gain.linearRampToValueAtTime(0.11 * velScale, now + 0.003);
+      boxGain.gain.linearRampToValueAtTime(0.11 * noteVel, now + 0.003);
       boxGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
 
-      // 3) 铜齿拨动簧片微机械声
+      // 3) 铜齿拨动簧片微机械接触声
       const clickSrc = audioCtx.createBufferSource();
       clickSrc.buffer = buf;
       const clickBp = audioCtx.createBiquadFilter();
       clickBp.type = "bandpass";
-      clickBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1350), now);
+      clickBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1350 + Math.random() * 150), now);
       clickBp.Q.setValueAtTime(3.6, now);
       const clickGain = audioCtx.createGain();
       clickGain.gain.setValueAtTime(0.0001, now);
-      clickGain.gain.linearRampToValueAtTime(0.09 * velScale, now + 0.002);
+      clickGain.gain.linearRampToValueAtTime(0.09 * noteVel, now + 0.002);
       clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.011);
 
       osc1.connect(gain1);
@@ -6124,13 +6294,32 @@ permalink: /projects/ai-asmr/index.html
       clickSrc.start(now, Math.random() * 2.0);
       clickSrc.stop(now + 0.016);
 
+      // 18% 概率激发双齿和弦叠音 (Dual-Tine Harmonic Chime)
+      if (Math.random() < 0.18) {
+        const chordPitch = pitch * (Math.random() < 0.5 ? 1.5 : 1.25);
+        if (chordPitch < 1600) {
+          const chordOsc = audioCtx.createOscillator();
+          chordOsc.type = "sine";
+          chordOsc.frequency.setValueAtTime(chordPitch, now + 0.014);
+          const chordGain = audioCtx.createGain();
+          chordGain.gain.setValueAtTime(0.0001, now + 0.014);
+          chordGain.gain.linearRampToValueAtTime(0.14 * noteVel, now + 0.017);
+          chordGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.82);
+          chordOsc.connect(chordGain);
+          chordGain.connect(toolBus);
+          chordOsc.start(now + 0.014);
+          chordOsc.stop(now + 0.85);
+        }
+      }
+
       createToolVisualEvent("music_box", azimuth, velScale);
 
     } else if (state.currentToolInst === "sandalwood_fan") {
-      // 檀香木折扇：木骨收拢轻弹与拂耳微风气流
+      // 檀香木折扇：竹木扇骨微弹咬合 + 扇面掠耳微风气流起伏
+      const airDur = 0.32 + Math.random() * 0.22;
       const snapOsc = audioCtx.createOscillator();
       snapOsc.type = "sine";
-      snapOsc.frequency.setValueAtTime(280, now);
+      snapOsc.frequency.setValueAtTime(280 * (0.94 + Math.random() * 0.12), now);
       snapOsc.frequency.exponentialRampToValueAtTime(92, now + 0.032);
 
       const snapGain = audioCtx.createGain();
@@ -6142,15 +6331,16 @@ permalink: /projects/ai-asmr/index.html
       airSrc.buffer = buf;
       const airBp = audioCtx.createBiquadFilter();
       airBp.type = "lowpass";
-      airBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 320), now);
-      airBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 580), now + 0.14);
-      airBp.frequency.exponentialRampToValueAtTime(180, now + 0.44);
+      const startAirF = Math.min(effectiveCutoff, 280 + Math.random() * 80);
+      airBp.frequency.setValueAtTime(startAirF, now);
+      airBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 580), now + airDur * 0.35);
+      airBp.frequency.exponentialRampToValueAtTime(170, now + airDur);
       airBp.Q.setValueAtTime(1.2, now);
 
       const airGain = audioCtx.createGain();
       airGain.gain.setValueAtTime(0.0001, now);
-      airGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.11);
-      airGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+      airGain.gain.linearRampToValueAtTime(0.28 * velScale, now + airDur * 0.28);
+      airGain.gain.exponentialRampToValueAtTime(0.0001, now + airDur);
 
       snapOsc.connect(snapGain);
       airSrc.connect(airBp);
@@ -6161,29 +6351,32 @@ permalink: /projects/ai-asmr/index.html
       snapOsc.start(now);
       snapOsc.stop(now + 0.045);
       airSrc.start(now, Math.random() * 2.0);
-      airSrc.stop(now + 0.48);
+      airSrc.stop(now + airDur + 0.02);
 
       createToolVisualEvent("sandalwood_fan", azimuth, velScale);
 
     } else if (state.currentToolInst === "fountain_pen") {
-      // 金尖钢笔棉纸划写：连绵湿润走字墨水阻尼微沙声 + 笔尖纸面微触感
+      // 金尖钢笔棉纸划写：起笔下压、连笔滑行与提笔轻划的运笔压力起伏 (Calligraphic Stroke Flow)
       const strokeCount = 2 + Math.floor(Math.random() * 3);
       let timeCursor = now;
       for (let i = 0; i < strokeCount; i++) {
-        const strokeDur = 0.055 + Math.random() * 0.065;
+        const isDownstroke = (i % 2 === 0);
+        const strokeDur = isDownstroke ? (0.065 + Math.random() * 0.055) : (0.045 + Math.random() * 0.040);
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        const startF = Math.min(effectiveCutoff, 880 + Math.random() * 320);
+        // 下笔重压阻尼偏低频(墨水饱满)，提笔轻带偏高频(笔尖划纸微沙)
+        const startF = Math.min(effectiveCutoff, (isDownstroke ? 780 : 1100) + Math.random() * 260);
         bp.frequency.setValueAtTime(startF, timeCursor);
-        bp.frequency.linearRampToValueAtTime(startF * (0.88 + Math.random() * 0.25), timeCursor + strokeDur);
-        bp.Q.setValueAtTime(2.2, timeCursor);
+        bp.frequency.linearRampToValueAtTime(startF * (isDownstroke ? 1.15 : 0.88), timeCursor + strokeDur);
+        bp.Q.setValueAtTime(2.4, timeCursor);
 
         const gain = audioCtx.createGain();
+        const strokeVel = velScale * (isDownstroke ? (0.24 + Math.random() * 0.08) : (0.16 + Math.random() * 0.06));
         gain.gain.setValueAtTime(0.0001, timeCursor);
-        gain.gain.linearRampToValueAtTime(0.24 * velScale, timeCursor + 0.008);
+        gain.gain.linearRampToValueAtTime(strokeVel, timeCursor + 0.007);
         gain.gain.exponentialRampToValueAtTime(0.0001, timeCursor + strokeDur);
 
         src.connect(bp);
@@ -6192,39 +6385,61 @@ permalink: /projects/ai-asmr/index.html
 
         src.start(timeCursor, Math.random() * 2.5);
         src.stop(timeCursor + strokeDur + 0.01);
-        timeCursor += strokeDur + 0.018 + Math.random() * 0.025;
+        timeCursor += strokeDur + 0.016 + Math.random() * 0.024;
       }
 
       createToolVisualEvent("fountain_pen", azimuth, velScale);
 
     } else if (state.currentToolInst === "scissors") {
-      // 1. 锋利理发轻剪：真实物理双刃滑擦 + 极短阻尼金属微合 + 手柄硅胶静音垫缓冲 (彻底消除正弦波电子滴声)
-      const shearDur = 0.068;
+      // 1. 锋利理发轻剪：真实双刃滑移剪切 + 发丝剪切 ASMR 微瞬态 (Hair Fiber Snaps) + 硅胶静音垫缓冲
+      const shearDur = 0.050 + Math.random() * 0.032; // 50ms ~ 82ms 动态剪切时长
       const src = audioCtx.createBufferSource();
       src.buffer = buf;
 
-      // 双刃精密不锈钢滑移剪切摩擦 (Blade Sliding Shear: 1450Hz -> 2450Hz 窄带快速滑擦)
+      // 双刃滑移剪切摩擦 (Blade Sliding Shear: 1350Hz -> 2300Hz 窄带快速滑擦)
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1450 + Math.random() * 220), now);
-      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 2450), now + shearDur);
-      bp.Q.setValueAtTime(3.6, now);
+      const startShearF = Math.min(effectiveCutoff, 1350 + Math.random() * 260);
+      bp.frequency.setValueAtTime(startShearF, now);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 2350), now + shearDur);
+      bp.Q.setValueAtTime(3.8, now);
 
       const lpf = audioCtx.createBiquadFilter();
       lpf.type = "lowpass";
       lpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const gain = audioCtx.createGain();
-      const peak = 0.34 * velScale;
+      const peak = (0.30 + Math.random() * 0.08) * velScale;
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(peak, now + 0.016);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.014);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + shearDur);
 
-      // 剪刀指环橡胶防撞垫软触微顿 (Silicone Bumper Cushion Stop ~240Hz->95Hz, 12ms)
-      const closeTime = now + 0.042;
+      // 发丝剪切微瞬态 (1~3 根干燥发丝受刃咬合脆断微瞬态，极具 ASMR 采耳理发沉浸感)
+      const hairCutCount = 1 + Math.floor(Math.random() * 3);
+      for (let h = 0; h < hairCutCount; h++) {
+        const hTime = now + 0.016 + (h * 0.011) + Math.random() * 0.006;
+        const hSrc = audioCtx.createBufferSource();
+        hSrc.buffer = buf;
+        const hBp = audioCtx.createBiquadFilter();
+        hBp.type = "bandpass";
+        hBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2600 + Math.random() * 1100), hTime);
+        hBp.Q.setValueAtTime(4.6, hTime);
+        const hGain = audioCtx.createGain();
+        hGain.gain.setValueAtTime(0.0001, hTime);
+        hGain.gain.linearRampToValueAtTime(0.14 * velScale * (1 - state.toolWarmth * 0.35), hTime + 0.0012);
+        hGain.gain.exponentialRampToValueAtTime(0.0001, hTime + 0.0065);
+        hSrc.connect(hBp);
+        hBp.connect(hGain);
+        hGain.connect(toolBus);
+        hSrc.start(hTime, Math.random() * 2.5);
+        hSrc.stop(hTime + 0.01);
+      }
+
+      // 剪刀手柄橡胶防撞垫软触微顿 (Silicone Bumper Cushion Stop ~240Hz->92Hz, 12ms)
+      const closeTime = now + shearDur * 0.65;
       const bumperOsc = audioCtx.createOscillator();
       bumperOsc.type = "sine";
-      bumperOsc.frequency.setValueAtTime(250, closeTime);
+      bumperOsc.frequency.setValueAtTime(240 * (0.95 + Math.random() * 0.1), closeTime);
       bumperOsc.frequency.exponentialRampToValueAtTime(92, closeTime + 0.014);
 
       const bumperGain = audioCtx.createGain();
@@ -6237,7 +6452,7 @@ permalink: /projects/ai-asmr/index.html
       tipSrc.buffer = buf;
       const tipBp = audioCtx.createBiquadFilter();
       tipBp.type = "bandpass";
-      tipBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1950), closeTime);
+      tipBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1950 + Math.random() * 200), closeTime);
       tipBp.Q.setValueAtTime(5.2, closeTime);
       const tipGain = audioCtx.createGain();
       tipGain.gain.setValueAtTime(0.0001, closeTime);
@@ -6265,16 +6480,39 @@ permalink: /projects/ai-asmr/index.html
       createToolVisualEvent("scissors", azimuth, velScale);
 
     } else if (state.currentToolInst === "comb") {
-      // 2. 密齿木梳：6~9 颗木梳微齿弹拨连音 + 柔顺发丝沙沙滑移底声
+      // 2. 密齿木梳：手腕加速梳过发丝 (Wrist Acceleration Rubato) + 齿间微频梯队 + 发丝柔顺滑移底声
+      const totalStrokeDur = 0.16 + Math.random() * 0.09;
       const tickCount = 6 + Math.floor(Math.random() * 4);
+
+      // 发丝轻微沙沙摩擦底层
+      const hairSwishSrc = audioCtx.createBufferSource();
+      hairSwishSrc.buffer = buf;
+      const hairBp = audioCtx.createBiquadFilter();
+      hairBp.type = "bandpass";
+      hairBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 480), now);
+      hairBp.Q.setValueAtTime(1.5, now);
+      const hairGain = audioCtx.createGain();
+      hairGain.gain.setValueAtTime(0.0001, now);
+      hairGain.gain.linearRampToValueAtTime(0.08 * velScale, now + totalStrokeDur * 0.35);
+      hairGain.gain.exponentialRampToValueAtTime(0.0001, now + totalStrokeDur);
+      hairSwishSrc.connect(hairBp);
+      hairBp.connect(hairGain);
+      hairGain.connect(toolBus);
+      hairSwishSrc.start(now, Math.random() * 2.5);
+      hairSwishSrc.stop(now + totalStrokeDur + 0.02);
+
+      // 木梳细齿连环弹动 (非等距时间，随手腕自然加速)
       for (let i = 0; i < tickCount; i++) {
-        const tickTime = now + i * (0.013 + Math.random() * 0.007);
+        const tickNorm = i / Math.max(1, tickCount - 1);
+        const tickTime = now + Math.pow(tickNorm, 1.25) * totalStrokeDur;
         const tickSrc = audioCtx.createBufferSource();
         tickSrc.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1150 + i * 45 + Math.random() * 220), tickTime);
+        // 随发束阻尼与梳齿锥度产生音高微梯度 (1150Hz -> 1650Hz)
+        const toothFreq = Math.min(effectiveCutoff, 1150 + tickNorm * 420 + (Math.random() * 120 - 60));
+        bp.frequency.setValueAtTime(toothFreq, tickTime);
         bp.Q.setValueAtTime(3.2, tickTime);
 
         const lpf = audioCtx.createBiquadFilter();
@@ -6282,7 +6520,7 @@ permalink: /projects/ai-asmr/index.html
         lpf.frequency.setValueAtTime(effectiveCutoff, tickTime);
 
         const gain = audioCtx.createGain();
-        const tickPeak = (0.24 + Math.random() * 0.14) * velScale;
+        const tickPeak = (0.22 + Math.random() * 0.14) * velScale;
         gain.gain.setValueAtTime(0.0001, tickTime);
         gain.gain.linearRampToValueAtTime(tickPeak, tickTime + 0.0025);
         gain.gain.exponentialRampToValueAtTime(0.0001, tickTime + 0.015);
@@ -6298,50 +6536,54 @@ permalink: /projects/ai-asmr/index.html
       createToolVisualEvent("comb", azimuth, velScale);
 
     } else if (state.currentToolInst === "pencil") {
-      // 3. 棉纸素描铅笔：重质 4B 石墨划线阻尼感 + 粗纹水彩纸纤维起伏
-      const strokeDur = 0.16 + Math.random() * 0.18;
-      const src = audioCtx.createBufferSource();
-      src.buffer = buf;
-      src.loop = true;
+      // 3. 棉纸素描铅笔：素描排线连击簇 (Hatching Stroke Cluster) + 重质 4B 石墨划线阻尼感 + 手腕角度微漂移
+      const strokeCount = 2 + Math.floor(Math.random() * 3);
+      let timeCursor = now;
+      for (let s = 0; s < strokeCount; s++) {
+        const isPush = (s % 2 === 0);
+        const strokeDur = 0.075 + Math.random() * 0.065;
+        const src = audioCtx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
 
-      const bp = audioCtx.createBiquadFilter();
-      bp.type = "bandpass";
-      const startF = Math.min(effectiveCutoff, 920 + Math.random() * 280);
-      bp.frequency.setValueAtTime(startF, now);
-      bp.frequency.linearRampToValueAtTime(startF * 1.18, now + strokeDur * 0.5);
-      bp.frequency.linearRampToValueAtTime(startF * 0.85, now + strokeDur);
-      bp.Q.setValueAtTime(1.9, now);
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        const startF = Math.min(effectiveCutoff, (isPush ? 880 : 1080) + Math.random() * 220);
+        bp.frequency.setValueAtTime(startF, timeCursor);
+        bp.frequency.linearRampToValueAtTime(startF * (isPush ? 1.15 : 0.88), timeCursor + strokeDur * 0.5);
+        bp.frequency.linearRampToValueAtTime(startF * 0.95, timeCursor + strokeDur);
+        bp.Q.setValueAtTime(2.0, timeCursor);
 
-      const lpf = audioCtx.createBiquadFilter();
-      lpf.type = "lowpass";
-      lpf.frequency.setValueAtTime(effectiveCutoff, now);
+        const lpf = audioCtx.createBiquadFilter();
+        lpf.type = "lowpass";
+        lpf.frequency.setValueAtTime(effectiveCutoff, timeCursor);
 
-      const gain = audioCtx.createGain();
-      const peak = 0.36 * velScale;
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(peak, now + 0.022);
-      gain.gain.setValueAtTime(peak * (0.85 + Math.random() * 0.2), now + strokeDur * 0.62);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + strokeDur);
+        const gain = audioCtx.createGain();
+        const peak = (0.28 + Math.random() * 0.12) * velScale;
+        gain.gain.setValueAtTime(0.0001, timeCursor);
+        gain.gain.linearRampToValueAtTime(peak, timeCursor + 0.015);
+        gain.gain.setValueAtTime(peak * (0.85 + Math.random() * 0.18), timeCursor + strokeDur * 0.6);
+        gain.gain.exponentialRampToValueAtTime(0.0001, timeCursor + strokeDur);
 
-      if (panner) {
-        panner.pan.linearRampToValueAtTime( Math.max(-1, Math.min(1, azimuth + (Math.random() * 0.16 - 0.08))), now + strokeDur);
+        src.connect(bp);
+        bp.connect(lpf);
+        lpf.connect(gain);
+        gain.connect(toolBus);
+
+        src.start(timeCursor, Math.random() * 2.5);
+        src.stop(timeCursor + strokeDur + 0.02);
+
+        timeCursor += strokeDur + 0.018 + Math.random() * 0.025;
       }
-
-      src.connect(bp);
-      bp.connect(lpf);
-      lpf.connect(gain);
-      gain.connect(toolBus);
-
-      src.start(now, Math.random() * 2.5);
-      src.stop(now + strokeDur + 0.03);
 
       createToolVisualEvent("pencil", azimuth, velScale);
 
     } else if (state.currentToolInst === "typewriter") {
-      // 4. 复古机械打字机：底板胶辊沉闷下潜 (165Hz) + 铅字臂金属咬合色带 (1120Hz)
+      // 4. 复古机械打字机：机芯铅字臂杠杆微音高差 + 纸卷胶辊深沉钝底 (165Hz) + 行末清脆黄铜回车小铃与推杆
+      const keyPitchFactor = 0.92 + Math.random() * 0.16;
       const thudOsc = audioCtx.createOscillator();
       thudOsc.type = "sine";
-      thudOsc.frequency.setValueAtTime(165, now);
+      thudOsc.frequency.setValueAtTime(165 * keyPitchFactor, now);
       thudOsc.frequency.exponentialRampToValueAtTime(62, now + 0.042);
 
       const thudGain = audioCtx.createGain();
@@ -6353,8 +6595,8 @@ permalink: /projects/ai-asmr/index.html
       clickSrc.buffer = buf;
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1120 + Math.random() * 220), now);
-      bp.Q.setValueAtTime(3.0, now);
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1120 * keyPitchFactor), now);
+      bp.Q.setValueAtTime(3.2, now);
 
       const clickGain = audioCtx.createGain();
       clickGain.gain.setValueAtTime(0.0001, now);
@@ -6373,34 +6615,60 @@ permalink: /projects/ai-asmr/index.html
       clickSrc.stop(now + 0.032);
 
       toolTypewriterCount++;
-      // 每 16 次触发清脆行末黄铜回车小铃 (Return Carriage Bell)
-      if (toolTypewriterCount % 16 === 0) {
+      state.toolTypewriterCol = (state.toolTypewriterCol || 0) + 1;
+
+      // 行末到达 56~68 字符边界时，触发清脆行末黄铜小铃与回车机架推杆
+      if (state.toolTypewriterCol >= (54 + Math.floor(Math.random() * 12))) {
+        state.toolTypewriterCol = 0;
+        // 黄铜回车小铃 (Carriage End Bell ~1760Hz)
         const bellOsc = audioCtx.createOscillator();
         bellOsc.type = "sine";
         bellOsc.frequency.setValueAtTime(1760, now + 0.08);
         const bellGain = audioCtx.createGain();
         bellGain.gain.setValueAtTime(0.0001, now + 0.08);
-        bellGain.gain.linearRampToValueAtTime(0.18, now + 0.086);
-        bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
+        bellGain.gain.linearRampToValueAtTime(0.20, now + 0.086);
+        bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.15);
 
         bellOsc.connect(bellGain);
         connectTo3DioStage(bellGain, 0.75 * state.stereoWidth, now + 0.08);
         bellOsc.start(now + 0.08);
-        bellOsc.stop(now + 1.1);
+        bellOsc.stop(now + 1.2);
+
+        // 回车齿条滑移复位声 (Carriage Return Lever Zip-Thump)
+        scheduleSubTimer(() => {
+          if (state.isPlaying && state.activeCategory === "tools") {
+            const zipSrc = audioCtx.createBufferSource();
+            zipSrc.buffer = buf;
+            const zipBp = audioCtx.createBiquadFilter();
+            zipBp.type = "bandpass";
+            zipBp.frequency.setValueAtTime(1450, audioCtx.currentTime);
+            zipBp.frequency.exponentialRampToValueAtTime(650, audioCtx.currentTime + 0.16);
+            zipBp.Q.setValueAtTime(2.2, audioCtx.currentTime);
+            const zipGain = audioCtx.createGain();
+            zipGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            zipGain.gain.linearRampToValueAtTime(0.22, audioCtx.currentTime + 0.015);
+            zipGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.18);
+            zipSrc.connect(zipBp);
+            zipBp.connect(zipGain);
+            connectTo3DioStage(zipGain, -0.65 * state.stereoWidth, audioCtx.currentTime);
+            zipSrc.start(audioCtx.currentTime, Math.random() * 2.0);
+            zipSrc.stop(audioCtx.currentTime + 0.20);
+          }
+        }, 180);
       }
 
       createToolVisualEvent("typewriter", azimuth, velScale);
 
     } else if (state.currentToolInst === "spray") {
-      // 5. 细密雾化水喷：两段式液压雾化 (泵杆下压微咔嗒 + 宽频水气微雾弥散 0.48s)
-      const sprayDur = 0.48;
+      // 5. 细密雾化水喷：液压微阻尼两段式按压 + 3Dio 气溶胶水雾空间漫延
+      const sprayDur = 0.38 + Math.random() * 0.16;
       const src = audioCtx.createBufferSource();
       src.buffer = buf;
       src.loop = true;
 
       const pumpClick = audioCtx.createOscillator();
       pumpClick.type = "sine";
-      pumpClick.frequency.setValueAtTime(680, now);
+      pumpClick.frequency.setValueAtTime(680 * (0.95 + Math.random() * 0.1), now);
       pumpClick.frequency.exponentialRampToValueAtTime(240, now + 0.018);
       const pumpGain = audioCtx.createGain();
       pumpGain.gain.setValueAtTime(0.0001, now);
@@ -6410,7 +6678,7 @@ permalink: /projects/ai-asmr/index.html
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
       bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2600), now);
-      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1300), now + sprayDur);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1250), now + sprayDur);
       bp.Q.setValueAtTime(1.5, now);
 
       const lpf = audioCtx.createBiquadFilter();
@@ -6418,10 +6686,10 @@ permalink: /projects/ai-asmr/index.html
       lpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const gain = audioCtx.createGain();
-      const peak = 0.34 * velScale;
+      const peak = (0.32 + Math.random() * 0.08) * velScale;
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.linearRampToValueAtTime(peak, now + 0.035);
-      gain.gain.setValueAtTime(peak * 0.72, now + 0.22);
+      gain.gain.setValueAtTime(peak * 0.72, now + sprayDur * 0.45);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + sprayDur);
 
       src.connect(bp);
@@ -6446,48 +6714,54 @@ permalink: /projects/ai-asmr/index.html
 
     const inst = TOOLS_INSTRUMENTS[state.currentToolInst];
     const style = TOOLS_STYLES[state.currentToolStyle];
-    const baseInterval = (inst.baseRate / Math.max(0.5, state.toolPaceMultiplier));
+    state.toolDensityWalk = Math.max(0.78, Math.min(1.28, (state.toolDensityWalk || 1.0) * 0.88 + (0.8 + Math.random() * 0.4) * 0.12));
+    const baseInterval = (inst.baseRate / Math.max(0.5, state.toolPaceMultiplier)) * state.toolDensityWalk;
 
     if (style.mode === "alternate") {
-      // 左右耳近距离交替修剪 (Pan -0.85 / +0.85)
-      toolPanSide = -toolPanSide;
-      const az = toolPanSide * (0.8 + Math.random() * 0.2);
-      triggerToolEvent(az, 0.95);
+      // 左右耳近距离修剪：单侧耳畔温存驻留 2~4 拍 (近耳近讲感) 然后平滑换耳
+      state.toolPhraseRemaining = (state.toolPhraseRemaining || 3) - 1;
+      if (state.toolPhraseRemaining <= 0) {
+        state.toolHandSide = -(state.toolHandSide || -0.85);
+        state.toolPhraseRemaining = 2 + Math.floor(Math.random() * 3);
+      }
 
-      // 理发剪刀偶发快速跟剪（双剪 snip-snip）
-      if (state.currentToolInst === "scissors" && Math.random() < 0.48) {
+      const az = (state.toolHandSide || -0.85) * (0.75 + Math.random() * 0.25);
+      triggerToolEvent(az, 0.92 + Math.random() * 0.16);
+
+      // 理发剪刀偶发快速轻巧跟剪（双剪 snip-snip，约 46% 概率）
+      if (state.currentToolInst === "scissors" && Math.random() < 0.46) {
         scheduleSubTimer(() => {
           if (state.isPlaying && state.activeCategory === "tools") {
-            triggerToolEvent(az + (Math.random() * 0.15 - 0.075), 0.78);
+            triggerToolEvent(az + (Math.random() * 0.14 - 0.07), 0.74 + Math.random() * 0.15);
           }
-        }, 95 + Math.random() * 65);
+        }, 90 + Math.random() * 65);
       }
 
       const nextDelay = baseInterval * (0.85 + Math.random() * 0.3);
       toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
 
     } else if (style.mode === "flow") {
-      // 伴读心流：规律节拍 (微随机 wander)
-      const az = (Math.random() * 0.4 - 0.2);
-      triggerToolEvent(az, 0.9);
-      const nextDelay = baseInterval * (0.95 + Math.random() * 0.1);
+      // 伴读心流：规律节拍伴随自然微时差
+      const az = (Math.random() * 0.45 - 0.225);
+      triggerToolEvent(az, 0.88 + Math.random() * 0.18);
+      const nextDelay = baseInterval * (0.92 + Math.random() * 0.16);
       toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
 
     } else if (style.mode === "orbit") {
-      // 耳廓环绕漫游 (360° 轨道)
-      toolCycleStep += 0.45;
-      const az = Math.sin(toolCycleStep) * 0.9;
-      triggerToolEvent(az, 0.88);
-      const nextDelay = baseInterval * (0.9 + Math.random() * 0.2);
+      // 耳廓环绕漫游 (360° 轨道游走)
+      toolCycleStep += (0.38 + Math.random() * 0.14);
+      const az = Math.sin(toolCycleStep) * 0.88;
+      triggerToolEvent(az, 0.86 + Math.random() * 0.18);
+      const nextDelay = baseInterval * (0.88 + Math.random() * 0.24);
       toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
 
     } else {
-      // 随性偶发微拂 (random)
+      // 随性偶发微拂 (random)：自然思考停顿与随机耳畔落点
       const az = (Math.random() * 1.7 - 0.85);
-      triggerToolEvent(az, 0.7 + Math.random() * 0.4);
+      triggerToolEvent(az, 0.72 + Math.random() * 0.38);
 
-      // 偶发自然思考停顿 (25% 概率延长)
-      const pauseMult = Math.random() < 0.25 ? 1.8 : 1.0;
+      // 偶发自然停顿 (28% 概率稍微留白)
+      const pauseMult = Math.random() < 0.28 ? 1.75 : 1.0;
       const nextDelay = baseInterval * pauseMult * (0.8 + Math.random() * 0.4);
       toolTimerId = setTimeout(scheduleNextToolEvent, nextDelay);
     }
@@ -7351,10 +7625,12 @@ permalink: /projects/ai-asmr/index.html
 
   // --------------------------------------------------------------------------
   // B9. 客制化机械键盘声学合成核心 (Mechanical Keyboards Synthesizer Engine)
+  //     程序化去机械感重构：行位声学阶梯、大键/空格卫星轴浑厚 Thock、真实单词连击微律动 (Rubato)、
+  //     退格纠错 (Backspace Correction) 与两段式抬指释放 (Upstroke Top-Out)
   // --------------------------------------------------------------------------
   let keycapVisualEvents = [];
 
-  function triggerKeystroke(azimuthOverride = null, velScale = 1.0, isStabilizerKey = false) {
+  function triggerKeystroke(azimuthOverride = null, velScale = 1.0, isStabilizerKey = false, keyType = "alpha") {
     if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "keyboard") return;
 
     const sw = KEYBOARD_SWITCHES[state.currentKeySwitch];
@@ -7362,16 +7638,21 @@ permalink: /projects/ai-asmr/index.html
     const buf = getFrictionNoiseBuffer();
     if (!buf) return;
 
-    // 双手打字声相交替 (左右手分布在 Pan -0.55 ~ +0.55，空格/大键居中微偏)
+    const isSpacebar = (keyType === "spacebar");
+    const isModifier = (keyType === "modifier") || isStabilizerKey;
+
+    // 双手打字空间方位分布 (空格与大键居中微偏，左右手按键偏置 Pan -0.55 ~ +0.55)
     let azimuth = 0;
     if (azimuthOverride !== null) {
       azimuth = azimuthOverride * state.stereoWidth;
-    } else if (isStabilizerKey) {
-      azimuth = (Math.random() * 0.24 - 0.12) * state.stereoWidth;
+    } else if (isSpacebar) {
+      azimuth = (Math.random() * 0.18 - 0.09) * state.stereoWidth;
+    } else if (isModifier) {
+      azimuth = (Math.random() > 0.5 ? 0.42 : -0.42) * (0.8 + Math.random() * 0.3) * state.stereoWidth;
     } else {
       state.keyHandAlternation = (state.keyHandAlternation + 1) % 2;
       const side = state.keyHandAlternation === 0 ? -1 : 1;
-      azimuth = side * (0.22 + Math.random() * 0.42) * state.stereoWidth;
+      azimuth = side * (0.24 + Math.random() * 0.38) * state.stereoWidth;
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, sw.warmthCutoff * (0.65 + (1 - state.keyThockDamping) * 0.7));
@@ -7383,7 +7664,7 @@ permalink: /projects/ai-asmr/index.html
       // 4. 实木掌托轻叩 (Solid Walnut Wrist Rest)：指腹肉感软垫 + 黑胡桃实木块双阶空腔谐振
       const fleshOsc = audioCtx.createOscillator();
       fleshOsc.type = "sine";
-      fleshOsc.frequency.setValueAtTime(118, now);
+      fleshOsc.frequency.setValueAtTime(118 * (0.95 + Math.random() * 0.1), now);
       fleshOsc.frequency.exponentialRampToValueAtTime(48, now + 0.025);
       const fleshGain = audioCtx.createGain();
       fleshGain.gain.setValueAtTime(0.0001, now);
@@ -7427,7 +7708,7 @@ permalink: /projects/ai-asmr/index.html
       // 5. 航插螺旋线轻弹 (Coiled Aviator Cable)：PU 螺旋线弹性阻尼回弹 + GX16 航插金属环柔化微碰
       const coilOsc = audioCtx.createOscillator();
       coilOsc.type = "sine";
-      coilOsc.frequency.setValueAtTime(240, now);
+      coilOsc.frequency.setValueAtTime(240 * (0.95 + Math.random() * 0.1), now);
       coilOsc.frequency.exponentialRampToValueAtTime(480, now + 0.018);
       coilOsc.frequency.exponentialRampToValueAtTime(175, now + 0.068);
       const coilGain = audioCtx.createGain();
@@ -7461,7 +7742,27 @@ permalink: /projects/ai-asmr/index.html
       // 1/2/3. 机械轴体与静电容轴 (lubed_red / topre_capacitive / holy_panda)
       const isPanda = state.currentKeySwitch === "holy_panda";
       const isTopre = state.currentKeySwitch === "topre_capacitive";
-      const pitchMul = isStabilizerKey ? 0.78 : (0.94 + Math.random() * 0.12);
+
+      // 键帽位置与形态声学映射 (Keycap Profile & Row Acoustic Variance)
+      let pitchMul = 1.0;
+      let effectiveVel = velScale;
+
+      if (isSpacebar) {
+        // 空格键 (6.25U/7U 大键)：沉闷深厚空腔 (0.70x 音高) + 大拇指较重肉感打击力度
+        pitchMul = 0.70 * (0.96 + Math.random() * 0.08);
+        effectiveVel = velScale * 1.15;
+      } else if (isModifier) {
+        // 修饰大键 (Enter / Backspace / Shift 2U~2.75U)：浑厚卫星轴阻尼与箱体共鸣
+        pitchMul = 0.82 * (0.95 + Math.random() * 0.10);
+        effectiveVel = velScale * 1.05;
+      } else {
+        // 字母按键 R1~R4 行位声学阶梯 (R1数字行偏高脆 1.12x，R4底行偏沉厚 0.93x)
+        const rowBiases = [1.12, 1.04, 1.00, 0.93];
+        const rowMul = rowBiases[Math.floor(Math.random() * 4)];
+        pitchMul = rowMul * (0.97 + Math.random() * 0.06);
+        effectiveVel = velScale * (0.86 + Math.random() * 0.25);
+      }
+
       const mainTime = isPanda ? now + 0.010 : now;
 
       // 圣熊猫提前大段落 (Holy Panda Tactile Pre-Bump ~10ms 提前圆润段落反馈)
@@ -7472,7 +7773,7 @@ permalink: /projects/ai-asmr/index.html
         bumpOsc.frequency.exponentialRampToValueAtTime(210, now + 0.009);
         const bumpGain = audioCtx.createGain();
         bumpGain.gain.setValueAtTime(0.0001, now);
-        bumpGain.gain.linearRampToValueAtTime(0.18 * velScale, now + 0.0018);
+        bumpGain.gain.linearRampToValueAtTime(0.18 * effectiveVel, now + 0.0018);
         bumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.010);
         bumpOsc.connect(bumpGain);
         bumpGain.connect(keyBus);
@@ -7488,7 +7789,7 @@ permalink: /projects/ai-asmr/index.html
       thockOsc.frequency.exponentialRampToValueAtTime(Math.max(44, baseF * 0.36), mainTime + sw.thockDamp);
 
       const thockGain = audioCtx.createGain();
-      const thockPeak = (0.38 + state.keyThockDamping * 0.16) * velScale * (isStabilizerKey ? 1.12 : 1.0);
+      const thockPeak = (0.38 + state.keyThockDamping * 0.16) * effectiveVel * (isSpacebar ? 1.22 : (isModifier ? 1.12 : 1.0));
       thockGain.gain.setValueAtTime(0.0001, mainTime);
       thockGain.gain.linearRampToValueAtTime(thockPeak, mainTime + (isTopre ? 0.004 : 0.0028));
       thockGain.gain.exponentialRampToValueAtTime(0.0001, mainTime + sw.thockDamp + 0.018);
@@ -7502,24 +7803,58 @@ permalink: /projects/ai-asmr/index.html
       clackBp.Q.setValueAtTime(isTopre ? 2.0 : 2.8, mainTime);
 
       const clackGain = audioCtx.createGain();
-      const clackPeak = (0.26 + (1 - state.keyThockDamping) * 0.22) * velScale;
+      const clackPeak = (0.26 + (1 - state.keyThockDamping) * 0.22) * effectiveVel;
       clackGain.gain.setValueAtTime(0.0001, mainTime);
       clackGain.gain.linearRampToValueAtTime(clackPeak, mainTime + 0.002);
       clackGain.gain.exponentialRampToValueAtTime(0.0001, mainTime + (isTopre ? 0.024 : 0.016));
 
+      // 键盘桌垫吸音毛毡微下潜沉音 (Desk Mat Sub-Bass Thump: 105Hz -> 48Hz)
+      const matThump = audioCtx.createOscillator();
+      matThump.type = "sine";
+      matThump.frequency.setValueAtTime(105 * (0.95 + Math.random() * 0.1), mainTime);
+      matThump.frequency.exponentialRampToValueAtTime(48, mainTime + 0.038);
+      const matGain = audioCtx.createGain();
+      matGain.gain.setValueAtTime(0.0001, mainTime);
+      matGain.gain.linearRampToValueAtTime(0.12 * effectiveVel * (isSpacebar ? 1.35 : 1.0), mainTime + 0.003);
+      matGain.gain.exponentialRampToValueAtTime(0.0001, mainTime + 0.042);
+
+      // 卫星轴钢丝微油润咬合声 (Stabilizer Wire Lubricated Micro-Tick for Spacebar/Mods)
+      if (isSpacebar || isModifier) {
+        const wireSrc = audioCtx.createBufferSource();
+        wireSrc.buffer = buf;
+        const wireBp = audioCtx.createBiquadFilter();
+        wireBp.type = "bandpass";
+        wireBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1250 + Math.random() * 200), mainTime);
+        wireBp.Q.setValueAtTime(3.6, mainTime);
+        const wireGain = audioCtx.createGain();
+        wireGain.gain.setValueAtTime(0.0001, mainTime);
+        wireGain.gain.linearRampToValueAtTime(0.08 * effectiveVel * (1 - state.keyThockDamping * 0.35), mainTime + 0.0018);
+        wireGain.gain.exponentialRampToValueAtTime(0.0001, mainTime + 0.012);
+        wireSrc.connect(wireBp);
+        wireBp.connect(wireGain);
+        wireGain.connect(keyBus);
+        wireSrc.start(mainTime, Math.random() * 2.0);
+        wireSrc.stop(mainTime + 0.016);
+      }
+
       thockOsc.connect(thockGain);
       clackSrc.connect(clackBp);
       clackBp.connect(clackGain);
+      matThump.connect(matGain);
       thockGain.connect(keyBus);
       clackGain.connect(keyBus);
+      matGain.connect(keyBus);
 
       thockOsc.start(mainTime);
       thockOsc.stop(mainTime + sw.thockDamp + 0.028);
       clackSrc.start(mainTime, Math.random() * 2.5);
       clackSrc.stop(mainTime + 0.03);
+      matThump.start(mainTime);
+      matThump.stop(mainTime + 0.045);
 
-      // 键帽回弹上盖微声 (Upstroke Top-Out Return ~42ms 后轻柔回弹，赋予真实双段机械触感)
-      const upTime = mainTime + 0.038 + Math.random() * 0.016;
+      // 键帽回弹上盖微声 (Upstroke Top-Out Return 随手指按压驻留时间 Dwell Time 解耦)
+      const dwellTime = (isSpacebar || isModifier) ? (0.052 + Math.random() * 0.032) : (0.030 + Math.random() * 0.022);
+      const upTime = mainTime + dwellTime;
       const upOsc = audioCtx.createOscillator();
       upOsc.type = "sine";
       upOsc.frequency.setValueAtTime(Math.min(effectiveCutoff, baseF * (isTopre ? 1.15 : 1.45)), upTime);
@@ -7545,8 +7880,8 @@ permalink: /projects/ai-asmr/index.html
     keycapVisualEvents.push({
       x: logicalWidth * (0.5 + azimuth * 0.38),
       y: logicalHeight * 0.5 + (Math.random() * 40 - 20),
-      radius: isStabilizerKey ? 12 : 8,
-      maxR: (isStabilizerKey ? 48 : 35) + velScale * 25,
+      radius: isSpacebar ? 14 : (isModifier ? 11 : 8),
+      maxR: (isSpacebar ? 52 : (isModifier ? 42 : 35)) + velScale * 25,
       alpha: 0.72,
       color: state.currentKeySwitch === "lubed_red" ? "#f43f5e" : (state.currentKeySwitch === "topre_capacitive" ? "#38bdf8" : "#fbbf24")
     });
@@ -7555,21 +7890,72 @@ permalink: /projects/ai-asmr/index.html
   function scheduleNextKeystroke() {
     if (!state.isPlaying || state.activeCategory !== "keyboard") return;
     const style = KEYBOARD_STYLES[state.currentKeyStyle];
-    const baseDelay = style.baseInterval / state.keyCadenceMultiplier;
+    state.keyCadenceWalk = Math.max(0.82, Math.min(1.22, (state.keyCadenceWalk || 1.0) * 0.90 + (0.85 + Math.random() * 0.3) * 0.10));
+    const baseDelay = (style.baseInterval / state.keyCadenceMultiplier) * state.keyCadenceWalk;
     const jitter = (Math.random() * 2 - 1) * (baseDelay * style.jitter);
 
-    keyStrokeCounter++;
-    // 模拟真实单词结尾敲击大键（Spacebar 卫星轴空格键，每 5~7 键触发一次沉稳大键）
-    const isSpacebar = (state.currentKeyStyle === "flow_typing" || state.currentKeyStyle === "slow_code") && (keyStrokeCounter % 6 === 0);
-    triggerKeystroke(null, isSpacebar ? 1.08 : (0.85 + Math.random() * 0.2), isSpacebar);
+    // 模拟真人错字纠错回退机制 (Typo Correction Rubato: 错字 -> 思考微顿 -> 快速退格 -> 恢复键入)
+    if (state.keyInTypoCorrection) {
+      triggerKeystroke(null, 0.96, true, "modifier");
+      state.keyTypoBackspacesLeft = (state.keyTypoBackspacesLeft || 1) - 1;
+      if (state.keyTypoBackspacesLeft <= 0) {
+        state.keyInTypoCorrection = false;
+        // 修正完毕后的短暂构思留白 (140~240ms)
+        const delay = Math.max(68, baseDelay * (1.25 + Math.random() * 0.45));
+        keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+        return;
+      } else {
+        // 连按退格键轻快节奏 (50~75ms)
+        const delay = Math.max(48, baseDelay * (0.45 + Math.random() * 0.15));
+        keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+        return;
+      }
+    }
 
-    const wordPause = isSpacebar ? baseDelay * 0.45 : 0;
-    const delay = Math.max(48, baseDelay + jitter + wordPause);
-    keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+    // 7% 概率发生真实手误输入 (在沉思与心流打字场景中激发生动伴读感)
+    if ((state.currentKeyStyle === "flow_typing" || state.currentKeyStyle === "slow_code") && Math.random() < 0.07 && keyStrokeCounter > 8 && (state.keyWordKeysLeft || 4) > 1) {
+      triggerKeystroke(null, 0.85 + Math.random() * 0.20, false, "alpha");
+      state.keyInTypoCorrection = true;
+      state.keyTypoBackspacesLeft = 1 + (Math.random() < 0.35 ? 1 : 0);
+      // 错字意识到停顿反应时间 (110~180ms)
+      const delay = Math.max(85, baseDelay * (1.15 + Math.random() * 0.45));
+      keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+      return;
+    }
+
+    // 真人打字单词块律动 (Word Clusters & Spacebar Cadence)
+    keyStrokeCounter++;
+    state.keyWordKeysLeft = (state.keyWordKeysLeft || 4) - 1;
+
+    if (state.keyWordKeysLeft <= 0) {
+      // 单词结束：敲击空格键 (Spacebar)，并进入词间思考自然微顿
+      triggerKeystroke(null, 1.15 + Math.random() * 0.12, true, "spacebar");
+      state.keyWordKeysLeft = 3 + Math.floor(Math.random() * 6);
+      const wordPause = baseDelay * (0.75 + Math.random() * 0.55);
+      const delay = Math.max(50, baseDelay + jitter + wordPause);
+      keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+
+    } else if (keyStrokeCounter % 32 === 0) {
+      // 句子/段落结束：敲击回车键 (Enter)，并沉思留白
+      triggerKeystroke(null, 1.18 + Math.random() * 0.15, true, "modifier");
+      const sentencePause = baseDelay * (2.1 + Math.random() * 1.4);
+      const delay = Math.max(90, baseDelay + sentencePause);
+      keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+
+    } else {
+      // 单词内部按键：如果左右手交替，触发顺畅轻快的连击双拍 (Digraph Roll ~65-95ms)
+      state.keyHandAlternation = (state.keyHandAlternation + 1) % 2;
+      const isAltRoll = (state.keyHandAlternation === 0);
+      triggerKeystroke(null, 0.88 + Math.random() * 0.22, false, "alpha");
+      const rollFactor = isAltRoll ? 0.72 : 1.08;
+      const delay = Math.max(40, (baseDelay * rollFactor) + jitter * 0.5);
+      keyTimerId = setTimeout(scheduleNextKeystroke, delay);
+    }
   }
 
   // --------------------------------------------------------------------------
   // B10. 复古模拟与深空漫游声学合成核心 (Cosmic Drone & Vintage Analog Engine)
+  //      去周期性重构：33⅓ RPM 黑胶转盘微偏心、黑胶微尘与周期划痕、磁带抖晃压带轮啮合、短波外差啸叫连续调谐漫游
   // --------------------------------------------------------------------------
   let cosmicVisualEvents = [];
 
@@ -7594,22 +7980,34 @@ permalink: /projects/ai-asmr/index.html
     connectTo3DioStage(ambBus, azimuth, now);
 
     if (state.currentAmbMedia === "vinyl_record") {
-      // 1. 复古黑胶微尘唱机：唱针滑过音轨温润微尘轻爆 + 唱臂低频阻尼微震
-      const popCount = 1 + (Math.random() < 0.35 ? 1 : 0);
+      // 1. 复古黑胶唱机：33⅓ RPM 旋转偏心微抖晃 (1.818s周期) + 音轨微尘轻爆 + 偶发周期性划痕微响 (Groove Speck)
+      state.ambTurntableAngle = ((state.ambTurntableAngle || 0) + 0.55 * Math.PI * 2 * 0.18) % (Math.PI * 2);
+
+      // 微尘爆音 (Micro-Dust Crackles)
+      const isSpeck = (state.ambVinylSpeckRemaining || 0) > 0;
+      if (isSpeck) {
+        state.ambVinylSpeckRemaining--;
+      } else if (Math.random() < 0.20) {
+        state.ambVinylSpeckRemaining = 1 + Math.floor(Math.random() * 2);
+      }
+
+      const popCount = isSpeck ? 1 : (1 + (Math.random() < 0.35 ? 1 : 0));
       for (let i = 0; i < popCount; i++) {
-        const popTime = now + i * 0.024;
+        const popTime = now + i * 0.022;
         const popSrc = audioCtx.createBufferSource();
         popSrc.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 880 + Math.random() * 420), popTime);
-        bp.Q.setValueAtTime(3.4, popTime);
+        const centerF = isSpeck ? (1450 + Math.random() * 350) : (880 + Math.random() * 420);
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, centerF), popTime);
+        bp.Q.setValueAtTime(isSpeck ? 4.2 : 3.4, popTime);
 
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.0001, popTime);
-        gain.gain.linearRampToValueAtTime(0.22 * state.ambGrain * velScale, popTime + 0.002);
-        gain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.018);
+        const popVel = (isSpeck ? 0.28 : 0.22) * state.ambGrain * velScale;
+        gain.gain.linearRampToValueAtTime(popVel, popTime + 0.0018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, popTime + (isSpeck ? 0.012 : 0.018));
 
         popSrc.connect(bp);
         bp.connect(gain);
@@ -7619,10 +8017,11 @@ permalink: /projects/ai-asmr/index.html
         popSrc.stop(popTime + 0.024);
       }
 
+      // 唱臂唱针音轨低频惯性沉音 (Tonearm Cartridge Compliance Thump: 95Hz -> 44Hz)
       const grooveThump = audioCtx.createOscillator();
       grooveThump.type = "sine";
-      grooveThump.frequency.setValueAtTime(105, now);
-      grooveThump.frequency.exponentialRampToValueAtTime(52, now + 0.035);
+      grooveThump.frequency.setValueAtTime(95 * (0.95 + Math.random() * 0.1), now);
+      grooveThump.frequency.exponentialRampToValueAtTime(44, now + 0.038);
       const thumpGain = audioCtx.createGain();
       thumpGain.gain.setValueAtTime(0.0001, now);
       thumpGain.gain.linearRampToValueAtTime(0.14 * state.ambGrain * velScale, now + 0.004);
@@ -7633,11 +8032,11 @@ permalink: /projects/ai-asmr/index.html
       grooveThump.stop(now + 0.048);
 
     } else if (state.currentAmbMedia === "starship_drone") {
-      // 2. 星际飞船低频舱鸣：深空舱体压力平衡气阀轻叹与次低频谐波涌动
+      // 2. 星际飞船低频舱鸣：深空舱体压力平衡气阀轻叹与次低频谐波对流
       const hullOsc = audioCtx.createOscillator();
       hullOsc.type = "sine";
-      hullOsc.frequency.setValueAtTime(55, now);
-      hullOsc.frequency.linearRampToValueAtTime(82.5, now + 0.55);
+      hullOsc.frequency.setValueAtTime(55 * (0.98 + Math.random() * 0.04), now);
+      hullOsc.frequency.linearRampToValueAtTime(78.5, now + 0.55);
       hullOsc.frequency.exponentialRampToValueAtTime(48, now + 1.45);
 
       const hullGain = audioCtx.createGain();
@@ -7649,7 +8048,7 @@ permalink: /projects/ai-asmr/index.html
       ventSrc.buffer = buf;
       const ventBp = audioCtx.createBiquadFilter();
       ventBp.type = "bandpass";
-      ventBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 260), now);
+      ventBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 260 + Math.random() * 40), now);
       ventBp.Q.setValueAtTime(2.2, now);
       const ventGain = audioCtx.createGain();
       ventGain.gain.setValueAtTime(0.0001, now);
@@ -7668,17 +8067,37 @@ permalink: /projects/ai-asmr/index.html
       ventSrc.stop(now + 1.25);
 
     } else if (state.currentAmbMedia === "shortwave_radio") {
-      // 3. 模拟短波频漂微啸：深夜电离层载波温润微漂移 + 柔和调谐底噪
+      // 3. 模拟短波收音机：深夜电离层载波连续调谐频漂外差微啸 (Analog Heterodyne Whistle Glide) + 柔和静电微爆
+      state.ambRadioWhistleTarget = 320 + Math.random() * 420;
+      state.ambRadioWhistleFreq = (state.ambRadioWhistleFreq || 460) * 0.72 + state.ambRadioWhistleTarget * 0.28;
+
       const osc = audioCtx.createOscillator();
       osc.type = "sine";
-      const startF = Math.min(effectiveCutoff, 380 + Math.random() * 280);
+      const startF = Math.min(effectiveCutoff, state.ambRadioWhistleFreq);
       osc.frequency.setValueAtTime(startF, now);
-      osc.frequency.linearRampToValueAtTime(startF + (Math.random() * 70 - 35), now + 0.55);
+      osc.frequency.linearRampToValueAtTime(startF + (Math.random() * 60 - 30), now + 0.55);
 
       const gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.linearRampToValueAtTime(0.085 * state.ambGrain * velScale, now + 0.12);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
+
+      // 电离层天电杂音微脉冲 (Atmospheric Static Burst)
+      const burstSrc = audioCtx.createBufferSource();
+      burstSrc.buffer = buf;
+      const burstBp = audioCtx.createBiquadFilter();
+      burstBp.type = "bandpass";
+      burstBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 650 + Math.random() * 250), now);
+      burstBp.Q.setValueAtTime(1.8, now);
+      const burstGain = audioCtx.createGain();
+      burstGain.gain.setValueAtTime(0.0001, now);
+      burstGain.gain.linearRampToValueAtTime(0.09 * state.ambGrain * velScale, now + 0.015);
+      burstGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.085);
+      burstSrc.connect(burstBp);
+      burstBp.connect(burstGain);
+      burstGain.connect(ambBus);
+      burstSrc.start(now, Math.random() * 2.0);
+      burstSrc.stop(now + 0.095);
 
       osc.connect(gain);
       gain.connect(ambBus);
@@ -7686,10 +8105,10 @@ permalink: /projects/ai-asmr/index.html
       osc.stop(now + 0.66);
 
     } else if (state.currentAmbMedia === "walkman_tape") {
-      // 4. 磁带随身听机械底噪：微型压带轮/惰轮精密齿轮轻转微咔 + 磁带温热方位角微颤
+      // 4. 磁带随身听机械底噪：微型压带轮/惰轮齿轮轻转微咔 + 磁头微温饱和方位角漂移
       const gearOsc = audioCtx.createOscillator();
       gearOsc.type = "sine";
-      gearOsc.frequency.setValueAtTime(420, now);
+      gearOsc.frequency.setValueAtTime(420 * (0.95 + Math.random() * 0.1), now);
       gearOsc.frequency.exponentialRampToValueAtTime(165, now + 0.018);
       const gearGain = audioCtx.createGain();
       gearGain.gain.setValueAtTime(0.0001, now);
@@ -7720,7 +8139,7 @@ permalink: /projects/ai-asmr/index.html
       tapeSrc.stop(now + 0.38);
 
     } else if (state.currentAmbMedia === "glacier_resonance") {
-      // 5. 极地冰川深层共鸣：深海冰架次声波应力舒展 (82Hz->32Hz) + 冰晶声学频散微鸣 (460Hz->260Hz)
+      // 5. 极地冰川深层共鸣：深海冰架次声波应力舒展 (78Hz->32Hz) + 冰晶声学频散微鸣 (420Hz->240Hz)
       const osc = audioCtx.createOscillator();
       osc.type = "sine";
       osc.frequency.setValueAtTime(78 + Math.random() * 38, now);
@@ -7772,7 +8191,7 @@ permalink: /projects/ai-asmr/index.html
   function scheduleNextAmbientEvent() {
     if (!state.isPlaying || state.activeCategory !== "ambient") return;
     const med = AMBIENT_MEDIA[state.currentAmbMedia];
-    const delay = (1000 / (med.driftRate || 0.5)) * (0.65 + Math.random() * 0.7);
+    const delay = (1000 / (med.driftRate || 0.5)) * (0.68 + Math.random() * 0.68);
 
     triggerAmbientMicroEvent();
     ambTimerId = setTimeout(scheduleNextAmbientEvent, delay);
@@ -7969,31 +8388,46 @@ permalink: /projects/ai-asmr/index.html
         noiseGain.gain.setTargetAtTime(Math.max(0.004, baseBedVol * (1 + state.squishDeformEnv * 0.22 + w1 * 0.06)), now, 0.18);
       }
     } else if (state.activeCategory === "ambient") {
-      // 复古模拟与深空漫游：3Dio 12s 双耳轨道洄游 / 6s 呼吸式次低频潮汐 / 极光立体声频散
+      // 复古模拟与深空漫游：非周期无理数多波叠加 + 3Dio 双耳轨道洄游 / 呼吸式次低频潮汐 / 极光立体声频散
       const med = AMBIENT_MEDIA[state.currentAmbMedia];
       const style = AMBIENT_STYLES[state.currentAmbStyle];
       const baseDroneVol = Math.max(0.001, med.subDrone * state.ambDepth * 0.26);
       const baseBedVol = 0.12 * state.ambDepth + 0.16 * state.ambGrain;
 
+      // 三阶非周期无理数波叠加 (彻底根除单一正弦固定周期机械感)
+      const w1 = Math.sin(continuousModPhase * 0.173);
+      const w2 = Math.sin(continuousModPhase * 0.281 + 1.35);
+      const w3 = Math.sin(continuousModPhase * 0.443 + 2.68);
+      state.ambDriftWalk = Math.max(-0.4, Math.min(0.4, (state.ambDriftWalk || 0) * 0.94 + (Math.random() - 0.5) * 0.08));
+      state.ambFilterWalk = Math.max(0.85, Math.min(1.15, (state.ambFilterWalk || 1.0) * 0.92 + (0.88 + Math.random() * 0.24) * 0.08));
+
       if (state.currentAmbStyle === "binaural_orbit") {
-        const orbitAz = Math.sin(continuousModPhase * 0.28) * style.orbitDepth * state.stereoWidth;
+        // 非周期多维 3Dio 椭圆漫游：声相轨迹永不机械重复
+        const orbitAz = (w1 * 0.62 + w2 * 0.38 + state.ambDriftWalk * 0.30) * style.orbitDepth * state.stereoWidth;
         if (ambDronePanner) ambDronePanner.pan.setTargetAtTime(orbitAz, now, 0.16);
         if (bedGainL && bedGainR) {
           bedGainL.gain.setTargetAtTime(1.0 - orbitAz * 0.45, now, 0.16);
           bedGainR.gain.setTargetAtTime(1.0 + orbitAz * 0.45, now, 0.16);
         }
       } else if (state.currentAmbStyle === "pulsing_tide") {
-        // 6 秒周期的深呼吸次低频潮汐起伏
-        const breath = Math.sin(continuousModPhase * 0.38);
-        if (ambDroneGain) ambDroneGain.gain.setTargetAtTime(baseDroneVol * (0.72 + 0.35 * breath), now, 0.16);
-        if (noiseGain) noiseGain.gain.setTargetAtTime(baseBedVol * (0.75 + 0.28 * breath), now, 0.16);
+        // 非对称慢速深呼吸次低频潮汐起伏
+        const breath = 0.72 + 0.20 * w1 + 0.12 * w2 + 0.06 * w3;
+        if (ambDroneGain) ambDroneGain.gain.setTargetAtTime(baseDroneVol * breath, now, 0.16);
+        if (noiseGain) noiseGain.gain.setTargetAtTime(baseBedVol * (0.76 + 0.25 * breath), now, 0.16);
       } else if (state.currentAmbStyle === "distant_aurora") {
-        // 极光频散：左右耳共振峰交替慢漂移
-        const auroraL = med.filterFreq * (0.75 + 0.25 * Math.sin(continuousModPhase * 0.32));
-        const auroraR = med.filterFreq * (0.75 + 0.25 * Math.cos(continuousModPhase * 0.32));
+        // 极光频散：双耳独立异相共振峰漫步与模拟微暖温漂
+        const auroraL = med.filterFreq * (0.80 + 0.20 * w1 + 0.10 * w3) * state.ambFilterWalk;
+        const auroraR = med.filterFreq * (0.80 + 0.20 * w2 + 0.10 * w1) * state.ambFilterWalk;
         if (bedPeakingL && bedPeakingR) {
           bedPeakingL.frequency.setTargetAtTime(Math.min(state.userLowpass, auroraL), now, 0.16);
           bedPeakingR.frequency.setTargetAtTime(Math.min(state.userLowpass, auroraR), now, 0.16);
+        }
+      } else {
+        // 沉浸静止空间茧：低频微滤通温和呼吸
+        const cocoonFilter = Math.min(state.userLowpass, med.filterFreq * (0.95 + 0.08 * w1));
+        if (noiseFilterL && noiseFilterR) {
+          noiseFilterL.frequency.setTargetAtTime(cocoonFilter, now, 0.16);
+          noiseFilterR.frequency.setTargetAtTime(cocoonFilter * 0.98, now, 0.16);
         }
       }
     }
