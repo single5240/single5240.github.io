@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: AI-ASMR 沉浸式声音实验室
-description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式雨声触发器，提供微雨、小雨、大雨、倾盆大雨与远雷暴风雨，支持帆布帐篷/阔叶/车窗/桧木等钝感吸音介质切换，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
+description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声（微雨/小雨/大雨/倾盆/远雷）与钝感敲击声（空心木盒/复古精装书/软硅胶/厚陶杯/竹节）两大类，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
 section: projects
 wide: true
 permalink: /projects/ai-asmr/index.html
@@ -13,30 +13,52 @@ permalink: /projects/ai-asmr/index.html
     <h1>AI-ASMR 沉浸式声音实验室</h1>
     <p class="lede">
       基于 <strong>Web Audio API 纯原生程序化物理声学合成</strong> 打造的双耳 3Dio 沉浸式声音触发台。
-      专为助眠、深度专注与颅内放松设计：提供从<strong>微雨、小雨、大雨、倾盆到远雷暴风雨</strong>的连续声场，
-      并支持<strong>帆布帐篷、稠密阔叶、双层隔音窗与桧木屋檐</strong>等吸音介质切换。
+      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>与<strong>「轻柔敲击声」</strong>两大声音体系，
+      涵盖从<strong>微雨、小雨、大雨、倾盆到远雷暴风雨</strong>的连续声场，
+      以及<strong>空心木盒、复古精装书、软硅胶、厚陶杯与天然竹节</strong>等吸音钝感敲击触碰。
       全频段柔化滤波彻底消除高频毛刺与尖锐杂音，呈现<strong>细腻（delicate）、轻柔（gentle）、钝感（cushioned）与平稳规律（rhythmic &amp; repetitive）</strong>的纯净白噪音，并附带专业级 <strong>AI ASMR 提示词工坊</strong>。
     </p>
     <div class="head-badges" role="region" aria-label="核心声学特性">
       <span class="badge-item">🎧 3Dio 双耳立体声</span>
-      <span class="badge-item">🌿 纯原生 Web Audio 实时合成</span>
+      <span class="badge-item">🌧️ 连续物理雨声</span>
+      <span class="badge-item">🪵 钝感材质轻敲</span>
       <span class="badge-item">🛡️ 零尖锐刺耳 / 软限幅防爆音</span>
       <span class="badge-item">⚡ 离线即开即听 / 零音频文件依赖</span>
     </div>
   </header>
 
   <!-- ========================================================================
-       1. 核心交互舞台：Canvas 双耳声场可视化 + 雨丝/涟漪动画
+       1. 核心大类切换导航 (Rain vs Tapping)
        ======================================================================== -->
-  <section class="asmr-stage-card" aria-label="3Dio 双耳雨声与声场可视化实验台">
+  <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择">
+    <button type="button" class="cat-tab-btn active" id="tabRainCategory" role="tab" aria-selected="true" data-cat="rain">
+      <span class="cat-tab-icon">🌧️</span>
+      <span class="cat-tab-content">
+        <strong class="cat-tab-title">沉浸雨声触发器 (Rain Stage)</strong>
+        <span class="cat-tab-desc">微雨 · 小雨 · 大雨 · 倾盆 · 远雷暴风雨</span>
+      </span>
+    </button>
+    <button type="button" class="cat-tab-btn" id="tabTappingCategory" role="tab" aria-selected="false" data-cat="tapping">
+      <span class="cat-tab-icon">🪵</span>
+      <span class="cat-tab-content">
+        <strong class="cat-tab-title">轻柔敲击声触发器 (Tapping Stage)</strong>
+        <span class="cat-tab-desc">空心木盒 · 复古精装书 · 软硅胶 · 厚陶杯 · 竹节</span>
+      </span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================
+       2. 核心交互舞台：Canvas 双耳声场可视化 + 雨丝/敲击波纹动画
+       ======================================================================== -->
+  <section class="asmr-stage-card" aria-label="3Dio 双耳声场与物理粒子可视化实验台">
     <div class="stage-header">
       <div class="stage-brand">
         <span class="pulse-indicator" id="statusPulse" aria-hidden="true"></span>
-        <span class="stage-title">3Dio BINAURAL RAIN SOUNDSTAGE</span>
+        <span class="stage-title" id="stageMainTitle">3Dio BINAURAL RAIN SOUNDSTAGE</span>
         <span class="stage-pill" id="dspRateBadge">48 kHz · 32-bit DSP</span>
       </div>
       <div class="stage-visual-modes" role="group" aria-label="画面模式选择">
-        <button type="button" class="mode-btn active" id="btnModeScenic" data-mode="scenic" title="雨景与双耳涟漪">🌧️ 沉浸雨景</button>
+        <button type="button" class="mode-btn active" id="btnModeScenic" data-mode="scenic" title="粒子与双耳声场">🌧️ 沉浸粒子</button>
         <button type="button" class="mode-btn" id="btnModeRadar" data-mode="radar" title="3Dio 双耳声学雷达">🎯 3Dio 声场</button>
         <button type="button" class="mode-btn" id="btnModeMinimal" data-mode="minimal" title="极简睡眠暗光">🌙 极简休眠</button>
       </div>
@@ -44,7 +66,7 @@ permalink: /projects/ai-asmr/index.html
 
     <!-- Canvas 主视口 -->
     <div class="stage-viewport" id="stageViewport">
-      <canvas id="asmrCanvas" width="960" height="420" aria-label="双耳雨声物理粒子与声场动态可视化"></canvas>
+      <canvas id="asmrCanvas" width="960" height="380" aria-label="双耳物理粒子与声场动态可视化"></canvas>
 
       <!-- 画面覆盖层 HUD -->
       <div class="stage-hud" aria-hidden="true">
@@ -61,7 +83,7 @@ permalink: /projects/ai-asmr/index.html
             <span class="ear-line"></span>
             <span class="ear-tag r">R</span>
           </div>
-          <div class="ear-tip">戴上耳机体验耳畔空间环绕</div>
+          <div class="ear-tip" id="hudEarTip">戴上耳机体验耳畔空间环绕</div>
         </div>
         <div class="hud-right">
           <div class="hud-tag">ACOUSTIC FILTER</div>
@@ -99,16 +121,17 @@ permalink: /projects/ai-asmr/index.html
   </section>
 
   <!-- ========================================================================
-       2. 雨声触发器核心调控区：5 档雨量 + 4 种吸音介质 + 声学微调
+       3. 核心调控区：大类选项联动面板
        ======================================================================== -->
-  <section class="asmr-matrix-grid">
+  <!-- 3.1 雨声大类控制区 -->
+  <section class="asmr-matrix-grid category-panel active" id="panelRainCategory" aria-label="雨声调控面板">
     <!-- 左卡片：雨声强度档位 -->
     <div class="control-card">
       <div class="card-head">
         <h2>1. 雨量强度触发器 (Rain Intensity)</h2>
         <span class="card-badge">5 档物理声场</span>
       </div>
-      <p class="card-intro">基于独立无缝左右立体声滤波粉噪与微滴泊松脉冲发生器，无循环机械感：</p>
+      <p class="card-intro">基于独立无缝左右立体声滤波粉噪与微滴泊松脉冲发生器，无机械循环感：</p>
       <div class="selector-btn-grid" role="radiogroup" aria-label="雨量选择">
         <button type="button" class="preset-btn active" data-rain="drizzle" role="radio" aria-checked="true">
           <span class="preset-icon">🌫️</span>
@@ -170,7 +193,79 @@ permalink: /projects/ai-asmr/index.html
     </div>
   </section>
 
-  <!-- 精细声学微调面板 -->
+  <!-- 3.2 敲击声大类控制区 (Tapping Stage) -->
+  <section class="asmr-matrix-grid category-panel" id="panelTappingCategory" aria-label="敲击声调控面板" hidden>
+    <!-- 左卡片：敲击材质触发器 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>1. 敲击声材质触发器 (Tapping Materials)</h2>
+        <span class="card-badge">空腔物理谐振</span>
+      </div>
+      <p class="card-intro">自然指甲与指腹轻触材质，内置多阶共鸣带通，杜绝坚硬塑料与金属尖啸：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="敲击材质选择">
+        <button type="button" class="tap-mat-btn active" data-mat="woodbox" role="radio" aria-checked="true">
+          <span class="preset-icon">🪵</span>
+          <span class="preset-name">天然空心木盒 (Hollow Wood Box)</span>
+          <span class="preset-desc">低中频温暖木质共鸣（~340Hz），圆润厚实钝感轻叩</span>
+        </button>
+        <button type="button" class="tap-mat-btn" data-mat="book" role="radio" aria-checked="false">
+          <span class="preset-icon">📖</span>
+          <span class="preset-name">复古精装书皮 (Hardcover Book)</span>
+          <span class="preset-desc">织物皮革封面微吸音（~460Hz），沉闷微沙，极具治愈感</span>
+        </button>
+        <button type="button" class="tap-mat-btn" data-mat="silicone" role="radio" aria-checked="false">
+          <span class="preset-icon">🫧</span>
+          <span class="preset-name">软硅胶吸音块 (Soft Silicone)</span>
+          <span class="preset-desc">极致钝感（~210Hz），完全吸收高频，像垫了厚软垫的沉音</span>
+        </button>
+        <button type="button" class="tap-mat-btn" data-mat="ceramic" role="radio" aria-checked="false">
+          <span class="preset-icon">☕</span>
+          <span class="preset-name">厚陶马克杯 (Ceramic Mug)</span>
+          <span class="preset-desc">厚重陶土钝响（~780Hz），微弱陶腔空音，温存不刺耳</span>
+        </button>
+        <button type="button" class="tap-mat-btn" data-mat="bamboo" role="radio" aria-checked="false">
+          <span class="preset-icon">🎍</span>
+          <span class="preset-name">天然竹节 (Natural Bamboo)</span>
+          <span class="preset-desc">竹筒空灵对扣（~520Hz），古朴悠扬，节奏明朗</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右卡片：敲击手法与节奏 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>2. 敲击手法与节奏 (Tapping Styles &amp; Cadence)</h2>
+        <span class="card-badge">3Dio 空间平移</span>
+      </div>
+      <p class="card-intro">模拟真实 ASMR 创作者手法：支持左右耳缓慢穿梭、指尖轻颤与规律节拍：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="敲击手法选择">
+        <button type="button" class="tap-style-btn active" data-style="slow" role="radio" aria-checked="true">
+          <span class="preset-icon">🧘</span>
+          <span class="preset-name">舒缓单指点敲 (Slow &amp; Steady)</span>
+          <span class="preset-desc">悠闲慢节拍（约 45 BPM），左右耳舒缓交替，静心深呼吸</span>
+        </button>
+        <button type="button" class="tap-style-btn" data-style="flutter" role="radio" aria-checked="false">
+          <span class="preset-icon">🐾</span>
+          <span class="preset-name">指尖微颤轮敲 (Flutter Tapping)</span>
+          <span class="preset-desc">如琴键般的 4-5 指连续碎步轻敲，细腻微颤颗粒感</span>
+        </button>
+        <button type="button" class="tap-style-btn" data-style="orbit" role="radio" aria-checked="false">
+          <span class="preset-icon">↔️</span>
+          <span class="preset-name">3Dio 双耳穿梭 (Ear-to-Ear Orbit)</span>
+          <span class="preset-desc">从极左耳缓缓敲向极右耳再折返，3D 环绕贴耳近讲</span>
+        </button>
+        <button type="button" class="tap-style-btn" data-style="metronome" role="radio" aria-checked="false">
+          <span class="preset-icon">⏱️</span>
+          <span class="preset-name">催眠规律节拍 (Hypnotic Metronome)</span>
+          <span class="preset-desc">恒定 60 BPM 规律轻敲（rhythmic &amp; repetitive），伴读助眠</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       4. 3Dio 双耳声学微调面板
+       ======================================================================== -->
   <section class="acoustic-tweak-card" aria-label="物理声学参数微调">
     <div class="card-head">
       <h2>3. 3Dio 双耳声学参数微调台</h2>
@@ -195,16 +290,17 @@ permalink: /projects/ai-asmr/index.html
         <small class="tweak-hint">越往左高频越被吸收抑制，彻底消除任何尖锐金属毛刺</small>
       </div>
 
-      <div class="tweak-item">
+      <!-- 雨声模式专属微调项 -->
+      <div class="tweak-item rain-tweak" id="tweakItemDropRate">
         <div class="tweak-label-wrap">
-          <label for="rangeDropDensity">独立雨滴敲击密度 (Transient Rate)</label>
+          <label for="rangeDropDensity">雨滴微脉冲密度 (Transient Rate)</label>
           <span class="tweak-val" id="valDropDensity">适中 (1.0x)</span>
         </div>
         <input type="range" id="rangeDropDensity" min="0.2" max="2.5" step="0.1" value="1.0" aria-label="微滴触发速率">
         <small class="tweak-hint">控制单颗雨珠击打在吸音垫上的疏密节奏</small>
       </div>
 
-      <div class="tweak-item">
+      <div class="tweak-item rain-tweak" id="tweakItemThunder">
         <div class="tweak-label-wrap">
           <label for="rangeThunder">暴风雨远雷次低频 (Sub-Bass Rumble)</label>
           <span class="tweak-val" id="valThunder">适中 (50%)</span>
@@ -212,20 +308,39 @@ permalink: /projects/ai-asmr/index.html
         <input type="range" id="rangeThunder" min="0" max="1" step="0.05" value="0.5" aria-label="远雷震颤音量">
         <small class="tweak-hint">40Hz~80Hz 远方沉闷滚雷，无尖锐炸雷惊吓</small>
       </div>
+
+      <!-- 敲击声模式专属微调项 -->
+      <div class="tweak-item tap-tweak" id="tweakItemTapBpm" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeTapCadence">敲击节奏速度 (Cadence / BPM)</label>
+          <span class="tweak-val" id="valTapCadence">标准 (1.0x)</span>
+        </div>
+        <input type="range" id="rangeTapCadence" min="0.4" max="2.0" step="0.1" value="1.0" aria-label="敲击频率速度">
+        <small class="tweak-hint">调节敲击的疏密快慢，越慢催眠感越强</small>
+      </div>
+
+      <div class="tweak-item tap-tweak" id="tweakItemTapCushion" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeTapSoftness">指腹肉感 / 钝感缓冲 (Soft Cushion)</label>
+          <span class="tweak-val" id="valTapSoftness">肉感指腹 (70%)</span>
+        </div>
+        <input type="range" id="rangeTapSoftness" min="0" max="1" step="0.05" value="0.7" aria-label="敲击软化程度">
+        <small class="tweak-hint">向右滑动增加肉感钝度与软包络，向左增加轻柔圆润甲触</small>
+      </div>
     </div>
   </section>
 
   <!-- ========================================================================
-       3. 核心工具二：AI ASMR 提示词工坊与避坑指南
+       5. 核心工具：AI ASMR 提示词工坊与避坑指南
        ======================================================================== -->
   <section class="prompt-lab-card" aria-label="AI ASMR 提示词工坊与生成器">
     <div class="card-head">
       <h2>4. AI ASMR 提示词工坊 (AI Sound Prompt Generator)</h2>
-      <span class="card-badge">实时联动上方配置</span>
+      <span class="card-badge" id="promptCategoryBadge">实时联动当前选项</span>
     </div>
     <p class="card-intro">
       如果你希望在 <strong>Stable Audio、ElevenLabs、AudioLDM2 或 Suno/Udio</strong> 中用 AI 生成高品质 ASMR 声音，
-      下方已根据你当前选定的雨量、介质与声学特性实时计算出<strong>最不易翻车、杜绝尖锐刺耳的工业级 Prompt</strong>：
+      下方已根据你当前选定的<strong>大类（雨声/敲击声）、材质、手法与声学特性</strong>实时计算出工业级提示词：
     </p>
 
     <!-- 动态 Prompt 生成展示区 -->
@@ -248,10 +363,10 @@ permalink: /projects/ai-asmr/index.html
 
       <div class="prompt-field-group">
         <div class="field-head">
-          <label for="txtNegativePrompt">🛡️ 负向提示词 (Negative Prompt - 必填！杜绝尖锐与混乱)：</label>
+          <label for="txtNegativePrompt">🛡️ 针对性负向提示词 (Negative Prompt - 必填！杜绝尖锐与混乱)：</label>
           <button type="button" class="copy-btn" id="btnCopyNegPrompt">📋 复制 Negative Prompt</button>
         </div>
-        <textarea id="txtNegativePrompt" class="prompt-textarea" readonly rows="2" aria-label="负向提示词">harsh, sharp, shrill, piercing, metallic, robotic artifacts, digital phasing, sibilant, sibilance, loud clicks, abrupt changes, startling jumpscares, clipping, distortion, echo, heavy cavernous reverb, muddy, chaotic, crowded, noisy background, white noise hiss</textarea>
+        <textarea id="txtNegativePrompt" class="prompt-textarea" readonly rows="2" aria-label="负向提示词"></textarea>
       </div>
     </div>
 
@@ -259,23 +374,23 @@ permalink: /projects/ai-asmr/index.html
     <div class="guide-cards-grid">
       <div class="guide-item">
         <div class="guide-icon">1. 频段钝化 (Roll-off Highs)</div>
-        <h3>为什么 AI ASMR 容易刺耳？</h3>
-        <p>AI 音频扩散模型在 8kHz-14kHz 高频极易产生数码相位金属杂音（Metallic Phasing）。必须在 Prompt 中使用 <code>mellow, cushioned, soft high-frequencies, subdued patter</code>，并在后期用 Low-pass Filter 切除 8kHz 以上频段。</p>
+        <h3>为什么敲击声容易刺耳？</h3>
+        <p>硬甲碰击硬质表面极易在 5kHz-12kHz 产生高频脉冲尖叫。Prompt 必须强调 <code>mellow, cushioned, soft low-mid resonance, rounded transients</code>，后期用 Low-pass Filter 削减极高频。</p>
       </div>
       <div class="guide-item">
         <div class="guide-icon">2. 空间干燥 (Dry &amp; Intimate)</div>
         <h3>避免空旷回声导致混乱</h3>
-        <p>绝对不要在 Prompt 中使用 <code>atmospheric, epic, cinematic, big hall</code>，这些词会触发大混响，让细微的雨声变成浑浊一片的杂音泥浆。坚决使用 <code>dry acoustics, zero reverb, soundproof booth, close proximity</code>。</p>
+        <p>拒绝 <code>atmospheric, big hall, room reverb</code>，大混响会让清脆敲击变成杂音泥浆。坚决使用 <code>dry acoustics, zero reverb, soundproof booth, close proximity</code>。</p>
       </div>
       <div class="guide-item">
         <div class="guide-icon">3. 极简声源 (Minimalist Layers)</div>
-        <h3>避免多种声音挤在一起打架</h3>
-        <p>AI 同时生成“雨声+风声+鸟叫+钢琴”必然会产生严重的互相调制失真。ASMR 的核心是<strong>单一纯净声源</strong>，单层生成纯粹的雨打帐篷，后期再由你手动调配音量叠加。</p>
+        <h3>避免多音源混合失真</h3>
+        <p>AI 一旦同时生成“敲击+说话+音乐+雨声”必定产生数码杂质。ASMR 的核心是<strong>单一纯净声源</strong>，单层生成纯粹的敲击声，后期再由你手动调配多轨混音。</p>
       </div>
       <div class="guide-item">
         <div class="guide-icon">4. 动态锁死 (Zero Jumpscares)</div>
         <h3>严禁突兀声响吓醒听众</h3>
-        <p>ASMR 必须维持近乎平直的动态范围。Prompt 强调 <code>steady pace, consistent rhythmic repetition, low dynamic range, soothing and hypnotic</code>。如果生成暴风雨，雷声必须写为 <code>distant, muffled, sub-bass rumble only, no loud cracks</code>。</p>
+        <p>敲击声力度必须极其平稳恒定。Prompt 强调 <code>steady volume, low dynamic range, smooth rhythmic repetition</code>，绝不允许任何突然拍打大声（loud smacks）。</p>
       </div>
     </div>
 
@@ -295,27 +410,21 @@ permalink: /projects/ai-asmr/index.html
           <tbody>
             <tr>
               <td><strong>ElevenLabs Sound Effects</strong></td>
-              <td>环境雨声 / 材质敲击</td>
-              <td>Duration: 15s~30s · Prompt Influence: 0.8</td>
-              <td>限定单一材质（如 only canvas tent），杜绝多源混合。</td>
-            </tr>
-            <tr>
-              <td><strong>ElevenLabs Voice (TTS)</strong></td>
-              <td>耳语 / ASMR 低语</td>
-              <td>Stability: 80%~85% · Style: 0.10 · Similarity: 0.75</td>
-              <td>稳定性拉高，压制忽大忽小的叫喊，选用 <code>Whisper</code> 预设。</td>
+              <td>敲击声 / 环境雨声</td>
+              <td>Duration: 15s~30s · Prompt Influence: 0.82</td>
+              <td>限定单一材质（如 single hollow wood box），避免多源堆叠。</td>
             </tr>
             <tr>
               <td><strong>Stable Audio 2.0</strong></td>
-              <td>环境长音轨</td>
-              <td>Steps: 50 · CFG Scale: 6.5~7.5 · Duration: 60s+</td>
-              <td>必须填写 Negative Prompt，避免高频尖啸。</td>
+              <td>敲击循环 / 环境长音轨</td>
+              <td>Steps: 50 · CFG Scale: 7.0 · Duration: 60s+</td>
+              <td>必须填写 Negative Prompt，消除高频数码相位噪声。</td>
             </tr>
             <tr>
               <td><strong>DAW 剪辑后期修音</strong></td>
               <td>Audacity / Premiere / FL</td>
-              <td>EQ Low-pass: 8.5kHz · De-esser: 5kHz · Limiter: -6dBFS</td>
-              <td>无论 AI 生成多好，切掉超高频 + 软限幅是杜绝刺耳的最终防线。</td>
+              <td>EQ Low-pass: 8.5kHz · De-esser: 5.5kHz · Limiter: -6dBFS</td>
+              <td>敲击声务必添加软限制器（Soft Limiter），压平所有峰值。</td>
             </tr>
           </tbody>
         </table>
@@ -353,6 +462,59 @@ permalink: /projects/ai-asmr/index.html
   font-weight: 500;
 }
 
+/* 核心大类切换导航 */
+.category-switch-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+}
+@media (max-width: 720px) {
+  .category-switch-bar {
+    grid-template-columns: 1fr;
+  }
+}
+.cat-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  background: var(--paper);
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.22s ease;
+}
+.cat-tab-btn:hover {
+  border-color: var(--accent);
+  background: var(--alt-bg);
+  transform: translateY(-2px);
+}
+.cat-tab-btn.active {
+  border-color: var(--accent);
+  background: var(--soft);
+  box-shadow: var(--shadow-small), inset 0 0 0 1px var(--accent);
+}
+.cat-tab-icon {
+  font-size: 1.85rem;
+  line-height: 1;
+}
+.cat-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.cat-tab-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.cat-tab-desc {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
 /* 1. 核心舞台卡片 */
 .asmr-stage-card {
   background: #0f181c;
@@ -360,7 +522,7 @@ permalink: /projects/ai-asmr/index.html
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 16px 40px -8px rgba(10, 20, 25, 0.45);
-  margin: 1.5rem 0 2rem;
+  margin-bottom: 2rem;
   color: #e2e8f0;
 }
 
@@ -653,7 +815,9 @@ permalink: /projects/ai-asmr/index.html
   gap: 0.6rem;
 }
 .preset-btn,
-.surface-btn {
+.surface-btn,
+.tap-mat-btn,
+.tap-style-btn {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -669,13 +833,17 @@ permalink: /projects/ai-asmr/index.html
   transition: all 0.2s ease;
 }
 .preset-btn:hover,
-.surface-btn:hover {
+.surface-btn:hover,
+.tap-mat-btn:hover,
+.tap-style-btn:hover {
   border-color: var(--accent);
   background: var(--alt-bg);
   transform: translateX(2px);
 }
 .preset-btn.active,
-.surface-btn.active {
+.surface-btn.active,
+.tap-mat-btn.active,
+.tap-style-btn.active {
   border-color: var(--accent);
   background: var(--soft);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -874,6 +1042,9 @@ permalink: /projects/ai-asmr/index.html
   }
   .preset-btn:hover,
   .surface-btn:hover,
+  .tap-mat-btn:hover,
+  .tap-style-btn:hover,
+  .cat-tab-btn:hover,
   .main-play-btn:hover {
     transform: none;
   }
@@ -881,14 +1052,14 @@ permalink: /projects/ai-asmr/index.html
 </style>
 
 <!-- ========================================================================
-     4. 核心脚本：纯原生 Web Audio API 程序化声学合成 + Canvas 双耳动画
+     6. 核心脚本：Web Audio API 程序化声学合成 (雨声 + 敲击声) + Canvas 动画
      ======================================================================== -->
 <script>
 (function() {
   "use strict";
 
   // --------------------------------------------------------------------------
-  // A. 声学配置与状态定义
+  // A. 声学配置与预设定义 (雨声 + 敲击声)
   // --------------------------------------------------------------------------
   const RAIN_PRESETS = {
     drizzle: {
@@ -898,8 +1069,7 @@ permalink: /projects/ai-asmr/index.html
       noiseType: "pink",
       baseVolume: 0.35,
       filterFreq: 1200,
-      filterQ: 0.7,
-      dropRate: 14,      // 每秒平均触发雨滴数
+      dropRate: 14,
       dropVelMin: 0.08,
       dropVelMax: 0.22,
       thunder: false,
@@ -912,7 +1082,6 @@ permalink: /projects/ai-asmr/index.html
       noiseType: "pink",
       baseVolume: 0.55,
       filterFreq: 1900,
-      filterQ: 0.85,
       dropRate: 35,
       dropVelMin: 0.15,
       dropVelMax: 0.4,
@@ -926,7 +1095,6 @@ permalink: /projects/ai-asmr/index.html
       noiseType: "brown",
       baseVolume: 0.85,
       filterFreq: 2900,
-      filterQ: 1.0,
       dropRate: 85,
       dropVelMin: 0.3,
       dropVelMax: 0.75,
@@ -940,7 +1108,6 @@ permalink: /projects/ai-asmr/index.html
       noiseType: "brown",
       baseVolume: 1.0,
       filterFreq: 3600,
-      filterQ: 1.1,
       dropRate: 150,
       dropVelMin: 0.45,
       dropVelMax: 0.95,
@@ -954,7 +1121,6 @@ permalink: /projects/ai-asmr/index.html
       noiseType: "brown",
       baseVolume: 0.95,
       filterFreq: 3200,
-      filterQ: 1.0,
       dropRate: 130,
       dropVelMin: 0.4,
       dropVelMax: 0.9,
@@ -963,15 +1129,14 @@ permalink: /projects/ai-asmr/index.html
     }
   };
 
-  const SURFACES = {
+  const RAIN_SURFACES = {
     tent: {
       name: "帆布帐篷 (Canvas Tent)",
       enName: "thick waterproof canvas tent fabric",
       zhPrompt: "厚帆布帐篷",
       freq: 650,
       q: 2.2,
-      decay: 0.045,
-      cushionLevel: "极高（扑嗒闷感）"
+      decay: 0.045
     },
     leaves: {
       name: "稠密阔叶 (Broad Leaves)",
@@ -979,8 +1144,7 @@ permalink: /projects/ai-asmr/index.html
       zhPrompt: "稠密阔叶雨林雨滴",
       freq: 1250,
       q: 1.8,
-      decay: 0.035,
-      cushionLevel: "中等（温润柔韧）"
+      decay: 0.035
     },
     window: {
       name: "双层隔音窗 (Window)",
@@ -988,8 +1152,7 @@ permalink: /projects/ai-asmr/index.html
       zhPrompt: "双层隔音玻璃窗外",
       freq: 880,
       q: 3.0,
-      decay: 0.028,
-      cushionLevel: "高（室内隔音钝化）"
+      decay: 0.028
     },
     cedar: {
       name: "桧木屋檐 (Cedar Roof)",
@@ -997,20 +1160,126 @@ permalink: /projects/ai-asmr/index.html
       zhPrompt: "古朴桧木屋檐下",
       freq: 480,
       q: 2.6,
+      decay: 0.055
+    }
+  };
+
+  // 敲击材质物理参数 (Tapping Materials)
+  const TAPPING_MATERIALS = {
+    woodbox: {
+      name: "天然空心木盒 (Hollow Wood Box)",
+      enName: "hollow resonant wooden box surface",
+      zhPrompt: "天然空心木盒表面",
+      baseFreq: 340,       // 木盒空腔共鸣主频 (Hz)
+      harmonicMult: 2.05,  // 木质二次谐振
+      decay: 0.065,        // 衰减时间 (s)
+      q: 3.2,
+      warmthBoost: 0.35,   // 温暖低中频增益
+      desc: "Warm Hollow Woody Resonance · Cushioned Thump"
+    },
+    book: {
+      name: "复古精装书皮 (Hardcover Book)",
+      enName: "textured fabric hardcover vintage book",
+      zhPrompt: "复古布纹精装书皮",
+      baseFreq: 460,
+      harmonicMult: 1.9,
+      decay: 0.048,
+      q: 2.4,
+      warmthBoost: 0.25,
+      desc: "Dull Muffled Linen Thud · Cozy & Soothing"
+    },
+    silicone: {
+      name: "软硅胶吸音块 (Soft Silicone)",
+      enName: "soft squishy silicone sound-absorbing block",
+      zhPrompt: "厚厚柔软的软硅胶块",
+      baseFreq: 210,
+      harmonicMult: 1.5,
+      decay: 0.085,
+      q: 1.6,
+      warmthBoost: 0.5,
+      desc: "Deep Cushioned Squish-Tap · Zero High Treble"
+    },
+    ceramic: {
+      name: "厚陶马克杯 (Ceramic Mug)",
+      enName: "thick artisanal earthenware ceramic mug",
+      zhPrompt: "厚重手工陶土马克杯",
+      baseFreq: 780,
+      harmonicMult: 2.4,
       decay: 0.055,
-      cushionLevel: "极高（低频共振木香）"
+      q: 4.0,
+      warmthBoost: 0.2,
+      desc: "Mellow Earthenware Tok · Gentle & Rounded"
+    },
+    bamboo: {
+      name: "天然竹节 (Natural Bamboo)",
+      enName: "natural hollow bamboo segment",
+      zhPrompt: "天然中空竹节筒",
+      baseFreq: 520,
+      harmonicMult: 2.15,
+      decay: 0.062,
+      q: 3.5,
+      warmthBoost: 0.3,
+      desc: "Hollow Organic Clack · Light & Crisp Yet Gentle"
+    }
+  };
+
+  // 敲击手法与节奏 (Tapping Styles)
+  const TAPPING_STYLES = {
+    slow: {
+      name: "舒缓单指点敲 (Slow & Steady)",
+      enName: "slow and steady single-finger taps",
+      zhPrompt: "悠闲慢节奏单指点敲",
+      baseInterval: 1100, // 毫秒
+      flutter: false,
+      orbit: false
+    },
+    flutter: {
+      name: "指尖微颤轮敲 (Flutter Tapping)",
+      enName: "delicate fluttering multi-finger roll tapping",
+      zhPrompt: "细腻如琴键般指尖微颤连轮敲",
+      baseInterval: 1400,
+      flutter: true,
+      orbit: false
+    },
+    orbit: {
+      name: "3Dio 双耳穿梭 (Ear-to-Ear Orbit)",
+      enName: "3Dio binaural ear-to-ear alternating orbit taps",
+      zhPrompt: "从极左耳缓缓平移到极右耳的双耳穿梭轻叩",
+      baseInterval: 850,
+      flutter: false,
+      orbit: true
+    },
+    metronome: {
+      name: "催眠规律节拍 (Hypnotic Metronome)",
+      enName: "consistent hypnotic metronome rhythmic taps at 60 BPM",
+      zhPrompt: "60 BPM 恒定平稳规律催眠轻敲",
+      baseInterval: 1000,
+      flutter: false,
+      orbit: false
     }
   };
 
   let state = {
+    activeCategory: "rain", // "rain" | "tapping"
     isPlaying: false,
+
+    // 雨声参数
     currentRain: "drizzle",
     currentSurface: "tent",
+    dropRateMultiplier: 1.0,
+    thunderVol: 0.5,
+
+    // 敲击声参数
+    currentTapMat: "woodbox",
+    currentTapStyle: "slow",
+    tapCadenceMultiplier: 1.0,
+    tapSoftness: 0.7, // 0 (较轻快甲触) ~ 1 (极软肉感指腹)
+    orbitStep: 0,
+
+    // 通用声学
     visualMode: "scenic", // scenic | radar | minimal
     stereoWidth: 1.0,
     userLowpass: 1800,
-    dropRateMultiplier: 1.0,
-    thunderVol: 0.5,
     masterVol: 0.75,
     sleepTimerMinutes: 0,
     sleepTimerEnd: 0
@@ -1023,7 +1292,7 @@ permalink: /projects/ai-asmr/index.html
   let masterGain = null;
   let masterLimiter = null;
 
-  // 持续底噪节点（左右声道独立以生成真双耳空间）
+  // 雨声底噪节点 (双声道独立去相关)
   let noiseSourceL = null;
   let noiseSourceR = null;
   let noiseFilterL = null;
@@ -1031,20 +1300,20 @@ permalink: /projects/ai-asmr/index.html
   let noiseGain = null;
   let mergerNode = null;
 
-  // 定时调度雨滴
-  let dropTimerId = null;
+  // 定时调度器 ID
+  let rainDropTimerId = null;
   let thunderTimerId = null;
+  let tapTimerId = null;
 
-  // 3Dio 空间双耳雨滴瞬态发生器
   function initAudioEngine() {
     if (audioCtx) return;
 
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     audioCtx = new AudioContextClass();
 
-    // 1. Master Bus 安全防线：软限幅压缩器，杜绝爆音与突兀音
+    // 1. Master Bus 安全防线：软限幅压缩器，杜绝爆音与突兀声音
     masterLimiter = audioCtx.createDynamicsCompressor();
-    masterLimiter.threshold.setValueAtTime(-4.0, audioCtx.currentTime);
+    masterLimiter.threshold.setValueAtTime(-5.0, audioCtx.currentTime);
     masterLimiter.knee.setValueAtTime(6.0, audioCtx.currentTime);
     masterLimiter.ratio.setValueAtTime(16.0, audioCtx.currentTime);
     masterLimiter.attack.setValueAtTime(0.003, audioCtx.currentTime);
@@ -1056,7 +1325,7 @@ permalink: /projects/ai-asmr/index.html
     masterLimiter.connect(masterGain);
     masterGain.connect(audioCtx.destination);
 
-    // 2. 双声道去相关立体声底噪缓冲区（10秒循环，无缝平滑）
+    // 2. 双声道去相关立体声雨声底噪缓冲区
     const sampleRate = audioCtx.sampleRate;
     const bufferDuration = 8.0;
     const numSamples = Math.floor(sampleRate * bufferDuration);
@@ -1066,12 +1335,10 @@ permalink: /projects/ai-asmr/index.html
     const dataL = bufferL.getChannelData(0);
     const dataR = bufferR.getChannelData(0);
 
-    // 使用粉红噪声 / 布朗噪声滤波算法填充数据
     let b0L = 0, b1L = 0, b2L = 0, b3L = 0, b4L = 0, b5L = 0, b6L = 0;
     let b0R = 0, b1R = 0, b2R = 0, b3R = 0, b4R = 0, b5R = 0, b6R = 0;
 
     for (let i = 0; i < numSamples; i++) {
-      // 左声道粉噪 (Paul Kellet's filter)
       const whiteL = Math.random() * 2 - 1;
       b0L = 0.99886 * b0L + whiteL * 0.0555179;
       b1L = 0.99332 * b1L + whiteL * 0.0750759;
@@ -1082,7 +1349,6 @@ permalink: /projects/ai-asmr/index.html
       dataL[i] = (b0L + b1L + b2L + b3L + b4L + b5L + b6L + whiteL * 0.5362) * 0.06;
       b6L = whiteL * 0.115926;
 
-      // 右声道粉噪（独立随机种子，产生真实空间立体声）
       const whiteR = Math.random() * 2 - 1;
       b0R = 0.99886 * b0R + whiteR * 0.0555179;
       b1R = 0.99332 * b1R + whiteR * 0.0750759;
@@ -1094,7 +1360,6 @@ permalink: /projects/ai-asmr/index.html
       b6R = whiteR * 0.115926;
     }
 
-    // 建立双声道源
     noiseSourceL = audioCtx.createBufferSource();
     noiseSourceL.buffer = bufferL;
     noiseSourceL.loop = true;
@@ -1103,7 +1368,6 @@ permalink: /projects/ai-asmr/index.html
     noiseSourceR.buffer = bufferR;
     noiseSourceR.loop = true;
 
-    // 左右独立可调双耳低通滤波器（截断刺身高频）
     noiseFilterL = audioCtx.createBiquadFilter();
     noiseFilterL.type = "lowpass";
     noiseFilterL.frequency.setValueAtTime(state.userLowpass, audioCtx.currentTime);
@@ -1116,15 +1380,15 @@ permalink: /projects/ai-asmr/index.html
 
     noiseGain = audioCtx.createGain();
     const curPreset = RAIN_PRESETS[state.currentRain];
-    noiseGain.gain.setValueAtTime(curPreset.baseVolume, audioCtx.currentTime);
+    noiseGain.gain.setValueAtTime(state.activeCategory === "rain" ? curPreset.baseVolume : 0.0001, audioCtx.currentTime);
 
     mergerNode = audioCtx.createChannelMerger(2);
 
     noiseSourceL.connect(noiseFilterL);
-    noiseFilterL.connect(mergerNode, 0, 0); // 左声道
+    noiseFilterL.connect(mergerNode, 0, 0);
 
     noiseSourceR.connect(noiseFilterR);
-    noiseFilterR.connect(mergerNode, 0, 1); // 右声道
+    noiseFilterR.connect(mergerNode, 0, 1);
 
     mergerNode.connect(noiseGain);
     noiseGain.connect(masterLimiter);
@@ -1133,35 +1397,30 @@ permalink: /projects/ai-asmr/index.html
     noiseSourceR.start();
   }
 
-  // 触发单颗独立双耳微滴脉冲 (Delicate & Cushioned Binaural Transient)
-  function triggerBinauralDrop() {
-    if (!audioCtx || !state.isPlaying) return;
+  // --------------------------------------------------------------------------
+  // B1. 雨声触发逻辑
+  // --------------------------------------------------------------------------
+  function triggerBinauralRainDrop() {
+    if (!audioCtx || !state.isPlaying || state.activeCategory !== "rain") return;
 
-    const surf = SURFACES[state.currentSurface];
+    const surf = RAIN_SURFACES[state.currentSurface];
     const rain = RAIN_PRESETS[state.currentRain];
     const now = audioCtx.currentTime;
 
-    // 1. 微小物理微滴包络发生器（Oscillator + Bandpass + Soft Attack）
     const osc = audioCtx.createOscillator();
-    // 雨滴基频稍作有机随机微扰 (±15%)
     const pitchJitter = 1 + (Math.random() * 0.3 - 0.15);
     const targetFreq = surf.freq * pitchJitter;
 
-    // 使用正弦波或柔和三角波，杜绝方波/锯齿波的坚硬谐波
     osc.type = "sine";
     osc.frequency.setValueAtTime(targetFreq * 1.6, now);
-    // 快速向下俯冲模拟撞击物理瞬间
     osc.frequency.exponentialRampToValueAtTime(Math.max(60, targetFreq * 0.7), now + surf.decay);
 
-    // 2. 钝感阻尼带通滤波器
     const filter = audioCtx.createBiquadFilter();
     filter.type = "bandpass";
     filter.frequency.setValueAtTime(targetFreq, now);
     filter.Q.setValueAtTime(surf.q, now);
 
-    // 3. 柔化振幅包络（Soft Attack Envelope 5ms，彻底避免 Click 咔哒杂音）
     const dropGain = audioCtx.createGain();
-    // 依据雨量动态计算单颗雨滴振幅
     const vel = rain.dropVelMin + Math.random() * (rain.dropVelMax - rain.dropVelMin);
     const peakGain = vel * 0.28;
 
@@ -1169,8 +1428,6 @@ permalink: /projects/ai-asmr/index.html
     dropGain.gain.linearRampToValueAtTime(peakGain, now + 0.005);
     dropGain.gain.exponentialRampToValueAtTime(0.0001, now + surf.decay + 0.015);
 
-    // 4. 3Dio 双耳空间定位 (Binaural Panner / Ear-to-Ear ITD)
-    // 随机方位角 (-1.0 左耳 ~ +1.0 右耳)，受 stereoWidth 调节
     const azimuth = (Math.random() * 2 - 1) * state.stereoWidth;
 
     let panner = null;
@@ -1179,7 +1436,6 @@ permalink: /projects/ai-asmr/index.html
       panner.pan.setValueAtTime(azimuth, now);
     }
 
-    // 链路串接
     osc.connect(filter);
     filter.connect(dropGain);
 
@@ -1193,33 +1449,27 @@ permalink: /projects/ai-asmr/index.html
     osc.start(now);
     osc.stop(now + surf.decay + 0.03);
 
-    // 通知 Canvas 可视化引擎产生对应声道的涟漪粒子
-    createVisualDrop(azimuth, vel);
+    createVisualEvent(azimuth, vel, "rain");
   }
 
-  // 调度雨滴节拍循环（泊松随机分布，模拟大自然真实雨声）
-  function scheduleNextDrop() {
-    if (!state.isPlaying) return;
+  function scheduleNextRainDrop() {
+    if (!state.isPlaying || state.activeCategory !== "rain") return;
 
     const rain = RAIN_PRESETS[state.currentRain];
     const avgRate = rain.dropRate * state.dropRateMultiplier;
-    // 泊松随机间隔 (ms)
     const interval = (-Math.log(1 - Math.random()) / avgRate) * 1000;
 
-    triggerBinauralDrop();
-
-    dropTimerId = setTimeout(scheduleNextDrop, Math.max(8, interval));
+    triggerBinauralRainDrop();
+    rainDropTimerId = setTimeout(scheduleNextRainDrop, Math.max(8, interval));
   }
 
-  // 暴风雨次低频远雷发生器 (Sub-bass rumble, 40-80Hz, 绝对无尖锐惊吓)
   function scheduleNextThunder() {
-    if (!state.isPlaying || !RAIN_PRESETS[state.currentRain].thunder) return;
+    if (!state.isPlaying || state.activeCategory !== "rain" || !RAIN_PRESETS[state.currentRain].thunder) return;
 
     const now = audioCtx.currentTime;
     const dur = 4.5 + Math.random() * 3.5;
     const attack = 1.5 + Math.random() * 1.0;
 
-    // 低频深沉噪声源
     const bufferSize = audioCtx.sampleRate * 2;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -1228,7 +1478,7 @@ permalink: /projects/ai-asmr/index.html
       const white = Math.random() * 2 - 1;
       output[i] = (lastOut + (0.02 * white)) / 1.02;
       lastOut = output[i];
-      output[i] *= 2.5; // 布朗低频
+      output[i] *= 2.5;
     }
 
     const thunderSource = audioCtx.createBufferSource();
@@ -1246,7 +1496,6 @@ permalink: /projects/ai-asmr/index.html
     thunderGain.gain.linearRampToValueAtTime(maxGain, now + attack);
     thunderGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
-    // 随机方位
     let panner = null;
     if (audioCtx.createStereoPanner) {
       panner = audioCtx.createStereoPanner();
@@ -1265,12 +1514,133 @@ permalink: /projects/ai-asmr/index.html
     thunderSource.start(now);
     thunderSource.stop(now + dur + 0.1);
 
-    // 下一次远雷（12 ~ 25 秒后）
     const nextInterval = 12000 + Math.random() * 13000;
     thunderTimerId = setTimeout(scheduleNextThunder, nextInterval);
   }
 
-  // 启动 / 停止声学生成
+  // --------------------------------------------------------------------------
+  // B2. 敲击声物理声学合成核心 (Tapping Synthesizer Engine)
+  // --------------------------------------------------------------------------
+  function triggerSingleTap(azimuthOverride = null, velScale = 1.0) {
+    if (!audioCtx || !state.isPlaying || state.activeCategory !== "tapping") return;
+
+    const mat = TAPPING_MATERIALS[state.currentTapMat];
+    const now = audioCtx.currentTime;
+
+    // 1. 声相计算 (3Dio Panning)
+    let azimuth = 0;
+    if (azimuthOverride !== null) {
+      azimuth = azimuthOverride * state.stereoWidth;
+    } else {
+      // 默认左右交替微偏
+      azimuth = (Math.random() > 0.5 ? 0.65 : -0.65) * (0.8 + Math.random() * 0.3) * state.stereoWidth;
+    }
+
+    // 随机有机微扰动 (±8%)
+    const pitchJitter = 1 + (Math.random() * 0.16 - 0.08);
+    const baseFreq = mat.baseFreq * pitchJitter;
+
+    // 2. 层一：材质箱体主谐振 (Body Tone)
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(baseFreq, now);
+
+    // 层二：轻微谐波泛音 (Harmonic Tone)
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(baseFreq * mat.harmonicMult, now);
+
+    // 3. 钝感吸音滤波：根据用户所调 softness 滤除尖叫高频
+    // softness 越大，截止越低（更温软肉感）；softness 越小，保留微弱清脆指甲质感
+    const tapFilter = audioCtx.createBiquadFilter();
+    tapFilter.type = "lowpass";
+    const cutoff = Math.min(state.userLowpass, 1200 + (1 - state.tapSoftness) * 1100);
+    tapFilter.frequency.setValueAtTime(cutoff, now);
+    tapFilter.Q.setValueAtTime(mat.q, now);
+
+    // 4. 柔化冲击包络 (Soft Attack / Anti-click Envelope)
+    const tapGain = audioCtx.createGain();
+    const vel = (0.55 + Math.random() * 0.35) * velScale;
+    const peak = vel * 0.42;
+    // 软淡入 3-6ms，彻底抹除直角咔哒破音
+    const attackTime = 0.003 + state.tapSoftness * 0.004;
+    const decayTime = mat.decay * (0.85 + Math.random() * 0.3);
+
+    tapGain.gain.setValueAtTime(0.0001, now);
+    tapGain.gain.linearRampToValueAtTime(peak, now + attackTime);
+    tapGain.gain.exponentialRampToValueAtTime(0.0001, now + decayTime + 0.02);
+
+    // 5. 3Dio 双耳声相定位
+    let panner = null;
+    if (audioCtx.createStereoPanner) {
+      panner = audioCtx.createStereoPanner();
+      panner.pan.setValueAtTime(azimuth, now);
+    }
+
+    osc1.connect(tapFilter);
+    osc2.connect(tapFilter);
+    tapFilter.connect(tapGain);
+
+    if (panner) {
+      tapGain.connect(panner);
+      panner.connect(masterLimiter);
+    } else {
+      tapGain.connect(masterLimiter);
+    }
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + decayTime + 0.04);
+    osc2.stop(now + decayTime + 0.04);
+
+    // 通知 Canvas 触发敲击动效
+    createVisualEvent(azimuth, vel, "tap");
+  }
+
+  // 调度敲击声节奏步进 (Styles: slow / flutter / orbit / metronome)
+  function scheduleNextTap() {
+    if (!state.isPlaying || state.activeCategory !== "tapping") return;
+
+    const style = TAPPING_STYLES[state.currentTapStyle];
+    let nextDelay = (style.baseInterval / state.tapCadenceMultiplier);
+
+    if (style.orbit) {
+      // 3Dio 假人头穿梭轨道：极左 -> 中 -> 极右 -> 中 -> 极左
+      const orbitAngles = [-0.85, -0.55, -0.2, 0.2, 0.55, 0.85, 0.55, 0.2, -0.2, -0.55];
+      state.orbitStep = (state.orbitStep + 1) % orbitAngles.length;
+      const az = orbitAngles[state.orbitStep];
+      triggerSingleTap(az, 1.0);
+      nextDelay *= (0.9 + Math.random() * 0.2);
+    } else if (style.flutter) {
+      // 指尖连续轻颤 4 连敲 (Flutter Roll)
+      const rollCount = 4;
+      const rollInterval = 95 / state.tapCadenceMultiplier;
+      const baseAz = (Math.random() > 0.5 ? 0.6 : -0.6);
+
+      for (let i = 0; i < rollCount; i++) {
+        setTimeout(() => {
+          if (state.isPlaying && state.activeCategory === "tapping") {
+            const azJitter = baseAz + (Math.random() * 0.25 - 0.12);
+            triggerSingleTap(azJitter, 0.85 + (i * 0.05));
+          }
+        }, i * rollInterval);
+      }
+      nextDelay = (style.baseInterval / state.tapCadenceMultiplier) * (0.85 + Math.random() * 0.3);
+    } else {
+      // slow 或 metronome
+      const az = (Math.random() > 0.5 ? 0.7 : -0.7) * (0.85 + Math.random() * 0.25);
+      triggerSingleTap(az, 1.0);
+      if (state.currentTapStyle === "slow") {
+        nextDelay *= (0.8 + Math.random() * 0.4); // 自然慢速有机微扰
+      }
+    }
+
+    tapTimerId = setTimeout(scheduleNextTap, Math.max(50, nextDelay));
+  }
+
+  // --------------------------------------------------------------------------
+  // B3. 启停与节点更新
+  // --------------------------------------------------------------------------
   function startAudio() {
     initAudioEngine();
     if (audioCtx.state === "suspended") {
@@ -1279,10 +1649,14 @@ permalink: /projects/ai-asmr/index.html
 
     state.isPlaying = true;
     updateAcousticNodes();
-    scheduleNextDrop();
 
-    if (RAIN_PRESETS[state.currentRain].thunder) {
-      thunderTimerId = setTimeout(scheduleNextThunder, 3000);
+    if (state.activeCategory === "rain") {
+      scheduleNextRainDrop();
+      if (RAIN_PRESETS[state.currentRain].thunder) {
+        thunderTimerId = setTimeout(scheduleNextThunder, 2500);
+      }
+    } else {
+      scheduleNextTap();
     }
 
     updateUIPlayState();
@@ -1291,11 +1665,11 @@ permalink: /projects/ai-asmr/index.html
 
   function stopAudio() {
     state.isPlaying = false;
-    if (dropTimerId) clearTimeout(dropTimerId);
+    if (rainDropTimerId) clearTimeout(rainDropTimerId);
     if (thunderTimerId) clearTimeout(thunderTimerId);
+    if (tapTimerId) clearTimeout(tapTimerId);
 
     if (audioCtx && audioCtx.state === "running") {
-      // 平滑淡出静音
       masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
       setTimeout(() => {
         if (!state.isPlaying && audioCtx) {
@@ -1310,42 +1684,50 @@ permalink: /projects/ai-asmr/index.html
   function updateAcousticNodes() {
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
-    const rain = RAIN_PRESETS[state.currentRain];
 
-    // 更新总音量与底噪增益
+    // 总音量更新
     masterGain.gain.setTargetAtTime(state.masterVol, now, 0.05);
-    if (noiseGain) {
-      noiseGain.gain.setTargetAtTime(rain.baseVolume, now, 0.1);
-    }
 
-    // 更新低通滤波器截止频率（结合雨量与用户微调）
-    const targetFreq = Math.min(rain.filterFreq, state.userLowpass);
-    if (noiseFilterL && noiseFilterR) {
-      noiseFilterL.frequency.setTargetAtTime(targetFreq, now, 0.08);
-      noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
-    }
+    if (state.activeCategory === "rain") {
+      // 雨声模式：启动粉红噪声底噪
+      const rain = RAIN_PRESETS[state.currentRain];
+      if (noiseGain) noiseGain.gain.setTargetAtTime(rain.baseVolume, now, 0.1);
 
-    // 更新 HUD 数据显示
-    const hudFreq = document.getElementById("hudFilterFreq");
-    if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
+      const targetFreq = Math.min(rain.filterFreq, state.userLowpass);
+      if (noiseFilterL && noiseFilterR) {
+        noiseFilterL.frequency.setTargetAtTime(targetFreq, now, 0.08);
+        noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
+      }
+
+      const hudFreq = document.getElementById("hudFilterFreq");
+      if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
+    } else {
+      // 敲击声模式：关闭雨声持续底噪，保持极度干净干燥的敲击直达声
+      if (noiseGain) noiseGain.gain.setTargetAtTime(0.0001, now, 0.1);
+
+      const cutoff = Math.min(state.userLowpass, 1200 + (1 - state.tapSoftness) * 1100);
+      const hudFreq = document.getElementById("hudFilterFreq");
+      if (hudFreq) hudFreq.textContent = "LPF " + Math.round(cutoff) + " Hz";
+    }
   }
 
   // --------------------------------------------------------------------------
-  // C. Canvas 动画渲染引擎 (雨丝、3Dio 声场与同心涟漪)
+  // C. Canvas 动画渲染引擎 (雨丝/敲击波纹/3Dio 声场环)
   // --------------------------------------------------------------------------
   const canvas = document.getElementById("asmrCanvas");
   const ctx = canvas.getContext("2d");
   let rainParticles = [];
   let rippleParticles = [];
+  let tapShockwaves = [];
   let earWavesL = [];
   let earWavesR = [];
   let animFrameId = null;
 
-  // 统一逻辑坐标与物理像素分离，杜绝高分屏 DPR 累乘与边缘清屏残留
   let logicalWidth = 960;
   let logicalHeight = 380;
   let dpr = 1;
 
+  // 雨丝粒子类
   class RainStreak {
     constructor() {
       this.reset(true);
@@ -1364,7 +1746,6 @@ permalink: /projects/ai-asmr/index.html
       this.y += this.speed;
       this.x += this.wind;
 
-      // 触底或被微风吹出侧边边界时自然重置，杜绝在单侧死角堆叠
       if (this.y > logicalHeight - 30 || this.x > logicalWidth + 40 || this.x < -40) {
         if (this.y > logicalHeight - 30 && Math.random() < 0.15 && rippleParticles.length < 45) {
           rippleParticles.push({
@@ -1398,33 +1779,43 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
-  // 接收 Web Audio 双耳触发事件
-  function createVisualDrop(azimuth, vel) {
-    // 映射方位角 (-1 ~ 1) 到屏幕宽度 (0.08w ~ 0.92w)
-    const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.84) + (logicalWidth * 0.08);
-    const posY = logicalHeight - 50 + (Math.random() * 30 - 15);
-
+  // 接收 Web Audio 触发可视化事件
+  function createVisualEvent(azimuth, vel, type = "rain") {
+    const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.82) + (logicalWidth * 0.09);
     const isLeft = azimuth < 0;
     const colorPrefix = isLeft ? "rgba(45, 212, 191," : "rgba(56, 189, 248,";
 
-    // 产生地面涟漪（设上限防堆积）
-    if (rippleParticles.length < 50) {
-      rippleParticles.push({
-        x: posX,
-        y: posY,
-        rx: 2,
-        ry: 0.7,
-        maxR: 24 + vel * 32,
-        alpha: 0.65,
-        color: colorPrefix
-      });
+    if (type === "rain") {
+      if (rippleParticles.length < 50) {
+        rippleParticles.push({
+          x: posX,
+          y: logicalHeight - 45 + (Math.random() * 25 - 12),
+          rx: 2,
+          ry: 0.7,
+          maxR: 24 + vel * 32,
+          alpha: 0.65,
+          color: colorPrefix
+        });
+      }
+    } else {
+      // 敲击声专属共鸣波纹 (Tapping Shockwave)
+      if (tapShockwaves.length < 35) {
+        tapShockwaves.push({
+          x: posX,
+          y: logicalHeight - 55,
+          r: 4,
+          maxR: 35 + vel * 45,
+          alpha: 0.85,
+          color: isLeft ? "rgba(45, 212, 191," : "rgba(241, 166, 90,"
+        });
+      }
     }
 
-    // 产生 3Dio 人耳波纹
+    // 3Dio 耳部声波辐射
     if (isLeft) {
-      earWavesL.push({ r: 8, maxR: 45 + vel * 35, alpha: 0.75 });
+      earWavesL.push({ r: 8, maxR: 45 + vel * 35, alpha: 0.8 });
     } else {
-      earWavesR.push({ r: 8, maxR: 45 + vel * 35, alpha: 0.75 });
+      earWavesR.push({ r: 8, maxR: 45 + vel * 35, alpha: 0.8 });
     }
   }
 
@@ -1433,27 +1824,41 @@ permalink: /projects/ai-asmr/index.html
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 2. 切换回基于 DPR 的高精逻辑坐标系
+    // 2. 切换回基于 DPR 的高精视网膜逻辑坐标系
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const isPlaying = state.isPlaying;
 
     if (state.visualMode !== "minimal") {
-      // 绘制雨丝
-      const rain = RAIN_PRESETS[state.currentRain];
-      const activeCount = isPlaying
-        ? Math.floor(rainParticles.length * (rain.dropRate / 100))
-        : 25;
+      if (state.activeCategory === "rain") {
+        // 雨声模式：绘制雨丝
+        const rain = RAIN_PRESETS[state.currentRain];
+        const activeCount = isPlaying
+          ? Math.floor(rainParticles.length * (rain.dropRate / 100))
+          : 25;
 
-      const limit = Math.min(rainParticles.length, Math.max(18, activeCount));
-      for (let i = 0; i < limit; i++) {
-        const p = rainParticles[i];
-        p.update(rain.windSpeed);
-        p.draw(ctx);
+        const limit = Math.min(rainParticles.length, Math.max(18, activeCount));
+        for (let i = 0; i < limit; i++) {
+          const p = rainParticles[i];
+          p.update(rain.windSpeed);
+          p.draw(ctx);
+        }
+      } else {
+        // 敲击模式：绘制底部材质共鸣台面 (Acoustic Tapping Surface)
+        ctx.save();
+        const padY = logicalHeight - 50;
+        ctx.beginPath();
+        ctx.moveTo(logicalWidth * 0.08, padY);
+        ctx.lineTo(logicalWidth * 0.92, padY);
+        ctx.strokeStyle = "rgba(45, 212, 191, 0.25)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+        ctx.restore();
       }
     }
 
-    // 绘制地面柔和涟漪
+    // 绘制地面雨滴柔和涟漪
     for (let i = rippleParticles.length - 1; i >= 0; i--) {
       const r = rippleParticles[i];
       r.rx += 1.1;
@@ -1471,6 +1876,29 @@ permalink: /projects/ai-asmr/index.html
       }
     }
 
+    // 绘制敲击专属声学脉冲波纹 (Tap Shockwaves)
+    for (let i = tapShockwaves.length - 1; i >= 0; i--) {
+      const s = tapShockwaves[i];
+      s.r += 1.8;
+      s.alpha *= 0.93;
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.strokeStyle = s.color + s.alpha.toFixed(3) + ")";
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      // 内核亮光微核
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, Math.max(1, 3 * s.alpha), 0, Math.PI * 2);
+      ctx.fillStyle = s.color + s.alpha.toFixed(3) + ")";
+      ctx.fill();
+
+      if (s.alpha < 0.02 || s.r > s.maxR) {
+        tapShockwaves.splice(i, 1);
+      }
+    }
+
     // 绘制 3Dio 双耳声场指示环 (中央区域居中)
     const centerX = logicalWidth / 2;
     const centerY = logicalHeight / 2 - 12;
@@ -1482,7 +1910,7 @@ permalink: /projects/ai-asmr/index.html
     ctx.beginPath();
     ctx.ellipse(0, 0, 32, 44, 0, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(22, 38, 44, 0.7)";
-    ctx.strokeStyle = "rgba(45, 212, 191, 0.25)";
+    ctx.strokeStyle = state.activeCategory === "rain" ? "rgba(45, 212, 191, 0.25)" : "rgba(241, 166, 90, 0.25)";
     ctx.lineWidth = 1.5;
     ctx.fill();
     ctx.stroke();
@@ -1547,61 +1975,144 @@ permalink: /projects/ai-asmr/index.html
     initParticles();
   }
 
-
   // --------------------------------------------------------------------------
-  // D. AI ASMR 提示词工坊与生成逻辑
+  // D. AI ASMR 提示词工坊与生成逻辑 (雨声 & 敲击声)
   // --------------------------------------------------------------------------
   function generatePrompt() {
-    const rain = RAIN_PRESETS[state.currentRain];
-    const surf = SURFACES[state.currentSurface];
+    let en = "";
+    let zh = "";
+    let neg = "";
 
-    // 构建符合专业 ASMR 的英文 Prompt
-    let en = "ASMR, binaural 3Dio style recording, " + rain.enName + " rhythmically falling onto " + surf.enName + ". ";
-    en += "Delicate micro-droplets, gentle and cushioned dull patter, mellow low-mid acoustic resonance, repetitive and hypnotic sleep ambience. ";
-    en += "Extreme close-up proximity effect, zero high-frequency harshness, zero sharp clicks, dry studio acoustics, zero reverb, soundproof background.";
+    if (state.activeCategory === "rain") {
+      const rain = RAIN_PRESETS[state.currentRain];
+      const surf = RAIN_SURFACES[state.currentSurface];
 
-    if (rain.thunder) {
-      en += " Distant muffled sub-bass thunder rumble in the deep background, no sudden jumpscare cracks.";
-    }
+      en = "ASMR, binaural 3Dio style recording, " + rain.enName + " rhythmically falling onto " + surf.enName + ". ";
+      en += "Delicate micro-droplets, gentle and cushioned dull patter, mellow low-mid acoustic resonance, repetitive and hypnotic sleep ambience. ";
+      en += "Extreme close-up proximity effect, zero high-frequency harshness, zero sharp clicks, dry studio acoustics, zero reverb, soundproof background.";
+      if (rain.thunder) {
+        en += " Distant muffled sub-bass thunder rumble in the deep background, no sudden jumpscare cracks.";
+      }
 
-    // 构建中文 Prompt 释义
-    let zh = "ASMR双耳3Dio录音，" + rain.name + "有节奏地轻轻拍打在" + surf.zhPrompt + "上。";
-    zh += "细腻微雨滴颗粒，轻柔钝感吸音扑嗒声，温润中低频共鸣，催眠平稳的连绵白噪音。";
-    zh += "极致贴耳近讲效应，无刺耳高频，无尖锐咔哒破音，无大空间混响，消音室纯净干燥声学。";
-    if (rain.thunder) {
-      zh += " 背景伴有极其深沉远方的低频闷雷，无突兀惊吓爆音。";
+      zh = "ASMR双耳3Dio录音，" + rain.name + "有节奏地轻轻拍打在" + surf.zhPrompt + "上。";
+      zh += "细腻微雨滴颗粒，轻柔钝感吸音扑嗒声，温润中低频共鸣，催眠平稳的连绵白噪音。";
+      zh += "极致贴耳近讲效应，无刺耳高频，无尖锐咔哒破音，无大空间混响，消音室纯净干燥声学。";
+      if (rain.thunder) {
+        zh += " 背景伴有极其深沉远方的低频闷雷，无突兀惊吓爆音。";
+      }
+
+      neg = "harsh, sharp, shrill, piercing, metallic, robotic artifacts, digital phasing, sibilant, sibilance, loud clicks, abrupt changes, startling jumpscares, clipping, distortion, echo, heavy cavernous reverb, muddy, chaotic, crowded, noisy background, white noise hiss";
+
+      const hudTitle = document.getElementById("hudPresetTitle");
+      const hudDesc = document.getElementById("hudPresetDesc");
+      if (hudTitle) hudTitle.textContent = rain.name + " · " + surf.name;
+      if (hudDesc) hudDesc.textContent = rain.desc;
+    } else {
+      // 敲击声提示词
+      const mat = TAPPING_MATERIALS[state.currentTapMat];
+      const style = TAPPING_STYLES[state.currentTapStyle];
+
+      en = "ASMR, binaural 3Dio style recording, " + style.enName + " on a " + mat.enName + " with natural trimmed fingernails and soft finger pads. ";
+      en += "Delicate and gentle touch, mellow and cushioned dull resonance, rhythmic and repetitive hypnotic cadence. ";
+      en += "Extreme intimate close-up ear-to-ear panning, zero sharp fingernail clicks, zero harsh plastic clatter, dry studio acoustics, zero room reverb, pure tactile sleep triggers.";
+
+      zh = "ASMR双耳3Dio录音，以" + style.zhPrompt + "在" + mat.zhPrompt + "上轻触。";
+      zh += "细腻温润指尖触感，醇厚钝感中低频木质/陶体共鸣，有规律且连贯重复的催眠节奏。";
+      zh += "极致贴耳近场双耳空间流动，无尖锐指甲刮擦杂音，无塑料硬脆声，消音室干燥声学，纯净颅内酥麻。";
+
+      neg = "harsh, sharp plastic clicks, fingernail scraping, piercing clatter, loud smacks, metallic ticks, erratic chaotic tempo, sudden jumpscares, echoey room, cavernous reverb, distorted transients, clipping, noisy background hiss";
+
+      const hudTitle = document.getElementById("hudPresetTitle");
+      const hudDesc = document.getElementById("hudPresetDesc");
+      if (hudTitle) hudTitle.textContent = mat.name + " · " + style.name;
+      if (hudDesc) hudDesc.textContent = mat.desc;
     }
 
     const txtEn = document.getElementById("txtGeneratedEnPrompt");
     const txtZh = document.getElementById("txtGeneratedZhPrompt");
+    const txtNeg = document.getElementById("txtNegativePrompt");
     if (txtEn) txtEn.value = en;
     if (txtZh) txtZh.value = zh;
-
-    // 同步更新 HUD 标题
-    const hudTitle = document.getElementById("hudPresetTitle");
-    const hudDesc = document.getElementById("hudPresetDesc");
-    if (hudTitle) hudTitle.textContent = rain.name + " · " + surf.name;
-    if (hudDesc) hudDesc.textContent = rain.desc;
+    if (txtNeg) txtNeg.value = neg;
   }
 
   // --------------------------------------------------------------------------
   // E. 交互事件与 UI 响应绑定
   // --------------------------------------------------------------------------
+  function switchCategory(cat) {
+    if (state.activeCategory === cat) return;
+    const wasPlaying = state.isPlaying;
+
+    if (wasPlaying) {
+      stopAudio();
+    }
+
+    state.activeCategory = cat;
+
+    // 切换 Tab 视觉
+    document.querySelectorAll(".cat-tab-btn").forEach(btn => {
+      const match = btn.getAttribute("data-cat") === cat;
+      btn.classList.toggle("active", match);
+      btn.setAttribute("aria-selected", match ? "true" : "false");
+    });
+
+    // 切换控制面板
+    const panelRain = document.getElementById("panelRainCategory");
+    const panelTapping = document.getElementById("panelTappingCategory");
+    if (panelRain && panelTapping) {
+      panelRain.classList.toggle("active", cat === "rain");
+      panelRain.hidden = cat !== "rain";
+      panelTapping.classList.toggle("active", cat === "tapping");
+      panelTapping.hidden = cat !== "tapping";
+    }
+
+    // 切换调音台控件可见性
+    document.querySelectorAll(".rain-tweak").forEach(el => el.hidden = (cat !== "rain"));
+    document.querySelectorAll(".tap-tweak").forEach(el => el.hidden = (cat !== "tapping"));
+
+    // 切换标题与文字
+    const stageTitle = document.getElementById("stageMainTitle");
+    const playBtnText = document.getElementById("playBtnText");
+    const badge = document.getElementById("promptCategoryBadge");
+
+    if (cat === "rain") {
+      if (stageTitle) stageTitle.textContent = "3Dio BINAURAL RAIN SOUNDSTAGE";
+      if (playBtnText) playBtnText.textContent = "播放雨声 (Space)";
+      if (badge) badge.textContent = "雨声提示词已联动";
+    } else {
+      if (stageTitle) stageTitle.textContent = "3Dio BINAURAL TAPPING SOUNDSTAGE";
+      if (playBtnText) playBtnText.textContent = "播放敲击声 (Space)";
+      if (badge) badge.textContent = "敲击声提示词已联动";
+    }
+
+    updateAcousticNodes();
+    generatePrompt();
+
+    // 清空旧特效残留
+    rippleParticles = [];
+    tapShockwaves = [];
+
+    if (wasPlaying) {
+      startAudio();
+    }
+  }
+
   function updateUIPlayState() {
     const btn = document.getElementById("btnMainPlay");
     const pulse = document.getElementById("statusPulse");
     const playText = document.getElementById("playBtnText");
+    const catName = state.activeCategory === "rain" ? "雨声" : "敲击声";
 
     if (state.isPlaying) {
       btn.classList.add("playing");
       btn.setAttribute("aria-pressed", "true");
       pulse.classList.add("active");
-      playText.textContent = "暂停播放 (Space)";
+      playText.textContent = "暂停" + catName + " (Space)";
     } else {
       btn.classList.remove("playing");
       btn.setAttribute("aria-pressed", "false");
       pulse.classList.remove("active");
-      playText.textContent = "播放雨声 (Space)";
+      playText.textContent = "播放" + catName + " (Space)";
     }
   }
 
@@ -1629,6 +2140,14 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function setupEventBindings() {
+    // 0. 大类 Tab 切换
+    document.querySelectorAll(".cat-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cat = btn.getAttribute("data-cat");
+        switchCategory(cat);
+      });
+    });
+
     // 1. 播放/暂停
     const btnMainPlay = document.getElementById("btnMainPlay");
     btnMainPlay.addEventListener("click", () => {
@@ -1661,14 +2180,13 @@ permalink: /projects/ai-asmr/index.html
         updateAcousticNodes();
         generatePrompt();
 
-        // 重新启动远雷计时
-        if (state.isPlaying && RAIN_PRESETS[state.currentRain].thunder && !thunderTimerId) {
+        if (state.isPlaying && state.activeCategory === "rain" && RAIN_PRESETS[state.currentRain].thunder && !thunderTimerId) {
           thunderTimerId = setTimeout(scheduleNextThunder, 2500);
         }
       });
     });
 
-    // 3. 吸音介质切换
+    // 3. 雨声吸音介质切换
     document.querySelectorAll(".surface-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".surface-btn").forEach(b => {
@@ -1683,7 +2201,38 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
-    // 4. 视觉模式切换
+    // 4. 敲击材质选择
+    document.querySelectorAll(".tap-mat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tap-mat-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentTapMat = btn.getAttribute("data-mat");
+
+        updateAcousticNodes();
+        generatePrompt();
+      });
+    });
+
+    // 5. 敲击手法选择
+    document.querySelectorAll(".tap-style-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tap-style-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentTapStyle = btn.getAttribute("data-style");
+
+        generatePrompt();
+      });
+    });
+
+    // 6. 视觉模式切换
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
@@ -1692,7 +2241,7 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
-    // 5. 定时休眠
+    // 7. 定时休眠
     const selectTimer = document.getElementById("selectSleepTimer");
     selectTimer.addEventListener("change", () => {
       state.sleepTimerMinutes = parseInt(selectTimer.value, 10);
@@ -1705,7 +2254,7 @@ permalink: /projects/ai-asmr/index.html
       }
     });
 
-    // 6. 主音量滑块
+    // 8. 主音量滑块
     const rangeVol = document.getElementById("rangeMasterVol");
     const valVol = document.getElementById("valMasterVol");
     rangeVol.addEventListener("input", () => {
@@ -1716,7 +2265,7 @@ permalink: /projects/ai-asmr/index.html
       }
     });
 
-    // 7. 3Dio 立体声宽度
+    // 9. 3Dio 立体声宽度
     const rangeWidth = document.getElementById("rangeStereoWidth");
     const valWidth = document.getElementById("valStereoWidth");
     rangeWidth.addEventListener("input", () => {
@@ -1724,7 +2273,7 @@ permalink: /projects/ai-asmr/index.html
       valWidth.textContent = Math.round(state.stereoWidth * 100) + "%";
     });
 
-    // 8. 低通滤波器截止频率 (消除尖锐毛刺)
+    // 10. 低通滤波器截止频率 (消除尖锐毛刺)
     const rangeLp = document.getElementById("rangeLowpass");
     const valLp = document.getElementById("valLowpass");
     rangeLp.addEventListener("input", () => {
@@ -1733,23 +2282,49 @@ permalink: /projects/ai-asmr/index.html
       updateAcousticNodes();
     });
 
-    // 9. 雨滴敲击密度
+    // 11. 雨滴敲击密度
     const rangeDensity = document.getElementById("rangeDropDensity");
     const valDensity = document.getElementById("valDropDensity");
-    rangeDensity.addEventListener("input", () => {
-      state.dropRateMultiplier = parseFloat(rangeDensity.value);
-      valDensity.textContent = state.dropRateMultiplier.toFixed(1) + "x";
-    });
+    if (rangeDensity && valDensity) {
+      rangeDensity.addEventListener("input", () => {
+        state.dropRateMultiplier = parseFloat(rangeDensity.value);
+        valDensity.textContent = state.dropRateMultiplier.toFixed(1) + "x";
+      });
+    }
 
-    // 10. 暴风雨次低频远雷音量
+    // 12. 暴风雨次低频远雷音量
     const rangeThun = document.getElementById("rangeThunder");
     const valThun = document.getElementById("valThunder");
-    rangeThun.addEventListener("input", () => {
-      state.thunderVol = parseFloat(rangeThun.value);
-      valThun.textContent = Math.round(state.thunderVol * 100) + "%";
-    });
+    if (rangeThun && valThun) {
+      rangeThun.addEventListener("input", () => {
+        state.thunderVol = parseFloat(rangeThun.value);
+        valThun.textContent = Math.round(state.thunderVol * 100) + "%";
+      });
+    }
 
-    // 11. 复制 Prompt
+    // 13. 敲击速度 (BPM)
+    const rangeCadence = document.getElementById("rangeTapCadence");
+    const valCadence = document.getElementById("valTapCadence");
+    if (rangeCadence && valCadence) {
+      rangeCadence.addEventListener("input", () => {
+        state.tapCadenceMultiplier = parseFloat(rangeCadence.value);
+        valCadence.textContent = state.tapCadenceMultiplier.toFixed(1) + "x";
+      });
+    }
+
+    // 14. 敲击指腹肉感 / 钝感
+    const rangeSoftness = document.getElementById("rangeTapSoftness");
+    const valSoftness = document.getElementById("valTapSoftness");
+    if (rangeSoftness && valSoftness) {
+      rangeSoftness.addEventListener("input", () => {
+        state.tapSoftness = parseFloat(rangeSoftness.value);
+        const pct = Math.round(state.tapSoftness * 100);
+        valSoftness.textContent = pct > 60 ? `肉感指腹 (${pct}%)` : `轻柔甲触 (${pct}%)`;
+        updateAcousticNodes();
+      });
+    }
+
+    // 15. 复制 Prompt
     setupCopyButton("btnCopyEnPrompt", "txtGeneratedEnPrompt", "已复制英文 Prompt！");
     setupCopyButton("btnCopyZhPrompt", "txtGeneratedZhPrompt", "已复制中文 Prompt！");
     setupCopyButton("btnCopyNegPrompt", "txtNegativePrompt", "已复制 Negative Prompt！");
