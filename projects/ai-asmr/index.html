@@ -3427,16 +3427,21 @@ permalink: /projects/ai-asmr/index.html
   let audioCtx = null;
   let masterGain = null;
   let masterLimiter = null;
+  let masterWarmthFilter = null;
 
-  // 雨声与水流底声节点 (双声道独立去相关)
+  // 雨声、水流、壁炉、深空底声节点 (双声道独立去相关 + 动态滤波与声相调制)
   let noiseSourceL = null;
   let noiseSourceR = null;
   let noiseFilterL = null;
   let noiseFilterR = null;
+  let bedPeakingL = null;
+  let bedPeakingR = null;
+  let bedGainL = null;
+  let bedGainR = null;
   let noiseGain = null;
   let mergerNode = null;
 
-  // 定时调度器 ID
+  // 定时调度器 ID 与安全子定时器池
   let rainDropTimerId = null;
   let thunderTimerId = null;
   let tapTimerId = null;
@@ -3452,6 +3457,7 @@ permalink: /projects/ai-asmr/index.html
   let toolCycleStep = 0;
   let toolPanSide = -0.85;
   let toolTypewriterCount = 0;
+  let toolMusicBoxStep = 0;
   let fireTimerId = null;
   let fireConvectionPhase = 0;
   let fireStepPan = -0.6;
@@ -3459,36 +3465,98 @@ permalink: /projects/ai-asmr/index.html
   let squishTimerId = null;
   let squishCyclePhase = 0;
   let keyTimerId = null;
+  let keyStrokeCounter = 0;
   let ambTimerId = null;
   let ambDroneGain = null;
   let ambDroneOsc1 = null;
   let ambDroneOsc2 = null;
+  let ambSubOsc = null;
+  let ambDroneFilter = null;
+  let ambDronePanner = null;
+  let continuousModTimerId = null;
+  let continuousModPhase = 0;
+  let suspendTimeoutId = null;
+  let sleepTimerTickId = null;
+  let pendingSubTimers = [];
   let squishPanSide = -0.75;
   let squishBlobs = [];
   let squishRipples = [];
   let squishCompression = 0;
+
+  function scheduleSubTimer(fn, delayMs) {
+    const id = setTimeout(() => {
+      const idx = pendingSubTimers.indexOf(id);
+      if (idx !== -1) pendingSubTimers.splice(idx, 1);
+      fn();
+    }, delayMs);
+    pendingSubTimers.push(id);
+    return id;
+  }
+
+  function clearAllSubTimers() {
+    for (let i = 0; i < pendingSubTimers.length; i++) {
+      clearTimeout(pendingSubTimers[i]);
+    }
+    pendingSubTimers = [];
+  }
+
+  // 3Dio 仿真人头空间声相与近讲效应连接器 (支持双耳声相定位 + 近耳 Proximity 低频温润补偿)
+  function connectTo3DioStage(sourceNode, azimuth, startTime) {
+    if (!audioCtx || !masterWarmthFilter) return null;
+    const clampedAz = Math.max(-1, Math.min(1, azimuth));
+    const proximityAmount = Math.abs(clampedAz);
+
+    // 模拟 3Dio 硅胶耳廓贴耳近讲效应 (Proximity Warmth Shelf ~165Hz)
+    let stageNode = sourceNode;
+    if (proximityAmount > 0.3) {
+      const proxShelf = audioCtx.createBiquadFilter();
+      proxShelf.type = "lowshelf";
+      proxShelf.frequency.setValueAtTime(165, startTime);
+      proxShelf.gain.setValueAtTime((proximityAmount - 0.3) * 3.8, startTime);
+      sourceNode.connect(proxShelf);
+      stageNode = proxShelf;
+    }
+
+    if (audioCtx.createStereoPanner) {
+      const panner = audioCtx.createStereoPanner();
+      panner.pan.setValueAtTime(clampedAz, startTime);
+      stageNode.connect(panner);
+      panner.connect(masterWarmthFilter);
+      return panner;
+    } else {
+      stageNode.connect(masterWarmthFilter);
+      return null;
+    }
+  }
 
   function initAudioEngine() {
     if (audioCtx) return;
 
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     audioCtx = new AudioContextClass();
+    const now = audioCtx.currentTime;
 
-    // 1. Master Bus 安全防线：软限幅压缩器，杜绝爆音与突兀声音
+    // 1. Master Bus 安全防线：全局柔化低通 + 软限幅压缩器，杜绝爆音与高频数码毛刺
+    masterWarmthFilter = audioCtx.createBiquadFilter();
+    masterWarmthFilter.type = "lowpass";
+    masterWarmthFilter.frequency.setValueAtTime(Math.min(4800, state.userLowpass * 1.65), now);
+    masterWarmthFilter.Q.setValueAtTime(0.65, now);
+
     masterLimiter = audioCtx.createDynamicsCompressor();
-    masterLimiter.threshold.setValueAtTime(-5.0, audioCtx.currentTime);
-    masterLimiter.knee.setValueAtTime(6.0, audioCtx.currentTime);
-    masterLimiter.ratio.setValueAtTime(16.0, audioCtx.currentTime);
-    masterLimiter.attack.setValueAtTime(0.003, audioCtx.currentTime);
-    masterLimiter.release.setValueAtTime(0.12, audioCtx.currentTime);
+    masterLimiter.threshold.setValueAtTime(-5.0, now);
+    masterLimiter.knee.setValueAtTime(6.0, now);
+    masterLimiter.ratio.setValueAtTime(16.0, now);
+    masterLimiter.attack.setValueAtTime(0.003, now);
+    masterLimiter.release.setValueAtTime(0.12, now);
 
     masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(state.masterVol, audioCtx.currentTime);
+    masterGain.gain.setValueAtTime(state.masterVol, now);
 
+    masterWarmthFilter.connect(masterLimiter);
     masterLimiter.connect(masterGain);
     masterGain.connect(audioCtx.destination);
 
-    // 2. 双声道去相关立体声雨声底噪缓冲区
+    // 2. 双声道去相关立体声底噪缓冲区 (Paul Kellet 高精度粉红噪声)
     const sampleRate = audioCtx.sampleRate;
     const bufferDuration = 8.0;
     const numSamples = Math.floor(sampleRate * bufferDuration);
@@ -3509,7 +3577,7 @@ permalink: /projects/ai-asmr/index.html
       b3L = 0.86650 * b3L + whiteL * 0.3104856;
       b4L = 0.55000 * b4L + whiteL * 0.5329522;
       b5L = -0.7616 * b5L - whiteL * 0.0168980;
-      dataL[i] = (b0L + b1L + b2L + b3L + b4L + b5L + b6L + whiteL * 0.5362) * 0.06;
+      dataL[i] = (b0L + b1L + b2L + b3L + b4L + b5L + b6L + whiteL * 0.5362) * 0.058;
       b6L = whiteL * 0.115926;
 
       const whiteR = Math.random() * 2 - 1;
@@ -3519,7 +3587,7 @@ permalink: /projects/ai-asmr/index.html
       b3R = 0.86650 * b3R + whiteR * 0.3104856;
       b4R = 0.55000 * b4R + whiteR * 0.5329522;
       b5R = -0.7616 * b5R - whiteR * 0.0168980;
-      dataR[i] = (b0R + b1R + b2R + b3R + b4R + b5R + b6R + whiteR * 0.5362) * 0.06;
+      dataR[i] = (b0R + b1R + b2R + b3R + b4R + b5R + b6R + whiteR * 0.5362) * 0.058;
       b6R = whiteR * 0.115926;
     }
 
@@ -3533,112 +3601,229 @@ permalink: /projects/ai-asmr/index.html
 
     noiseFilterL = audioCtx.createBiquadFilter();
     noiseFilterL.type = "lowpass";
-    noiseFilterL.frequency.setValueAtTime(state.userLowpass, audioCtx.currentTime);
-    noiseFilterL.Q.setValueAtTime(0.8, audioCtx.currentTime);
+    noiseFilterL.frequency.setValueAtTime(state.userLowpass, now);
+    noiseFilterL.Q.setValueAtTime(0.8, now);
 
     noiseFilterR = audioCtx.createBiquadFilter();
     noiseFilterR.type = "lowpass";
-    noiseFilterR.frequency.setValueAtTime(state.userLowpass, audioCtx.currentTime);
-    noiseFilterR.Q.setValueAtTime(0.8, audioCtx.currentTime);
+    noiseFilterR.frequency.setValueAtTime(state.userLowpass, now);
+    noiseFilterR.Q.setValueAtTime(0.8, now);
+
+    // 双耳独立共振峰塑形器 (用于水体腔体共鸣、雨面温润度与极光频散)
+    bedPeakingL = audioCtx.createBiquadFilter();
+    bedPeakingL.type = "peaking";
+    bedPeakingL.frequency.setValueAtTime(520, now);
+    bedPeakingL.Q.setValueAtTime(1.4, now);
+    bedPeakingL.gain.setValueAtTime(0, now);
+
+    bedPeakingR = audioCtx.createBiquadFilter();
+    bedPeakingR.type = "peaking";
+    bedPeakingR.frequency.setValueAtTime(520, now);
+    bedPeakingR.Q.setValueAtTime(1.4, now);
+    bedPeakingR.gain.setValueAtTime(0, now);
+
+    bedGainL = audioCtx.createGain();
+    bedGainL.gain.setValueAtTime(1.0, now);
+    bedGainR = audioCtx.createGain();
+    bedGainR.gain.setValueAtTime(1.0, now);
 
     noiseGain = audioCtx.createGain();
     const curPreset = RAIN_PRESETS[state.currentRain];
-    noiseGain.gain.setValueAtTime(state.activeCategory === "rain" ? curPreset.baseVolume : 0.0001, audioCtx.currentTime);
+    noiseGain.gain.setValueAtTime(state.activeCategory === "rain" ? curPreset.baseVolume : 0.0001, now);
 
     mergerNode = audioCtx.createChannelMerger(2);
 
     noiseSourceL.connect(noiseFilterL);
-    noiseFilterL.connect(mergerNode, 0, 0);
+    noiseFilterL.connect(bedPeakingL);
+    bedPeakingL.connect(bedGainL);
+    bedGainL.connect(mergerNode, 0, 0);
 
     noiseSourceR.connect(noiseFilterR);
-    noiseFilterR.connect(mergerNode, 0, 1);
+    noiseFilterR.connect(bedPeakingR);
+    bedPeakingR.connect(bedGainR);
+    bedGainR.connect(mergerNode, 0, 1);
 
     mergerNode.connect(noiseGain);
-    noiseGain.connect(masterLimiter);
+    noiseGain.connect(masterWarmthFilter);
 
     noiseSourceL.start();
     noiseSourceR.start();
+
+    // 3. 深空与复古模拟专属次低频谐波发生器 (Sub-Bass Harmonic Drone Bus)
+    ambDroneOsc1 = audioCtx.createOscillator();
+    ambDroneOsc2 = audioCtx.createOscillator();
+    ambSubOsc = audioCtx.createOscillator();
+    ambDroneOsc1.type = "sine";
+    ambDroneOsc2.type = "triangle";
+    ambSubOsc.type = "sine";
+
+    ambDroneOsc1.frequency.setValueAtTime(55, now);
+    ambDroneOsc2.frequency.setValueAtTime(82.5, now);
+    ambSubOsc.frequency.setValueAtTime(27.5, now);
+
+    const osc2SubGain = audioCtx.createGain();
+    osc2SubGain.gain.setValueAtTime(0.22, now);
+    const subOscGain = audioCtx.createGain();
+    subOscGain.gain.setValueAtTime(0.45, now);
+
+    ambDroneFilter = audioCtx.createBiquadFilter();
+    ambDroneFilter.type = "lowpass";
+    ambDroneFilter.frequency.setValueAtTime(240, now);
+    ambDroneFilter.Q.setValueAtTime(1.2, now);
+
+    ambDroneGain = audioCtx.createGain();
+    ambDroneGain.gain.setValueAtTime(0.0001, now);
+
+    ambDroneOsc1.connect(ambDroneFilter);
+    ambDroneOsc2.connect(osc2SubGain);
+    osc2SubGain.connect(ambDroneFilter);
+    ambSubOsc.connect(subOscGain);
+    subOscGain.connect(ambDroneFilter);
+    ambDroneFilter.connect(ambDroneGain);
+
+    if (audioCtx.createStereoPanner) {
+      ambDronePanner = audioCtx.createStereoPanner();
+      ambDronePanner.pan.setValueAtTime(0, now);
+      ambDroneGain.connect(ambDronePanner);
+      ambDronePanner.connect(masterWarmthFilter);
+    } else {
+      ambDroneGain.connect(masterWarmthFilter);
+    }
+
+    ambDroneOsc1.start();
+    ambDroneOsc2.start();
+    ambSubOsc.start();
   }
 
   // --------------------------------------------------------------------------
-  // B1. 雨声触发逻辑
+  // B1. 雨声触发逻辑 (7 种钝感吸音表面物理差异化建模)
   // --------------------------------------------------------------------------
-  function triggerBinauralRainDrop() {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "rain") return;
+  function triggerBinauralRainDrop(azimuthOverride = null) {
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "rain") return;
 
     const surf = RAIN_SURFACES[state.currentSurface];
     const rain = RAIN_PRESETS[state.currentRain];
     const now = audioCtx.currentTime;
     const buf = getFrictionNoiseBuffer();
 
-    const azimuth = (Math.random() * 2 - 1) * state.stereoWidth;
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      panner.pan.setValueAtTime(azimuth, now);
-    }
+    const azimuth = azimuthOverride !== null
+      ? azimuthOverride * state.stereoWidth
+      : (Math.random() * 2 - 1) * state.stereoWidth;
 
     const pitchJitter = 1 + (Math.random() * 0.24 - 0.12);
     const targetFreq = surf.freq * pitchJitter;
     const vel = rain.dropVelMin + Math.random() * (rain.dropVelMax - rain.dropVelMin);
-    const peakGain = vel * 0.32;
+    const peakGain = vel * 0.30;
+    const effectiveLp = Math.min(state.userLowpass, rain.filterFreq * 1.15);
 
-    // 1. 水滴表面微碰撞瞬态 (Liquid Meniscus Impact Transient) - 消除纯正弦合成电音感
+    const dropBus = audioCtx.createGain();
+    dropBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(dropBus, azimuth, now);
+
+    // 1. 水滴表面微张力破裂瞬态 (Liquid Meniscus Impact Transient)
     if (buf) {
       const impactSrc = audioCtx.createBufferSource();
       impactSrc.buffer = buf;
 
       const impactFilter = audioCtx.createBiquadFilter();
       impactFilter.type = "bandpass";
-      const impactFreq = state.currentSurface === "window"
-        ? Math.min(state.userLowpass, targetFreq * 2.2)
-        : (state.currentSurface === "leaves" ? targetFreq * 1.35 : targetFreq * 1.15);
-      impactFilter.frequency.setValueAtTime(impactFreq, now);
-      impactFilter.Q.setValueAtTime(surf.q * 1.1, now);
+      let impactFreq = targetFreq * 1.25;
+      let impactQ = surf.q * 1.1;
+      let impactDur = 0.015;
+      let impactScale = 0.22;
+
+      if (state.currentSurface === "tent" || state.currentSurface === "car_roof") {
+        // 帆布帐篷 / 静谧车顶：宽频低沉扑嗒声，吸除高频
+        impactFreq = targetFreq * 0.95;
+        impactQ = 1.4;
+        impactDur = 0.024;
+        impactScale = 0.30;
+      } else if (state.currentSurface === "window" || state.currentSurface === "glass_sunroom") {
+        // 隔音玻璃窗 / 阳光房：清润微雨珠轻叩
+        impactFreq = Math.min(effectiveLp, targetFreq * 1.85);
+        impactQ = 3.2;
+        impactDur = 0.011;
+        impactScale = 0.25;
+      } else if (state.currentSurface === "leaves") {
+        // 稠密阔叶：叶片弹性水花微散
+        impactFreq = Math.min(effectiveLp, targetFreq * 1.45);
+        impactQ = 1.9;
+        impactDur = 0.018;
+        impactScale = 0.26;
+      } else if (state.currentSurface === "metal_awning") {
+        // 复古锌铁皮棚：柔化金属表面钝响
+        impactFreq = Math.min(effectiveLp, targetFreq * 1.55);
+        impactQ = 2.8;
+        impactDur = 0.016;
+        impactScale = 0.24;
+      }
+
+      impactFilter.frequency.setValueAtTime(Math.min(effectiveLp, impactFreq), now);
+      impactFilter.Q.setValueAtTime(impactQ, now);
 
       const impactGain = audioCtx.createGain();
-      const impactPeak = peakGain * (state.currentSurface === "window" ? 0.32 : 0.22);
       impactGain.gain.setValueAtTime(0.0001, now);
-      impactGain.gain.linearRampToValueAtTime(impactPeak, now + 0.002);
-      impactGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012);
+      impactGain.gain.linearRampToValueAtTime(peakGain * impactScale, now + 0.0025);
+      impactGain.gain.exponentialRampToValueAtTime(0.0001, now + impactDur);
 
       impactSrc.connect(impactFilter);
       impactFilter.connect(impactGain);
-      if (panner) impactGain.connect(panner);
-      else impactGain.connect(masterLimiter);
+      impactGain.connect(dropBus);
 
-      impactSrc.start(now, Math.random() * 2.0);
-      impactSrc.stop(now + 0.016);
+      impactSrc.start(now, Math.random() * 2.5);
+      impactSrc.stop(now + impactDur + 0.005);
     }
 
-    // 2. 介质表面声学共振与水相张力平滑松弛 (Cavity & Droplet Fluid Relaxation)
+    // 2. 介质表面腔体/膜面物理共振 (Surface Modal & Membrane Relaxation)
     const osc = audioCtx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(targetFreq * 1.25, now);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(60, targetFreq * 0.90), now + surf.decay);
+    if (state.currentSurface === "tent" || state.currentSurface === "car_roof") {
+      // 绷紧织物/车顶隔音层：受击微下陷降频 (Membrane Pitch Drop)
+      osc.frequency.setValueAtTime(targetFreq * 1.15, now);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(55, targetFreq * 0.58), now + surf.decay);
+    } else if (state.currentSurface === "leaves") {
+      // 阔叶受水滴压弯再微回弹
+      osc.frequency.setValueAtTime(targetFreq * 1.28, now);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(80, targetFreq * 0.82), now + surf.decay);
+    } else {
+      osc.frequency.setValueAtTime(targetFreq * 1.18, now);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(70, targetFreq * 0.92), now + surf.decay);
+    }
 
     const filter = audioCtx.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(targetFreq, now);
-    filter.Q.setValueAtTime(surf.q, now);
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(Math.min(effectiveLp, targetFreq * 1.8), now);
+    filter.Q.setValueAtTime(Math.min(3.5, surf.q * 0.85), now);
 
     const dropGain = audioCtx.createGain();
     dropGain.gain.setValueAtTime(0.0001, now);
-    dropGain.gain.linearRampToValueAtTime(peakGain, now + 0.004);
-    dropGain.gain.exponentialRampToValueAtTime(0.0001, now + surf.decay + 0.012);
+    dropGain.gain.linearRampToValueAtTime(peakGain * 0.85, now + 0.0035);
+    dropGain.gain.exponentialRampToValueAtTime(0.0001, now + surf.decay + 0.015);
 
     osc.connect(filter);
     filter.connect(dropGain);
-
-    if (panner) {
-      dropGain.connect(panner);
-      panner.connect(masterLimiter);
-    } else {
-      dropGain.connect(masterLimiter);
-    }
+    dropGain.connect(dropBus);
 
     osc.start(now);
     osc.stop(now + surf.decay + 0.025);
+
+    // 3. 桧木屋檐与锌铁皮雨棚的二次空腔泛音模态
+    if (state.currentSurface === "cedar" || state.currentSurface === "metal_awning") {
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = "sine";
+      const ratio = state.currentSurface === "cedar" ? 1.86 : 1.58;
+      osc2.frequency.setValueAtTime(Math.min(effectiveLp, targetFreq * ratio), now);
+      const mode2Gain = audioCtx.createGain();
+      mode2Gain.gain.setValueAtTime(0.0001, now);
+      mode2Gain.gain.linearRampToValueAtTime(peakGain * 0.22, now + 0.003);
+      mode2Gain.gain.exponentialRampToValueAtTime(0.0001, now + surf.decay * 0.55);
+      osc2.connect(filter);
+      osc2.disconnect();
+      osc2.connect(mode2Gain);
+      mode2Gain.connect(filter);
+      osc2.start(now);
+      osc2.stop(now + surf.decay * 0.6 + 0.01);
+    }
 
     createVisualEvent(azimuth, vel, "rain");
   }
@@ -3658,8 +3843,9 @@ permalink: /projects/ai-asmr/index.html
     if (!state.isPlaying || state.activeCategory !== "rain" || !RAIN_PRESETS[state.currentRain].thunder) return;
 
     const now = audioCtx.currentTime;
-    const dur = 4.5 + Math.random() * 3.5;
-    const attack = 1.5 + Math.random() * 1.0;
+    const dur = 5.2 + Math.random() * 3.5;
+    const attack1 = 1.1 + Math.random() * 0.8;
+    const swell2 = attack1 + 1.4 + Math.random() * 1.0;
 
     const bufferSize = audioCtx.sampleRate * 2;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -3669,51 +3855,53 @@ permalink: /projects/ai-asmr/index.html
       const white = Math.random() * 2 - 1;
       output[i] = (lastOut + (0.02 * white)) / 1.02;
       lastOut = output[i];
-      output[i] *= 2.5;
+      output[i] *= 2.4;
     }
 
     const thunderSource = audioCtx.createBufferSource();
     thunderSource.buffer = noiseBuffer;
     thunderSource.loop = true;
 
+    // 双峰滚动闷雷滤波包络 (42Hz ~ 85Hz 温暖远雷滚过天际，无突兀炸响)
     const subFilter = audioCtx.createBiquadFilter();
     subFilter.type = "lowpass";
-    subFilter.frequency.setValueAtTime(65, now);
-    subFilter.Q.setValueAtTime(1.5, now);
+    subFilter.frequency.setValueAtTime(48, now);
+    subFilter.frequency.linearRampToValueAtTime(78, now + attack1);
+    subFilter.frequency.linearRampToValueAtTime(52, now + (attack1 + swell2) * 0.5);
+    subFilter.frequency.linearRampToValueAtTime(68, now + swell2);
+    subFilter.frequency.exponentialRampToValueAtTime(36, now + dur);
+    subFilter.Q.setValueAtTime(1.35, now);
 
     const thunderGain = audioCtx.createGain();
-    const maxGain = 0.22 * state.thunderVol;
+    const maxGain = 0.24 * state.thunderVol;
     thunderGain.gain.setValueAtTime(0.0001, now);
-    thunderGain.gain.linearRampToValueAtTime(maxGain, now + attack);
+    thunderGain.gain.linearRampToValueAtTime(maxGain * 0.78, now + attack1);
+    thunderGain.gain.linearRampToValueAtTime(maxGain * 0.42, now + (attack1 + swell2) * 0.5);
+    thunderGain.gain.linearRampToValueAtTime(maxGain, now + swell2);
     thunderGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      panner.pan.setValueAtTime((Math.random() * 1.6 - 0.8), now);
-    }
 
     thunderSource.connect(subFilter);
     subFilter.connect(thunderGain);
+
+    const startPan = (Math.random() > 0.5 ? 0.65 : -0.65) * state.stereoWidth;
+    const endPan = -startPan * 0.6;
+    const panner = connectTo3DioStage(thunderGain, startPan, now);
     if (panner) {
-      thunderGain.connect(panner);
-      panner.connect(masterLimiter);
-    } else {
-      thunderGain.connect(masterLimiter);
+      panner.pan.linearRampToValueAtTime(endPan, now + dur);
     }
 
     thunderSource.start(now);
     thunderSource.stop(now + dur + 0.1);
 
-    const nextInterval = 12000 + Math.random() * 13000;
+    const nextInterval = 11000 + Math.random() * 12000;
     thunderTimerId = setTimeout(scheduleNextThunder, nextInterval);
   }
 
   // --------------------------------------------------------------------------
-  // B2. 敲击声物理声学合成核心 (Tapping Synthesizer Engine)
+  // B2. 敲击声物理声学合成核心 (3层模态谐振：指腹软垫 + 甲触瞬态 + 非谐腔体模态)
   // --------------------------------------------------------------------------
   function triggerSingleTap(azimuthOverride = null, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "tapping") return;
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "tapping") return;
 
     const mat = TAPPING_MATERIALS[state.currentTapMat];
     const now = audioCtx.currentTime;
@@ -3727,86 +3915,120 @@ permalink: /projects/ai-asmr/index.html
       azimuth = (Math.random() > 0.5 ? 0.65 : -0.65) * (0.8 + Math.random() * 0.3) * state.stereoWidth;
     }
 
-    const pitchJitter = 1 + (Math.random() * 0.14 - 0.07);
+    const pitchJitter = 1 + (Math.random() * 0.09 - 0.045);
     const baseFreq = mat.baseFreq * pitchJitter;
-    const vel = (0.55 + Math.random() * 0.35) * velScale;
+    const vel = (0.60 + Math.random() * 0.32) * velScale;
+    const effectiveCutoff = Math.min(state.userLowpass, 1150 + (1 - state.tapSoftness) * 1150);
 
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      panner.pan.setValueAtTime(azimuth, now);
-    }
+    const tapBus = audioCtx.createGain();
+    tapBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(tapBus, azimuth, now);
 
-    const effectiveCutoff = Math.min(state.userLowpass, 1200 + (1 - state.tapSoftness) * 1100);
+    // 2. 层一：近讲指腹肉感软垫低频下潜 (3Dio Proximity Flesh Pad Cushion)
+    // 消除合成器“电子滴答感”的关键：真实手指触碰物体表面的低频空气阻尼位移
+    const fleshOsc = audioCtx.createOscillator();
+    fleshOsc.type = "sine";
+    const fleshStart = 110 + (1 - state.tapSoftness) * 35;
+    fleshOsc.frequency.setValueAtTime(fleshStart, now);
+    fleshOsc.frequency.exponentialRampToValueAtTime(46, now + 0.024);
 
-    // 2. 层一：指尖/指甲触击介质表面的微冲击激振 (Tactile Contact Transient) - 带来极真实的物理敲击质感
-    if (buf && state.currentTapMat !== "silicone") {
+    const fleshGain = audioCtx.createGain();
+    const fleshPeak = (0.16 + state.tapSoftness * 0.16 + (mat.warmthBoost || 0.25) * 0.22) * vel;
+    fleshGain.gain.setValueAtTime(0.0001, now);
+    fleshGain.gain.linearRampToValueAtTime(fleshPeak, now + 0.003);
+    fleshGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
+
+    fleshOsc.connect(fleshGain);
+    fleshGain.connect(tapBus);
+    fleshOsc.start(now);
+    fleshOsc.stop(now + 0.032);
+
+    // 3. 层二：指尖/指甲触击材质表面微纹理瞬态 (Tactile Surface Contact Transient)
+    if (buf) {
       const clickSrc = audioCtx.createBufferSource();
       clickSrc.buffer = buf;
 
       const clickFilter = audioCtx.createBiquadFilter();
       clickFilter.type = "bandpass";
-      const clickFreq = (state.currentTapStyle === "knuckles")
-        ? baseFreq * 1.3
-        : Math.min(effectiveCutoff, baseFreq * 2.4 + (1 - state.tapSoftness) * 900);
+      const clickFreq = state.currentTapMat === "silicone"
+        ? Math.min(effectiveCutoff, 380)
+        : Math.min(effectiveCutoff, baseFreq * 2.1 + (1 - state.tapSoftness) * 750);
       clickFilter.frequency.setValueAtTime(clickFreq, now);
-      clickFilter.Q.setValueAtTime(2.2, now);
+      clickFilter.Q.setValueAtTime(state.currentTapMat === "book" ? 1.6 : 2.5, now);
 
       const clickGain = audioCtx.createGain();
-      const clickPeak = (0.24 + (1 - state.tapSoftness) * 0.20) * vel;
+      const clickScale = state.currentTapMat === "silicone" ? 0.12 : (0.20 + (1 - state.tapSoftness) * 0.22);
       clickGain.gain.setValueAtTime(0.0001, now);
-      clickGain.gain.linearRampToValueAtTime(clickPeak, now + 0.002);
-      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.014);
+      clickGain.gain.linearRampToValueAtTime(clickScale * vel, now + 0.002);
+      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.013);
 
       clickSrc.connect(clickFilter);
       clickFilter.connect(clickGain);
+      clickGain.connect(tapBus);
 
-      if (panner) clickGain.connect(panner);
-      else clickGain.connect(masterLimiter);
-
-      clickSrc.start(now, Math.random() * 2.0);
+      clickSrc.start(now, Math.random() * 2.5);
       clickSrc.stop(now + 0.018);
     }
 
-    // 3. 层二：材质箱体主谐振与空腔模态 (Modal Body Tone)
-    const osc1 = audioCtx.createOscillator();
-    osc1.type = "sine";
-    osc1.frequency.setValueAtTime(baseFreq * 1.08, now);
-    osc1.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.02);
-
-    const osc2 = audioCtx.createOscillator();
-    osc2.type = state.currentTapMat === "ceramic" ? "sine" : "triangle";
-    osc2.frequency.setValueAtTime(baseFreq * mat.harmonicMult, now);
-
+    // 4. 层三：材质多阶非谐物理腔体模态 (Multi-Mode Cavity Resonance - 各阶独立衰减，杜绝双音电子琴感)
     const tapFilter = audioCtx.createBiquadFilter();
     tapFilter.type = "lowpass";
     tapFilter.frequency.setValueAtTime(effectiveCutoff, now);
-    tapFilter.Q.setValueAtTime(mat.q, now);
+    tapFilter.Q.setValueAtTime(Math.min(3.2, mat.q * 0.78), now);
+    tapFilter.connect(tapBus);
 
-    const tapGain = audioCtx.createGain();
-    const peak = vel * 0.38;
-    const attackTime = 0.003 + state.tapSoftness * 0.004;
-    const decayTime = mat.decay * (0.85 + Math.random() * 0.3);
+    const attackTime = 0.0028 + state.tapSoftness * 0.0032;
+    const decayTime = mat.decay * (0.88 + Math.random() * 0.24);
+    const peak = vel * 0.34;
 
-    tapGain.gain.setValueAtTime(0.0001, now);
-    tapGain.gain.linearRampToValueAtTime(peak, now + attackTime);
-    tapGain.gain.exponentialRampToValueAtTime(0.0001, now + decayTime + 0.02);
+    // 主腔体基频模态 f0 (带微顺应性瞬态降频)
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(baseFreq * 1.14, now);
+    osc1.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.009);
 
-    osc1.connect(tapFilter);
-    osc2.connect(tapFilter);
-    tapFilter.connect(tapGain);
+    const gain1 = audioCtx.createGain();
+    gain1.gain.setValueAtTime(0.0001, now);
+    gain1.gain.linearRampToValueAtTime(peak, now + attackTime);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + decayTime + 0.015);
 
-    if (panner) {
-      tapGain.connect(panner);
-      panner.connect(masterLimiter);
-    } else {
-      tapGain.connect(masterLimiter);
-    }
-
+    osc1.connect(gain1);
+    gain1.connect(tapFilter);
     osc1.start(now);
+    osc1.stop(now + decayTime + 0.025);
+
+    // 二阶腔体模态 f1 (正弦波，低幅度 + 快衰减，呈现真实木/竹/陶/石空腔泛音)
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(Math.min(effectiveCutoff * 1.1, baseFreq * mat.harmonicMult), now);
+
+    const gain2 = audioCtx.createGain();
+    const mode2Peak = peak * (state.currentTapMat === "silicone" ? 0.08 : 0.22) * (1 - state.tapSoftness * 0.35);
+    const mode2Decay = Math.max(0.016, decayTime * 0.44);
+    gain2.gain.setValueAtTime(0.0001, now);
+    gain2.gain.linearRampToValueAtTime(Math.max(0.001, mode2Peak), now + 0.0025);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + mode2Decay);
+
+    osc2.connect(gain2);
+    gain2.connect(tapFilter);
     osc2.start(now);
-    osc1.stop(now + decayTime + 0.04);
-    osc2.stop(now + decayTime + 0.04);
+    osc2.stop(now + mode2Decay + 0.01);
+
+    // 三阶微空腔泛音 (针对木盒、竹节、胡桃壳、厚陶杯)
+    if (state.currentTapMat === "woodbox" || state.currentTapMat === "bamboo" || state.currentTapMat === "walnut_shell" || state.currentTapMat === "ceramic") {
+      const osc3 = audioCtx.createOscillator();
+      osc3.type = "sine";
+      osc3.frequency.setValueAtTime(Math.min(effectiveCutoff * 1.15, baseFreq * (mat.harmonicMult * 1.42)), now);
+      const gain3 = audioCtx.createGain();
+      const mode3Decay = Math.max(0.012, decayTime * 0.28);
+      gain3.gain.setValueAtTime(0.0001, now);
+      gain3.gain.linearRampToValueAtTime(peak * 0.09 * (1 - state.tapSoftness * 0.4), now + 0.002);
+      gain3.gain.exponentialRampToValueAtTime(0.0001, now + mode3Decay);
+      osc3.connect(gain3);
+      gain3.connect(tapFilter);
+      osc3.start(now);
+      osc3.stop(now + mode3Decay + 0.008);
+    }
 
     createVisualEvent(azimuth, vel, "tap");
   }
@@ -3832,10 +4054,10 @@ permalink: /projects/ai-asmr/index.html
       const baseAz = (Math.random() > 0.5 ? 0.6 : -0.6);
 
       for (let i = 0; i < rollCount; i++) {
-        setTimeout(() => {
+        scheduleSubTimer(() => {
           if (state.isPlaying && state.activeCategory === "tapping") {
             const azJitter = baseAz + (Math.random() * 0.25 - 0.12);
-            triggerSingleTap(azJitter, 0.85 + (i * 0.05));
+            triggerSingleTap(azJitter, 0.82 + (i * 0.05));
           }
         }, i * rollInterval);
       }
@@ -3853,7 +4075,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
-  // B3. 摩擦声物理声学合成核心 (Friction Synthesizer Engine)
+  // B3. 摩擦声物理声学合成核心 (软触剪切 + 耳廓近讲微风 + 纤维纹理微调制)
   // --------------------------------------------------------------------------
   function getFrictionNoiseBuffer() {
     if (!audioCtx) return null;
@@ -3880,7 +4102,7 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function triggerFrictionStroke(panStart, panEnd, duration, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "friction") return;
+    if (!audioCtx || (!state.isPlaying && velScale < 1.01) || state.activeCategory !== "friction") return;
 
     const mat = FRICTION_MATERIALS[state.currentFricMat];
     const buf = getFrictionNoiseBuffer();
@@ -3893,42 +4115,54 @@ permalink: /projects/ai-asmr/index.html
     const src = audioCtx.createBufferSource();
     src.buffer = buf;
     src.loop = true;
-    const offset = Math.random() * 2.0;
+    const offset = Math.random() * 2.5;
 
     // 2. 双重物理滤波 (低通钝化去刺 + 动态摩擦扫频 + 材质中频温润共鸣)
     const baseCutoff = mat.baseFreq * (0.65 + (1 - state.fricCushion) * 0.7);
     const effectiveCutoff = Math.min(state.userLowpass, baseCutoff);
-    const attackDur = dur * 0.42;
+    const attackDur = dur * 0.44;
 
     const lpf = audioCtx.createBiquadFilter();
     lpf.type = "lowpass";
-    // 摩擦动态扫频：扫拂过程中随着速度峰值自然上扬与回落
-    lpf.frequency.setValueAtTime(effectiveCutoff * 0.8, now);
-    lpf.frequency.exponentialRampToValueAtTime(effectiveCutoff * 1.25, now + attackDur);
-    lpf.frequency.exponentialRampToValueAtTime(effectiveCutoff * 0.75, now + dur);
+    lpf.frequency.setValueAtTime(effectiveCutoff * 0.72, now);
+    lpf.frequency.exponentialRampToValueAtTime(effectiveCutoff * 1.22, now + attackDur);
+    lpf.frequency.exponentialRampToValueAtTime(effectiveCutoff * 0.68, now + dur);
     lpf.Q.setValueAtTime(mat.q, now);
 
     const warmthFilter = audioCtx.createBiquadFilter();
     warmthFilter.type = "peaking";
     warmthFilter.frequency.setValueAtTime(mat.bodyWarmth, now);
-    warmthFilter.Q.setValueAtTime(1.5, now);
-    warmthFilter.gain.setValueAtTime(3.5, now);
+    warmthFilter.Q.setValueAtTime(1.4, now);
+    warmthFilter.gain.setValueAtTime(4.2, now);
 
     // 3. 柔化平滑呼吸式触碰剪切增益包络
     const gainNode = audioCtx.createGain();
-    const peakGain = 0.36 * mat.velScale * velScale;
+    const peakGain = 0.34 * mat.velScale * velScale;
 
     gainNode.gain.setValueAtTime(0.0001, now);
-    gainNode.gain.linearRampToValueAtTime(peakGain, now + attackDur);
+    gainNode.gain.linearRampToValueAtTime(peakGain, now + attackDur * 0.75);
+    gainNode.gain.setValueAtTime(peakGain * 0.92, now + dur * 0.62);
     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
+    // 针对竹编席面 (bamboo_mat) 与细腻微砂台 (microsand)：叠加微观纹理起伏调制 (Texture Striation LFO)
+    let grainLfo = null;
+    if (state.currentFricMat === "bamboo_mat" || state.currentFricMat === "microsand") {
+      grainLfo = audioCtx.createOscillator();
+      grainLfo.type = "sine";
+      grainLfo.frequency.setValueAtTime(state.currentFricMat === "bamboo_mat" ? 22 : 34, now);
+      const lfoDepth = audioCtx.createGain();
+      lfoDepth.gain.setValueAtTime(effectiveCutoff * 0.18, now);
+      grainLfo.connect(lfoDepth);
+      lfoDepth.connect(lpf.frequency);
+      grainLfo.start(now);
+      grainLfo.stop(now + dur + 0.04);
+    }
+
     // 4. 3Dio 双耳空间声相平移
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      const p1 = panStart * state.stereoWidth;
-      const p2 = panEnd * state.stereoWidth;
-      panner.pan.setValueAtTime(p1, now);
+    const p1 = Math.max(-1, Math.min(1, panStart * state.stereoWidth));
+    const p2 = Math.max(-1, Math.min(1, panEnd * state.stereoWidth));
+    const panner = connectTo3DioStage(gainNode, p1, now);
+    if (panner) {
       panner.pan.linearRampToValueAtTime(p2, now + dur);
     }
 
@@ -3936,35 +4170,50 @@ permalink: /projects/ai-asmr/index.html
     lpf.connect(warmthFilter);
     warmthFilter.connect(gainNode);
 
-    if (panner) {
-      gainNode.connect(panner);
-      panner.connect(masterLimiter);
-    } else {
-      gainNode.connect(masterLimiter);
-    }
-
     src.start(now, offset);
     src.stop(now + dur + 0.05);
 
-    // 针对翻书 (book_page)：在翻动尾部增加纸张翻落的柔润微拍声 (Paper Page Release Flump)
-    if (state.currentFricMat === "book_page") {
+    // 5. 针对蓬松软毛刷 (brush)、指腹轻摩 (finger) 与植鞣皮 (leather_pad)：耳廓贴近低频暖风包络
+    if (state.currentFricMat === "brush" || state.currentFricMat === "finger" || state.currentFricMat === "leather_pad") {
+      const proxOsc = audioCtx.createOscillator();
+      proxOsc.type = "sine";
+      const proxBase = state.currentFricMat === "brush" ? 92 : 125;
+      proxOsc.frequency.setValueAtTime(proxBase * 0.85, now);
+      proxOsc.frequency.linearRampToValueAtTime(proxBase * 1.12, now + attackDur);
+      proxOsc.frequency.exponentialRampToValueAtTime(proxBase * 0.78, now + dur);
+
+      const proxGain = audioCtx.createGain();
+      proxGain.gain.setValueAtTime(0.0001, now);
+      proxGain.gain.linearRampToValueAtTime(0.095 * velScale * (0.6 + state.fricCushion * 0.5), now + attackDur);
+      proxGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+      proxOsc.connect(proxGain);
+      if (panner) proxGain.connect(panner);
+      else proxGain.connect(masterWarmthFilter);
+
+      proxOsc.start(now);
+      proxOsc.stop(now + dur + 0.04);
+    }
+
+    // 6. 针对复古厚书页 (bookpage)：在翻动尾部增加纸张翻落的柔润微拍声 (Paper Page Release Flump)
+    if (state.currentFricMat === "bookpage") {
       const pageReleaseTime = now + dur * 0.82;
       const pageThud = audioCtx.createOscillator();
       pageThud.type = "sine";
-      pageThud.frequency.setValueAtTime(160, pageReleaseTime);
-      pageThud.frequency.exponentialRampToValueAtTime(70, pageReleaseTime + 0.04);
+      pageThud.frequency.setValueAtTime(165, pageReleaseTime);
+      pageThud.frequency.exponentialRampToValueAtTime(68, pageReleaseTime + 0.042);
 
       const pageGain = audioCtx.createGain();
       pageGain.gain.setValueAtTime(0.0001, pageReleaseTime);
       pageGain.gain.linearRampToValueAtTime(0.18 * velScale, pageReleaseTime + 0.005);
-      pageGain.gain.exponentialRampToValueAtTime(0.0001, pageReleaseTime + 0.045);
+      pageGain.gain.exponentialRampToValueAtTime(0.0001, pageReleaseTime + 0.048);
 
       pageThud.connect(pageGain);
       if (panner) pageGain.connect(panner);
-      else pageGain.connect(masterLimiter);
+      else pageGain.connect(masterWarmthFilter);
 
       pageThud.start(pageReleaseTime);
-      pageThud.stop(pageReleaseTime + 0.05);
+      pageThud.stop(pageReleaseTime + 0.055);
     }
 
     createFrictionVisualStroke(panStart, panEnd, dur, state.currentFricMat, state.currentFricStyle);
@@ -3998,7 +4247,7 @@ permalink: /projects/ai-asmr/index.html
       const baseSide = (Math.random() > 0.5 ? 0.65 : -0.65);
 
       for (let i = 0; i < burstCount; i++) {
-        setTimeout(() => {
+        scheduleSubTimer(() => {
           if (state.isPlaying && state.activeCategory === "friction") {
             const pStart = baseSide + (Math.random() * 0.2 - 0.1);
             const pEnd = pStart + (baseSide > 0 ? 0.2 : -0.2);
@@ -4017,10 +4266,10 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
-  // B4. 水流声物理声学合成核心 (Water Synthesizer Engine)
+  // B4. 水流声物理声学合成核心 (Minnaert 气泡谐振 + 水相冲击 + 方冰/潮汐/茶道建模)
   // --------------------------------------------------------------------------
   function triggerWaterBubble(azimuthOverride = null, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "water") return;
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "water") return;
 
     const scene = WATER_SCENARIOS[state.currentWaterScene];
     const now = audioCtx.currentTime;
@@ -4039,55 +4288,119 @@ permalink: /projects/ai-asmr/index.html
       }
     }
 
-    const jitter = 1 + (Math.random() * 0.28 - 0.14);
+    const jitter = 1 + (Math.random() * 0.26 - 0.13);
     const baseFreq = scene.bubbleBaseFreq * jitter;
     const targetEndFreq = baseFreq * scene.bubbleChirp;
     const vel = (0.55 + Math.random() * 0.45) * velScale;
-    const peak = vel * 0.35;
+    const peak = vel * 0.34;
     const decayTime = scene.bubbleDecay * (0.85 + Math.random() * 0.3) * (0.8 + state.waterSoftness * 0.4);
     const cutoff = Math.min(state.userLowpass, 1300 + (1 - state.waterSoftness) * 1100);
 
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      panner.pan.setValueAtTime(azimuth, now);
+    const waterBus = audioCtx.createGain();
+    waterBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(waterBus, azimuth, now);
+
+    // 专属场景 1：厚底杯方冰慢融 (whiskey_ice) —— 水晶杯壁与大方冰清脆阻尼轻碰 + 冰裂微声
+    if (state.currentWaterScene === "whiskey_ice") {
+      const clinkOsc1 = audioCtx.createOscillator();
+      const clinkOsc2 = audioCtx.createOscillator();
+      clinkOsc1.type = "sine";
+      clinkOsc2.type = "sine";
+      const glassF1 = Math.min(cutoff, (760 + Math.random() * 220));
+      const glassF2 = Math.min(cutoff * 1.15, glassF1 * 2.32);
+      clinkOsc1.frequency.setValueAtTime(glassF1, now);
+      clinkOsc1.frequency.exponentialRampToValueAtTime(glassF1 * 0.96, now + 0.032);
+      clinkOsc2.frequency.setValueAtTime(glassF2, now);
+
+      const g1 = audioCtx.createGain();
+      const g2 = audioCtx.createGain();
+      g1.gain.setValueAtTime(0.0001, now);
+      g1.gain.linearRampToValueAtTime(peak * 0.65, now + 0.0025);
+      g1.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
+
+      g2.gain.setValueAtTime(0.0001, now);
+      g2.gain.linearRampToValueAtTime(peak * 0.22 * (1 - state.waterSoftness * 0.5), now + 0.002);
+      g2.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+
+      // 杯底厚重玻璃微钝感 (Tumbler Heavy Base Thump)
+      const baseThud = audioCtx.createOscillator();
+      baseThud.type = "sine";
+      baseThud.frequency.setValueAtTime(240, now);
+      baseThud.frequency.exponentialRampToValueAtTime(115, now + 0.025);
+      const thudGain = audioCtx.createGain();
+      thudGain.gain.setValueAtTime(0.0001, now);
+      thudGain.gain.linearRampToValueAtTime(peak * 0.42, now + 0.003);
+      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+
+      clinkOsc1.connect(g1);
+      clinkOsc2.connect(g2);
+      baseThud.connect(thudGain);
+      g1.connect(waterBus);
+      g2.connect(waterBus);
+      thudGain.connect(waterBus);
+
+      clinkOsc1.start(now);
+      clinkOsc2.start(now);
+      baseThud.start(now);
+      clinkOsc1.stop(now + 0.045);
+      clinkOsc2.stop(now + 0.024);
+      baseThud.stop(now + 0.035);
+
+      createWaterVisualEvent(azimuth, vel, glassF1, false);
+      return;
     }
 
-    // 液体微水珠表面破裂/落入微瞬态 (Liquid Entry Droplet Transient)
-    if (buf && (state.currentWaterScene === "mountain_stream" || state.currentWaterScene === "pebble_brook")) {
+    // 液体微水珠表面破裂/落入微瞬态 (修复原 mountain_stream/pebble_brook 键名不匹配 Bug)
+    if (buf && (state.currentWaterScene === "spring" || state.currentWaterScene === "pebble" || state.currentWaterScene === "tea_drip" || state.currentWaterScene === "gentle_tide")) {
       const splashSrc = audioCtx.createBufferSource();
       splashSrc.buffer = buf;
 
       const splashBp = audioCtx.createBiquadFilter();
       splashBp.type = "bandpass";
-      splashBp.frequency.setValueAtTime(Math.min(cutoff, baseFreq * 1.5), now);
-      splashBp.Q.setValueAtTime(2.8, now);
+      splashBp.frequency.setValueAtTime(Math.min(cutoff, baseFreq * 1.45), now);
+      splashBp.Q.setValueAtTime(state.currentWaterScene === "gentle_tide" ? 1.8 : 2.8, now);
 
       const splashGain = audioCtx.createGain();
+      const splashDur = state.currentWaterScene === "gentle_tide" ? 0.032 : 0.015;
       splashGain.gain.setValueAtTime(0.0001, now);
-      splashGain.gain.linearRampToValueAtTime(peak * 0.20, now + 0.002);
-      splashGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.014);
+      splashGain.gain.linearRampToValueAtTime(peak * 0.24, now + 0.0025);
+      splashGain.gain.exponentialRampToValueAtTime(0.0001, now + splashDur);
 
       splashSrc.connect(splashBp);
       splashBp.connect(splashGain);
-      if (panner) splashGain.connect(panner);
-      else splashGain.connect(masterLimiter);
+      splashGain.connect(waterBus);
 
-      splashSrc.start(now, Math.random() * 2.0);
-      splashSrc.stop(now + 0.018);
+      splashSrc.start(now, Math.random() * 2.5);
+      splashSrc.stop(now + splashDur + 0.005);
     }
 
-    // 2. Minnaert 气泡谐振公式物理模拟：气泡脱离向上轻度扫频 (Chirp)
+    // 紫砂茶台细流 (tea_drip)：叠加竹制茶盘空腔木质承接共鸣
+    if (state.currentWaterScene === "tea_drip") {
+      const trayOsc = audioCtx.createOscillator();
+      trayOsc.type = "sine";
+      trayOsc.frequency.setValueAtTime(285 + Math.random() * 45, now);
+      trayOsc.frequency.exponentialRampToValueAtTime(160, now + 0.028);
+      const trayGain = audioCtx.createGain();
+      trayGain.gain.setValueAtTime(0.0001, now);
+      trayGain.gain.linearRampToValueAtTime(peak * 0.32, now + 0.003);
+      trayGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
+      trayOsc.connect(trayGain);
+      trayGain.connect(waterBus);
+      trayOsc.start(now);
+      trayOsc.stop(now + 0.038);
+    }
+
+    // 2. Minnaert 气泡谐振公式物理模拟：气泡脱离表面时空腔半径收缩向上扫频 (Chirp)
     const osc = audioCtx.createOscillator();
     osc.type = "sine";
     osc.frequency.setValueAtTime(baseFreq, now);
-    const chirpDur = 0.016 + Math.random() * 0.022;
-    osc.frequency.exponentialRampToValueAtTime(targetEndFreq, now + chirpDur);
+    const chirpDur = 0.018 + Math.random() * 0.024;
+    osc.frequency.exponentialRampToValueAtTime(Math.min(cutoff * 1.1, targetEndFreq), now + chirpDur);
 
     const bpFilter = audioCtx.createBiquadFilter();
     bpFilter.type = "bandpass";
-    bpFilter.frequency.setValueAtTime(baseFreq * 1.05, now);
-    const qVal = 2.0 + (1 - state.waterSoftness) * 3.5;
+    bpFilter.frequency.setValueAtTime(baseFreq * 1.08, now);
+    const qVal = 1.8 + (1 - state.waterSoftness) * 3.0;
     bpFilter.Q.setValueAtTime(qVal, now);
 
     const lpf = audioCtx.createBiquadFilter();
@@ -4104,13 +4417,7 @@ permalink: /projects/ai-asmr/index.html
     osc.connect(bpFilter);
     bpFilter.connect(lpf);
     lpf.connect(bubbleGain);
-
-    if (panner) {
-      bubbleGain.connect(panner);
-      panner.connect(masterLimiter);
-    } else {
-      bubbleGain.connect(masterLimiter);
-    }
+    bubbleGain.connect(waterBus);
 
     osc.start(now);
     osc.stop(now + decayTime + 0.03);
@@ -4127,23 +4434,23 @@ permalink: /projects/ai-asmr/index.html
     waterEddyAngle += 0.12 * state.waterSpeedMultiplier;
 
     let rate = scene.bubbleRate * state.waterSpeedMultiplier;
-    if (style.binauralMode === "lapping") {
+    if (style.binauralMode === "lapping" || state.currentWaterScene === "gentle_tide") {
       const wavePhase = (Date.now() % style.cycleTime) / style.cycleTime;
       const waveIntensity = 0.35 + 0.65 * Math.sin(wavePhase * Math.PI * 2);
-      rate *= Math.max(0.2, waveIntensity);
+      rate *= Math.max(0.22, waveIntensity);
     }
 
-    const interval = (-Math.log(1 - Math.random()) / Math.max(5, rate)) * 1000;
+    const interval = (-Math.log(1 - Math.random()) / Math.max(4, rate)) * 1000;
 
     triggerWaterBubble();
 
-    // 鹅卵石细流 (pebble_brook) 偶发伴随清澈微水滴跃起 (35% 几率连续波纹)
-    if (state.currentWaterScene === "pebble_brook" && Math.random() < 0.35) {
-      setTimeout(() => {
+    // 鹅卵石细流 (pebble) 或山涧清泉 (spring) 偶发伴随清澈微水滴连串跃起 (修复原 pebble_brook 键名 Bug)
+    if ((state.currentWaterScene === "pebble" || state.currentWaterScene === "spring" || state.currentWaterScene === "tea_drip") && Math.random() < 0.36) {
+      scheduleSubTimer(() => {
         if (state.isPlaying && state.activeCategory === "water") {
-          triggerWaterBubble(Math.random() * 1.4 - 0.7, 0.7);
+          triggerWaterBubble(Math.random() * 1.4 - 0.7, 0.72);
         }
-      }, 35 + Math.random() * 45);
+      }, 35 + Math.random() * 48);
     }
 
     waterBubbleTimerId = setTimeout(scheduleNextWaterBubble, Math.max(12, interval));
@@ -4153,73 +4460,75 @@ permalink: /projects/ai-asmr/index.html
     if (!state.isPlaying || state.activeCategory !== "water" || !WATER_SCENARIOS[state.currentWaterScene].shishi) return;
 
     const now = audioCtx.currentTime;
-    // 沉闷天然竹筒叩击溪石 (Damped hollow woody knock on stone)
+    const az = 0.18 * state.stereoWidth;
+    const clackBus = audioCtx.createGain();
+    clackBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(clackBus, az, now);
+
+    // 沉闷天然竹筒叩击溪石 (竹腔基频 215Hz + 竹节二阶模态 465Hz + 石块钝响)
     const osc1 = audioCtx.createOscillator();
     osc1.type = "sine";
-    osc1.frequency.setValueAtTime(220, now);
-    osc1.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+    osc1.frequency.setValueAtTime(225, now);
+    osc1.frequency.exponentialRampToValueAtTime(112, now + 0.11);
 
     const osc2 = audioCtx.createOscillator();
-    osc2.type = "triangle";
-    osc2.frequency.setValueAtTime(470, now);
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(475, now);
 
     const clackFilter = audioCtx.createBiquadFilter();
     clackFilter.type = "lowpass";
-    clackFilter.frequency.setValueAtTime(Math.min(state.userLowpass, 950), now);
-    clackFilter.Q.setValueAtTime(2.6, now);
+    clackFilter.frequency.setValueAtTime(Math.min(state.userLowpass, 920), now);
+    clackFilter.Q.setValueAtTime(2.4, now);
 
-    const clackGain = audioCtx.createGain();
-    clackGain.gain.setValueAtTime(0.0001, now);
-    clackGain.gain.linearRampToValueAtTime(0.42, now + 0.005);
-    clackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+    const gain1 = audioCtx.createGain();
+    gain1.gain.setValueAtTime(0.0001, now);
+    gain1.gain.linearRampToValueAtTime(0.38, now + 0.004);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
 
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      panner.pan.setValueAtTime(0.18, now);
-    }
+    const gain2 = audioCtx.createGain();
+    gain2.gain.setValueAtTime(0.0001, now);
+    gain2.gain.linearRampToValueAtTime(0.14, now + 0.003);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
 
-    osc1.connect(clackFilter);
-    osc2.connect(clackFilter);
-    clackFilter.connect(clackGain);
-    if (panner) {
-      clackGain.connect(panner);
-      panner.connect(masterLimiter);
-    } else {
-      clackGain.connect(masterLimiter);
-    }
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    gain1.connect(clackFilter);
+    gain2.connect(clackFilter);
+    clackFilter.connect(clackBus);
 
     osc1.start(now);
     osc2.start(now);
     osc1.stop(now + 0.16);
-    osc2.stop(now + 0.16);
+    osc2.stop(now + 0.07);
 
-    // 叩击后水流倾注轻声花
-    setTimeout(() => {
+    // 叩击后竹筒倾水微涟漪簇
+    scheduleSubTimer(() => {
       if (state.isPlaying && state.activeCategory === "water") {
         for (let i = 0; i < 5; i++) {
-          setTimeout(() => {
+          scheduleSubTimer(() => {
             if (state.isPlaying && state.activeCategory === "water") {
-              triggerWaterBubble(0.12 + (Math.random() * 0.35 - 0.18), 1.05);
+              triggerWaterBubble(0.12 + (Math.random() * 0.35 - 0.18), 0.95);
             }
-          }, i * 35);
+          }, i * 38);
         }
       }
     }, 85);
 
-    createWaterVisualEvent(0.18, 0.95, 220, true);
+    createWaterVisualEvent(az, 0.95, 220, true);
 
-    const nextInterval = 11000 + Math.random() * 5000;
+    const nextInterval = 10500 + Math.random() * 4500;
     shishiTimerId = setTimeout(scheduleNextShishiOdoshi, nextInterval);
   }
 
   // --------------------------------------------------------------------------
-  // B5. 能量泛音与音疗钵铃声物理声学合成核心 (Sound Bowls & Chimes Synthesizer Engine)
+  // B5. 能量泛音与音疗钵铃声物理声学合成核心 (支持单叩、360° 钵缘连续环磨、双耳 Theta 慢波共振)
   // --------------------------------------------------------------------------
-  function triggerBowlStrike(azimuthOverride = null, velScale = 1.0, pitchShift = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "bowls") return;
+  function triggerBowlStrike(azimuthOverride = null, velScale = 1.0, pitchShift = 1.0, modeOverride = null) {
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "bowls") return;
 
     const inst = BOWLS_INSTRUMENTS[state.currentBowlInst];
+    const style = BOWLS_STYLES[state.currentBowlStyle];
+    const playMode = modeOverride || (style ? style.mode : "strike");
     const now = audioCtx.currentTime;
     const totalDecay = Math.max(2.0, inst.baseDecay * state.bowlDecayMultiplier);
 
@@ -4230,28 +4539,35 @@ permalink: /projects/ai-asmr/index.html
       azimuth = (Math.random() * 1.6 - 0.8) * state.stereoWidth;
     }
 
-    if (state.currentBowlInst === "tuningfork") {
-      // 432Hz 纯正弦波双耳频差 (Binaural Beats Theta Wave 6Hz)
-      const baseF = inst.baseFreq * pitchShift;
-      const diff = (inst.binauralDiff || 6.0);
+    const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.65 + (1 - state.bowlWarmth) * 0.7));
+
+    // 模式 A：432Hz 音叉 或 任意器皿处于「双耳慢波共振 (binauralbeat)」模式 —— 真正左右耳 6Hz Theta 频差驻波
+    if (state.currentBowlInst === "tuningfork" || playMode === "binauralbeat") {
+      const baseF = (inst.chimeScale ? inst.baseFreq : inst.baseFreq) * pitchShift;
+      const diff = (inst.binauralDiff || 6.0); // 6Hz Theta 睡眠脑波诱导频差
       const fL = baseF;
       const fR = baseF + diff;
+      const isContinuousBeat = playMode === "binauralbeat";
+      const attack = isContinuousBeat ? 1.4 : 0.018;
+      const dur = isContinuousBeat ? Math.max(8.5, totalDecay * 0.85) : totalDecay;
 
-      // 橡胶/羊毛毡激活器触击瞬态 (Felt Activator Strike Tap) - 赋予实体敲击感
-      const tapOsc = audioCtx.createOscillator();
-      tapOsc.type = "sine";
-      tapOsc.frequency.setValueAtTime(320, now);
-      tapOsc.frequency.exponentialRampToValueAtTime(140, now + 0.02);
+      // 非连续环拍时添加羊毛毡槌柔和触击声
+      if (!isContinuousBeat) {
+        const tapOsc = audioCtx.createOscillator();
+        tapOsc.type = "sine";
+        tapOsc.frequency.setValueAtTime(280, now);
+        tapOsc.frequency.exponentialRampToValueAtTime(115, now + 0.024);
 
-      const tapGain = audioCtx.createGain();
-      tapGain.gain.setValueAtTime(0.0001, now);
-      tapGain.gain.linearRampToValueAtTime(0.18 * velScale, now + 0.003);
-      tapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+        const tapGain = audioCtx.createGain();
+        tapGain.gain.setValueAtTime(0.0001, now);
+        tapGain.gain.linearRampToValueAtTime(0.16 * velScale, now + 0.004);
+        tapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.036);
 
-      tapOsc.connect(tapGain);
-      tapGain.connect(masterLimiter);
-      tapOsc.start(now);
-      tapOsc.stop(now + 0.04);
+        tapOsc.connect(tapGain);
+        connectTo3DioStage(tapGain, azimuth * 0.3, now);
+        tapOsc.start(now);
+        tapOsc.stop(now + 0.042);
+      }
 
       const oscL = audioCtx.createOscillator();
       const oscR = audioCtx.createOscillator();
@@ -4262,156 +4578,188 @@ permalink: /projects/ai-asmr/index.html
 
       const gainL = audioCtx.createGain();
       const gainR = audioCtx.createGain();
-      const peak = 0.32 * velScale;
-      const attack = 0.015; // 15ms 柔和淡入
+      const peak = (isContinuousBeat ? 0.24 : 0.30) * velScale;
 
       gainL.gain.setValueAtTime(0.0001, now);
       gainL.gain.linearRampToValueAtTime(peak, now + attack);
-      gainL.gain.exponentialRampToValueAtTime(0.0001, now + totalDecay);
+      gainL.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
       gainR.gain.setValueAtTime(0.0001, now);
       gainR.gain.linearRampToValueAtTime(peak, now + attack);
-      gainR.gain.exponentialRampToValueAtTime(0.0001, now + totalDecay);
-
-      let panL = null, panR = null;
-      if (audioCtx.createStereoPanner) {
-        panL = audioCtx.createStereoPanner();
-        panR = audioCtx.createStereoPanner();
-        panL.pan.setValueAtTime(-0.85 * state.stereoWidth, now);
-        panR.pan.setValueAtTime(0.85 * state.stereoWidth, now);
-      }
+      gainR.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
       oscL.connect(gainL);
       oscR.connect(gainR);
-
-      if (panL && panR) {
-        gainL.connect(panL);
-        gainR.connect(panR);
-        panL.connect(masterLimiter);
-        panR.connect(masterLimiter);
-      } else {
-        gainL.connect(masterLimiter);
-        gainR.connect(masterLimiter);
-      }
+      connectTo3DioStage(gainL, -0.85 * state.stereoWidth, now);
+      connectTo3DioStage(gainR, 0.85 * state.stereoWidth, now);
 
       oscL.start(now);
       oscR.start(now);
-      oscL.stop(now + totalDecay + 0.1);
-      oscR.stop(now + totalDecay + 0.1);
+      oscL.stop(now + dur + 0.1);
+      oscR.stop(now + dur + 0.1);
 
       createBowlVisualEvent(0, velScale, baseF);
-    } else {
-      // 颂钵 / 水晶钵 / 碰铃 / 柯西风铃：多阶物理谐波与微拍差共振
-      const baseF = (inst.chimeScale ? inst.chimeScale[Math.floor(Math.random() * inst.chimeScale.length)] : inst.baseFreq) * pitchShift;
-      const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.65 + (1 - state.bowlWarmth) * 0.7));
-
-      const sharedFilter = audioCtx.createBiquadFilter();
-      sharedFilter.type = "lowpass";
-      sharedFilter.frequency.setValueAtTime(effectiveCutoff, now);
-      sharedFilter.Q.setValueAtTime(1.5, now);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
-
-      if (panner) {
-        sharedFilter.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        sharedFilter.connect(masterLimiter);
-      }
-
-      inst.harmonics.forEach((h, idx) => {
-        const osc = audioCtx.createOscillator();
-        osc.type = "sine";
-        const hFreq = baseF * h.ratio;
-        osc.frequency.setValueAtTime(hFreq, now);
-
-        const hGain = audioCtx.createGain();
-        const peak = 0.28 * h.gain * velScale;
-        const attack = 0.012 + (idx * 0.004); // 极柔羊毛毡槌淡入
-        const decay = totalDecay * h.decayMul;
-
-        hGain.gain.setValueAtTime(0.0001, now);
-        hGain.gain.linearRampToValueAtTime(peak, now + attack);
-        hGain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
-
-        osc.connect(hGain);
-        hGain.connect(sharedFilter);
-
-        osc.start(now);
-        osc.stop(now + decay + 0.1);
-
-        // 如果存在环唱拍频 (beatFreq)，生成第二微偏正弦振荡器模拟双耳律动
-        if (inst.beatFreq && idx === 0) {
-          const oscBeat = audioCtx.createOscillator();
-          oscBeat.type = "sine";
-          oscBeat.frequency.setValueAtTime(hFreq + inst.beatFreq, now);
-
-          const beatGain = audioCtx.createGain();
-          beatGain.gain.setValueAtTime(0.0001, now);
-          beatGain.gain.linearRampToValueAtTime(peak * 0.85, now + attack);
-          beatGain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
-
-          oscBeat.connect(beatGain);
-          beatGain.connect(sharedFilter);
-
-          oscBeat.start(now);
-          oscBeat.stop(now + decay + 0.1);
-        }
-      });
-
-      createBowlVisualEvent(azimuth, velScale, baseF);
+      return;
     }
+
+    // 模式 B：颂钵 / 水晶钵 / 碰铃 / 柯西风铃 / 晨钟 / 钢舌鼓 / 拇指琴
+    const baseF = (inst.chimeScale ? inst.chimeScale[Math.floor(Math.random() * inst.chimeScale.length)] : inst.baseFreq) * pitchShift;
+    const isRimRub = (playMode === "rim");
+
+    const sharedFilter = audioCtx.createBiquadFilter();
+    sharedFilter.type = "lowpass";
+    sharedFilter.frequency.setValueAtTime(effectiveCutoff, now);
+    sharedFilter.Q.setValueAtTime(1.4, now);
+
+    const panner = connectTo3DioStage(sharedFilter, azimuth, now);
+    if (panner && isRimRub) {
+      // 双耳环磨颂唱：声像在 4.2 秒内沿 3Dio 双耳圆周平滑环绕迁移
+      panner.pan.linearRampToValueAtTime(-azimuth, now + 4.2);
+    }
+
+    // 实体器皿激发瞬态 (Physical Mallet / Thumb Excitation)
+    if (!isRimRub) {
+      if (state.currentBowlInst === "wood_kalimba") {
+        // 相思木拇指琴：指甲拨动弹片微声 + 相思木共鸣箱温暖空腔 (220Hz)
+        const boxOsc = audioCtx.createOscillator();
+        boxOsc.type = "sine";
+        boxOsc.frequency.setValueAtTime(235, now);
+        boxOsc.frequency.exponentialRampToValueAtTime(165, now + 0.045);
+        const boxGain = audioCtx.createGain();
+        boxGain.gain.setValueAtTime(0.0001, now);
+        boxGain.gain.linearRampToValueAtTime(0.22 * velScale, now + 0.003);
+        boxGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+        boxOsc.connect(boxGain);
+        boxGain.connect(sharedFilter);
+        boxOsc.start(now);
+        boxOsc.stop(now + 0.06);
+      } else if (state.currentBowlInst === "tibetan" || state.currentBowlInst === "temple_bell" || state.currentBowlInst === "steel_tongue") {
+        // 颂钵/晨钟/钢舌鼓：软羊皮木槌/橡胶槌沉稳触击钝音
+        const malletOsc = audioCtx.createOscillator();
+        malletOsc.type = "sine";
+        const mFreq = state.currentBowlInst === "temple_bell" ? 95 : 145;
+        malletOsc.frequency.setValueAtTime(mFreq, now);
+        malletOsc.frequency.exponentialRampToValueAtTime(mFreq * 0.48, now + 0.032);
+        const malletGain = audioCtx.createGain();
+        malletGain.gain.setValueAtTime(0.0001, now);
+        malletGain.gain.linearRampToValueAtTime(0.20 * velScale, now + 0.004);
+        malletGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
+        malletOsc.connect(malletGain);
+        malletGain.connect(sharedFilter);
+        malletOsc.start(now);
+        malletOsc.stop(now + 0.045);
+      }
+    } else {
+      // 环磨模式专属：桃木棒沿铜钵/水晶钵边缘摩擦的温润木质沙沙驻波底韵
+      const buf = getFrictionNoiseBuffer();
+      if (buf) {
+        const rubSrc = audioCtx.createBufferSource();
+        rubSrc.buffer = buf;
+        rubSrc.loop = true;
+        const rubBp = audioCtx.createBiquadFilter();
+        rubBp.type = "bandpass";
+        rubBp.frequency.setValueAtTime(Math.min(effectiveCutoff, baseF * 1.5), now);
+        rubBp.Q.setValueAtTime(4.5, now);
+        const rubGain = audioCtx.createGain();
+        rubGain.gain.setValueAtTime(0.0001, now);
+        rubGain.gain.linearRampToValueAtTime(0.055 * velScale, now + 1.5);
+        rubGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.4);
+        rubSrc.connect(rubBp);
+        rubBp.connect(rubGain);
+        rubGain.connect(sharedFilter);
+        rubSrc.start(now, Math.random() * 2.0);
+        rubSrc.stop(now + 4.5);
+      }
+    }
+
+    inst.harmonics.forEach((h, idx) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = "sine";
+      const hFreq = baseF * h.ratio;
+      osc.frequency.setValueAtTime(hFreq, now);
+
+      const hGain = audioCtx.createGain();
+      const peak = (isRimRub ? 0.22 : 0.28) * h.gain * velScale;
+      // 环磨模式采用 1.6s 渐强呼吸式涌现，消除突兀敲击感；单叩模式采用羊毛毡槌软淡入
+      const attack = isRimRub ? (1.45 + idx * 0.25) : (0.012 + idx * 0.004);
+      const decay = isRimRub ? Math.max(4.6, totalDecay * 0.48) : (totalDecay * h.decayMul);
+
+      hGain.gain.setValueAtTime(0.0001, now);
+      hGain.gain.linearRampToValueAtTime(peak, now + attack);
+      hGain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+
+      osc.connect(hGain);
+      hGain.connect(sharedFilter);
+
+      osc.start(now);
+      osc.stop(now + decay + 0.1);
+
+      // 环唱拍频 (beatFreq)：生成微偏正弦振荡器模拟真实手工铜钵壁厚不均带来的自然嗡鸣脉动
+      if (inst.beatFreq && idx === 0) {
+        const oscBeat = audioCtx.createOscillator();
+        oscBeat.type = "sine";
+        oscBeat.frequency.setValueAtTime(hFreq + inst.beatFreq, now);
+
+        const beatGain = audioCtx.createGain();
+        beatGain.gain.setValueAtTime(0.0001, now);
+        beatGain.gain.linearRampToValueAtTime(peak * 0.85, now + attack);
+        beatGain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+
+        oscBeat.connect(beatGain);
+        beatGain.connect(sharedFilter);
+
+        oscBeat.start(now);
+        oscBeat.stop(now + decay + 0.1);
+      }
+    });
+
+    createBowlVisualEvent(azimuth, velScale, baseF);
   }
 
   function scheduleNextBowlEvent() {
     if (!state.isPlaying || state.activeCategory !== "bowls") return;
 
-    const inst = BOWLS_INSTRUMENTS[state.currentBowlInst];
     const style = BOWLS_STYLES[state.currentBowlStyle];
 
     if (style.mode === "rim") {
-      // 钵缘 360° 连续环磨颂唱
-      bowlRimPhase += 0.85;
+      // 钵缘 360° 连续环磨颂唱 (无缝交叠渐变)
+      bowlRimPhase += 0.95;
       const az = Math.sin(bowlRimPhase) * 0.85;
-      triggerBowlStrike(az, 0.72, 1.0);
-      const nextDelay = 3200 + Math.random() * 600;
+      triggerBowlStrike(az, 0.78, 1.0, "rim");
+      const nextDelay = 3000 + Math.random() * 500;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
     } else if (style.mode === "breeze") {
       // 微风偶发随拂风铃
       const az = (Math.random() * 1.6 - 0.8);
-      triggerBowlStrike(az, 0.65 + Math.random() * 0.45, 1.0);
-      if (Math.random() < 0.45) {
-        setTimeout(() => {
+      triggerBowlStrike(az, 0.65 + Math.random() * 0.42, 1.0, "breeze");
+      if (Math.random() < 0.48) {
+        scheduleSubTimer(() => {
           if (state.isPlaying && state.activeCategory === "bowls") {
-            triggerBowlStrike(az + (Math.random() * 0.3 - 0.15), 0.55, 1.0);
+            triggerBowlStrike(az + (Math.random() * 0.35 - 0.175), 0.56, 1.0, "breeze");
           }
-        }, 180 + Math.random() * 250);
+        }, 180 + Math.random() * 240);
       }
-      const nextDelay = 2200 + Math.random() * 2600;
+      const nextDelay = 2100 + Math.random() * 2400;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
     } else if (style.mode === "binauralbeat") {
-      // 双耳慢波律动
-      triggerBowlStrike(0, 0.9, 1.0);
-      const nextDelay = 7500 + Math.random() * 2000;
+      // 双耳慢波律动 (6Hz Theta 持续交叠)
+      triggerBowlStrike(0, 0.88, 1.0, "binauralbeat");
+      const nextDelay = 6800 + Math.random() * 1600;
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
     } else {
       // 悠缓单叩 (single)
-      const az = (Math.random() > 0.5 ? 0.4 : -0.4) * (0.8 + Math.random() * 0.3);
-      triggerBowlStrike(az, 0.95, 1.0);
-      const nextDelay = (style.baseInterval || 10500) * (0.9 + Math.random() * 0.25);
+      const az = (Math.random() > 0.5 ? 0.45 : -0.45) * (0.8 + Math.random() * 0.3);
+      triggerBowlStrike(az, 0.95, 1.0, "strike");
+      const nextDelay = (style.baseInterval || 10500) * (0.88 + Math.random() * 0.24);
       bowlTimerId = setTimeout(scheduleNextBowlEvent, nextDelay);
     }
   }
 
   // --------------------------------------------------------------------------
-  // B6. 伴读工具与微机械声物理声学合成核心 (Tools & Grooming Synthesizer Engine)
+  // B6. 伴读工具与微机械声物理声学合成核心 (消除剪刀电子蜂鸣，优化八音盒音律与书写质感)
   // --------------------------------------------------------------------------
   function triggerToolEvent(azimuthOverride = null, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "tools") return;
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "tools") return;
 
     const inst = TOOLS_INSTRUMENTS[state.currentToolInst];
     const now = audioCtx.currentTime;
@@ -4426,54 +4774,78 @@ permalink: /projects/ai-asmr/index.html
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.7 + (1 - state.toolWarmth) * 0.6));
+    const toolBus = audioCtx.createGain();
+    toolBus.gain.setValueAtTime(1.0, now);
+    const panner = connectTo3DioStage(toolBus, azimuth, now);
 
     if (state.currentToolInst === "music_box") {
-      // 发条黄铜八音盒：齿轮轻微发条底响与精钢音梳清音
-      const scale = [523.25, 659.25, 783.99, 1046.5, 1174.66, 1318.51, 1567.98];
-      const pitch = scale[Math.floor(Math.random() * scale.length)];
-      const osc = audioCtx.createOscillator();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(pitch, now);
+      // 发条黄铜八音盒：柔美摇篮曲五声琶音序列 + 音梳拨片瞬态 + 木盒温暖共鸣 + 发条棘轮微响
+      const lullabyMelody = [
+        523.25, 659.25, 783.99, 1046.50, 880.00, 783.99, 659.25, 587.33,
+        523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 392.00
+      ];
+      const pitch = lullabyMelody[toolMusicBoxStep % lullabyMelody.length];
+      toolMusicBoxStep++;
 
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+      // 1) 精钢音梳主泛音与高次金属微泛音
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      osc1.type = "sine";
+      osc2.type = "sine";
+      osc1.frequency.setValueAtTime(pitch, now);
+      osc2.frequency.setValueAtTime(Math.min(effectiveCutoff * 1.2, pitch * 3.92), now);
 
+      const gain1 = audioCtx.createGain();
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.003);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
+
+      const gain2 = audioCtx.createGain();
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.linearRampToValueAtTime(0.055 * velScale * (1 - state.toolWarmth * 0.5), now + 0.0018);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+      // 2) 八音盒胡桃木底座温暖箱体共鸣 (~260Hz)
+      const boxOsc = audioCtx.createOscillator();
+      boxOsc.type = "sine";
+      boxOsc.frequency.setValueAtTime(265, now);
+      boxOsc.frequency.exponentialRampToValueAtTime(175, now + 0.032);
+      const boxGain = audioCtx.createGain();
+      boxGain.gain.setValueAtTime(0.0001, now);
+      boxGain.gain.linearRampToValueAtTime(0.11 * velScale, now + 0.003);
+      boxGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+      // 3) 铜齿拨动簧片微机械声
       const clickSrc = audioCtx.createBufferSource();
       clickSrc.buffer = buf;
       const clickBp = audioCtx.createBiquadFilter();
       clickBp.type = "bandpass";
-      clickBp.frequency.setValueAtTime(1400, now);
-      clickBp.Q.setValueAtTime(3.5, now);
+      clickBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1350), now);
+      clickBp.Q.setValueAtTime(3.6, now);
       const clickGain = audioCtx.createGain();
       clickGain.gain.setValueAtTime(0.0001, now);
-      clickGain.gain.linearRampToValueAtTime(0.12 * velScale, now + 0.002);
-      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012);
+      clickGain.gain.linearRampToValueAtTime(0.09 * velScale, now + 0.002);
+      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.011);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
-
-      osc.connect(gain);
+      osc1.connect(gain1);
+      osc2.connect(gain2);
+      boxOsc.connect(boxGain);
       clickSrc.connect(clickBp);
       clickBp.connect(clickGain);
 
-      if (panner) {
-        gain.connect(panner);
-        clickGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-        clickGain.connect(masterLimiter);
-      }
+      gain1.connect(toolBus);
+      gain2.connect(toolBus);
+      boxGain.connect(toolBus);
+      clickGain.connect(toolBus);
 
-      osc.start(now);
-      osc.stop(now + 0.9);
+      osc1.start(now);
+      osc2.start(now);
+      boxOsc.start(now);
+      osc1.stop(now + 1.0);
+      osc2.stop(now + 0.055);
+      boxOsc.stop(now + 0.045);
       clickSrc.start(now, Math.random() * 2.0);
-      clickSrc.stop(now + 0.02);
+      clickSrc.stop(now + 0.016);
 
       createToolVisualEvent("music_box", azimuth, velScale);
 
@@ -4481,328 +4853,263 @@ permalink: /projects/ai-asmr/index.html
       // 檀香木折扇：木骨收拢轻弹与拂耳微风气流
       const snapOsc = audioCtx.createOscillator();
       snapOsc.type = "sine";
-      snapOsc.frequency.setValueAtTime(260, now);
-      snapOsc.frequency.exponentialRampToValueAtTime(95, now + 0.035);
+      snapOsc.frequency.setValueAtTime(280, now);
+      snapOsc.frequency.exponentialRampToValueAtTime(92, now + 0.032);
 
       const snapGain = audioCtx.createGain();
       snapGain.gain.setValueAtTime(0.0001, now);
-      snapGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.003);
-      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+      snapGain.gain.linearRampToValueAtTime(0.30 * velScale, now + 0.003);
+      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
 
       const airSrc = audioCtx.createBufferSource();
       airSrc.buffer = buf;
       const airBp = audioCtx.createBiquadFilter();
-      airBp.type = "bandpass";
-      airBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 480), now);
-      airBp.Q.setValueAtTime(1.4, now);
+      airBp.type = "lowpass";
+      airBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 320), now);
+      airBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 580), now + 0.14);
+      airBp.frequency.exponentialRampToValueAtTime(180, now + 0.44);
+      airBp.Q.setValueAtTime(1.2, now);
 
       const airGain = audioCtx.createGain();
       airGain.gain.setValueAtTime(0.0001, now);
-      airGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.08);
-      airGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      airGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.11);
+      airGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
 
       snapOsc.connect(snapGain);
       airSrc.connect(airBp);
       airBp.connect(airGain);
-
-      if (panner) {
-        snapGain.connect(panner);
-        airGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        snapGain.connect(masterLimiter);
-        airGain.connect(masterLimiter);
-      }
+      snapGain.connect(toolBus);
+      airGain.connect(toolBus);
 
       snapOsc.start(now);
-      snapOsc.stop(now + 0.05);
+      snapOsc.stop(now + 0.045);
       airSrc.start(now, Math.random() * 2.0);
-      airSrc.stop(now + 0.45);
+      airSrc.stop(now + 0.48);
 
       createToolVisualEvent("sandalwood_fan", azimuth, velScale);
 
     } else if (state.currentToolInst === "fountain_pen") {
-      // 金尖钢笔棉纸划写：连绵湿润走字墨水阻尼微沙声
-      const strokeCount = 2 + Math.floor(Math.random() * 2);
+      // 金尖钢笔棉纸划写：连绵湿润走字墨水阻尼微沙声 + 笔尖纸面微触感
+      const strokeCount = 2 + Math.floor(Math.random() * 3);
+      let timeCursor = now;
       for (let i = 0; i < strokeCount; i++) {
-        const strokeTime = now + i * (0.045 + Math.random() * 0.035);
+        const strokeDur = 0.055 + Math.random() * 0.065;
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1150 + Math.random() * 300), strokeTime);
-        bp.Q.setValueAtTime(2.6, strokeTime);
+        const startF = Math.min(effectiveCutoff, 880 + Math.random() * 320);
+        bp.frequency.setValueAtTime(startF, timeCursor);
+        bp.frequency.linearRampToValueAtTime(startF * (0.88 + Math.random() * 0.25), timeCursor + strokeDur);
+        bp.Q.setValueAtTime(2.2, timeCursor);
 
         const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(0.0001, strokeTime);
-        gain.gain.linearRampToValueAtTime(0.22 * velScale, strokeTime + 0.006);
-        gain.gain.exponentialRampToValueAtTime(0.0001, strokeTime + 0.055);
-
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth + (i * 0.05 - 0.05), strokeTime);
-        }
+        gain.gain.setValueAtTime(0.0001, timeCursor);
+        gain.gain.linearRampToValueAtTime(0.24 * velScale, timeCursor + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, timeCursor + strokeDur);
 
         src.connect(bp);
         bp.connect(gain);
+        gain.connect(toolBus);
 
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
-
-        src.start(strokeTime, Math.random() * 2.0);
-        src.stop(strokeTime + 0.065);
+        src.start(timeCursor, Math.random() * 2.5);
+        src.stop(timeCursor + strokeDur + 0.01);
+        timeCursor += strokeDur + 0.018 + Math.random() * 0.025;
       }
 
       createToolVisualEvent("fountain_pen", azimuth, velScale);
 
     } else if (state.currentToolInst === "scissors") {
-      // 1. 锋利理发轻剪：真实两段式剪发声学时序 (0.16s 舒缓剪刀滑开与闭合)
-      // 阶段一 (0 ~ 0.12s)：双刃精密不锈钢滑移微剪摩擦 (Blade Sliding Shear)
-      // 阶段二 (0.12s ~ 0.16s)：刃口闭合软触接触微碰撞 (Blade Tip Closure)
-      const dur = 0.16;
+      // 1. 锋利理发轻剪：真实物理双刃滑擦 + 极短阻尼金属微合 + 手柄硅胶静音垫缓冲 (彻底消除正弦波电子滴声)
+      const shearDur = 0.068;
       const src = audioCtx.createBufferSource();
       src.buffer = buf;
-      src.loop = true;
 
+      // 双刃精密不锈钢滑移剪切摩擦 (Blade Sliding Shear: 1450Hz -> 2450Hz 窄带快速滑擦)
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2100 + Math.random() * 250), now);
-      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 2800), now + 0.12);
-      bp.Q.setValueAtTime(2.4, now);
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1450 + Math.random() * 220), now);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 2450), now + shearDur);
+      bp.Q.setValueAtTime(3.6, now);
 
       const lpf = audioCtx.createBiquadFilter();
       lpf.type = "lowpass";
       lpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const gain = audioCtx.createGain();
-      const peak = 0.38 * velScale;
+      const peak = 0.34 * velScale;
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(peak, now + 0.06);
-      gain.gain.linearRampToValueAtTime(peak * 0.85, now + 0.12);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.016);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + shearDur);
 
-      // 金属闭合轻碰 (软正弦双音微响 880Hz & 1520Hz)
-      const closeTime = now + 0.115;
-      const oscTouch1 = audioCtx.createOscillator();
-      const oscTouch2 = audioCtx.createOscillator();
-      const oscGain = audioCtx.createGain();
-      oscTouch1.type = "sine";
-      oscTouch2.type = "sine";
-      oscTouch1.frequency.setValueAtTime(880, closeTime);
-      oscTouch2.frequency.setValueAtTime(1520, closeTime);
+      // 剪刀指环橡胶防撞垫软触微顿 (Silicone Bumper Cushion Stop ~240Hz->95Hz, 12ms)
+      const closeTime = now + 0.042;
+      const bumperOsc = audioCtx.createOscillator();
+      bumperOsc.type = "sine";
+      bumperOsc.frequency.setValueAtTime(250, closeTime);
+      bumperOsc.frequency.exponentialRampToValueAtTime(92, closeTime + 0.014);
 
-      oscGain.gain.setValueAtTime(0.0001, closeTime);
-      oscGain.gain.linearRampToValueAtTime(0.22 * velScale, closeTime + 0.004);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, closeTime + 0.035);
+      const bumperGain = audioCtx.createGain();
+      bumperGain.gain.setValueAtTime(0.0001, closeTime);
+      bumperGain.gain.linearRampToValueAtTime(0.18 * velScale, closeTime + 0.002);
+      bumperGain.gain.exponentialRampToValueAtTime(0.0001, closeTime + 0.016);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      // 刀尖极短微咬合瞬态 (8ms 极速衰减，绝无长尾正弦电子音)
+      const tipSrc = audioCtx.createBufferSource();
+      tipSrc.buffer = buf;
+      const tipBp = audioCtx.createBiquadFilter();
+      tipBp.type = "bandpass";
+      tipBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1950), closeTime);
+      tipBp.Q.setValueAtTime(5.2, closeTime);
+      const tipGain = audioCtx.createGain();
+      tipGain.gain.setValueAtTime(0.0001, closeTime);
+      tipGain.gain.linearRampToValueAtTime(0.22 * velScale * (1 - state.toolWarmth * 0.4), closeTime + 0.0015);
+      tipGain.gain.exponentialRampToValueAtTime(0.0001, closeTime + 0.009);
 
       src.connect(bp);
       bp.connect(lpf);
       lpf.connect(gain);
+      bumperOsc.connect(bumperGain);
+      tipSrc.connect(tipBp);
+      tipBp.connect(tipGain);
 
-      oscTouch1.connect(oscGain);
-      oscTouch2.connect(oscGain);
+      gain.connect(toolBus);
+      bumperGain.connect(toolBus);
+      tipGain.connect(toolBus);
 
-      if (panner) {
-        gain.connect(panner);
-        oscGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-        oscGain.connect(masterLimiter);
-      }
-
-      src.start(now, Math.random() * 2.0);
-      src.stop(now + dur + 0.02);
-      oscTouch1.start(closeTime);
-      oscTouch2.start(closeTime);
-      oscTouch1.stop(closeTime + 0.04);
-      oscTouch2.stop(closeTime + 0.04);
+      src.start(now, Math.random() * 2.5);
+      src.stop(now + shearDur + 0.01);
+      bumperOsc.start(closeTime);
+      bumperOsc.stop(closeTime + 0.02);
+      tipSrc.start(closeTime, Math.random() * 2.5);
+      tipSrc.stop(closeTime + 0.012);
 
       createToolVisualEvent("scissors", azimuth, velScale);
 
     } else if (state.currentToolInst === "comb") {
-      // 2. 密齿木梳：5~7 颗微齿弹拨连音 (8~16ms 微间隔)
-      const tickCount = 5 + Math.floor(Math.random() * 3);
+      // 2. 密齿木梳：6~9 颗木梳微齿弹拨连音 + 柔顺发丝沙沙滑移底声
+      const tickCount = 6 + Math.floor(Math.random() * 4);
       for (let i = 0; i < tickCount; i++) {
-        const tickTime = now + i * (0.012 + Math.random() * 0.008);
+        const tickTime = now + i * (0.013 + Math.random() * 0.007);
         const tickSrc = audioCtx.createBufferSource();
         tickSrc.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1400 + Math.random() * 400), tickTime);
-        bp.Q.setValueAtTime(3.5, tickTime);
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1150 + i * 45 + Math.random() * 220), tickTime);
+        bp.Q.setValueAtTime(3.2, tickTime);
 
         const lpf = audioCtx.createBiquadFilter();
         lpf.type = "lowpass";
         lpf.frequency.setValueAtTime(effectiveCutoff, tickTime);
 
         const gain = audioCtx.createGain();
-        const tickPeak = (0.28 + Math.random() * 0.15) * velScale;
+        const tickPeak = (0.24 + Math.random() * 0.14) * velScale;
         gain.gain.setValueAtTime(0.0001, tickTime);
-        gain.gain.linearRampToValueAtTime(tickPeak, tickTime + 0.003);
-        gain.gain.exponentialRampToValueAtTime(0.0001, tickTime + 0.016);
-
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth + (i * 0.02 - 0.05), tickTime);
-        }
+        gain.gain.linearRampToValueAtTime(tickPeak, tickTime + 0.0025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, tickTime + 0.015);
 
         tickSrc.connect(bp);
         bp.connect(lpf);
         lpf.connect(gain);
+        gain.connect(toolBus);
 
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
-
-        tickSrc.start(tickTime, Math.random() * 2.0);
+        tickSrc.start(tickTime, Math.random() * 2.5);
         tickSrc.stop(tickTime + 0.02);
       }
       createToolVisualEvent("comb", azimuth, velScale);
 
     } else if (state.currentToolInst === "pencil") {
-      // 3. 棉纸素描铅笔：重质 4B 石墨划线阻尼感 (180ms ~ 320ms)
-      const strokeDur = 0.18 + Math.random() * 0.16;
+      // 3. 棉纸素描铅笔：重质 4B 石墨划线阻尼感 + 粗纹水彩纸纤维起伏
+      const strokeDur = 0.16 + Math.random() * 0.18;
       const src = audioCtx.createBufferSource();
       src.buffer = buf;
       src.loop = true;
 
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1050 + Math.random() * 300), now);
-      bp.Q.setValueAtTime(1.8, now);
+      const startF = Math.min(effectiveCutoff, 920 + Math.random() * 280);
+      bp.frequency.setValueAtTime(startF, now);
+      bp.frequency.linearRampToValueAtTime(startF * 1.18, now + strokeDur * 0.5);
+      bp.frequency.linearRampToValueAtTime(startF * 0.85, now + strokeDur);
+      bp.Q.setValueAtTime(1.9, now);
 
       const lpf = audioCtx.createBiquadFilter();
       lpf.type = "lowpass";
       lpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const gain = audioCtx.createGain();
-      const peak = 0.38 * velScale;
+      const peak = 0.36 * velScale;
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(peak, now + 0.025);
-      gain.gain.setValueAtTime(peak * (0.85 + Math.random() * 0.25), now + strokeDur * 0.6);
+      gain.gain.linearRampToValueAtTime(peak, now + 0.022);
+      gain.gain.setValueAtTime(peak * (0.85 + Math.random() * 0.2), now + strokeDur * 0.62);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + strokeDur);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-        panner.pan.linearRampToValueAtTime(azimuth + (Math.random() * 0.15 - 0.075), now + strokeDur);
+      if (panner) {
+        panner.pan.linearRampToValueAtTime( Math.max(-1, Math.min(1, azimuth + (Math.random() * 0.16 - 0.08))), now + strokeDur);
       }
 
       src.connect(bp);
       bp.connect(lpf);
       lpf.connect(gain);
+      gain.connect(toolBus);
 
-      if (panner) {
-        gain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-      }
-
-      src.start(now, Math.random() * 2.0);
+      src.start(now, Math.random() * 2.5);
       src.stop(now + strokeDur + 0.03);
 
       createToolVisualEvent("pencil", azimuth, velScale);
 
     } else if (state.currentToolInst === "typewriter") {
-      // 4. 复古机械打字机：底板胶辊沉闷下潜 (165Hz) + 铅字臂金属咬合 (1120Hz)
+      // 4. 复古机械打字机：底板胶辊沉闷下潜 (165Hz) + 铅字臂金属咬合色带 (1120Hz)
       const thudOsc = audioCtx.createOscillator();
       thudOsc.type = "sine";
       thudOsc.frequency.setValueAtTime(165, now);
-      thudOsc.frequency.exponentialRampToValueAtTime(65, now + 0.045);
+      thudOsc.frequency.exponentialRampToValueAtTime(62, now + 0.042);
 
       const thudGain = audioCtx.createGain();
       thudGain.gain.setValueAtTime(0.0001, now);
-      thudGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.004);
+      thudGain.gain.linearRampToValueAtTime(0.35 * velScale, now + 0.0035);
       thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
 
       const clickSrc = audioCtx.createBufferSource();
       clickSrc.buffer = buf;
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1150 + Math.random() * 200), now);
-      bp.Q.setValueAtTime(3.2, now);
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1120 + Math.random() * 220), now);
+      bp.Q.setValueAtTime(3.0, now);
 
       const clickGain = audioCtx.createGain();
       clickGain.gain.setValueAtTime(0.0001, now);
-      clickGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.003);
-      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.026);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      clickGain.gain.linearRampToValueAtTime(0.30 * velScale, now + 0.0025);
+      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.024);
 
       thudOsc.connect(thudGain);
       clickSrc.connect(bp);
       bp.connect(clickGain);
-
-      if (panner) {
-        thudGain.connect(panner);
-        clickGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        thudGain.connect(masterLimiter);
-        clickGain.connect(masterLimiter);
-      }
+      thudGain.connect(toolBus);
+      clickGain.connect(toolBus);
 
       thudOsc.start(now);
       thudOsc.stop(now + 0.05);
-      clickSrc.start(now, Math.random() * 2.0);
-      clickSrc.stop(now + 0.035);
+      clickSrc.start(now, Math.random() * 2.5);
+      clickSrc.stop(now + 0.032);
 
       toolTypewriterCount++;
-      // 每 15~18 次触发清脆行末铜铃 (Return Carriage Bell ~1760Hz)
+      // 每 16 次触发清脆行末黄铜回车小铃 (Return Carriage Bell)
       if (toolTypewriterCount % 16 === 0) {
         const bellOsc = audioCtx.createOscillator();
         bellOsc.type = "sine";
-        bellOsc.frequency.setValueAtTime(1760, now + 0.08); // A6 音高
+        bellOsc.frequency.setValueAtTime(1760, now + 0.08);
         const bellGain = audioCtx.createGain();
         bellGain.gain.setValueAtTime(0.0001, now + 0.08);
-        bellGain.gain.linearRampToValueAtTime(0.22, now + 0.088);
-        bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
-
-        let bellPan = null;
-        if (audioCtx.createStereoPanner) {
-          bellPan = audioCtx.createStereoPanner();
-          bellPan.pan.setValueAtTime(0.75 * state.stereoWidth, now + 0.08);
-        }
+        bellGain.gain.linearRampToValueAtTime(0.18, now + 0.086);
+        bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
 
         bellOsc.connect(bellGain);
-        if (bellPan) {
-          bellGain.connect(bellPan);
-          bellPan.connect(masterLimiter);
-        } else {
-          bellGain.connect(masterLimiter);
-        }
+        connectTo3DioStage(bellGain, 0.75 * state.stereoWidth, now + 0.08);
         bellOsc.start(now + 0.08);
-        bellOsc.stop(now + 1.2);
+        bellOsc.stop(now + 1.1);
       }
 
       createToolVisualEvent("typewriter", azimuth, velScale);
@@ -4814,56 +5121,43 @@ permalink: /projects/ai-asmr/index.html
       src.buffer = buf;
       src.loop = true;
 
-      // 泵头按压微机械声
       const pumpClick = audioCtx.createOscillator();
       pumpClick.type = "sine";
-      pumpClick.frequency.setValueAtTime(850, now);
-      pumpClick.frequency.exponentialRampToValueAtTime(320, now + 0.018);
+      pumpClick.frequency.setValueAtTime(680, now);
+      pumpClick.frequency.exponentialRampToValueAtTime(240, now + 0.018);
       const pumpGain = audioCtx.createGain();
       pumpGain.gain.setValueAtTime(0.0001, now);
-      pumpGain.gain.linearRampToValueAtTime(0.18 * velScale, now + 0.003);
+      pumpGain.gain.linearRampToValueAtTime(0.16 * velScale, now + 0.003);
       pumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
 
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2800), now);
-      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1400), now + sprayDur);
-      bp.Q.setValueAtTime(1.6, now);
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 2600), now);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1300), now + sprayDur);
+      bp.Q.setValueAtTime(1.5, now);
 
       const lpf = audioCtx.createBiquadFilter();
       lpf.type = "lowpass";
       lpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const gain = audioCtx.createGain();
-      const peak = 0.36 * velScale;
+      const peak = 0.34 * velScale;
       gain.gain.setValueAtTime(0.0001, now);
       gain.gain.linearRampToValueAtTime(peak, now + 0.035);
-      gain.gain.setValueAtTime(peak * 0.75, now + 0.22);
+      gain.gain.setValueAtTime(peak * 0.72, now + 0.22);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + sprayDur);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
 
       src.connect(bp);
       bp.connect(lpf);
       lpf.connect(gain);
       pumpClick.connect(pumpGain);
 
-      if (panner) {
-        gain.connect(panner);
-        pumpGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-        pumpGain.connect(masterLimiter);
-      }
+      gain.connect(toolBus);
+      pumpGain.connect(toolBus);
 
       pumpClick.start(now);
       pumpClick.stop(now + 0.025);
-      src.start(now + 0.005, Math.random() * 2.0);
+      src.start(now + 0.005, Math.random() * 2.5);
       src.stop(now + sprayDur + 0.03);
 
       createToolVisualEvent("spray", azimuth, velScale);
@@ -4884,12 +5178,12 @@ permalink: /projects/ai-asmr/index.html
       triggerToolEvent(az, 0.95);
 
       // 理发剪刀偶发快速跟剪（双剪 snip-snip）
-      if (state.currentToolInst === "scissors" && Math.random() < 0.45) {
-        setTimeout(() => {
+      if (state.currentToolInst === "scissors" && Math.random() < 0.48) {
+        scheduleSubTimer(() => {
           if (state.isPlaying && state.activeCategory === "tools") {
-            triggerToolEvent(az + (Math.random() * 0.15 - 0.075), 0.75);
+            triggerToolEvent(az + (Math.random() * 0.15 - 0.075), 0.78);
           }
-        }, 110 + Math.random() * 70);
+        }, 95 + Math.random() * 65);
       }
 
       const nextDelay = baseInterval * (0.85 + Math.random() * 0.3);
@@ -4926,7 +5220,7 @@ permalink: /projects/ai-asmr/index.html
   // B7. 暖冬壁炉炭火与自然碎裂声物理声学合成核心 (Fireplace & Natural Fractures Engine)
   // --------------------------------------------------------------------------
   function triggerFireEvent(azimuthOverride = null, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "fire") return;
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "fire") return;
 
     const inst = FIRE_INSTRUMENTS[state.currentFireInst];
     const now = audioCtx.currentTime;
@@ -4941,126 +5235,180 @@ permalink: /projects/ai-asmr/index.html
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, inst.warmthCutoff * (0.7 + (1 - state.fireWarmth) * 0.6));
+    const fireBus = audioCtx.createGain();
+    fireBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(fireBus, azimuth, now);
 
     if (state.currentFireInst === "dry_twigs") {
-      // 干燥细松枝折断：清脆木质脆裂
+      // 干燥细松枝折断：前期木纤维微弯曲应力声 + 主干清脆木质折断
+      const creakOsc = audioCtx.createOscillator();
+      creakOsc.type = "sine";
+      creakOsc.frequency.setValueAtTime(280, now);
+      creakOsc.frequency.linearRampToValueAtTime(205, now + 0.016);
+      const creakGain = audioCtx.createGain();
+      creakGain.gain.setValueAtTime(0.0001, now);
+      creakGain.gain.linearRampToValueAtTime(0.14 * velScale, now + 0.004);
+      creakGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+      creakOsc.connect(creakGain);
+      creakGain.connect(fireBus);
+      creakOsc.start(now);
+      creakOsc.stop(now + 0.022);
+
+      const snapTime = now + 0.015;
       const snapOsc = audioCtx.createOscillator();
       snapOsc.type = "sine";
-      snapOsc.frequency.setValueAtTime(380, now);
-      snapOsc.frequency.exponentialRampToValueAtTime(140, now + 0.018);
+      snapOsc.frequency.setValueAtTime(390, snapTime);
+      snapOsc.frequency.exponentialRampToValueAtTime(128, snapTime + 0.02);
 
       const snapGain = audioCtx.createGain();
-      snapGain.gain.setValueAtTime(0.0001, now);
-      snapGain.gain.linearRampToValueAtTime(0.42 * velScale, now + 0.002);
-      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.024);
+      snapGain.gain.setValueAtTime(0.0001, snapTime);
+      snapGain.gain.linearRampToValueAtTime(0.38 * velScale, snapTime + 0.002);
+      snapGain.gain.exponentialRampToValueAtTime(0.0001, snapTime + 0.026);
 
       const breakSrc = audioCtx.createBufferSource();
       breakSrc.buffer = buf;
       const breakBp = audioCtx.createBiquadFilter();
       breakBp.type = "bandpass";
-      breakBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1650), now);
-      breakBp.Q.setValueAtTime(3.2, now);
+      breakBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1480 + Math.random() * 260), snapTime);
+      breakBp.Q.setValueAtTime(3.0, snapTime);
 
       const breakGain = audioCtx.createGain();
-      breakGain.gain.setValueAtTime(0.0001, now);
-      breakGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.002);
-      breakGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      breakGain.gain.setValueAtTime(0.0001, snapTime);
+      breakGain.gain.linearRampToValueAtTime(0.34 * velScale, snapTime + 0.002);
+      breakGain.gain.exponentialRampToValueAtTime(0.0001, snapTime + 0.034);
 
       snapOsc.connect(snapGain);
       breakSrc.connect(breakBp);
       breakBp.connect(breakGain);
+      snapGain.connect(fireBus);
+      breakGain.connect(fireBus);
 
-      if (panner) {
-        snapGain.connect(panner);
-        breakGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        snapGain.connect(masterLimiter);
-        breakGain.connect(masterLimiter);
-      }
-
-      snapOsc.start(now);
-      snapOsc.stop(now + 0.03);
-      breakSrc.start(now, Math.random() * 2.0);
-      breakSrc.stop(now + 0.04);
+      snapOsc.start(snapTime);
+      snapOsc.stop(snapTime + 0.032);
+      breakSrc.start(snapTime, Math.random() * 2.5);
+      breakSrc.stop(snapTime + 0.04);
 
       createFireVisualEvent("dry_twigs", azimuth, velScale);
 
     } else if (state.currentFireInst === "sauna_steam") {
-      // 桑拿火山石浇水蒸腾：柔和嘶鸣与水汽舒展
+      // 桑拿火山石浇水蒸腾：1) 水瓢泼水入石温厚低频扑声 + 2) 双频段水汽嘶鸣舒展 + 3) 石面微沸水珠
+      const splashOsc = audioCtx.createOscillator();
+      splashOsc.type = "sine";
+      splashOsc.frequency.setValueAtTime(175, now);
+      splashOsc.frequency.exponentialRampToValueAtTime(68, now + 0.048);
+      const splashGain = audioCtx.createGain();
+      splashGain.gain.setValueAtTime(0.0001, now);
+      splashGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.006);
+      splashGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
+      splashOsc.connect(splashGain);
+      splashGain.connect(fireBus);
+      splashOsc.start(now);
+      splashOsc.stop(now + 0.062);
+
       const steamSrc = audioCtx.createBufferSource();
       steamSrc.buffer = buf;
+      steamSrc.loop = true;
+
       const steamBp = audioCtx.createBiquadFilter();
       steamBp.type = "bandpass";
-      steamBp.frequency.setValueAtTime(650, now);
-      steamBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1250), now + 0.15);
-      steamBp.Q.setValueAtTime(1.8, now);
+      steamBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 580), now + 0.01);
+      steamBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 1280), now + 0.16);
+      steamBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 480), now + 0.78);
+      steamBp.Q.setValueAtTime(1.5, now);
+
+      const steamLpf = audioCtx.createBiquadFilter();
+      steamLpf.type = "lowpass";
+      steamLpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const steamGain = audioCtx.createGain();
-      steamGain.gain.setValueAtTime(0.0001, now);
-      steamGain.gain.linearRampToValueAtTime(0.35 * velScale, now + 0.04);
-      steamGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      steamGain.gain.setValueAtTime(0.0001, now + 0.01);
+      steamGain.gain.linearRampToValueAtTime(0.34 * velScale, now + 0.055);
+      steamGain.gain.setValueAtTime(0.26 * velScale, now + 0.24);
+      steamGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.82);
 
       steamSrc.connect(steamBp);
-      steamBp.connect(steamGain);
+      steamBp.connect(steamLpf);
+      steamLpf.connect(steamGain);
+      steamGain.connect(fireBus);
 
-      if (panner) {
-        steamGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        steamGain.connect(masterLimiter);
+      steamSrc.start(now + 0.01, Math.random() * 2.5);
+      steamSrc.stop(now + 0.86);
+
+      // 火山石微沸水珠跳动 (2~3 颗微钝气泡)
+      for (let i = 0; i < 3; i++) {
+        const boilTime = now + 0.06 + i * 0.075 + Math.random() * 0.03;
+        const boilOsc = audioCtx.createOscillator();
+        boilOsc.type = "sine";
+        const bf = 360 + Math.random() * 180;
+        boilOsc.frequency.setValueAtTime(bf, boilTime);
+        boilOsc.frequency.exponentialRampToValueAtTime(bf * 1.35, boilTime + 0.02);
+        const boilGain = audioCtx.createGain();
+        boilGain.gain.setValueAtTime(0.0001, boilTime);
+        boilGain.gain.linearRampToValueAtTime(0.11 * velScale, boilTime + 0.003);
+        boilGain.gain.exponentialRampToValueAtTime(0.0001, boilTime + 0.024);
+        boilOsc.connect(boilGain);
+        boilGain.connect(fireBus);
+        boilOsc.start(boilTime);
+        boilOsc.stop(boilTime + 0.03);
       }
-
-      steamSrc.start(now, Math.random() * 2.0);
-      steamSrc.stop(now + 0.7);
 
       createFireVisualEvent("sauna_steam", azimuth, velScale);
 
     } else if (state.currentFireInst === "roast_chestnut") {
-      // 糖炒栗子壳微爆：果壳受热沉闷微爆
+      // 糖炒栗子壳微爆：热铁砂翻动沙沙底韵 + 栗壳受热空腔微爆 + 焦糖热气微噗
+      const sandSrc = audioCtx.createBufferSource();
+      sandSrc.buffer = buf;
+      const sandBp = audioCtx.createBiquadFilter();
+      sandBp.type = "bandpass";
+      sandBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 680), now);
+      sandBp.Q.setValueAtTime(1.8, now);
+      const sandGain = audioCtx.createGain();
+      sandGain.gain.setValueAtTime(0.0001, now);
+      sandGain.gain.linearRampToValueAtTime(0.16 * velScale, now + 0.025);
+      sandGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+      sandSrc.connect(sandBp);
+      sandBp.connect(sandGain);
+      sandGain.connect(fireBus);
+      sandSrc.start(now, Math.random() * 2.5);
+      sandSrc.stop(now + 0.16);
+
+      const popTime = now + 0.022;
       const popOsc = audioCtx.createOscillator();
       popOsc.type = "sine";
-      popOsc.frequency.setValueAtTime(440, now);
-      popOsc.frequency.exponentialRampToValueAtTime(180, now + 0.028);
+      popOsc.frequency.setValueAtTime(440 + Math.random() * 60, popTime);
+      popOsc.frequency.exponentialRampToValueAtTime(160, popTime + 0.03);
 
       const popGain = audioCtx.createGain();
-      popGain.gain.setValueAtTime(0.0001, now);
-      popGain.gain.linearRampToValueAtTime(0.38 * velScale, now + 0.003);
-      popGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+      popGain.gain.setValueAtTime(0.0001, popTime);
+      popGain.gain.linearRampToValueAtTime(0.36 * velScale, popTime + 0.0025);
+      popGain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.036);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      const shellSrc = audioCtx.createBufferSource();
+      shellSrc.buffer = buf;
+      const shellBp = audioCtx.createBiquadFilter();
+      shellBp.type = "bandpass";
+      shellBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1180), popTime);
+      shellBp.Q.setValueAtTime(3.2, popTime);
+      const shellGain = audioCtx.createGain();
+      shellGain.gain.setValueAtTime(0.0001, popTime);
+      shellGain.gain.linearRampToValueAtTime(0.24 * velScale, popTime + 0.002);
+      shellGain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.02);
 
       popOsc.connect(popGain);
-      if (panner) {
-        popGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        popGain.connect(masterLimiter);
-      }
+      shellSrc.connect(shellBp);
+      shellBp.connect(shellGain);
+      popGain.connect(fireBus);
+      shellGain.connect(fireBus);
 
-      popOsc.start(now);
-      popOsc.stop(now + 0.04);
+      popOsc.start(popTime);
+      popOsc.stop(popTime + 0.042);
+      shellSrc.start(popTime, Math.random() * 2.5);
+      shellSrc.stop(popTime + 0.026);
 
       createFireVisualEvent("roast_chestnut", azimuth, velScale);
 
     } else if (state.currentFireInst === "pine_fireplace") {
-      // 1. 松木壁炉炭火：松脂偶发微爆（Popping），次低频沉闷微沉 (~180Hz) + 木质微爆裂 (~950Hz)
+      // 1. 松木壁炉炭火：松脂偶发微爆（Popping），次低频沉闷微沉 (~180Hz) + 木质微爆裂 (~950Hz) + 松脂余气微嘶
       const popOsc = audioCtx.createOscillator();
       popOsc.type = "sine";
       const startF = 180 + Math.random() * 80;
@@ -5069,8 +5417,8 @@ permalink: /projects/ai-asmr/index.html
 
       const popGain = audioCtx.createGain();
       popGain.gain.setValueAtTime(0.0001, now);
-      popGain.gain.linearRampToValueAtTime(0.45 * velScale, now + 0.003);
-      popGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.038);
+      popGain.gain.linearRampToValueAtTime(0.42 * velScale, now + 0.003);
+      popGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.042);
 
       const crackleSrc = audioCtx.createBufferSource();
       crackleSrc.buffer = buf;
@@ -5081,227 +5429,232 @@ permalink: /projects/ai-asmr/index.html
 
       const crackleGain = audioCtx.createGain();
       crackleGain.gain.setValueAtTime(0.0001, now);
-      crackleGain.gain.linearRampToValueAtTime(0.35 * velScale, now + 0.002);
-      crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.024);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      crackleGain.gain.linearRampToValueAtTime(0.34 * velScale, now + 0.002);
+      crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.026);
 
       popOsc.connect(popGain);
       crackleSrc.connect(bp);
       bp.connect(crackleGain);
-
-      if (panner) {
-        popGain.connect(panner);
-        crackleGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        popGain.connect(masterLimiter);
-        crackleGain.connect(masterLimiter);
-      }
+      popGain.connect(fireBus);
+      crackleGain.connect(fireBus);
 
       popOsc.start(now);
-      popOsc.stop(now + 0.045);
-      crackleSrc.start(now, Math.random() * 2.0);
-      crackleSrc.stop(now + 0.03);
+      popOsc.stop(now + 0.048);
+      crackleSrc.start(now, Math.random() * 2.5);
+      crackleSrc.stop(now + 0.032);
 
-      // 偶发性连环微爆簇 (Stochastic Micro-Burst Clusters ~40% 几率产生极真实的木炭连爆)
-      if (Math.random() < 0.40) {
-        const followDelay = 0.025 + Math.random() * 0.045;
-        setTimeout(() => {
-          if (state.isPlaying && state.activeCategory === "fire") {
+      // 偶发性连环微爆簇 (Stochastic Micro-Burst Clusters ~42% 几率产生真实木炭连爆)
+      if (Math.random() < 0.42) {
+        const followDelay = 25 + Math.random() * 45;
+        scheduleSubTimer(() => {
+          if (state.isPlaying && state.activeCategory === "fire" && audioCtx) {
+            const t2 = audioCtx.currentTime;
             const followSrc = audioCtx.createBufferSource();
             followSrc.buffer = buf;
             const followBp = audioCtx.createBiquadFilter();
             followBp.type = "bandpass";
-            followBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1200 + Math.random() * 400), audioCtx.currentTime);
-            followBp.Q.setValueAtTime(3.8, audioCtx.currentTime);
+            followBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1180 + Math.random() * 380), t2);
+            followBp.Q.setValueAtTime(3.6, t2);
 
             const followGain = audioCtx.createGain();
-            followGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-            followGain.gain.linearRampToValueAtTime(0.24 * velScale, audioCtx.currentTime + 0.002);
-            followGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.018);
+            followGain.gain.setValueAtTime(0.0001, t2);
+            followGain.gain.linearRampToValueAtTime(0.24 * velScale, t2 + 0.002);
+            followGain.gain.exponentialRampToValueAtTime(0.0001, t2 + 0.019);
 
             followSrc.connect(followBp);
             followBp.connect(followGain);
-            if (panner) followGain.connect(panner);
-            else followGain.connect(masterLimiter);
+            connectTo3DioStage(followGain, azimuth + (Math.random() * 0.12 - 0.06), t2);
 
-            followSrc.start(audioCtx.currentTime, Math.random() * 2.0);
-            followSrc.stop(audioCtx.currentTime + 0.025);
+            followSrc.start(t2, Math.random() * 2.5);
+            followSrc.stop(t2 + 0.025);
           }
-        }, followDelay * 1000);
+        }, followDelay);
       }
 
       createFireVisualEvent("fireplace", azimuth, velScale);
 
     } else if (state.currentFireInst === "autumn_leaves") {
-      // 2. 深秋干燥落叶：4~7 个快速连续微碎裂 (10~22ms 间隔)
+      // 2. 深秋干燥落叶：鞋底/脚掌踩踏松软泥土层低频缓冲 (145Hz->56Hz) + 4~7 层干燥枫叶纤维连续微碎
+      const stepOsc = audioCtx.createOscillator();
+      stepOsc.type = "sine";
+      stepOsc.frequency.setValueAtTime(145, now);
+      stepOsc.frequency.exponentialRampToValueAtTime(56, now + 0.055);
+      const stepGain = audioCtx.createGain();
+      stepGain.gain.setValueAtTime(0.0001, now);
+      stepGain.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.008);
+      stepGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.065);
+      stepOsc.connect(stepGain);
+      stepGain.connect(fireBus);
+      stepOsc.start(now);
+      stepOsc.stop(now + 0.072);
+
       const crunchCount = 4 + Math.floor(Math.random() * 4);
       for (let i = 0; i < crunchCount; i++) {
-        const crunchTime = now + i * (0.012 + Math.random() * 0.014);
+        const crunchTime = now + i * (0.013 + Math.random() * 0.014);
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1100 + Math.random() * 650), crunchTime);
-        bp.Q.setValueAtTime(2.8, crunchTime);
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 980 + Math.random() * 680), crunchTime);
+        bp.Q.setValueAtTime(2.6, crunchTime);
 
         const lpf = audioCtx.createBiquadFilter();
         lpf.type = "lowpass";
         lpf.frequency.setValueAtTime(effectiveCutoff, crunchTime);
 
         const gain = audioCtx.createGain();
-        const crunchPeak = (0.28 + Math.random() * 0.18) * velScale;
+        const crunchPeak = (0.26 + Math.random() * 0.16) * velScale;
         gain.gain.setValueAtTime(0.0001, crunchTime);
-        gain.gain.linearRampToValueAtTime(crunchPeak, crunchTime + 0.004);
-        gain.gain.exponentialRampToValueAtTime(0.0001, crunchTime + 0.022);
-
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth + (i * 0.02 - 0.04), crunchTime);
-        }
+        gain.gain.linearRampToValueAtTime(crunchPeak, crunchTime + 0.0035);
+        gain.gain.exponentialRampToValueAtTime(0.0001, crunchTime + 0.024);
 
         src.connect(bp);
         bp.connect(lpf);
         lpf.connect(gain);
+        gain.connect(fireBus);
 
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
-
-        src.start(crunchTime, Math.random() * 2.0);
-        src.stop(crunchTime + 0.028);
+        src.start(crunchTime, Math.random() * 2.5);
+        src.stop(crunchTime + 0.03);
       }
       createFireVisualEvent("leaves", azimuth, velScale);
 
     } else if (state.currentFireInst === "campfire_embers") {
-      // 3. 营火微风余烬：高频极细微炭火飞星跳跃 (1600Hz~2400Hz 纯正微弱破裂)
-      const sparkSrc = audioCtx.createBufferSource();
-      sparkSrc.buffer = buf;
+      // 3. 营火微风余烬：夜风轻拂通红木炭的柔和热气涌动 (~280Hz) + 细微炭火飞星跳跃
+      const gustSrc = audioCtx.createBufferSource();
+      gustSrc.buffer = buf;
+      const gustBp = audioCtx.createBiquadFilter();
+      gustBp.type = "bandpass";
+      gustBp.frequency.setValueAtTime(240, now);
+      gustBp.frequency.linearRampToValueAtTime(360, now + 0.09);
+      gustBp.frequency.exponentialRampToValueAtTime(190, now + 0.24);
+      gustBp.Q.setValueAtTime(1.6, now);
+      const gustGain = audioCtx.createGain();
+      gustGain.gain.setValueAtTime(0.0001, now);
+      gustGain.gain.linearRampToValueAtTime(0.18 * velScale, now + 0.06);
+      gustGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+      gustSrc.connect(gustBp);
+      gustBp.connect(gustGain);
+      gustGain.connect(fireBus);
+      gustSrc.start(now, Math.random() * 2.5);
+      gustSrc.stop(now + 0.28);
 
-      const bp = audioCtx.createBiquadFilter();
-      bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1800 + Math.random() * 500), now);
-      bp.Q.setValueAtTime(4.2, now);
+      const sparkCount = 1 + (Math.random() < 0.45 ? 1 : 0);
+      for (let s = 0; s < sparkCount; s++) {
+        const st = now + s * 0.032;
+        const sparkSrc = audioCtx.createBufferSource();
+        sparkSrc.buffer = buf;
 
-      const gain = audioCtx.createGain();
-      const peak = 0.26 * velScale;
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(peak, now + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1550 + Math.random() * 480), st);
+        bp.Q.setValueAtTime(3.8, st);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
+        const gain = audioCtx.createGain();
+        const peak = 0.25 * velScale;
+        gain.gain.setValueAtTime(0.0001, st);
+        gain.gain.linearRampToValueAtTime(peak, st + 0.0025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, st + 0.019);
+
+        sparkSrc.connect(bp);
+        bp.connect(gain);
+        gain.connect(fireBus);
+
+        sparkSrc.start(st, Math.random() * 2.5);
+        sparkSrc.stop(st + 0.025);
       }
-
-      sparkSrc.connect(bp);
-      bp.connect(gain);
-
-      if (panner) {
-        gain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-      }
-
-      sparkSrc.start(now, Math.random() * 2.0);
-      sparkSrc.stop(now + 0.025);
 
       createFireVisualEvent("embers", azimuth, velScale);
 
     } else if (state.currentFireInst === "pinecone_fracture") {
-      // 4. 干燥松果微压：木质纤维脆性瞬态折断 (Woody Micro-Fracture Snap)
+      // 4. 干燥松果微压：鳞片预压微响 + 木质纤维脆性瞬态折断 (Woody Micro-Fracture Snap)
+      const preSrc = audioCtx.createBufferSource();
+      preSrc.buffer = buf;
+      const preBp = audioCtx.createBiquadFilter();
+      preBp.type = "bandpass";
+      preBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 720), now);
+      preBp.Q.setValueAtTime(3.2, now);
+      const preGain = audioCtx.createGain();
+      preGain.gain.setValueAtTime(0.0001, now);
+      preGain.gain.linearRampToValueAtTime(0.15 * velScale, now + 0.002);
+      preGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012);
+      preSrc.connect(preBp);
+      preBp.connect(preGain);
+      preGain.connect(fireBus);
+      preSrc.start(now, Math.random() * 2.5);
+      preSrc.stop(now + 0.016);
+
+      const mainT = now + 0.018;
       const snapOsc = audioCtx.createOscillator();
       snapOsc.type = "sine";
-      snapOsc.frequency.setValueAtTime(420, now);
-      snapOsc.frequency.exponentialRampToValueAtTime(110, now + 0.016);
+      snapOsc.frequency.setValueAtTime(420, mainT);
+      snapOsc.frequency.exponentialRampToValueAtTime(110, mainT + 0.018);
 
       const snapGain = audioCtx.createGain();
-      snapGain.gain.setValueAtTime(0.0001, now);
-      snapGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.002);
-      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+      snapGain.gain.setValueAtTime(0.0001, mainT);
+      snapGain.gain.linearRampToValueAtTime(0.36 * velScale, mainT + 0.002);
+      snapGain.gain.exponentialRampToValueAtTime(0.0001, mainT + 0.024);
 
       const fiberSrc = audioCtx.createBufferSource();
       fiberSrc.buffer = buf;
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1400 + Math.random() * 400), now);
-      bp.Q.setValueAtTime(3.4, now);
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1360 + Math.random() * 380), mainT);
+      bp.Q.setValueAtTime(3.2, mainT);
 
       const fiberGain = audioCtx.createGain();
-      fiberGain.gain.setValueAtTime(0.0001, now);
-      fiberGain.gain.linearRampToValueAtTime(0.35 * velScale, now + 0.002);
-      fiberGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      fiberGain.gain.setValueAtTime(0.0001, mainT);
+      fiberGain.gain.linearRampToValueAtTime(0.34 * velScale, mainT + 0.002);
+      fiberGain.gain.exponentialRampToValueAtTime(0.0001, mainT + 0.032);
 
       snapOsc.connect(snapGain);
       fiberSrc.connect(bp);
       bp.connect(fiberGain);
+      snapGain.connect(fireBus);
+      fiberGain.connect(fireBus);
 
-      if (panner) {
-        snapGain.connect(panner);
-        fiberGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        snapGain.connect(masterLimiter);
-        fiberGain.connect(masterLimiter);
-      }
-
-      snapOsc.start(now);
-      snapOsc.stop(now + 0.025);
-      fiberSrc.start(now, Math.random() * 2.0);
-      fiberSrc.stop(now + 0.038);
+      snapOsc.start(mainT);
+      snapOsc.stop(mainT + 0.028);
+      fiberSrc.start(mainT, Math.random() * 2.5);
+      fiberSrc.stop(mainT + 0.038);
 
       createFireVisualEvent("pinecone", azimuth, velScale);
 
     } else if (state.currentFireInst === "charcoal_drift") {
-      // 5. 竹炭微炙慢烘：深层气隙微矿物爆鸣 (480Hz & 1380Hz)
+      // 5. 竹炭微炙慢烘 (备长炭)：高密度炭体内部微气孔受热释放的清润矿物木质微鸣 (560Hz & 1280Hz) + 细微气隙嘶声
+      const pingOsc = audioCtx.createOscillator();
+      pingOsc.type = "sine";
+      const pFreq = Math.min(effectiveCutoff, 540 + Math.random() * 140);
+      pingOsc.frequency.setValueAtTime(pFreq, now);
+      pingOsc.frequency.exponentialRampToValueAtTime(pFreq * 0.72, now + 0.028);
+
+      const pingGain = audioCtx.createGain();
+      pingGain.gain.setValueAtTime(0.0001, now);
+      pingGain.gain.linearRampToValueAtTime(0.22 * velScale, now + 0.002);
+      pingGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
+
       const clickSrc = audioCtx.createBufferSource();
       clickSrc.buffer = buf;
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1380 + Math.random() * 250), now);
-      bp.Q.setValueAtTime(3.8, now);
+      bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 1260 + Math.random() * 260), now);
+      bp.Q.setValueAtTime(3.6, now);
 
       const clickGain = audioCtx.createGain();
       clickGain.gain.setValueAtTime(0.0001, now);
-      clickGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.003);
-      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.024);
+      clickGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.0025);
+      clickGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.026);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
-
+      pingOsc.connect(pingGain);
       clickSrc.connect(bp);
       bp.connect(clickGain);
+      pingGain.connect(fireBus);
+      clickGain.connect(fireBus);
 
-      if (panner) {
-        clickGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        clickGain.connect(masterLimiter);
-      }
-
-      clickSrc.start(now, Math.random() * 2.0);
-      clickSrc.stop(now + 0.03);
+      pingOsc.start(now);
+      pingOsc.stop(now + 0.036);
+      clickSrc.start(now, Math.random() * 2.5);
+      clickSrc.stop(now + 0.032);
 
       createFireVisualEvent("charcoal", azimuth, velScale);
     }
@@ -5350,235 +5703,212 @@ permalink: /projects/ai-asmr/index.html
       // 泊松分布模拟松脂自然断裂
       const poissonRand = -Math.log(Math.max(0.001, Math.random()));
       const nextDelay = baseInterval * (0.4 + poissonRand * 0.7);
-      fireTimerId = setTimeout(scheduleNextFireEvent, nextDelay);
+      fireTimerId = setTimeout(scheduleNextFireEvent, Math.max(45, nextDelay));
     }
   }
 
   // --------------------------------------------------------------------------
-  // B7. 触觉揉捏、微塑性形变与软胶声学物理合成器 (Squish & Micro-Deformation Engine)
+  // B8. 触觉揉捏、微塑性形变与软胶声学物理合成器 (Squish & Micro-Deformation Engine)
   // --------------------------------------------------------------------------
-  function triggerSquishEvent(azimuth, velScale = 1.0) {
-    if (!audioCtx) return;
+  function triggerSquishEvent(azimuthOverride = null, velScale = 1.0) {
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "squish") return;
+
     const now = audioCtx.currentTime;
     const mat = SQUISH_MATERIALS[state.currentSquishMat];
     const effectiveCutoff = Math.min(state.userLowpass, mat.warmthCutoff * (0.65 + (1 - state.squishViscosity) * 0.7));
     const buf = getFrictionNoiseBuffer();
     if (!buf) return;
 
+    const azimuth = (azimuthOverride !== null ? azimuthOverride : (Math.random() * 1.2 - 0.6)) * state.stereoWidth;
+    const squishBus = audioCtx.createGain();
+    squishBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(squishBus, azimuth, now);
+
     if (state.currentSquishMat === "memory_foam") {
-      // 1. 慢回弹记忆海绵：深沉微气孔慢吸气与舒展 (Pore Breathing & Viscous Decompression)
+      // 1. 慢回弹记忆海绵：一阶段掌心深压排气 (0~0.24s) + 二阶段开孔微泡慢回弹吸气舒展 (0.24~0.92s)
       const thudOsc = audioCtx.createOscillator();
       thudOsc.type = "sine";
-      thudOsc.frequency.setValueAtTime(130, now);
-      thudOsc.frequency.exponentialRampToValueAtTime(50, now + 0.18);
+      thudOsc.frequency.setValueAtTime(128, now);
+      thudOsc.frequency.exponentialRampToValueAtTime(48, now + 0.20);
 
       const thudGain = audioCtx.createGain();
       thudGain.gain.setValueAtTime(0.0001, now);
-      thudGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.018);
-      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      thudGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.02);
+      thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
 
       const breathSrc = audioCtx.createBufferSource();
       breathSrc.buffer = buf;
+      breathSrc.loop = true;
+
       const bp = audioCtx.createBiquadFilter();
       bp.type = "bandpass";
-      bp.frequency.setValueAtTime(220, now);
-      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 560), now + 0.65);
-      bp.Q.setValueAtTime(1.6, now);
+      bp.frequency.setValueAtTime(240, now);
+      bp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 540), now + 0.22);
+      bp.frequency.exponentialRampToValueAtTime(195, now + 0.88);
+      bp.Q.setValueAtTime(1.5, now);
+
+      const lpf = audioCtx.createBiquadFilter();
+      lpf.type = "lowpass";
+      lpf.frequency.setValueAtTime(effectiveCutoff, now);
 
       const breathGain = audioCtx.createGain();
-      const breathPeak = (0.24 + (1 - state.squishViscosity) * 0.12) * velScale;
+      const breathPeak = (0.25 + (1 - state.squishViscosity) * 0.12) * velScale;
       breathGain.gain.setValueAtTime(0.0001, now);
-      breathGain.gain.linearRampToValueAtTime(breathPeak, now + 0.15);
-      breathGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.75);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      breathGain.gain.linearRampToValueAtTime(breathPeak, now + 0.14);
+      breathGain.gain.setValueAtTime(breathPeak * 0.72, now + 0.36);
+      breathGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.90);
 
       thudOsc.connect(thudGain);
       breathSrc.connect(bp);
-      bp.connect(breathGain);
-
-      if (panner) {
-        thudGain.connect(panner);
-        breathGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        thudGain.connect(masterLimiter);
-        breathGain.connect(masterLimiter);
-      }
+      bp.connect(lpf);
+      lpf.connect(breathGain);
+      thudGain.connect(squishBus);
+      breathGain.connect(squishBus);
 
       thudOsc.start(now);
-      thudOsc.stop(now + 0.25);
-      breathSrc.start(now, Math.random() * 2.0);
-      breathSrc.stop(now + 0.8);
+      thudOsc.stop(now + 0.26);
+      breathSrc.start(now, Math.random() * 2.5);
+      breathSrc.stop(now + 0.94);
 
       createSquishVisualEvent("memory_foam", azimuth, velScale);
 
     } else if (state.currentSquishMat === "warm_beeswax") {
-      // 2. 温热天然蜂蜡：高阻尼软膏体深层折叠揉压 (Dual-sine 90Hz & 190Hz + brown damping)
+      // 2. 温热天然蜂蜡：高阻尼软膏体深层折叠揉压 + 尾部微黏拉伸舒展
       const osc1 = audioCtx.createOscillator();
       const osc2 = audioCtx.createOscillator();
       osc1.type = "sine";
       osc2.type = "sine";
-      osc1.frequency.setValueAtTime(85, now);
-      osc2.frequency.setValueAtTime(185, now);
+      osc1.frequency.setValueAtTime(92, now);
+      osc1.frequency.exponentialRampToValueAtTime(62, now + 0.28);
+      osc2.frequency.setValueAtTime(188, now);
+      osc2.frequency.exponentialRampToValueAtTime(132, now + 0.26);
 
       const oscGain = audioCtx.createGain();
       oscGain.gain.setValueAtTime(0.0001, now);
-      oscGain.gain.linearRampToValueAtTime(0.38 * velScale, now + 0.024);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+      oscGain.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.026);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.30);
 
       const doughSrc = audioCtx.createBufferSource();
       doughSrc.buffer = buf;
       const lpf = audioCtx.createBiquadFilter();
       lpf.type = "lowpass";
-      lpf.frequency.setValueAtTime(Math.min(effectiveCutoff, 240 + (1 - state.squishViscosity) * 120), now);
-      lpf.Q.setValueAtTime(0.8, now);
+      lpf.frequency.setValueAtTime(Math.min(effectiveCutoff, 250 + (1 - state.squishViscosity) * 130), now);
+      lpf.Q.setValueAtTime(1.1, now);
 
       const doughGain = audioCtx.createGain();
       doughGain.gain.setValueAtTime(0.0001, now);
-      doughGain.gain.linearRampToValueAtTime(0.26 * velScale, now + 0.035);
-      doughGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      doughGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.038);
+      doughGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
 
       osc1.connect(oscGain);
       osc2.connect(oscGain);
       doughSrc.connect(lpf);
       lpf.connect(doughGain);
-
-      if (panner) {
-        oscGain.connect(panner);
-        doughGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        oscGain.connect(masterLimiter);
-        doughGain.connect(masterLimiter);
-      }
+      oscGain.connect(squishBus);
+      doughGain.connect(squishBus);
 
       osc1.start(now);
       osc2.start(now);
-      osc1.stop(now + 0.3);
-      osc2.stop(now + 0.3);
-      doughSrc.start(now, Math.random() * 2.0);
-      doughSrc.stop(now + 0.35);
+      osc1.stop(now + 0.32);
+      osc2.stop(now + 0.32);
+      doughSrc.start(now, Math.random() * 2.5);
+      doughSrc.stop(now + 0.36);
 
       createSquishVisualEvent("warm_beeswax", azimuth, velScale);
 
     } else if (state.currentSquishMat === "soft_slime") {
-      // 3. 柔韧水晶泥软胶：软胶按压微气泡钝感破裂 (2~4 muffled micro-bubble pops)
+      // 3. 柔韧水晶泥软胶：胶体流体共振扫频 (Formant Squelch) + 2~4 颗微气泡钝感破裂 + 底层粘滞沉音
+      const gelSrc = audioCtx.createBufferSource();
+      gelSrc.buffer = buf;
+      const gelBp = audioCtx.createBiquadFilter();
+      gelBp.type = "bandpass";
+      gelBp.frequency.setValueAtTime(240, now);
+      gelBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 520), now + 0.09);
+      gelBp.frequency.exponentialRampToValueAtTime(280, now + 0.22);
+      gelBp.Q.setValueAtTime(2.4, now);
+      const gelGain = audioCtx.createGain();
+      gelGain.gain.setValueAtTime(0.0001, now);
+      gelGain.gain.linearRampToValueAtTime(0.22 * velScale, now + 0.03);
+      gelGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+      gelSrc.connect(gelBp);
+      gelBp.connect(gelGain);
+      gelGain.connect(squishBus);
+      gelSrc.start(now, Math.random() * 2.5);
+      gelSrc.stop(now + 0.26);
+
       const popCount = 2 + Math.floor(Math.random() * 3);
       for (let i = 0; i < popCount; i++) {
-        const popTime = now + i * (0.02 + Math.random() * 0.03);
+        const popTime = now + 0.015 + i * (0.024 + Math.random() * 0.028);
         const osc = audioCtx.createOscillator();
         osc.type = "sine";
-        const startF = 260 + Math.random() * 120;
+        const startF = 250 + Math.random() * 130;
         osc.frequency.setValueAtTime(startF, popTime);
-        osc.frequency.exponentialRampToValueAtTime(startF * 1.5, popTime + 0.022);
+        osc.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, startF * 1.52), popTime + 0.022);
 
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.0001, popTime);
-        gain.gain.linearRampToValueAtTime(0.25 * velScale, popTime + 0.004);
+        gain.gain.linearRampToValueAtTime(0.24 * velScale, popTime + 0.0035);
         gain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.03);
 
         const bp = audioCtx.createBiquadFilter();
-        bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 480 + Math.random() * 180), popTime);
-        bp.Q.setValueAtTime(3.0, popTime);
-
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth + (i * 0.04 - 0.06), popTime);
-        }
+        bp.type = "lowpass";
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 680), popTime);
+        bp.Q.setValueAtTime(2.2, popTime);
 
         osc.connect(bp);
         bp.connect(gain);
-
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
+        gain.connect(squishBus);
 
         osc.start(popTime);
         osc.stop(popTime + 0.035);
       }
 
-      // 底层粘滞挤压沉音
       const squelchOsc = audioCtx.createOscillator();
       squelchOsc.type = "sine";
-      squelchOsc.frequency.setValueAtTime(170, now);
-      squelchOsc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+      squelchOsc.frequency.setValueAtTime(168, now);
+      squelchOsc.frequency.exponentialRampToValueAtTime(76, now + 0.085);
 
       const squelchGain = audioCtx.createGain();
       squelchGain.gain.setValueAtTime(0.0001, now);
-      squelchGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.01);
-      squelchGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      squelchGain.gain.linearRampToValueAtTime(0.26 * velScale, now + 0.009);
+      squelchGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
 
       squelchOsc.connect(squelchGain);
-      if (panner) {
-        squelchGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        squelchGain.connect(masterLimiter);
-      }
-
+      squelchGain.connect(squishBus);
       squelchOsc.start(now);
-      squelchOsc.stop(now + 0.1);
+      squelchOsc.stop(now + 0.105);
 
       createSquishVisualEvent("soft_slime", azimuth, velScale);
 
     } else if (state.currentSquishMat === "linen_parchment") {
-      // 4. 柔和亚麻纸褶：3~5 段柔和纤维微折叠断续沙沙声 (680Hz~1150Hz)
+      // 4. 柔和亚麻纸褶：3~5 段柔和植物纤维微折叠沙沙声 + 低频布料气囊缓冲
       const crinkleCount = 3 + Math.floor(Math.random() * 3);
       for (let i = 0; i < crinkleCount; i++) {
-        const crinkleTime = now + i * (0.016 + Math.random() * 0.022);
+        const crinkleTime = now + i * (0.018 + Math.random() * 0.022);
         const src = audioCtx.createBufferSource();
         src.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 750 + Math.random() * 450), crinkleTime);
-        bp.Q.setValueAtTime(2.2, crinkleTime);
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 720 + Math.random() * 420), crinkleTime);
+        bp.Q.setValueAtTime(2.0, crinkleTime);
+
+        const lpf = audioCtx.createBiquadFilter();
+        lpf.type = "lowpass";
+        lpf.frequency.setValueAtTime(effectiveCutoff, crinkleTime);
 
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.0001, crinkleTime);
         gain.gain.linearRampToValueAtTime(0.24 * velScale, crinkleTime + 0.004);
-        gain.gain.exponentialRampToValueAtTime(0.0001, crinkleTime + 0.026);
-
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth + (i * 0.03 - 0.05), crinkleTime);
-        }
+        gain.gain.exponentialRampToValueAtTime(0.0001, crinkleTime + 0.028);
 
         src.connect(bp);
-        bp.connect(gain);
+        bp.connect(lpf);
+        lpf.connect(gain);
+        gain.connect(squishBus);
 
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
-
-        src.start(crinkleTime, Math.random() * 2.0);
-        src.stop(crinkleTime + 0.03);
+        src.start(crinkleTime, Math.random() * 2.5);
+        src.stop(crinkleTime + 0.032);
       }
 
       const thud = audioCtx.createOscillator();
@@ -5588,140 +5918,159 @@ permalink: /projects/ai-asmr/index.html
 
       const thudGain = audioCtx.createGain();
       thudGain.gain.setValueAtTime(0.0001, now);
-      thudGain.gain.linearRampToValueAtTime(0.2 * velScale, now + 0.006);
+      thudGain.gain.linearRampToValueAtTime(0.20 * velScale, now + 0.006);
       thudGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
-
       thud.connect(thudGain);
-      if (panner) {
-        thudGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        thudGain.connect(masterLimiter);
-      }
-
+      thudGain.connect(squishBus);
       thud.start(now);
       thud.stop(now + 0.08);
 
       createSquishVisualEvent("linen_parchment", azimuth, velScale);
 
     } else if (state.currentSquishMat === "bubble_wrap") {
-      // 双耳防震气泡膜：微气泡慢捏钝响微爆
+      // 6. 双耳防震气泡膜：柔韧 PE 膜指腹按压微褶 + 2~3 颗气囊沉闷微爆 (气腔降频 + 薄膜瞬态)
+      const filmSrc = audioCtx.createBufferSource();
+      filmSrc.buffer = buf;
+      const filmBp = audioCtx.createBiquadFilter();
+      filmBp.type = "bandpass";
+      filmBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 580), now);
+      filmBp.Q.setValueAtTime(1.8, now);
+      const filmGain = audioCtx.createGain();
+      filmGain.gain.setValueAtTime(0.0001, now);
+      filmGain.gain.linearRampToValueAtTime(0.14 * velScale, now + 0.005);
+      filmGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
+      filmSrc.connect(filmBp);
+      filmBp.connect(filmGain);
+      filmGain.connect(squishBus);
+      filmSrc.start(now, Math.random() * 2.5);
+      filmSrc.stop(now + 0.03);
+
       const popCount = 2 + Math.floor(Math.random() * 2);
       for (let i = 0; i < popCount; i++) {
-        const popTime = now + i * 0.032;
+        const popTime = now + 0.012 + i * (0.038 + Math.random() * 0.025);
+        // 气囊空腔破裂沉闷弹性声
         const osc = audioCtx.createOscillator();
         osc.type = "sine";
-        osc.frequency.setValueAtTime(280 + Math.random() * 80, popTime);
-        osc.frequency.exponentialRampToValueAtTime(480, popTime + 0.016);
+        const pStart = 340 + Math.random() * 90;
+        osc.frequency.setValueAtTime(pStart, popTime);
+        osc.frequency.exponentialRampToValueAtTime(115, popTime + 0.022);
 
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.0001, popTime);
-        gain.gain.linearRampToValueAtTime(0.34 * velScale, popTime + 0.002);
-        gain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.024);
+        gain.gain.linearRampToValueAtTime(0.32 * velScale, popTime + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.026);
 
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth + (i * 0.08 - 0.04), popTime);
-        }
+        // 薄膜微破瞬态 (经低通柔化防刺耳)
+        const snapSrc = audioCtx.createBufferSource();
+        snapSrc.buffer = buf;
+        const snapBp = audioCtx.createBiquadFilter();
+        snapBp.type = "bandpass";
+        snapBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 860 + Math.random() * 240), popTime);
+        snapBp.Q.setValueAtTime(2.8, popTime);
+        const snapGain = audioCtx.createGain();
+        snapGain.gain.setValueAtTime(0.0001, popTime);
+        snapGain.gain.linearRampToValueAtTime(0.22 * velScale, popTime + 0.0018);
+        snapGain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.012);
 
         osc.connect(gain);
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
+        snapSrc.connect(snapBp);
+        snapBp.connect(snapGain);
+        gain.connect(squishBus);
+        snapGain.connect(squishBus);
 
         osc.start(popTime);
         osc.stop(popTime + 0.03);
+        snapSrc.start(popTime, Math.random() * 2.5);
+        snapSrc.stop(popTime + 0.016);
       }
       createSquishVisualEvent("bubble_wrap", azimuth, velScale);
 
     } else if (state.currentSquishMat === "sourdough_knead") {
-      // 慢发酵酸种面团：厚重湿润面团深层翻折排气
+      // 7. 慢发酵酸种面团：厚重湿润面团深层翻折排气 + 发酵微气孔轻叹
       const doughOsc = audioCtx.createOscillator();
       doughOsc.type = "sine";
-      doughOsc.frequency.setValueAtTime(80, now);
-      doughOsc.frequency.exponentialRampToValueAtTime(45, now + 0.22);
+      doughOsc.frequency.setValueAtTime(84, now);
+      doughOsc.frequency.exponentialRampToValueAtTime(42, now + 0.24);
 
       const doughGain = audioCtx.createGain();
       doughGain.gain.setValueAtTime(0.0001, now);
-      doughGain.gain.linearRampToValueAtTime(0.40 * velScale, now + 0.03);
+      doughGain.gain.linearRampToValueAtTime(0.38 * velScale, now + 0.028);
       doughGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
 
       const wetSrc = audioCtx.createBufferSource();
       wetSrc.buffer = buf;
       const wetBp = audioCtx.createBiquadFilter();
       wetBp.type = "bandpass";
-      wetBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 420), now);
+      wetBp.frequency.setValueAtTime(260, now);
+      wetBp.frequency.exponentialRampToValueAtTime(Math.min(effectiveCutoff, 440), now + 0.12);
+      wetBp.frequency.exponentialRampToValueAtTime(190, now + 0.34);
       wetBp.Q.setValueAtTime(1.8, now);
 
       const wetGain = audioCtx.createGain();
       wetGain.gain.setValueAtTime(0.0001, now);
-      wetGain.gain.linearRampToValueAtTime(0.22 * velScale, now + 0.04);
-      wetGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      wetGain.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.045);
+      wetGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.36);
 
       doughOsc.connect(doughGain);
       wetSrc.connect(wetBp);
       wetBp.connect(wetGain);
-
-      if (panner) {
-        doughGain.connect(panner);
-        wetGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        doughGain.connect(masterLimiter);
-        wetGain.connect(masterLimiter);
-      }
+      doughGain.connect(squishBus);
+      wetGain.connect(squishBus);
 
       doughOsc.start(now);
-      doughOsc.stop(now + 0.3);
-      wetSrc.start(now, Math.random() * 2.0);
+      doughOsc.stop(now + 0.30);
+      wetSrc.start(now, Math.random() * 2.5);
       wetSrc.stop(now + 0.38);
 
       createSquishVisualEvent("sourdough_knead", azimuth, velScale);
 
     } else if (state.currentSquishMat === "silicone_pop") {
-      // 硅胶解压按按乐：韧性微凸起慢压反转微弹钝响
-      const osc = audioCtx.createOscillator();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(340, now);
-      osc.frequency.exponentialRampToValueAtTime(120, now + 0.022);
+      // 8. 硅胶解压按按乐：指腹按压硅胶阻尼 + 双稳态硅胶碗翻转钝响 (350Hz->120Hz + 720Hz 弹性泛音)
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      osc1.type = "sine";
+      osc2.type = "sine";
+      osc1.frequency.setValueAtTime(350, now);
+      osc1.frequency.exponentialRampToValueAtTime(118, now + 0.026);
+      osc2.frequency.setValueAtTime(Math.min(effectiveCutoff, 720), now);
+      osc2.frequency.exponentialRampToValueAtTime(340, now + 0.014);
 
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.38 * velScale, now + 0.003);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+      const gain1 = audioCtx.createGain();
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(0.36 * velScale, now + 0.0028);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.034);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      const gain2 = audioCtx.createGain();
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.linearRampToValueAtTime(0.14 * velScale * (1 - state.squishViscosity * 0.4), now + 0.002);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
 
-      osc.connect(gain);
-      if (panner) {
-        gain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-      }
+      const snapSrc = audioCtx.createBufferSource();
+      snapSrc.buffer = buf;
+      const snapBp = audioCtx.createBiquadFilter();
+      snapBp.type = "bandpass";
+      snapBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 640), now);
+      snapBp.Q.setValueAtTime(2.5, now);
+      const snapGain = audioCtx.createGain();
+      snapGain.gain.setValueAtTime(0.0001, now);
+      snapGain.gain.linearRampToValueAtTime(0.16 * velScale, now + 0.002);
+      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.014);
 
-      osc.start(now);
-      osc.stop(now + 0.04);
+      osc1.connect(gain1);
+      osc2.connect(gain2);
+      snapSrc.connect(snapBp);
+      snapBp.connect(snapGain);
+      gain1.connect(squishBus);
+      gain2.connect(squishBus);
+      snapGain.connect(squishBus);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.04);
+      osc2.stop(now + 0.02);
+      snapSrc.start(now, Math.random() * 2.5);
+      snapSrc.stop(now + 0.018);
 
       createSquishVisualEvent("silicone_pop", azimuth, velScale);
 
@@ -5729,55 +6078,45 @@ permalink: /projects/ai-asmr/index.html
       // 5. 流沙解压魔方：微聚合物沙粒切变贴合与黄油般推切微流
       const sandSrc = audioCtx.createBufferSource();
       sandSrc.buffer = buf;
+      sandSrc.loop = true;
 
       const bp1 = audioCtx.createBiquadFilter();
       bp1.type = "bandpass";
-      bp1.frequency.setValueAtTime(Math.min(effectiveCutoff, 420), now);
-      bp1.Q.setValueAtTime(2.0, now);
+      bp1.frequency.setValueAtTime(Math.min(effectiveCutoff, 380), now);
+      bp1.frequency.linearRampToValueAtTime(Math.min(effectiveCutoff, 520), now + 0.16);
+      bp1.Q.setValueAtTime(1.8, now);
 
       const bp2 = audioCtx.createBiquadFilter();
       bp2.type = "bandpass";
       bp2.frequency.setValueAtTime(Math.min(effectiveCutoff, 680), now);
-      bp2.Q.setValueAtTime(2.2, now);
+      bp2.Q.setValueAtTime(2.1, now);
 
       const sandGain = audioCtx.createGain();
       sandGain.gain.setValueAtTime(0.0001, now);
-      sandGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.05);
-      sandGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+      sandGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.055);
+      sandGain.gain.setValueAtTime(0.25 * velScale, now + 0.18);
+      sandGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.44);
 
       const subOsc = audioCtx.createOscillator();
       subOsc.type = "sine";
-      subOsc.frequency.setValueAtTime(110, now);
-      subOsc.frequency.exponentialRampToValueAtTime(55, now + 0.2);
+      subOsc.frequency.setValueAtTime(115, now);
+      subOsc.frequency.exponentialRampToValueAtTime(52, now + 0.22);
 
       const subGain = audioCtx.createGain();
       subGain.gain.setValueAtTime(0.0001, now);
       subGain.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.02);
-      subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      subGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
 
       sandSrc.connect(bp1);
       sandSrc.connect(bp2);
       bp1.connect(sandGain);
       bp2.connect(sandGain);
       subOsc.connect(subGain);
+      sandGain.connect(squishBus);
+      subGain.connect(squishBus);
 
-      if (panner) {
-        sandGain.connect(panner);
-        subGain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        sandGain.connect(masterLimiter);
-        subGain.connect(masterLimiter);
-      }
-
-      sandSrc.start(now, Math.random() * 2.0);
-      sandSrc.stop(now + 0.42);
+      sandSrc.start(now, Math.random() * 2.5);
+      sandSrc.stop(now + 0.48);
       subOsc.start(now);
       subOsc.stop(now + 0.28);
 
@@ -5829,101 +6168,200 @@ permalink: /projects/ai-asmr/index.html
   // --------------------------------------------------------------------------
   let keycapVisualEvents = [];
 
-  function triggerKeystroke(azimuthOverride = null, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "keyboard") return;
+  function triggerKeystroke(azimuthOverride = null, velScale = 1.0, isStabilizerKey = false) {
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "keyboard") return;
 
     const sw = KEYBOARD_SWITCHES[state.currentKeySwitch];
     const now = audioCtx.currentTime;
     const buf = getFrictionNoiseBuffer();
     if (!buf) return;
 
-    // 双手打字声相交替 (左右手分布在 Pan -0.55 ~ +0.55)
+    // 双手打字声相交替 (左右手分布在 Pan -0.55 ~ +0.55，空格/大键居中微偏)
     let azimuth = 0;
     if (azimuthOverride !== null) {
       azimuth = azimuthOverride * state.stereoWidth;
+    } else if (isStabilizerKey) {
+      azimuth = (Math.random() * 0.24 - 0.12) * state.stereoWidth;
     } else {
       state.keyHandAlternation = (state.keyHandAlternation + 1) % 2;
       const side = state.keyHandAlternation === 0 ? -1 : 1;
-      azimuth = side * (0.25 + Math.random() * 0.45) * state.stereoWidth;
+      azimuth = side * (0.22 + Math.random() * 0.42) * state.stereoWidth;
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, sw.warmthCutoff * (0.65 + (1 - state.keyThockDamping) * 0.7));
+    const keyBus = audioCtx.createGain();
+    keyBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(keyBus, azimuth, now);
 
-    // 1. 轴心触底钝音 (Bottom-Out Thock - Sine Drop)
-    const thockOsc = audioCtx.createOscillator();
-    thockOsc.type = "sine";
-    const baseF = sw.baseFreq * (0.95 + Math.random() * 0.1);
-    thockOsc.frequency.setValueAtTime(baseF, now);
-    thockOsc.frequency.exponentialRampToValueAtTime(Math.max(45, baseF * 0.35), now + sw.thockDamp);
+    if (state.currentKeySwitch === "walnut_rest") {
+      // 4. 实木掌托轻叩 (Solid Walnut Wrist Rest)：指腹肉感软垫 + 黑胡桃实木块双阶空腔谐振
+      const fleshOsc = audioCtx.createOscillator();
+      fleshOsc.type = "sine";
+      fleshOsc.frequency.setValueAtTime(118, now);
+      fleshOsc.frequency.exponentialRampToValueAtTime(48, now + 0.025);
+      const fleshGain = audioCtx.createGain();
+      fleshGain.gain.setValueAtTime(0.0001, now);
+      fleshGain.gain.linearRampToValueAtTime(0.28 * velScale, now + 0.003);
+      fleshGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
 
-    const thockGain = audioCtx.createGain();
-    const thockPeak = (0.38 + state.keyThockDamping * 0.15) * velScale;
-    thockGain.gain.setValueAtTime(0.0001, now);
-    thockGain.gain.linearRampToValueAtTime(thockPeak, now + 0.003);
-    thockGain.gain.exponentialRampToValueAtTime(0.0001, now + sw.thockDamp + 0.015);
+      const woodOsc1 = audioCtx.createOscillator();
+      const woodOsc2 = audioCtx.createOscillator();
+      woodOsc1.type = "sine";
+      woodOsc2.type = "sine";
+      const wf = sw.baseFreq * (0.94 + Math.random() * 0.12);
+      woodOsc1.frequency.setValueAtTime(wf * 1.12, now);
+      woodOsc1.frequency.exponentialRampToValueAtTime(wf, now + 0.008);
+      woodOsc2.frequency.setValueAtTime(Math.min(effectiveCutoff, wf * 2.08), now);
 
-    // 2. 外壳与触底碰撞微声 (Housing Clack - Filtered Noise)
-    const clackSrc = audioCtx.createBufferSource();
-    clackSrc.buffer = buf;
-    const clackBp = audioCtx.createBiquadFilter();
-    clackBp.type = "bandpass";
-    clackBp.frequency.setValueAtTime(Math.min(effectiveCutoff, sw.clackFreq * (0.9 + Math.random() * 0.2)), now);
-    clackBp.Q.setValueAtTime(2.8, now);
+      const wg1 = audioCtx.createGain();
+      wg1.gain.setValueAtTime(0.0001, now);
+      wg1.gain.linearRampToValueAtTime(0.34 * velScale, now + 0.0028);
+      wg1.gain.exponentialRampToValueAtTime(0.0001, now + 0.055);
 
-    const clackGain = audioCtx.createGain();
-    const clackPeak = (0.28 + (1 - state.keyThockDamping) * 0.22) * velScale;
-    clackGain.gain.setValueAtTime(0.0001, now);
-    clackGain.gain.linearRampToValueAtTime(clackPeak, now + 0.002);
-    clackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+      const wg2 = audioCtx.createGain();
+      wg2.gain.setValueAtTime(0.0001, now);
+      wg2.gain.linearRampToValueAtTime(0.11 * velScale * (1 - state.keyThockDamping * 0.4), now + 0.002);
+      wg2.gain.exponentialRampToValueAtTime(0.0001, now + 0.024);
 
-    let panner = null;
-    if (audioCtx.createStereoPanner) {
-      panner = audioCtx.createStereoPanner();
-      panner.pan.setValueAtTime(azimuth, now);
-    }
+      fleshOsc.connect(fleshGain);
+      woodOsc1.connect(wg1);
+      woodOsc2.connect(wg2);
+      fleshGain.connect(keyBus);
+      wg1.connect(keyBus);
+      wg2.connect(keyBus);
 
-    thockOsc.connect(thockGain);
-    clackSrc.connect(clackBp);
-    clackBp.connect(clackGain);
+      fleshOsc.start(now);
+      woodOsc1.start(now);
+      woodOsc2.start(now);
+      fleshOsc.stop(now + 0.035);
+      woodOsc1.stop(now + 0.062);
+      woodOsc2.stop(now + 0.03);
 
-    if (panner) {
-      thockGain.connect(panner);
-      clackGain.connect(panner);
-      panner.connect(masterLimiter);
+    } else if (state.currentKeySwitch === "coiled_cable") {
+      // 5. 航插螺旋线轻弹 (Coiled Aviator Cable)：PU 螺旋线弹性阻尼回弹 + GX16 航插金属环柔化微碰
+      const coilOsc = audioCtx.createOscillator();
+      coilOsc.type = "sine";
+      coilOsc.frequency.setValueAtTime(240, now);
+      coilOsc.frequency.exponentialRampToValueAtTime(480, now + 0.018);
+      coilOsc.frequency.exponentialRampToValueAtTime(175, now + 0.068);
+      const coilGain = audioCtx.createGain();
+      coilGain.gain.setValueAtTime(0.0001, now);
+      coilGain.gain.linearRampToValueAtTime(0.32 * velScale, now + 0.004);
+      coilGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+
+      const collarSrc = audioCtx.createBufferSource();
+      collarSrc.buffer = buf;
+      const collarBp = audioCtx.createBiquadFilter();
+      collarBp.type = "bandpass";
+      collarBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 960 + Math.random() * 220), now);
+      collarBp.Q.setValueAtTime(3.4, now);
+      const collarGain = audioCtx.createGain();
+      collarGain.gain.setValueAtTime(0.0001, now);
+      collarGain.gain.linearRampToValueAtTime(0.24 * velScale, now + 0.002);
+      collarGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+
+      coilOsc.connect(coilGain);
+      collarSrc.connect(collarBp);
+      collarBp.connect(collarGain);
+      coilGain.connect(keyBus);
+      collarGain.connect(keyBus);
+
+      coilOsc.start(now);
+      coilOsc.stop(now + 0.082);
+      collarSrc.start(now, Math.random() * 2.5);
+      collarSrc.stop(now + 0.028);
+
     } else {
-      thockGain.connect(masterLimiter);
-      clackGain.connect(masterLimiter);
+      // 1/2/3. 机械轴体与静电容轴 (lubed_red / topre_capacitive / holy_panda)
+      const isPanda = state.currentKeySwitch === "holy_panda";
+      const isTopre = state.currentKeySwitch === "topre_capacitive";
+      const pitchMul = isStabilizerKey ? 0.78 : (0.94 + Math.random() * 0.12);
+      const mainTime = isPanda ? now + 0.010 : now;
+
+      // 圣熊猫提前大段落 (Holy Panda Tactile Pre-Bump ~10ms 提前圆润段落反馈)
+      if (isPanda) {
+        const bumpOsc = audioCtx.createOscillator();
+        bumpOsc.type = "sine";
+        bumpOsc.frequency.setValueAtTime(460 * pitchMul, now);
+        bumpOsc.frequency.exponentialRampToValueAtTime(210, now + 0.009);
+        const bumpGain = audioCtx.createGain();
+        bumpGain.gain.setValueAtTime(0.0001, now);
+        bumpGain.gain.linearRampToValueAtTime(0.18 * velScale, now + 0.0018);
+        bumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.010);
+        bumpOsc.connect(bumpGain);
+        bumpGain.connect(keyBus);
+        bumpOsc.start(now);
+        bumpOsc.stop(now + 0.012);
+      }
+
+      // 轴心触底钝音 (Bottom-Out Thock / Topre Raindrop)
+      const thockOsc = audioCtx.createOscillator();
+      thockOsc.type = "sine";
+      const baseF = sw.baseFreq * pitchMul;
+      thockOsc.frequency.setValueAtTime(baseF * (isTopre ? 1.08 : 1.18), mainTime);
+      thockOsc.frequency.exponentialRampToValueAtTime(Math.max(44, baseF * 0.36), mainTime + sw.thockDamp);
+
+      const thockGain = audioCtx.createGain();
+      const thockPeak = (0.38 + state.keyThockDamping * 0.16) * velScale * (isStabilizerKey ? 1.12 : 1.0);
+      thockGain.gain.setValueAtTime(0.0001, mainTime);
+      thockGain.gain.linearRampToValueAtTime(thockPeak, mainTime + (isTopre ? 0.004 : 0.0028));
+      thockGain.gain.exponentialRampToValueAtTime(0.0001, mainTime + sw.thockDamp + 0.018);
+
+      // 键帽与轴壳碰撞微声 (PBT Keycap & Housing Clack)
+      const clackSrc = audioCtx.createBufferSource();
+      clackSrc.buffer = buf;
+      const clackBp = audioCtx.createBiquadFilter();
+      clackBp.type = "bandpass";
+      clackBp.frequency.setValueAtTime(Math.min(effectiveCutoff, sw.clackFreq * pitchMul), mainTime);
+      clackBp.Q.setValueAtTime(isTopre ? 2.0 : 2.8, mainTime);
+
+      const clackGain = audioCtx.createGain();
+      const clackPeak = (0.26 + (1 - state.keyThockDamping) * 0.22) * velScale;
+      clackGain.gain.setValueAtTime(0.0001, mainTime);
+      clackGain.gain.linearRampToValueAtTime(clackPeak, mainTime + 0.002);
+      clackGain.gain.exponentialRampToValueAtTime(0.0001, mainTime + (isTopre ? 0.024 : 0.016));
+
+      thockOsc.connect(thockGain);
+      clackSrc.connect(clackBp);
+      clackBp.connect(clackGain);
+      thockGain.connect(keyBus);
+      clackGain.connect(keyBus);
+
+      thockOsc.start(mainTime);
+      thockOsc.stop(mainTime + sw.thockDamp + 0.028);
+      clackSrc.start(mainTime, Math.random() * 2.5);
+      clackSrc.stop(mainTime + 0.03);
+
+      // 键帽回弹上盖微声 (Upstroke Top-Out Return ~42ms 后轻柔回弹，赋予真实双段机械触感)
+      const upTime = mainTime + 0.038 + Math.random() * 0.016;
+      const upOsc = audioCtx.createOscillator();
+      upOsc.type = "sine";
+      upOsc.frequency.setValueAtTime(Math.min(effectiveCutoff, baseF * (isTopre ? 1.15 : 1.45)), upTime);
+      upOsc.frequency.exponentialRampToValueAtTime(baseF * 0.72, upTime + 0.018);
+      const upGain = audioCtx.createGain();
+      upGain.gain.setValueAtTime(0.0001, upTime);
+      upGain.gain.linearRampToValueAtTime(thockPeak * (isTopre ? 0.28 : 0.22), upTime + 0.002);
+      upGain.gain.exponentialRampToValueAtTime(0.0001, upTime + 0.022);
+      upOsc.connect(upGain);
+      upGain.connect(keyBus);
+      upOsc.start(upTime);
+      upOsc.stop(upTime + 0.026);
     }
 
-    thockOsc.start(now);
-    thockOsc.stop(now + sw.thockDamp + 0.03);
-    clackSrc.start(now, Math.random() * 2.0);
-    clackSrc.stop(now + 0.025);
-
-    // 3. 弹簧微共鸣 (极轻柔金属微泛，段落轴专属)
-    if (sw.springFreq > 0 && Math.random() < 0.28) {
-      const spOsc = audioCtx.createOscillator();
-      spOsc.type = "sine";
-      spOsc.frequency.setValueAtTime(sw.springFreq, now);
-      const spGain = audioCtx.createGain();
-      spGain.gain.setValueAtTime(0.0001, now);
-      spGain.gain.linearRampToValueAtTime(0.035 * velScale, now + 0.004);
-      spGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
-
-      spOsc.connect(spGain);
-      if (panner) spGain.connect(panner);
-      else spGain.connect(masterLimiter);
-
-      spOsc.start(now);
-      spOsc.stop(now + 0.07);
+    // 驱动 3Dio 声学雷达、双耳 VU 电平表与人耳波纹
+    registerAcousticEvent(azimuth, velScale * 0.85, "keyboard", "Key · " + state.currentKeySwitch);
+    if (azimuth < 0) {
+      earWavesL.push({ r: 6, maxR: 42 + velScale * 26, alpha: 0.8 });
+    } else {
+      earWavesR.push({ r: 6, maxR: 42 + velScale * 26, alpha: 0.8 });
     }
 
     keycapVisualEvents.push({
       x: logicalWidth * (0.5 + azimuth * 0.38),
       y: logicalHeight * 0.5 + (Math.random() * 40 - 20),
-      radius: 8,
-      maxR: 35 + velScale * 25,
-      alpha: 0.65,
+      radius: isStabilizerKey ? 12 : 8,
+      maxR: (isStabilizerKey ? 48 : 35) + velScale * 25,
+      alpha: 0.72,
       color: state.currentKeySwitch === "lubed_red" ? "#f43f5e" : (state.currentKeySwitch === "topre_capacitive" ? "#38bdf8" : "#fbbf24")
     });
   }
@@ -5933,9 +6371,14 @@ permalink: /projects/ai-asmr/index.html
     const style = KEYBOARD_STYLES[state.currentKeyStyle];
     const baseDelay = style.baseInterval / state.keyCadenceMultiplier;
     const jitter = (Math.random() * 2 - 1) * (baseDelay * style.jitter);
-    const delay = Math.max(50, baseDelay + jitter);
 
-    triggerKeystroke();
+    keyStrokeCounter++;
+    // 模拟真实单词结尾敲击大键（Spacebar 卫星轴空格键，每 5~7 键触发一次沉稳大键）
+    const isSpacebar = (state.currentKeyStyle === "flow_typing" || state.currentKeyStyle === "slow_code") && (keyStrokeCounter % 6 === 0);
+    triggerKeystroke(null, isSpacebar ? 1.08 : (0.85 + Math.random() * 0.2), isSpacebar);
+
+    const wordPause = isSpacebar ? baseDelay * 0.45 : 0;
+    const delay = Math.max(48, baseDelay + jitter + wordPause);
     keyTimerId = setTimeout(scheduleNextKeystroke, delay);
   }
 
@@ -5945,7 +6388,7 @@ permalink: /projects/ai-asmr/index.html
   let cosmicVisualEvents = [];
 
   function triggerAmbientMicroEvent(azimuthOverride = null, velScale = 1.0) {
-    if (!audioCtx || !state.isPlaying || state.activeCategory !== "ambient") return;
+    if (!audioCtx || (!state.isPlaying && azimuthOverride === null) || state.activeCategory !== "ambient") return;
 
     const med = AMBIENT_MEDIA[state.currentAmbMedia];
     const now = audioCtx.currentTime;
@@ -5960,103 +6403,174 @@ permalink: /projects/ai-asmr/index.html
     }
 
     const effectiveCutoff = Math.min(state.userLowpass, med.warmthCutoff);
+    const ambBus = audioCtx.createGain();
+    ambBus.gain.setValueAtTime(1.0, now);
+    connectTo3DioStage(ambBus, azimuth, now);
 
     if (state.currentAmbMedia === "vinyl_record") {
-      // 黑胶微尘轻爆 (Soft Dust Crackle)
+      // 1. 复古黑胶微尘唱机：唱针滑过音轨温润微尘轻爆 + 唱臂低频阻尼微震
       const popCount = 1 + (Math.random() < 0.35 ? 1 : 0);
       for (let i = 0; i < popCount; i++) {
-        const popTime = now + i * 0.02;
+        const popTime = now + i * 0.024;
         const popSrc = audioCtx.createBufferSource();
         popSrc.buffer = buf;
 
         const bp = audioCtx.createBiquadFilter();
         bp.type = "bandpass";
-        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 950 + Math.random() * 450), popTime);
-        bp.Q.setValueAtTime(3.8, popTime);
+        bp.frequency.setValueAtTime(Math.min(effectiveCutoff, 880 + Math.random() * 420), popTime);
+        bp.Q.setValueAtTime(3.4, popTime);
 
         const gain = audioCtx.createGain();
         gain.gain.setValueAtTime(0.0001, popTime);
-        gain.gain.linearRampToValueAtTime(0.24 * state.ambGrain * velScale, popTime + 0.002);
+        gain.gain.linearRampToValueAtTime(0.22 * state.ambGrain * velScale, popTime + 0.002);
         gain.gain.exponentialRampToValueAtTime(0.0001, popTime + 0.018);
-
-        let panner = null;
-        if (audioCtx.createStereoPanner) {
-          panner = audioCtx.createStereoPanner();
-          panner.pan.setValueAtTime(azimuth, popTime);
-        }
 
         popSrc.connect(bp);
         bp.connect(gain);
+        gain.connect(ambBus);
 
-        if (panner) {
-          gain.connect(panner);
-          panner.connect(masterLimiter);
-        } else {
-          gain.connect(masterLimiter);
-        }
-
-        popSrc.start(popTime, Math.random() * 2.0);
-        popSrc.stop(popTime + 0.025);
+        popSrc.start(popTime, Math.random() * 2.5);
+        popSrc.stop(popTime + 0.024);
       }
+
+      const grooveThump = audioCtx.createOscillator();
+      grooveThump.type = "sine";
+      grooveThump.frequency.setValueAtTime(105, now);
+      grooveThump.frequency.exponentialRampToValueAtTime(52, now + 0.035);
+      const thumpGain = audioCtx.createGain();
+      thumpGain.gain.setValueAtTime(0.0001, now);
+      thumpGain.gain.linearRampToValueAtTime(0.14 * state.ambGrain * velScale, now + 0.004);
+      thumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.042);
+      grooveThump.connect(thumpGain);
+      thumpGain.connect(ambBus);
+      grooveThump.start(now);
+      grooveThump.stop(now + 0.048);
+
+    } else if (state.currentAmbMedia === "starship_drone") {
+      // 2. 星际飞船低频舱鸣：深空舱体压力平衡气阀轻叹与次低频谐波涌动
+      const hullOsc = audioCtx.createOscillator();
+      hullOsc.type = "sine";
+      hullOsc.frequency.setValueAtTime(55, now);
+      hullOsc.frequency.linearRampToValueAtTime(82.5, now + 0.55);
+      hullOsc.frequency.exponentialRampToValueAtTime(48, now + 1.45);
+
+      const hullGain = audioCtx.createGain();
+      hullGain.gain.setValueAtTime(0.0001, now);
+      hullGain.gain.linearRampToValueAtTime(0.20 * state.ambDepth * velScale, now + 0.35);
+      hullGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+
+      const ventSrc = audioCtx.createBufferSource();
+      ventSrc.buffer = buf;
+      const ventBp = audioCtx.createBiquadFilter();
+      ventBp.type = "bandpass";
+      ventBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 260), now);
+      ventBp.Q.setValueAtTime(2.2, now);
+      const ventGain = audioCtx.createGain();
+      ventGain.gain.setValueAtTime(0.0001, now);
+      ventGain.gain.linearRampToValueAtTime(0.12 * state.ambGrain * velScale, now + 0.25);
+      ventGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+      hullOsc.connect(hullGain);
+      ventSrc.connect(ventBp);
+      ventBp.connect(ventGain);
+      hullGain.connect(ambBus);
+      ventGain.connect(ambBus);
+
+      hullOsc.start(now);
+      hullOsc.stop(now + 1.55);
+      ventSrc.start(now, Math.random() * 2.5);
+      ventSrc.stop(now + 1.25);
 
     } else if (state.currentAmbMedia === "shortwave_radio") {
-      // 短波电台频漂微啸 (Analog Whistle Drift)
+      // 3. 模拟短波频漂微啸：深夜电离层载波温润微漂移 + 柔和调谐底噪
       const osc = audioCtx.createOscillator();
       osc.type = "sine";
-      const startF = 420 + Math.random() * 300;
+      const startF = Math.min(effectiveCutoff, 380 + Math.random() * 280);
       osc.frequency.setValueAtTime(startF, now);
-      osc.frequency.linearRampToValueAtTime(startF + (Math.random() * 80 - 40), now + 0.45);
+      osc.frequency.linearRampToValueAtTime(startF + (Math.random() * 70 - 35), now + 0.55);
 
       const gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.09 * state.ambGrain * velScale, now + 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      gain.gain.linearRampToValueAtTime(0.085 * state.ambGrain * velScale, now + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.62);
 
       osc.connect(gain);
-      if (panner) {
-        gain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-      }
-
+      gain.connect(ambBus);
       osc.start(now);
-      osc.stop(now + 0.55);
+      osc.stop(now + 0.66);
+
+    } else if (state.currentAmbMedia === "walkman_tape") {
+      // 4. 磁带随身听机械底噪：微型压带轮/惰轮精密齿轮轻转微咔 + 磁带温热方位角微颤
+      const gearOsc = audioCtx.createOscillator();
+      gearOsc.type = "sine";
+      gearOsc.frequency.setValueAtTime(420, now);
+      gearOsc.frequency.exponentialRampToValueAtTime(165, now + 0.018);
+      const gearGain = audioCtx.createGain();
+      gearGain.gain.setValueAtTime(0.0001, now);
+      gearGain.gain.linearRampToValueAtTime(0.15 * state.ambGrain * velScale, now + 0.002);
+      gearGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+
+      const tapeSrc = audioCtx.createBufferSource();
+      tapeSrc.buffer = buf;
+      const tapeBp = audioCtx.createBiquadFilter();
+      tapeBp.type = "bandpass";
+      tapeBp.frequency.setValueAtTime(Math.min(effectiveCutoff, 520), now);
+      tapeBp.frequency.linearRampToValueAtTime(Math.min(effectiveCutoff, 740), now + 0.18);
+      tapeBp.Q.setValueAtTime(2.0, now);
+      const tapeGain = audioCtx.createGain();
+      tapeGain.gain.setValueAtTime(0.0001, now);
+      tapeGain.gain.linearRampToValueAtTime(0.16 * state.ambGrain * velScale, now + 0.06);
+      tapeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
+
+      gearOsc.connect(gearGain);
+      tapeSrc.connect(tapeBp);
+      tapeBp.connect(tapeGain);
+      gearGain.connect(ambBus);
+      tapeGain.connect(ambBus);
+
+      gearOsc.start(now);
+      gearOsc.stop(now + 0.025);
+      tapeSrc.start(now, Math.random() * 2.5);
+      tapeSrc.stop(now + 0.38);
 
     } else if (state.currentAmbMedia === "glacier_resonance") {
-      // 极地冰川微冰裂 (Glacier Stress Creak)
+      // 5. 极地冰川深层共鸣：深海冰架次声波应力舒展 (82Hz->32Hz) + 冰晶声学频散微鸣 (460Hz->260Hz)
       const osc = audioCtx.createOscillator();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(75 + Math.random() * 50, now);
-      osc.frequency.exponentialRampToValueAtTime(35, now + 0.15);
+      osc.frequency.setValueAtTime(78 + Math.random() * 38, now);
+      osc.frequency.exponentialRampToValueAtTime(32, now + 0.32);
 
       const gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.35 * state.ambDepth * velScale, now + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      gain.gain.linearRampToValueAtTime(0.32 * state.ambDepth * velScale, now + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
 
-      let panner = null;
-      if (audioCtx.createStereoPanner) {
-        panner = audioCtx.createStereoPanner();
-        panner.pan.setValueAtTime(azimuth, now);
-      }
+      const iceChime = audioCtx.createOscillator();
+      iceChime.type = "sine";
+      const cStart = Math.min(effectiveCutoff, 420 + Math.random() * 120);
+      iceChime.frequency.setValueAtTime(cStart, now);
+      iceChime.frequency.exponentialRampToValueAtTime(cStart * 0.58, now + 0.16);
+      const chimeGain = audioCtx.createGain();
+      chimeGain.gain.setValueAtTime(0.0001, now);
+      chimeGain.gain.linearRampToValueAtTime(0.11 * state.ambGrain * velScale, now + 0.008);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.19);
 
       osc.connect(gain);
-      if (panner) {
-        gain.connect(panner);
-        panner.connect(masterLimiter);
-      } else {
-        gain.connect(masterLimiter);
-      }
+      iceChime.connect(chimeGain);
+      gain.connect(ambBus);
+      chimeGain.connect(ambBus);
 
       osc.start(now);
-      osc.stop(now + 0.25);
+      osc.stop(now + 0.42);
+      iceChime.start(now);
+      iceChime.stop(now + 0.22);
+    }
+
+    registerAcousticEvent(azimuth, velScale * 0.65, "ambient", "Cosmic · " + state.currentAmbMedia);
+    if (azimuth < 0) {
+      earWavesL.push({ r: 6, maxR: 40 + velScale * 24, alpha: 0.72 });
+    } else {
+      earWavesR.push({ r: 6, maxR: 40 + velScale * 24, alpha: 0.72 });
     }
 
     cosmicVisualEvents.push({
@@ -6064,7 +6578,7 @@ permalink: /projects/ai-asmr/index.html
       y: logicalHeight * 0.5 + (Math.random() * 50 - 25),
       radius: 4,
       maxR: 45 + velScale * 30,
-      alpha: 0.5,
+      alpha: 0.55,
       color: state.currentAmbMedia === "vinyl_record" ? "#fb923c" : (state.currentAmbMedia === "starship_drone" ? "#818cf8" : "#2dd4bf")
     });
   }
@@ -6079,16 +6593,131 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
-  // B8. 启停与节点更新
+  // B11. 连续底声双耳空间动态调制器与启停调度 (Continuous Spatial & Filter Modulator)
   // --------------------------------------------------------------------------
+  function scheduleContinuousModulation() {
+    if (!state.isPlaying || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    continuousModPhase += 0.18;
+
+    if (state.activeCategory === "rain") {
+      // 雨声自然微风起伏与双耳声场微漂移
+      const rain = RAIN_PRESETS[state.currentRain];
+      const baseFreq = Math.min(rain.filterFreq, state.userLowpass);
+      const windSwell = Math.sin(continuousModPhase * 0.45 * rain.windSpeed) * 0.08;
+      if (noiseFilterL && noiseFilterR) {
+        noiseFilterL.frequency.setTargetAtTime(baseFreq * (1 + windSwell), now, 0.16);
+        noiseFilterR.frequency.setTargetAtTime(baseFreq * (1 - windSwell * 0.7), now, 0.16);
+      }
+      if (bedGainL && bedGainR) {
+        bedGainL.gain.setTargetAtTime(1.0 + windSwell * state.stereoWidth, now, 0.16);
+        bedGainR.gain.setTargetAtTime(1.0 - windSwell * state.stereoWidth, now, 0.16);
+      }
+    } else if (state.activeCategory === "water") {
+      // 水流声动态：缓流微漪 / 3Dio 双耳洄游 / 细浪轻拍潮汐 / 连续浸润
+      const scene = WATER_SCENARIOS[state.currentWaterScene];
+      const style = WATER_STYLES[state.currentWaterStyle];
+      const baseFreq = Math.min(scene.filterFreq, state.userLowpass);
+      const undSpd = (scene.undulationSpeed || 0.7) * state.waterSpeedMultiplier;
+
+      if (style.binauralMode === "eddy") {
+        const panWave = Math.sin(continuousModPhase * 0.55 * undSpd) * 0.42 * state.stereoWidth;
+        if (bedGainL && bedGainR) {
+          bedGainL.gain.setTargetAtTime(1.0 - panWave, now, 0.15);
+          bedGainR.gain.setTargetAtTime(1.0 + panWave, now, 0.15);
+        }
+      } else if (style.binauralMode === "lapping" || state.currentWaterScene === "gentle_tide") {
+        // 潮汐细浪周期性漫上鹅卵石滩与退潮
+        const tide = Math.sin(continuousModPhase * 0.42 * undSpd);
+        const volMod = scene.baseVolume * 0.72 * (0.72 + 0.28 * tide);
+        if (noiseGain) noiseGain.gain.setTargetAtTime(volMod, now, 0.16);
+        if (noiseFilterL && noiseFilterR) {
+          noiseFilterL.frequency.setTargetAtTime(baseFreq * (0.85 + 0.22 * tide), now, 0.16);
+          noiseFilterR.frequency.setTargetAtTime(baseFreq * (0.85 + 0.18 * tide), now, 0.16);
+        }
+      } else {
+        const ripple = Math.sin(continuousModPhase * 0.6 * undSpd) * 0.1;
+        if (noiseFilterL && noiseFilterR) {
+          noiseFilterL.frequency.setTargetAtTime(baseFreq * (1 + ripple), now, 0.16);
+          noiseFilterR.frequency.setTargetAtTime(baseFreq * (1 - ripple), now, 0.16);
+        }
+      }
+    } else if (state.activeCategory === "fire") {
+      // 壁炉热气流呼吸对流 (尤其微风拂火模式)
+      const targetFreq = Math.min(state.userLowpass, 180 + state.fireWarmth * 180);
+      const isGust = state.currentFireStyle === "night_wind_gust";
+      const draft = Math.sin(continuousModPhase * (isGust ? 0.45 : 0.25)) * (isGust ? 0.28 : 0.1);
+      if (noiseGain) {
+        noiseGain.gain.setTargetAtTime(Math.max(0.01, 0.22 * state.fireWarmth * (1 + draft)), now, 0.16);
+      }
+      if (noiseFilterL && noiseFilterR) {
+        noiseFilterL.frequency.setTargetAtTime(targetFreq * (1 + draft * 0.6), now, 0.16);
+        noiseFilterR.frequency.setTargetAtTime(targetFreq * (1 + draft * 0.5), now, 0.16);
+      }
+    } else if (state.activeCategory === "ambient") {
+      // 复古模拟与深空漫游：3Dio 12s 双耳轨道洄游 / 6s 呼吸式次低频潮汐 / 极光立体声频散
+      const med = AMBIENT_MEDIA[state.currentAmbMedia];
+      const style = AMBIENT_STYLES[state.currentAmbStyle];
+      const baseDroneVol = Math.max(0.001, med.subDrone * state.ambDepth * 0.26);
+      const baseBedVol = 0.12 * state.ambDepth + 0.16 * state.ambGrain;
+
+      if (state.currentAmbStyle === "binaural_orbit") {
+        const orbitAz = Math.sin(continuousModPhase * 0.28) * style.orbitDepth * state.stereoWidth;
+        if (ambDronePanner) ambDronePanner.pan.setTargetAtTime(orbitAz, now, 0.16);
+        if (bedGainL && bedGainR) {
+          bedGainL.gain.setTargetAtTime(1.0 - orbitAz * 0.45, now, 0.16);
+          bedGainR.gain.setTargetAtTime(1.0 + orbitAz * 0.45, now, 0.16);
+        }
+      } else if (state.currentAmbStyle === "pulsing_tide") {
+        // 6 秒周期的深呼吸次低频潮汐起伏
+        const breath = Math.sin(continuousModPhase * 0.38);
+        if (ambDroneGain) ambDroneGain.gain.setTargetAtTime(baseDroneVol * (0.72 + 0.35 * breath), now, 0.16);
+        if (noiseGain) noiseGain.gain.setTargetAtTime(baseBedVol * (0.75 + 0.28 * breath), now, 0.16);
+      } else if (state.currentAmbStyle === "distant_aurora") {
+        // 极光频散：左右耳共振峰交替慢漂移
+        const auroraL = med.filterFreq * (0.75 + 0.25 * Math.sin(continuousModPhase * 0.32));
+        const auroraR = med.filterFreq * (0.75 + 0.25 * Math.cos(continuousModPhase * 0.32));
+        if (bedPeakingL && bedPeakingR) {
+          bedPeakingL.frequency.setTargetAtTime(Math.min(state.userLowpass, auroraL), now, 0.16);
+          bedPeakingR.frequency.setTargetAtTime(Math.min(state.userLowpass, auroraR), now, 0.16);
+        }
+      }
+    }
+
+    continuousModTimerId = setTimeout(scheduleContinuousModulation, 180);
+  }
+
+  function clearAllCategoryTimers() {
+    if (rainDropTimerId) { clearTimeout(rainDropTimerId); rainDropTimerId = null; }
+    if (thunderTimerId) { clearTimeout(thunderTimerId); thunderTimerId = null; }
+    if (tapTimerId) { clearTimeout(tapTimerId); tapTimerId = null; }
+    if (fricTimerId) { clearTimeout(fricTimerId); fricTimerId = null; }
+    if (waterBubbleTimerId) { clearTimeout(waterBubbleTimerId); waterBubbleTimerId = null; }
+    if (shishiTimerId) { clearTimeout(shishiTimerId); shishiTimerId = null; }
+    if (bowlTimerId) { clearTimeout(bowlTimerId); bowlTimerId = null; }
+    if (toolTimerId) { clearTimeout(toolTimerId); toolTimerId = null; }
+    if (fireTimerId) { clearTimeout(fireTimerId); fireTimerId = null; }
+    if (squishTimerId) { clearTimeout(squishTimerId); squishTimerId = null; }
+    if (keyTimerId) { clearTimeout(keyTimerId); keyTimerId = null; }
+    if (ambTimerId) { clearTimeout(ambTimerId); ambTimerId = null; }
+    if (continuousModTimerId) { clearTimeout(continuousModTimerId); continuousModTimerId = null; }
+    clearAllSubTimers();
+  }
+
   function startAudio() {
     initAudioEngine();
+    if (suspendTimeoutId) {
+      clearTimeout(suspendTimeoutId);
+      suspendTimeoutId = null;
+    }
     if (audioCtx.state === "suspended") {
       audioCtx.resume();
     }
 
+    clearAllCategoryTimers();
     state.isPlaying = true;
     updateAcousticNodes();
+    scheduleContinuousModulation();
 
     if (state.activeCategory === "rain") {
       scheduleNextRainDrop();
@@ -6124,26 +6753,20 @@ permalink: /projects/ai-asmr/index.html
 
   function stopAudio() {
     state.isPlaying = false;
-    if (rainDropTimerId) clearTimeout(rainDropTimerId);
-    if (thunderTimerId) clearTimeout(thunderTimerId);
-    if (tapTimerId) clearTimeout(tapTimerId);
-    if (fricTimerId) clearTimeout(fricTimerId);
-    if (waterBubbleTimerId) clearTimeout(waterBubbleTimerId);
-    if (shishiTimerId) clearTimeout(shishiTimerId);
-    if (bowlTimerId) clearTimeout(bowlTimerId);
-    if (toolTimerId) clearTimeout(toolTimerId);
-    if (fireTimerId) clearTimeout(fireTimerId);
-    if (squishTimerId) clearTimeout(squishTimerId);
-    if (keyTimerId) clearTimeout(keyTimerId);
-    if (ambTimerId) clearTimeout(ambTimerId);
+    clearAllCategoryTimers();
+    if (sleepTimerTickId) {
+      clearTimeout(sleepTimerTickId);
+      sleepTimerTickId = null;
+    }
 
     if (audioCtx && audioCtx.state === "running") {
-      masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
-      setTimeout(() => {
-        if (!state.isPlaying && audioCtx) {
+      masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.06);
+      if (suspendTimeoutId) clearTimeout(suspendTimeoutId);
+      suspendTimeoutId = setTimeout(() => {
+        if (!state.isPlaying && audioCtx && audioCtx.state === "running") {
           audioCtx.suspend();
         }
-      }, 150);
+      }, 160);
     }
 
     updateUIPlayState();
@@ -6153,12 +6776,29 @@ permalink: /projects/ai-asmr/index.html
     if (!audioCtx) return;
     const now = audioCtx.currentTime;
 
-    // 总音量更新
+    // 1. 总音量与全局高频柔化防线同步更新
     masterGain.gain.setTargetAtTime(state.masterVol, now, 0.05);
+    if (masterWarmthFilter) {
+      masterWarmthFilter.frequency.setTargetAtTime(Math.min(4800, state.userLowpass * 1.65), now, 0.08);
+    }
+
+    // 2. 默认复位次低频深空谐波发生器与立体声共振峰 (仅在对应模式下开启)
+    if (state.activeCategory !== "ambient" && ambDroneGain) {
+      ambDroneGain.gain.setTargetAtTime(0.0001, now, 0.12);
+    }
+    if (bedGainL && bedGainR) {
+      bedGainL.gain.setTargetAtTime(1.0, now, 0.1);
+      bedGainR.gain.setTargetAtTime(1.0, now, 0.1);
+    }
+    if (bedPeakingL && bedPeakingR && state.activeCategory !== "water" && state.activeCategory !== "rain" && state.activeCategory !== "ambient") {
+      bedPeakingL.gain.setTargetAtTime(0, now, 0.1);
+      bedPeakingR.gain.setTargetAtTime(0, now, 0.1);
+    }
 
     if (state.activeCategory === "rain") {
-      // 雨声模式：启动粉红噪声底噪
+      // 雨声模式：启动粉红噪声底噪 + 碰撞介质共振峰温润塑形
       const rain = RAIN_PRESETS[state.currentRain];
+      const surf = RAIN_SURFACES[state.currentSurface];
       if (noiseGain) noiseGain.gain.setTargetAtTime(rain.baseVolume, now, 0.1);
 
       const targetFreq = Math.min(rain.filterFreq, state.userLowpass);
@@ -6167,6 +6807,12 @@ permalink: /projects/ai-asmr/index.html
         noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
         noiseFilterL.Q.setTargetAtTime(0.8, now, 0.08);
         noiseFilterR.Q.setTargetAtTime(0.8, now, 0.08);
+      }
+      if (bedPeakingL && bedPeakingR && surf) {
+        bedPeakingL.frequency.setTargetAtTime(Math.min(targetFreq, surf.freq), now, 0.1);
+        bedPeakingR.frequency.setTargetAtTime(Math.min(targetFreq, surf.freq * 1.04), now, 0.1);
+        bedPeakingL.gain.setTargetAtTime(2.5, now, 0.1);
+        bedPeakingR.gain.setTargetAtTime(2.5, now, 0.1);
       }
 
       const hudFreq = document.getElementById("hudFilterFreq");
@@ -6188,7 +6834,7 @@ permalink: /projects/ai-asmr/index.html
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(cutoff) + " Hz";
     } else if (state.activeCategory === "water") {
-      // 水流声模式：启动微扰动清润水体底流 (Water Stream Bed)
+      // 水流声模式：启动微扰动清润水体底流 (Water Stream Bed) + 水体腔体共振峰
       const scene = WATER_SCENARIOS[state.currentWaterScene];
       const targetFreq = Math.min(scene.filterFreq, state.userLowpass);
       if (noiseFilterL && noiseFilterR) {
@@ -6196,6 +6842,12 @@ permalink: /projects/ai-asmr/index.html
         noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
         noiseFilterL.Q.setTargetAtTime(scene.filterQ, now, 0.08);
         noiseFilterR.Q.setTargetAtTime(scene.filterQ, now, 0.08);
+      }
+      if (bedPeakingL && bedPeakingR) {
+        bedPeakingL.frequency.setTargetAtTime(Math.min(targetFreq, scene.peakingFreq || 580), now, 0.08);
+        bedPeakingR.frequency.setTargetAtTime(Math.min(targetFreq, (scene.peakingFreq || 580) * 1.06), now, 0.08);
+        bedPeakingL.gain.setTargetAtTime(scene.peakingGain || 3.5, now, 0.08);
+        bedPeakingR.gain.setTargetAtTime(scene.peakingGain || 3.5, now, 0.08);
       }
       if (noiseGain) {
         const streamVol = scene.baseVolume * 0.72;
@@ -6258,7 +6910,7 @@ permalink: /projects/ai-asmr/index.html
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(effectiveCutoff) + " Hz";
     } else if (state.activeCategory === "ambient") {
-      // 复古模拟与深空模式：启动深层次低频舱体/黑胶温热底流
+      // 复古模拟与深空模式：启动深层次低频谐波发生器 (ambDroneOsc1/2/Sub) + 温热磁带/黑胶底流
       const med = AMBIENT_MEDIA[state.currentAmbMedia];
       const targetFreq = Math.min(state.userLowpass, med.filterFreq);
       if (noiseFilterL && noiseFilterR) {
@@ -6267,9 +6919,26 @@ permalink: /projects/ai-asmr/index.html
         noiseFilterL.Q.setTargetAtTime(1.5, now, 0.08);
         noiseFilterR.Q.setTargetAtTime(1.5, now, 0.08);
       }
+      if (bedPeakingL && bedPeakingR) {
+        bedPeakingL.frequency.setTargetAtTime(Math.min(targetFreq, med.baseFreq * 2.4), now, 0.1);
+        bedPeakingR.frequency.setTargetAtTime(Math.min(targetFreq, med.baseFreq * 2.55), now, 0.1);
+        bedPeakingL.gain.setTargetAtTime(3.2, now, 0.1);
+        bedPeakingR.gain.setTargetAtTime(3.2, now, 0.1);
+      }
       if (noiseGain) {
-        const droneVol = (0.28 * state.ambDepth + 0.18 * state.ambGrain);
-        noiseGain.gain.setTargetAtTime(droneVol, now, 0.1);
+        const bedVol = 0.12 * state.ambDepth + 0.16 * state.ambGrain;
+        noiseGain.gain.setTargetAtTime(bedVol, now, 0.12);
+      }
+      if (ambDroneOsc1 && ambDroneOsc2 && ambSubOsc && ambDroneFilter && ambDroneGain) {
+        ambDroneOsc1.frequency.setTargetAtTime(med.baseFreq, now, 0.12);
+        ambDroneOsc2.frequency.setTargetAtTime(med.baseFreq * 1.498, now, 0.12);
+        ambSubOsc.frequency.setTargetAtTime(Math.max(24, med.baseFreq * 0.5), now, 0.12);
+        ambDroneFilter.frequency.setTargetAtTime(Math.min(state.userLowpass, med.warmthCutoff * 0.45), now, 0.12);
+        const subGainVal = state.isPlaying ? Math.max(0.001, med.subDrone * state.ambDepth * 0.26) : 0.0001;
+        ambDroneGain.gain.setTargetAtTime(subGainVal, now, 0.15);
+      }
+      if (ambDronePanner && state.currentAmbStyle === "deep_cocoon") {
+        ambDronePanner.pan.setTargetAtTime(0, now, 0.15);
       }
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
@@ -6656,12 +7325,12 @@ permalink: /projects/ai-asmr/index.html
     const isLeft = azimuth < 0;
 
     let baseColor = isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, "; // 银青/天蓝沙龙色
-    if (type === "pencil") {
-      baseColor = isDark ? "rgba(203, 213, 225, " : "rgba(71, 85, 105, "; // 石墨铅灰
-    } else if (type === "typewriter") {
-      baseColor = isDark ? "rgba(251, 191, 36, " : "rgba(217, 119, 6, "; // 复古打字机琥珀
-    } else if (type === "comb") {
-      baseColor = isDark ? "rgba(244, 114, 182, " : "rgba(219, 39, 119, "; // 柔和玫瑰粉木梳
+    if (type === "pencil" || type === "fountain_pen") {
+      baseColor = isDark ? "rgba(203, 213, 225, " : "rgba(71, 85, 105, "; // 石墨/钢笔墨灰
+    } else if (type === "typewriter" || type === "music_box") {
+      baseColor = isDark ? "rgba(251, 191, 36, " : "rgba(217, 119, 6, "; // 复古黄铜琥珀
+    } else if (type === "comb" || type === "sandalwood_fan") {
+      baseColor = isDark ? "rgba(244, 114, 182, " : "rgba(219, 39, 119, "; // 柔和檀木玫瑰粉
     } else if (type === "spray") {
       baseColor = isDark ? "rgba(45, 212, 191, " : "rgba(15, 118, 110, "; // 清爽水雾青
     }
@@ -6680,22 +7349,22 @@ permalink: /projects/ai-asmr/index.html
           color: baseColor
         });
       }
-    } else if (type === "comb") {
-      // 梳齿细条波纹
+    } else if (type === "comb" || type === "sandalwood_fan") {
+      // 梳齿/扇骨细条波纹
       if (toolVisualEvents.length < 35) {
         toolVisualEvents.push({
           type: "comb",
           x: posX,
           y: centerY - 15,
-          teeth: 5,
-          spacing: 7,
+          teeth: type === "sandalwood_fan" ? 7 : 5,
+          spacing: type === "sandalwood_fan" ? 6 : 7,
           progress: 0,
           alpha: 0.9,
           color: baseColor
         });
       }
-    } else if (type === "pencil") {
-      // 铅笔素描微弧
+    } else if (type === "pencil" || type === "fountain_pen") {
+      // 铅笔/钢笔素描微弧
       if (toolVisualEvents.length < 35) {
         toolVisualEvents.push({
           type: "pencil",
@@ -6707,15 +7376,15 @@ permalink: /projects/ai-asmr/index.html
           color: baseColor
         });
       }
-    } else if (type === "typewriter") {
-      // 打字机冲击光环
+    } else if (type === "typewriter" || type === "music_box") {
+      // 打字机/八音盒谐波光环
       if (toolVisualEvents.length < 35) {
         toolVisualEvents.push({
           type: "typewriter",
           x: posX,
-          y: centerY,
+          y: centerY + (type === "music_box" ? (Math.random() * 24 - 12) : 0),
           r: 5,
-          maxR: 35 + vel * 25,
+          maxR: (type === "music_box" ? 45 : 35) + vel * 25,
           alpha: 0.95,
           color: baseColor
         });
@@ -6756,19 +7425,21 @@ permalink: /projects/ai-asmr/index.html
     const isLeft = azimuth < 0;
 
     let emberColor = isDark ? "rgba(249, 115, 22, " : "rgba(194, 65, 12, "; // 暖炉炭橙
-    if (type === "leaves") {
-      emberColor = isDark ? "rgba(217, 119, 6, " : "rgba(180, 83, 9, "; // 枫叶琥珀金
-    } else if (type === "embers") {
-      emberColor = isDark ? "rgba(239, 68, 68, " : "rgba(185, 28, 28, "; // 营火赤红
+    if (type === "leaves" || type === "dry_twigs") {
+      emberColor = isDark ? "rgba(217, 119, 6, " : "rgba(180, 83, 9, "; // 枫叶/枯枝琥珀金
+    } else if (type === "embers" || type === "roast_chestnut") {
+      emberColor = isDark ? "rgba(239, 68, 68, " : "rgba(185, 28, 28, "; // 营火/糖炒板栗赤红
     } else if (type === "pinecone") {
       emberColor = isDark ? "rgba(245, 158, 11, " : "rgba(161, 98, 7, "; // 松果木金
     } else if (type === "charcoal") {
       emberColor = isDark ? "rgba(251, 146, 60, " : "rgba(234, 88, 12, "; // 备长炭微光
+    } else if (type === "sauna_steam") {
+      emberColor = isDark ? "rgba(148, 163, 184, " : "rgba(100, 116, 139, "; // 桑拿热石白雾
     }
 
     // 产生飞腾炭火余烬星尘 (Fire Embers & Shards)
     if (fireEmbers.length < 55) {
-      const sparkCount = type === "leaves" ? 6 : (type === "fireplace" ? 5 : 4);
+      const sparkCount = (type === "leaves" || type === "sauna_steam") ? 6 : (type === "fireplace" ? 5 : 4);
       for (let i = 0; i < sparkCount; i++) {
         const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.4;
         const spd = 0.8 + Math.random() * 2.2;
@@ -6777,7 +7448,7 @@ permalink: /projects/ai-asmr/index.html
           y: centerY + (Math.random() * 16 - 8),
           vx: Math.cos(angle) * spd,
           vy: Math.sin(angle) * spd - 0.6,
-          size: 1.2 + Math.random() * 2.2 * vel,
+          size: (type === "sauna_steam" ? 2.2 : 1.2) + Math.random() * 2.2 * vel,
           wobblePhase: Math.random() * Math.PI * 2,
           alpha: 0.92,
           decay: 0.955 + Math.random() * 0.025,
@@ -6805,19 +7476,21 @@ permalink: /projects/ai-asmr/index.html
     squishCompression = Math.min(1.0, squishCompression + 0.65 * vel);
 
     let gelColor = isDark ? "rgba(52, 211, 153, " : "rgba(5, 150, 105, "; // 记忆海绵/翡翠薄荷绿
-    if (type === "warm_beeswax") {
-      gelColor = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, "; // 蜂蜡金琥珀
-    } else if (type === "soft_slime") {
-      gelColor = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, "; // 水晶泥丁香紫
+    if (type === "warm_beeswax" || type === "sourdough_knead") {
+      gelColor = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, "; // 蜂蜡/面团金琥珀
+    } else if (type === "soft_slime" || type === "silicone_pop") {
+      gelColor = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, "; // 水晶泥/硅胶丁香紫
     } else if (type === "linen_parchment") {
       gelColor = isDark ? "rgba(251, 191, 36, " : "rgba(180, 83, 9, "; // 亚麻暖沙金
     } else if (type === "kinetic_sand") {
       gelColor = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, "; // 流沙珊瑚橙
+    } else if (type === "bubble_wrap") {
+      gelColor = isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, "; // 气泡膜冰晶蓝
     }
 
     // 产生形变微泡与粘滞凝胶水珠 (Viscous Micro-Blobs & Beads)
     if (squishBlobs.length < 60) {
-      const beadCount = type === "soft_slime" ? 8 : (type === "memory_foam" ? 6 : 5);
+      const beadCount = (type === "soft_slime" || type === "bubble_wrap") ? 8 : (type === "memory_foam" ? 6 : 5);
       for (let i = 0; i < beadCount; i++) {
         const angle = Math.random() * Math.PI * 2;
         const spd = 1.0 + Math.random() * 2.2 * vel;
@@ -7869,7 +8542,9 @@ permalink: /projects/ai-asmr/index.html
       bowls: "rgba(245, 158, 11, 0.35)",
       tools: "rgba(56, 189, 248, 0.40)",
       fire: "rgba(249, 115, 22, 0.40)",
-      squish: "rgba(52, 211, 153, 0.45)"
+      squish: "rgba(52, 211, 153, 0.45)",
+      keyboard: "rgba(167, 139, 250, 0.40)",
+      ambient: "rgba(99, 102, 241, 0.45)"
     };
     const headStrokeLight = {
       rain: "rgba(15, 129, 141, 0.42)",
@@ -7879,7 +8554,9 @@ permalink: /projects/ai-asmr/index.html
       bowls: "rgba(217, 119, 6, 0.45)",
       tools: "rgba(2, 132, 199, 0.50)",
       fire: "rgba(194, 65, 12, 0.50)",
-      squish: "rgba(5, 150, 105, 0.50)"
+      squish: "rgba(5, 150, 105, 0.50)",
+      keyboard: "rgba(124, 58, 237, 0.45)",
+      ambient: "rgba(79, 70, 229, 0.50)"
     };
     context.strokeStyle = isDark
       ? (headStrokeDark[state.activeCategory] || "rgba(52, 211, 153, 0.45)")
@@ -8329,6 +9006,8 @@ permalink: /projects/ai-asmr/index.html
     squishBlobs = [];
     squishRipples = [];
     squishCompression = 0;
+    keycapVisualEvents = [];
+    cosmicVisualEvents = [];
 
     if (wasPlaying) {
       startAudio();
@@ -8367,6 +9046,10 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function updateSleepTimer() {
+    if (sleepTimerTickId) {
+      clearTimeout(sleepTimerTickId);
+      sleepTimerTickId = null;
+    }
     const display = document.getElementById("timerDisplay");
     if (!state.isPlaying || state.sleepTimerMinutes <= 0) {
       if (display) display.textContent = "";
@@ -8376,8 +9059,14 @@ permalink: /projects/ai-asmr/index.html
     const remaining = Math.max(0, Math.ceil((state.sleepTimerEnd - Date.now()) / 1000));
     if (remaining <= 0) {
       stopAudio();
-      if (display) display.textContent = "已停止";
+      if (display) display.textContent = "已安眠停止";
       return;
+    }
+
+    // 睡眠定时器最后 10 秒平滑渐弱淡出，避免突兀静音惊醒
+    if (remaining <= 10 && audioCtx && masterGain) {
+      const fadeVol = Math.max(0.0001, state.masterVol * (remaining / 10));
+      masterGain.gain.setTargetAtTime(fadeVol, audioCtx.currentTime, 0.35);
     }
 
     const m = Math.floor(remaining / 60);
@@ -8386,7 +9075,7 @@ permalink: /projects/ai-asmr/index.html
       display.textContent = m + ":" + (s < 10 ? "0" : "") + s;
     }
 
-    setTimeout(updateSleepTimer, 1000);
+    sleepTimerTickId = setTimeout(updateSleepTimer, 1000);
   }
 
   function setupEventBindings() {
@@ -8407,6 +9096,40 @@ permalink: /projects/ai-asmr/index.html
         startAudio();
       }
     });
+
+    // 1.1 点击 3Dio 声学画布任意方位即时触发对应声相的双耳试听事件
+    if (canvas) {
+      canvas.style.cursor = "pointer";
+      canvas.addEventListener("click", (e) => {
+        if (!state.isPlaying) {
+          startAudio();
+          return;
+        }
+        const rect = canvas.getBoundingClientRect();
+        const clickAz = Math.max(-0.95, Math.min(0.95, ((e.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1));
+        if (state.activeCategory === "rain") {
+          triggerRaindrop();
+        } else if (state.activeCategory === "tapping") {
+          triggerTapNote(clickAz, 0.95);
+        } else if (state.activeCategory === "friction") {
+          triggerFrictionStroke(clickAz, -clickAz * 0.5, 0.85, 0.95);
+        } else if (state.activeCategory === "water") {
+          triggerWaterBubble(clickAz, 0.95);
+        } else if (state.activeCategory === "bowls") {
+          triggerBowlStrike(clickAz, 0.95);
+        } else if (state.activeCategory === "tools") {
+          triggerToolEvent(clickAz, 0.95);
+        } else if (state.activeCategory === "fire") {
+          triggerFireEvent(clickAz, 0.95);
+        } else if (state.activeCategory === "squish") {
+          triggerSquishEvent(clickAz, 0.98);
+        } else if (state.activeCategory === "keyboard") {
+          triggerKeystroke();
+        } else if (state.activeCategory === "ambient") {
+          triggerAmbientMicroEvent();
+        }
+      });
+    }
 
     // 空格键快捷播放
     window.addEventListener("keydown", (e) => {
@@ -8430,8 +9153,11 @@ permalink: /projects/ai-asmr/index.html
         updateAcousticNodes();
         generatePrompt();
 
-        if (state.isPlaying && state.activeCategory === "rain" && RAIN_PRESETS[state.currentRain].thunder && !thunderTimerId) {
-          thunderTimerId = setTimeout(scheduleNextThunder, 2500);
+        if (state.isPlaying && state.activeCategory === "rain") {
+          triggerRaindrop();
+          if (RAIN_PRESETS[state.currentRain].thunder && !thunderTimerId) {
+            thunderTimerId = setTimeout(scheduleNextThunder, 1200);
+          }
         }
       });
     });
@@ -8447,7 +9173,12 @@ permalink: /projects/ai-asmr/index.html
         btn.setAttribute("aria-checked", "true");
         state.currentSurface = btn.getAttribute("data-surface");
 
+        updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "rain") {
+          triggerRaindrop();
+        }
       });
     });
 
@@ -8464,6 +9195,12 @@ permalink: /projects/ai-asmr/index.html
 
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "tapping") {
+          if (tapTimerId) clearTimeout(tapTimerId);
+          triggerTapNote((Math.random() * 1.2 - 0.6), 0.95);
+          scheduleNextTapEvent();
+        }
       });
     });
 
@@ -8479,6 +9216,11 @@ permalink: /projects/ai-asmr/index.html
         state.currentTapStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "tapping") {
+          if (tapTimerId) clearTimeout(tapTimerId);
+          scheduleNextTapEvent();
+        }
       });
     });
 
@@ -8495,6 +9237,11 @@ permalink: /projects/ai-asmr/index.html
 
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "friction") {
+          if (fricTimerId) clearTimeout(fricTimerId);
+          scheduleNextFrictionEvent();
+        }
       });
     });
 
@@ -8510,6 +9257,11 @@ permalink: /projects/ai-asmr/index.html
         state.currentFricStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "friction") {
+          if (fricTimerId) clearTimeout(fricTimerId);
+          scheduleNextFrictionEvent();
+        }
       });
     });
 
@@ -8528,12 +9280,16 @@ permalink: /projects/ai-asmr/index.html
           clearTimeout(shishiTimerId);
           shishiTimerId = null;
         }
-        if (state.isPlaying && state.activeCategory === "water" && WATER_SCENARIOS[state.currentWaterScene].shishi) {
-          shishiTimerId = setTimeout(scheduleNextShishiOdoshi, 3000);
-        }
-
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "water") {
+          if (waterTimerId) clearTimeout(waterTimerId);
+          scheduleNextWaterEvent();
+          if (WATER_SCENARIOS[state.currentWaterScene].shishi) {
+            shishiTimerId = setTimeout(scheduleNextShishiOdoshi, 1200);
+          }
+        }
       });
     });
 
@@ -8549,6 +9305,11 @@ permalink: /projects/ai-asmr/index.html
         state.currentWaterStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "water") {
+          if (waterTimerId) clearTimeout(waterTimerId);
+          scheduleNextWaterEvent();
+        }
       });
     });
 
@@ -8565,6 +9326,11 @@ permalink: /projects/ai-asmr/index.html
 
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "bowls") {
+          if (bowlTimerId) clearTimeout(bowlTimerId);
+          scheduleNextBowlEvent();
+        }
       });
     });
 
@@ -8580,6 +9346,11 @@ permalink: /projects/ai-asmr/index.html
         state.currentBowlStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "bowls") {
+          if (bowlTimerId) clearTimeout(bowlTimerId);
+          scheduleNextBowlEvent();
+        }
       });
     });
 
@@ -8596,6 +9367,11 @@ permalink: /projects/ai-asmr/index.html
 
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "tools") {
+          if (toolTimerId) clearTimeout(toolTimerId);
+          scheduleNextToolEvent();
+        }
       });
     });
 
@@ -8611,6 +9387,11 @@ permalink: /projects/ai-asmr/index.html
         state.currentToolStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "tools") {
+          if (toolTimerId) clearTimeout(toolTimerId);
+          scheduleNextToolEvent();
+        }
       });
     });
 
@@ -8627,6 +9408,11 @@ permalink: /projects/ai-asmr/index.html
 
         updateAcousticNodes();
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "fire") {
+          if (fireTimerId) clearTimeout(fireTimerId);
+          scheduleNextFireEvent();
+        }
       });
     });
 
@@ -8642,6 +9428,11 @@ permalink: /projects/ai-asmr/index.html
         state.currentFireStyle = btn.getAttribute("data-style");
 
         generatePrompt();
+
+        if (state.isPlaying && state.activeCategory === "fire") {
+          if (fireTimerId) clearTimeout(fireTimerId);
+          scheduleNextFireEvent();
+        }
       });
     });
 
@@ -8728,6 +9519,13 @@ permalink: /projects/ai-asmr/index.html
         state.sleepTimerEnd = Date.now() + state.sleepTimerMinutes * 60 * 1000;
         updateSleepTimer();
       } else {
+        if (sleepTimerTickId) {
+          clearTimeout(sleepTimerTickId);
+          sleepTimerTickId = null;
+        }
+        if (audioCtx && masterGain && state.isPlaying) {
+          masterGain.gain.setTargetAtTime(state.masterVol, audioCtx.currentTime, 0.1);
+        }
         const display = document.getElementById("timerDisplay");
         if (display) display.textContent = "";
       }
