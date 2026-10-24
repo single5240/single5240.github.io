@@ -44,10 +44,11 @@
     }
   }
 
-  function createVoice(config, scope, output, trackId) {
+  function createVoice(config, scope, output, trackId, arrangement = null) {
     return AsmrVoices.create(config, scope, output, trackId, {
       reducedMotion, isDarkThemeActive,
       getDimensions: () => ({ width: logicalWidth, height: logicalHeight }),
+      timing: arrangement ? (delay, when) => arrangement.delay(trackId, delay, when) : null,
       emit(event) {
         if (!document.hidden && !reducedMotion.matches && visualQueue.length < 128) visualQueue.push(event);
       }
@@ -76,6 +77,31 @@
   let contextTransition = Promise.resolve();
   let playbackMode = null;
   let independentTrack = null;
+  let grooveSession = null;
+  let grooveScope = null;
+  let grooveEnabled = true;
+
+  function startGrooveClock() {
+    if (!grooveScope || !grooveSession) return;
+    const scope = grooveScope;
+    const session = grooveSession;
+    const advance = () => {
+      if (grooveSession !== session || playbackMode !== "mix") return;
+      const when = scope.time();
+      session.setActive(tracks.filter(track => isAudible(track) && track.volume > 0).map(track => track.id));
+      for (const track of tracks) {
+        if (track.branch) track.branch.motion.gain.setTargetAtTime(session.sample(track.id, when).gain, when, 0.65);
+      }
+      scope.setTimeout(advance, 250);
+    };
+    scope.run(advance, audioCtx.currentTime + 0.02);
+  }
+
+  function stopGrooveClock() {
+    if (grooveScope) grooveScope.dispose();
+    grooveScope = null;
+    grooveSession = null;
+  }
 
   function changeContext(method, version) {
     contextTransition = contextTransition.catch(() => {}).then(() => {
@@ -151,22 +177,27 @@
 
   function startTrack(track) {
     const output = audioCtx.createGain();
+    const motion = audioCtx.createGain();
     const gate = audioCtx.createGain();
+    const arrangement = playbackMode === "mix" ? grooveSession : null;
+    const firstEntry = arrangement?.add(track.id, track.category);
     output.gain.value = track.volume;
+    motion.gain.value = arrangement ? arrangement.sample(track.id, audioCtx.currentTime).gain : 1;
     gate.gain.value = 0;
-    output.connect(gate).connect(mixInput);
+    output.connect(motion).connect(gate).connect(mixInput);
     const scope = AsmrRuntime.createScope(audioCtx, scheduler);
     const voice = createVoice({ ...initialState, ...track.config, activeCategory: track.category,
-      userLowpass: state.userLowpass, stereoWidth: state.stereoWidth }, scope, output, track.id);
-    const branch = { voice, output, gate, until: null };
-    try { voice.start(audioCtx.currentTime + 0.02); }
-    catch (error) { voice.dispose(); output.disconnect(); gate.disconnect(); throw error; }
+      userLowpass: state.userLowpass, stereoWidth: state.stereoWidth }, scope, output, track.id, arrangement);
+    const branch = { voice, output, motion, gate, until: null };
+    try { voice.start(audioCtx.currentTime + 0.02 + (firstEntry ? arrangement.entry(track.id) : 0)); }
+    catch (error) { voice.dispose(); output.disconnect(); motion.disconnect(); gate.disconnect(); arrangement?.remove(track.id); throw error; }
     track.branch = branch;
   }
 
   function releaseBranch(branch) {
     branch.voice.dispose();
     branch.output.disconnect();
+    branch.motion.disconnect();
     branch.gate.disconnect();
     retiring.delete(branch);
   }
@@ -199,6 +230,7 @@
 
   function updateGates() {
     if (!audioCtx) return;
+    grooveSession?.setActive(tracks.filter(track => isAudible(track) && track.volume > 0).map(track => track.id));
     for (const track of tracks) {
       if (track.branch) AsmrRuntime.ramp(track.branch.gate.gain, isAudible(track) ? 1 : 0, audioCtx.currentTime, 0.4);
     }
@@ -241,6 +273,9 @@
         cleanRetiring();
       }
       if (mode === "mix") {
+        grooveSession = AsmrGroove.create(audioCtx.currentTime, crypto.getRandomValues(new Uint32Array(1))[0]);
+        grooveSession.setEnabled(grooveEnabled);
+        grooveScope = AsmrRuntime.createScope(audioCtx, scheduler);
         if (!tracks.length) addTrack();
         for (const track of tracks) startTrack(track);
       } else {
@@ -252,6 +287,7 @@
       transportState = "playing";
       if (state.sleepTimerMinutes > 0) state.sleepTimerEnd = Date.now() + state.sleepTimerMinutes * 60000;
       updateGates();
+      if (mode === "mix") startGrooveClock();
       mixInput.gain.setTargetAtTime(mode === "mix" ? 0.45 : 1, audioCtx.currentTime, 0.08);
       AsmrRuntime.ramp(masterGain.gain, state.masterVol, audioCtx.currentTime, 0.4);
       scheduler.start();
@@ -272,6 +308,7 @@
     state.isPlaying = false;
     transportState = "pausing";
     if (scheduler) scheduler.stop();
+    stopGrooveClock();
     clearTimeout(sleepTimerTickId);
     sleepTimerTickId = null;
     for (const track of tracks) retireTrack(track);
@@ -417,6 +454,7 @@
             if (selectedTrackId === track.id) leaveTrackEditor();
             retireTrack(track);
             tracks.splice(tracks.indexOf(track), 1);
+            grooveSession?.remove(track.id);
             if (!tracks.length && playbackMode === "mix") stopAudio();
             announce("已移除：" + trackName(track));
           } else track[action] = !track[action];
@@ -455,6 +493,12 @@
     document.getElementById("btnMixPlay").addEventListener("click", () => {
       if (playbackMode === "mix" && (state.isPlaying || transportState === "starting")) stopAudio();
       else startAudio("mix");
+    });
+    document.getElementById("btnMixGroove").addEventListener("click", event => {
+      grooveEnabled = !grooveEnabled;
+      grooveSession?.setEnabled(grooveEnabled);
+      event.currentTarget.setAttribute("aria-pressed", String(grooveEnabled));
+      event.currentTarget.textContent = "自然律动：" + (grooveEnabled ? "开" : "关");
     });
     document.getElementById("btnAddToMix").addEventListener("click", addTrack);
     document.getElementById("btnLeaveTrackEditor").addEventListener("click", leaveTrackEditor);

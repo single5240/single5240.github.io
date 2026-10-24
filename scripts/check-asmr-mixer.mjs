@@ -27,7 +27,30 @@ page.setDefaultTimeout(10000);
 const errors = [];
 page.on("pageerror", error => { errors.push(error.message); console.error("Browser:", error.message); });
 await page.addInitScript(() => {
-  window.audioTest = { contexts: [], scopes: [], starts: 0 };
+  window.audioTest = { contexts: [], scopes: [], grooves: [], starts: 0 };
+  let grooveLibrary;
+  Object.defineProperty(window, "AsmrGroove", {
+    get: () => grooveLibrary,
+    set(value) {
+      grooveLibrary = value;
+      const original = value.create;
+      value.create = (...args) => {
+        const model = original(...args);
+        const record = { model, samples: [], delays: 0 };
+        const sample = model.sample;
+        const delay = model.delay;
+        model.sample = (...values) => {
+          const result = sample(...values);
+          record.samples.push(result.gain);
+          if (record.samples.length > 64) record.samples.shift();
+          return result;
+        };
+        model.delay = (...values) => { record.delays++; return delay(...values); };
+        audioTest.grooves.push(record);
+        return model;
+      };
+    }
+  });
   for (const prototype of [AudioScheduledSourceNode.prototype, AudioBufferSourceNode.prototype]) {
     if (!Object.hasOwn(prototype, "start")) continue;
     const originalStart = prototype.start;
@@ -101,14 +124,24 @@ try {
     const master = ctx.createGain(); master.gain.value = 0.75;
     sum.connect(filter).connect(compressor).connect(master).connect(ctx.destination);
     const voices = [];
-    for (const category of ["rain", "fire", "tapping", "bowls"]) {
+    const motionGains = [];
+    const arrangement = AsmrGroove.create(0, 20261025);
+    const categories = ["rain", "fire", "tapping", "bowls"];
+    for (const category of categories) arrangement.add("offline-" + category, category);
+    arrangement.setActive(categories.map(category => "offline-" + category));
+    for (const category of categories) {
       const scope = AsmrRuntime.createScope(ctx, scheduler);
-      const output = ctx.createGain(); output.gain.value = 0.65; output.connect(sum);
+      const output = ctx.createGain(); output.gain.value = 0.65;
+      const motion = ctx.createGain(); output.connect(motion).connect(sum);
+      motionGains.push({ id: "offline-" + category, motion });
       const voice = audioTest.makeVoice({ ...audioTest.defaults, activeCategory: category,
-        currentRain: "drizzle", currentTapMat: "book" }, scope, output, "offline-" + category);
-      voice.start(0.05); voices.push(voice);
+        currentRain: "drizzle", currentTapMat: "book" }, scope, output, "offline-" + category, arrangement);
+      voice.start(0.05 + arrangement.entry("offline-" + category)); voices.push(voice);
     }
-    for (let now = 0; now < 12; now += 0.025) for (const voice of voices) voice.scope.pump(now, Math.min(12, now + 0.15), 32);
+    for (let now = 0; now < 12; now += 0.025) {
+      for (const voice of voices) voice.scope.pump(now, Math.min(12, now + 0.15), 32);
+      for (const { id, motion } of motionGains) motion.gain.setTargetAtTime(arrangement.sample(id, now).gain, now, 0.65);
+    }
     const rendered = await ctx.startRendering();
     let peak = 0, energy = 0, count = 0;
     for (let channel = 0; channel < 2; channel++) for (const sample of rendered.getChannelData(channel)) {
@@ -118,7 +151,7 @@ try {
     return { peak, rms: Math.sqrt(energy / count), seconds: rendered.duration };
   });
   assert(mix.peak > 0.001 && mix.peak < 0.95, "Mixed audio must be non-silent and have peak headroom");
-  console.log("Four-layer offline render:", JSON.stringify(mix));
+  console.log("Four-layer offline render with shared groove:", JSON.stringify(mix));
   const renderedVariants = await page.evaluate(async () => {
     const names = ["rain", "tapping", "friction", "water", "bowls", "tools", "fire", "squish", "keyboard", "ambient"];
     let cases = 0;
@@ -160,7 +193,9 @@ try {
     if (obsolete || times.length > 2 || times.some(time => time < 2)) throw new Error("Audio scheduler replayed an obsolete backlog");
   });
   // Independent playback remains the primary page action, and never adds a mix layer.
+  const sessionsBeforeIndependent = await page.evaluate(() => audioTest.grooves.length);
   await page.locator('#btnMainPlay').click(); await settle(650);
+  assert.equal(await page.evaluate(() => audioTest.grooves.length), sessionsBeforeIndependent, 'Independent playback must not create a groove session');
   assert.equal(await page.locator('.mixer-track').count(), 0);
   assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'true');
   assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'false');
@@ -175,6 +210,13 @@ try {
   assert.equal(await page.locator('#btnMainPlay').getAttribute('aria-pressed'), 'false');
   assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'true');
   assert.equal((await resources()).filter(scope => scope.nodes).length, 1, 'Independent source must be disposed after starting the mix');
+  assert(await page.evaluate(() => audioTest.grooves.at(-1).samples.length > 0 && audioTest.grooves.at(-1).delays > 0), 'Mixed playback must drive gain and timing variation');
+  const faderBefore = await action(0, 'volume').inputValue();
+  await page.locator('#btnMixGroove').click(); await settle(900);
+  assert.equal(await page.locator('#btnMixGroove').getAttribute('aria-pressed'), 'false');
+  assert(await page.evaluate(() => audioTest.grooves.at(-1).samples.at(-1) === 1), 'Bypass must restore neutral motion gain');
+  assert.equal(await action(0, 'volume').inputValue(), faderBefore, 'Groove must not overwrite user volume');
+  await page.locator('#btnMixGroove').click();
   await page.locator('#btnMixerToggle').click();
   assert.equal(await page.locator('#mixerBody').isVisible(), false);
   assert.equal(await page.locator('#btnMixPlay').getAttribute('aria-pressed'), 'true');

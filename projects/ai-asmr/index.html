@@ -116,6 +116,10 @@ permalink: /projects/ai-asmr/index.html
         <span id="mixerTrackCount">0 / 4 轨</span>
       </div>
       <button type="button" class="mixer-play" id="btnMixPlay" aria-pressed="false">播放混音</button>
+      <div class="mixer-groove">
+        <button type="button" id="btnMixGroove" aria-pressed="true" aria-describedby="mixerGrooveHint">自然律动：开</button>
+        <span id="mixerGrooveHint">缓慢起伏 · 疏密变化 · 错落呼应</span>
+      </div>
       <ul class="mixer-tracks" id="mixerTracks" aria-label="混音轨道"></ul>
       <div class="mixer-editor">
         <span id="mixerEditorLabel" tabindex="-1">浏览声音 · 选择后加入混音</span>
@@ -2261,6 +2265,8 @@ permalink: /projects/ai-asmr/index.html
   #mixerTrackCount { font-size: .8rem; }
   .mixer-dock .mixer-play { position: sticky; top: 0; z-index: 1; width: 100%; margin-top: 1rem; background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
   .mixer-tracks { margin: .75rem 0; padding: 0; list-style: none; }
+  .mixer-groove { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+  .mixer-groove span { font-size: .75rem; color: var(--muted); }
   .mixer-track { display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; padding: .85rem 0; border-top: 1px solid var(--line); }
   .mixer-track strong { font-size: .85rem; overflow-wrap: anywhere; }
   .mixer-track label { display: flex; align-items: center; gap: .5rem; font-size: .8rem; }
@@ -2292,7 +2298,8 @@ permalink: /projects/ai-asmr/index.html
     .mixer-panel { max-height: calc(100dvh - 9rem); }
   }
 </style>
-<script src="{{ '/assets/js/ai-asmr/runtime.js' | relative_url }}?v=20261025-r2"></script>
-<script src="{{ '/assets/js/ai-asmr/presets.js' | relative_url }}?v=20261025-r2"></script>
-<script src="{{ '/assets/js/ai-asmr/voices.js' | relative_url }}?v=20261025-r2"></script>
-<script src="{{ '/assets/js/ai-asmr/lab.js' | relative_url }}?v=20261025-r2"></script>
+<script src="{{ '/assets/js/ai-asmr/runtime.js' | relative_url }}?v=20261025-r3"></script>
+<script src="{{ '/assets/js/ai-asmr/groove.js' | relative_url }}?v=20261025-r3"></script>
+<script src="{{ '/assets/js/ai-asmr/presets.js' | relative_url }}?v=20261025-r3"></script>
+<script src="{{ '/assets/js/ai-asmr/voices.js' | relative_url }}?v=20261025-r3"></script>
+<script src="{{ '/assets/js/ai-asmr/lab.js' | relative_url }}?v=20261025-r3"></script>

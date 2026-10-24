@@ -7,7 +7,8 @@
     const isDarkThemeActive = view.isDarkThemeActive;
     const Math = Object.create(globalThis.Math);
     Math.random = AsmrRuntime.random(crypto.getRandomValues(new Uint32Array(1))[0]);
-    const setTimeout = scope.setTimeout;
+    const setTimeout = (callback, delay) => scope.setTimeout(callback,
+      callback === scheduleContinuousModulation || !view.timing ? delay : view.timing(delay, scope.time()));
     const clearTimeout = scope.clearTimeout;
     const document = { get hidden() { return globalThis.document.hidden; }, getElementById() { return null; } };
     const emit = (kind, args) => {
