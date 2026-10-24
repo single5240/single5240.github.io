@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: AI-ASMR 沉浸式声音实验室
-description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声（微雨/小雨/大雨/倾盆/远雷）与钝感敲击声（空心木盒/复古精装书/软硅胶/厚陶杯/竹节）两大类，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
+description: 纯原生 Web Audio API 程序化声学合成与双耳 3Dio 沉浸式触发器，提供连续雨声、钝感敲击声、细腻摩擦声与清润水流声（山涧清泉/鹅卵石细流/幽潭微涌/粘稠气泡/添水竹韵）四大体系，细腻轻柔无毛刺，内置专业 AI ASMR 提示词工坊。
 section: projects
 wide: true
 permalink: /projects/ai-asmr/index.html
@@ -13,22 +13,26 @@ permalink: /projects/ai-asmr/index.html
     <h1>AI-ASMR 沉浸式声音实验室</h1>
     <p class="lede">
       基于 <strong>Web Audio API 纯原生程序化物理声学合成</strong> 打造的双耳 3Dio 沉浸式声音触发台。
-      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>与<strong>「轻柔敲击声」</strong>两大声音体系，
+      专为助眠、深度专注与颅内放松设计：提供<strong>「沉浸雨声」</strong>、<strong>「轻柔敲击声」</strong>、<strong>「细腻摩擦声」</strong>与<strong>「清润水流声」</strong>四大声音体系，
       涵盖从<strong>微雨、小雨、大雨、倾盆到远雷暴风雨</strong>的连续声场，
-      以及<strong>空心木盒、复古精装书、软硅胶、厚陶杯与天然竹节</strong>等吸音钝感敲击触碰。
+      <strong>空心木盒、精装书、软硅胶、厚陶杯与天然竹节</strong>等吸音钝感轻叩，
+      <strong>蓬松软毛刷、天鹅绒与指腹轻摩</strong>的柔和剪切抚摩，
+      以及<strong>山涧清泉、鹅卵石细流、幽潭微涌、粘稠气泡与添水竹韵</strong>等自然水相流体。
       全频段柔化滤波彻底消除高频毛刺与尖锐杂音，呈现<strong>细腻（delicate）、轻柔（gentle）、钝感（cushioned）与平稳规律（rhythmic &amp; repetitive）</strong>的纯净白噪音，并附带专业级 <strong>AI ASMR 提示词工坊</strong>。
     </p>
     <div class="head-badges" role="region" aria-label="核心声学特性">
       <span class="badge-item">🎧 3Dio 双耳立体声</span>
       <span class="badge-item">🌧️ 连续物理雨声</span>
       <span class="badge-item">🪵 钝感材质轻敲</span>
+      <span class="badge-item">🪶 细腻触感摩擦</span>
+      <span class="badge-item">🫧 清润自然水流</span>
       <span class="badge-item">🛡️ 零尖锐刺耳 / 软限幅防爆音</span>
       <span class="badge-item">⚡ 离线即开即听 / 零音频文件依赖</span>
     </div>
   </header>
 
   <!-- ========================================================================
-       1. 核心大类切换导航 (Rain vs Tapping)
+       1. 核心大类切换导航 (Rain / Tapping / Friction / Water)
        ======================================================================== -->
   <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择">
     <button type="button" class="cat-tab-btn active" id="tabRainCategory" role="tab" aria-selected="true" data-cat="rain">
@@ -50,6 +54,13 @@ permalink: /projects/ai-asmr/index.html
       <span class="cat-tab-content">
         <strong class="cat-tab-title">细腻摩擦声触发器 (Friction Stage)</strong>
         <span class="cat-tab-desc">蓬松化妆刷 · 天鹅绒 · 细腻微砂 · 指腹轻摩 · 书页</span>
+      </span>
+    </button>
+    <button type="button" class="cat-tab-btn" id="tabWaterCategory" role="tab" aria-selected="false" data-cat="water">
+      <span class="cat-tab-icon">🫧</span>
+      <span class="cat-tab-content">
+        <strong class="cat-tab-title">清润水流声触发器 (Water Stage)</strong>
+        <span class="cat-tab-desc">山涧清泉 · 鹅卵石细流 · 幽潭微涌 · 粘稠气泡 · 添水</span>
       </span>
     </button>
   </nav>
@@ -340,6 +351,76 @@ permalink: /projects/ai-asmr/index.html
     </div>
   </section>
 
+  <!-- 3.4 水流声大类控制区 (Water Stage) -->
+  <section class="asmr-matrix-grid category-panel" id="panelWaterCategory" aria-label="水流声调控面板" hidden>
+    <!-- 左卡片：水流场景与水态 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>1. 水流场景与水态 (Water Flow Scenarios)</h2>
+        <span class="card-badge">5 档流体声学</span>
+      </div>
+      <p class="card-intro">基于流体湍流滤波微扰与 Minnaert 气泡共鸣公式，还原自然亲水质感：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="水流场景选择">
+        <button type="button" class="water-scene-btn active" data-scene="spring" role="radio" aria-checked="true">
+          <span class="preset-icon">🏞️</span>
+          <span class="preset-name">山涧清泉 (Mountain Spring)</span>
+          <span class="preset-desc">细流穿行岩石缝隙，清澈淅沥，明净空灵，微波荡漾</span>
+        </button>
+        <button type="button" class="water-scene-btn" data-scene="pebble" role="radio" aria-checked="false">
+          <span class="preset-icon">🪨</span>
+          <span class="preset-name">鹅卵石浅溪 (Pebble Stream)</span>
+          <span class="preset-desc">溪水漫过圆润鹅卵石，水花清润微泛，连绵不绝</span>
+        </button>
+        <button type="button" class="water-scene-btn" data-scene="deepbasin" role="radio" aria-checked="false">
+          <span class="preset-icon">🌀</span>
+          <span class="preset-name">幽潭微涌 (Deep Basin Swirls)</span>
+          <span class="preset-desc">深水回旋微浪，低中频厚实温存，深层安全包裹感</span>
+        </button>
+        <button type="button" class="water-scene-btn" data-scene="viscous" role="radio" aria-checked="false">
+          <span class="preset-icon">🫧</span>
+          <span class="preset-name">粘稠微气泡 (Viscous Bubbles)</span>
+          <span class="preset-desc">温润流体中缓慢升腾的软钝微气泡，噗噗微破，无尖叫</span>
+        </button>
+        <button type="button" class="water-scene-btn" data-scene="shishi" role="radio" aria-checked="false">
+          <span class="preset-icon">🎋</span>
+          <span class="preset-name">添水竹韵 (Zen Shishi-odoshi)</span>
+          <span class="preset-desc">清泉细流持续注入天然竹筒，间歇水满沉闷叩石，禅意空灵</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右卡片：水流动态与手法 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>2. 水流动态与手法 (Water Flow Styles &amp; Cadence)</h2>
+        <span class="card-badge">3Dio 双耳洄游</span>
+      </div>
+      <p class="card-intro">模拟真实亲水听音场景：支持双耳洄游、缓流微漪、规律轻浪与连续浸润：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="水流动态手法选择">
+        <button type="button" class="water-style-btn active" data-style="meander" role="radio" aria-checked="true">
+          <span class="preset-icon">〰️</span>
+          <span class="preset-name">缓流微漪 (Gentle Meandering)</span>
+          <span class="preset-desc">平缓从容的漫流，呼吸般自然起伏，双耳微扰动</span>
+        </button>
+        <button type="button" class="water-style-btn" data-style="eddy" role="radio" aria-checked="false">
+          <span class="preset-icon">↔️</span>
+          <span class="preset-name">3Dio 双耳洄游 (Ear-to-Ear Eddy)</span>
+          <span class="preset-desc">水流声像从左耳缓缓盘旋流向右耳，如沉浸在温润清泉中</span>
+        </button>
+        <button type="button" class="water-style-btn" data-style="lapping" role="radio" aria-checked="false">
+          <span class="preset-icon">🏖️</span>
+          <span class="preset-name">细浪轻拍 (Lapping Ripples)</span>
+          <span class="preset-desc">如湖畔微浪般周期性轻推岸边，规律节奏，深度催眠助眠</span>
+        </button>
+        <button type="button" class="water-style-btn" data-style="immersion" role="radio" aria-checked="false">
+          <span class="preset-icon">🌊</span>
+          <span class="preset-name">连续浸润湍涌 (Continuous Immersion)</span>
+          <span class="preset-desc">充沛连绵的清流水幕，全频段白噪音舒缓包裹，隔绝一切干扰</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- ========================================================================
        4. 3Dio 双耳声学微调面板
        ======================================================================== -->
@@ -423,6 +504,25 @@ permalink: /projects/ai-asmr/index.html
         <input type="range" id="rangeFricCushion" min="0" max="1" step="0.05" value="0.75" aria-label="绒感吸音缓冲">
         <small class="tweak-hint">高值消除一切高频刮擦，呈现深层天鹅绒钝响；低值显现细腻纤微毛绒感</small>
       </div>
+
+      <!-- 水流声模式专属微调项 -->
+      <div class="tweak-item water-tweak" id="tweakItemWaterSpeed" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeWaterSpeed">水流速度 / 湍急度 (Flow Speed / Tempo)</label>
+          <span class="tweak-val" id="valWaterSpeed">标准 (1.0x)</span>
+        </div>
+        <input type="range" id="rangeWaterSpeed" min="0.4" max="2.0" step="0.1" value="1.0" aria-label="水流速度与气泡频率">
+        <small class="tweak-hint">调节流水微扰动速度与气泡破裂节奏，越慢越安宁</small>
+      </div>
+
+      <div class="tweak-item water-tweak" id="tweakItemWaterSoftness" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeWaterSoftness">气泡微破与清润度 (Bubble Softness)</label>
+          <span class="tweak-val" id="valWaterSoftness">清润微钝 (70%)</span>
+        </div>
+        <input type="range" id="rangeWaterSoftness" min="0" max="1" step="0.05" value="0.7" aria-label="气泡与水滴柔化程度">
+        <small class="tweak-hint">向右滑动增加水体深沉肉感与吸音钝度，向左显现清润水珠滴落感</small>
+      </div>
     </div>
   </section>
 
@@ -436,7 +536,7 @@ permalink: /projects/ai-asmr/index.html
     </div>
     <p class="card-intro">
       如果你希望在 <strong>Stable Audio、ElevenLabs、AudioLDM2 或 Suno/Udio</strong> 中用 AI 生成高品质 ASMR 声音，
-      下方已根据你当前选定的<strong>大类（雨声/敲击声/摩擦声）、材质、手法与声学特性</strong>实时计算出工业级提示词：
+      下方已根据你当前选定的<strong>大类（雨声/敲击声/摩擦声/水流声）、材质/水态、手法与声学特性</strong>实时计算出工业级提示词：
     </p>
 
     <!-- 动态 Prompt 生成展示区 -->
@@ -506,7 +606,7 @@ permalink: /projects/ai-asmr/index.html
           <tbody>
             <tr>
               <td><strong>ElevenLabs Sound Effects</strong></td>
-              <td>敲击声 / 环境雨声</td>
+              <td>敲击声 / 环境雨声 / 细腻摩擦 / 清润水流</td>
               <td>Duration: 15s~30s · Prompt Influence: 0.82</td>
               <td>限定单一材质（如 single hollow wood box），避免多源堆叠。</td>
             </tr>
@@ -561,11 +661,16 @@ permalink: /projects/ai-asmr/index.html
 /* 核心大类切换导航 */
 .category-switch-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.85rem;
   margin: 1.5rem 0 1rem;
 }
-@media (max-width: 860px) {
+@media (max-width: 1040px) {
+  .category-switch-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
   .category-switch-bar {
     grid-template-columns: 1fr;
   }
@@ -937,7 +1042,9 @@ permalink: /projects/ai-asmr/index.html
 .tap-mat-btn,
 .tap-style-btn,
 .fric-mat-btn,
-.fric-style-btn {
+.fric-style-btn,
+.water-scene-btn,
+.water-style-btn {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -957,7 +1064,9 @@ permalink: /projects/ai-asmr/index.html
 .tap-mat-btn:hover,
 .tap-style-btn:hover,
 .fric-mat-btn:hover,
-.fric-style-btn:hover {
+.fric-style-btn:hover,
+.water-scene-btn:hover,
+.water-style-btn:hover {
   border-color: var(--accent);
   background: var(--alt-bg);
   transform: translateX(2px);
@@ -967,7 +1076,9 @@ permalink: /projects/ai-asmr/index.html
 .tap-mat-btn.active,
 .tap-style-btn.active,
 .fric-mat-btn.active,
-.fric-style-btn.active {
+.fric-style-btn.active,
+.water-scene-btn.active,
+.water-style-btn.active {
   border-color: var(--accent);
   background: var(--soft);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -1488,8 +1599,133 @@ permalink: /projects/ai-asmr/index.html
     }
   };
 
+  // 水流声水相与场景参数 (Water Scenarios)
+  const WATER_SCENARIOS = {
+    spring: {
+      name: "山涧清泉 (Mountain Spring)",
+      enName: "crystal-clear mountain spring trickle through stone crevices",
+      zhPrompt: "山涧石缝间的清澈山泉细流",
+      baseVolume: 0.65,
+      filterFreq: 1400,
+      filterQ: 1.6,
+      peakingFreq: 750,
+      peakingGain: 4.0,
+      bubbleRate: 32,
+      bubbleBaseFreq: 580,
+      bubbleChirp: 1.35,
+      bubbleDecay: 0.038,
+      undulationSpeed: 0.8,
+      shishi: false,
+      desc: "Pure Mountain Trickle · Crisp & Gentle Mineral Ripples"
+    },
+    pebble: {
+      name: "鹅卵石浅溪 (Pebble Stream)",
+      enName: "gentle shallow stream flowing over smooth rounded pebbles",
+      zhPrompt: "溪水漫过光滑圆润鹅卵石的浅溪清流",
+      baseVolume: 0.75,
+      filterFreq: 1200,
+      filterQ: 1.8,
+      peakingFreq: 620,
+      peakingGain: 4.5,
+      bubbleRate: 46,
+      bubbleBaseFreq: 680,
+      bubbleChirp: 1.45,
+      bubbleDecay: 0.032,
+      undulationSpeed: 1.1,
+      shishi: false,
+      desc: "Smooth Pebble Shallows · Continuous Soothing Babble"
+    },
+    deepbasin: {
+      name: "幽潭微涌 (Deep Basin Swirls)",
+      enName: "deep serene water basin with gentle eddy currents",
+      zhPrompt: "幽静林间深潭的缓慢微浪回旋",
+      baseVolume: 0.85,
+      filterFreq: 750,
+      filterQ: 2.2,
+      peakingFreq: 340,
+      peakingGain: 5.5,
+      bubbleRate: 16,
+      bubbleBaseFreq: 340,
+      bubbleChirp: 1.2,
+      bubbleDecay: 0.055,
+      undulationSpeed: 0.5,
+      shishi: false,
+      desc: "Deep Resonant Basin · Low-Mid Mellow Cocoon"
+    },
+    viscous: {
+      name: "粘稠微气泡 (Viscous Bubbles)",
+      enName: "slow gentle viscous liquid with soft cushioned micro-bubbles",
+      zhPrompt: "温润浓稠液体中缓慢升腾破裂的软钝微气泡",
+      baseVolume: 0.55,
+      filterFreq: 950,
+      filterQ: 2.5,
+      peakingFreq: 420,
+      peakingGain: 4.8,
+      bubbleRate: 18,
+      bubbleBaseFreq: 420,
+      bubbleChirp: 1.25,
+      bubbleDecay: 0.065,
+      undulationSpeed: 0.4,
+      shishi: false,
+      desc: "Slow Cushioned Micro-Bubbles · Tactile Gurgle"
+    },
+    shishi: {
+      name: "添水竹韵 (Zen Shishi-odoshi)",
+      enName: "zen garden shishi-odoshi bamboo water fountain with intermittent clack",
+      zhPrompt: "日式庭院竹筒添水，细泉注流伴随沉闷悠远叩石",
+      baseVolume: 0.6,
+      filterFreq: 1150,
+      filterQ: 1.7,
+      peakingFreq: 540,
+      peakingGain: 3.8,
+      bubbleRate: 24,
+      bubbleBaseFreq: 540,
+      bubbleChirp: 1.3,
+      bubbleDecay: 0.04,
+      undulationSpeed: 0.7,
+      shishi: true,
+      desc: "Zen Bamboo Fountain · Intermittent Hollow Woody Clack"
+    }
+  };
+
+  // 水流动态与手法 (Water Styles)
+  const WATER_STYLES = {
+    meander: {
+      name: "缓流微漪 (Gentle Meandering)",
+      enName: "slow and gentle meandering flow with natural breathing cadence",
+      zhPrompt: "平缓从容的漫流与呼吸般的微涟漪",
+      cycleTime: 2400,
+      binauralMode: "meander",
+      desc: "Gentle Meandering Stream · Natural Breathing Dynamics"
+    },
+    eddy: {
+      name: "3Dio 双耳洄游 (Ear-to-Ear Eddy)",
+      enName: "hypnotic 3Dio binaural ear-to-ear swirling eddy current",
+      zhPrompt: "从左耳缓缓盘旋游弋至右耳的双耳水流回旋",
+      cycleTime: 3600,
+      binauralMode: "eddy",
+      desc: "Hypnotic Ear-to-Ear Orbit · Binaural Fluid Swirl"
+    },
+    lapping: {
+      name: "细浪轻拍 (Lapping Ripples)",
+      enName: "rhythmic lapping water ripples gently brushing against the shore",
+      zhPrompt: "如平静湖岸微浪般规律轻抚拍岸的沉静涟漪",
+      cycleTime: 2800,
+      binauralMode: "lapping",
+      desc: "Rhythmic Shoreline Lapping · Hypnotic Sleep Waves"
+    },
+    immersion: {
+      name: "连续浸润湍涌 (Continuous Immersion)",
+      enName: "continuous immersive water flow stream masking all background noise",
+      zhPrompt: "连绵不绝的充沛清润流水幕全频包裹",
+      cycleTime: 1800,
+      binauralMode: "immersion",
+      desc: "Deep Continuous Fluid Cocoon · Full-Spectrum Noise Masking"
+    }
+  };
+
   let state = {
-    activeCategory: "rain", // "rain" | "tapping"
+    activeCategory: "rain", // "rain" | "tapping" | "friction" | "water"
     isPlaying: false,
 
     // 雨声参数
@@ -1511,6 +1747,12 @@ permalink: /projects/ai-asmr/index.html
     fricSpeedMultiplier: 1.0,
     fricCushion: 0.75, // 0 (较轻柔纤细微刷毛) ~ 1 (深厚天鹅绒钝感)
 
+    // 水流声参数
+    currentWaterScene: "spring",
+    currentWaterStyle: "meander",
+    waterSpeedMultiplier: 1.0,
+    waterSoftness: 0.7, // 0 (清润水滴) ~ 1 (深沉肉感吸音钝泡)
+
     // 通用声学
     visualMode: "scenic", // scenic | radar | minimal
     stereoWidth: 1.0,
@@ -1527,7 +1769,7 @@ permalink: /projects/ai-asmr/index.html
   let masterGain = null;
   let masterLimiter = null;
 
-  // 雨声底噪节点 (双声道独立去相关)
+  // 雨声与水流底声节点 (双声道独立去相关)
   let noiseSourceL = null;
   let noiseSourceR = null;
   let noiseFilterL = null;
@@ -1542,6 +1784,9 @@ permalink: /projects/ai-asmr/index.html
   let fricTimerId = null;
   let fricNoiseBuffer = null;
   let fricMotionPhase = 0;
+  let waterBubbleTimerId = null;
+  let shishiTimerId = null;
+  let waterEddyAngle = 0;
 
   function initAudioEngine() {
     if (audioCtx) return;
@@ -2017,7 +2262,174 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
-  // B3. 启停与节点更新
+  // B4. 水流声物理声学合成核心 (Water Synthesizer Engine)
+  // --------------------------------------------------------------------------
+  function triggerWaterBubble(azimuthOverride = null, velScale = 1.0) {
+    if (!audioCtx || !state.isPlaying || state.activeCategory !== "water") return;
+
+    const scene = WATER_SCENARIOS[state.currentWaterScene];
+    const now = audioCtx.currentTime;
+
+    // 1. 声相计算 (3Dio Panning)
+    let azimuth = 0;
+    if (azimuthOverride !== null) {
+      azimuth = azimuthOverride * state.stereoWidth;
+    } else {
+      const style = WATER_STYLES[state.currentWaterStyle];
+      if (style.binauralMode === "eddy") {
+        // 双耳洄游：随涡流旋转相位动态偏置
+        azimuth = Math.sin(waterEddyAngle) * 0.85 * state.stereoWidth;
+      } else {
+        azimuth = (Math.random() * 2 - 1) * 0.85 * state.stereoWidth;
+      }
+    }
+
+    // 2. Minnaert 气泡谐振公式物理模拟：气泡脱离向上轻度扫频 (Chirp)
+    const jitter = 1 + (Math.random() * 0.32 - 0.16);
+    const baseFreq = scene.bubbleBaseFreq * jitter;
+    const targetEndFreq = baseFreq * scene.bubbleChirp;
+
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(baseFreq, now);
+    const chirpDur = 0.016 + Math.random() * 0.022;
+    osc.frequency.exponentialRampToValueAtTime(targetEndFreq, now + chirpDur);
+
+    // 3. 气泡共鸣带通滤波
+    const bpFilter = audioCtx.createBiquadFilter();
+    bpFilter.type = "bandpass";
+    bpFilter.frequency.setValueAtTime(baseFreq * 1.05, now);
+    const qVal = 2.0 + (1 - state.waterSoftness) * 3.5;
+    bpFilter.Q.setValueAtTime(qVal, now);
+
+    // 4. 低通软化：消除一切尖锐飞溅与毛刺
+    const lpf = audioCtx.createBiquadFilter();
+    lpf.type = "lowpass";
+    const cutoff = Math.min(state.userLowpass, 1300 + (1 - state.waterSoftness) * 1100);
+    lpf.frequency.setValueAtTime(cutoff, now);
+
+    // 5. 柔和包络 (Soft Attack Envelope - 抹除咔哒直角脉冲)
+    const bubbleGain = audioCtx.createGain();
+    const vel = (0.55 + Math.random() * 0.45) * velScale;
+    const peak = vel * 0.35;
+    const attackTime = 0.003 + state.waterSoftness * 0.004; // 3~7ms 软淡入
+    const decayTime = scene.bubbleDecay * (0.85 + Math.random() * 0.3) * (0.8 + state.waterSoftness * 0.4);
+
+    bubbleGain.gain.setValueAtTime(0.0001, now);
+    bubbleGain.gain.linearRampToValueAtTime(peak, now + attackTime);
+    bubbleGain.gain.exponentialRampToValueAtTime(0.0001, now + decayTime + 0.015);
+
+    // 6. 3Dio 双耳空间声相定位
+    let panner = null;
+    if (audioCtx.createStereoPanner) {
+      panner = audioCtx.createStereoPanner();
+      panner.pan.setValueAtTime(azimuth, now);
+    }
+
+    osc.connect(bpFilter);
+    bpFilter.connect(lpf);
+    lpf.connect(bubbleGain);
+
+    if (panner) {
+      bubbleGain.connect(panner);
+      panner.connect(masterLimiter);
+    } else {
+      bubbleGain.connect(masterLimiter);
+    }
+
+    osc.start(now);
+    osc.stop(now + decayTime + 0.03);
+
+    createWaterVisualEvent(azimuth, vel, baseFreq, false);
+  }
+
+  function scheduleNextWaterBubble() {
+    if (!state.isPlaying || state.activeCategory !== "water") return;
+
+    const scene = WATER_SCENARIOS[state.currentWaterScene];
+    const style = WATER_STYLES[state.currentWaterStyle];
+
+    waterEddyAngle += 0.12 * state.waterSpeedMultiplier;
+
+    let rate = scene.bubbleRate * state.waterSpeedMultiplier;
+    if (style.binauralMode === "lapping") {
+      const wavePhase = (Date.now() % style.cycleTime) / style.cycleTime;
+      const waveIntensity = 0.35 + 0.65 * Math.sin(wavePhase * Math.PI * 2);
+      rate *= Math.max(0.2, waveIntensity);
+    }
+
+    const interval = (-Math.log(1 - Math.random()) / Math.max(5, rate)) * 1000;
+
+    triggerWaterBubble();
+    waterBubbleTimerId = setTimeout(scheduleNextWaterBubble, Math.max(12, interval));
+  }
+
+  function scheduleNextShishiOdoshi() {
+    if (!state.isPlaying || state.activeCategory !== "water" || !WATER_SCENARIOS[state.currentWaterScene].shishi) return;
+
+    const now = audioCtx.currentTime;
+    // 沉闷天然竹筒叩击溪石 (Damped hollow woody knock on stone)
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(220, now);
+    osc1.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(470, now);
+
+    const clackFilter = audioCtx.createBiquadFilter();
+    clackFilter.type = "lowpass";
+    clackFilter.frequency.setValueAtTime(Math.min(state.userLowpass, 950), now);
+    clackFilter.Q.setValueAtTime(2.6, now);
+
+    const clackGain = audioCtx.createGain();
+    clackGain.gain.setValueAtTime(0.0001, now);
+    clackGain.gain.linearRampToValueAtTime(0.42, now + 0.005);
+    clackGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+    let panner = null;
+    if (audioCtx.createStereoPanner) {
+      panner = audioCtx.createStereoPanner();
+      panner.pan.setValueAtTime(0.18, now);
+    }
+
+    osc1.connect(clackFilter);
+    osc2.connect(clackFilter);
+    clackFilter.connect(clackGain);
+    if (panner) {
+      clackGain.connect(panner);
+      panner.connect(masterLimiter);
+    } else {
+      clackGain.connect(masterLimiter);
+    }
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.16);
+    osc2.stop(now + 0.16);
+
+    // 叩击后水流倾注轻声花
+    setTimeout(() => {
+      if (state.isPlaying && state.activeCategory === "water") {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            if (state.isPlaying && state.activeCategory === "water") {
+              triggerWaterBubble(0.12 + (Math.random() * 0.35 - 0.18), 1.05);
+            }
+          }, i * 35);
+        }
+      }
+    }, 85);
+
+    createWaterVisualEvent(0.18, 0.95, 220, true);
+
+    const nextInterval = 11000 + Math.random() * 5000;
+    shishiTimerId = setTimeout(scheduleNextShishiOdoshi, nextInterval);
+  }
+
+  // --------------------------------------------------------------------------
+  // B5. 启停与节点更新
   // --------------------------------------------------------------------------
   function startAudio() {
     initAudioEngine();
@@ -2037,6 +2449,11 @@ permalink: /projects/ai-asmr/index.html
       scheduleNextTap();
     } else if (state.activeCategory === "friction") {
       scheduleNextFrictionStroke();
+    } else if (state.activeCategory === "water") {
+      scheduleNextWaterBubble();
+      if (WATER_SCENARIOS[state.currentWaterScene].shishi) {
+        shishiTimerId = setTimeout(scheduleNextShishiOdoshi, 3000);
+      }
     }
 
     updateUIPlayState();
@@ -2049,6 +2466,8 @@ permalink: /projects/ai-asmr/index.html
     if (thunderTimerId) clearTimeout(thunderTimerId);
     if (tapTimerId) clearTimeout(tapTimerId);
     if (fricTimerId) clearTimeout(fricTimerId);
+    if (waterBubbleTimerId) clearTimeout(waterBubbleTimerId);
+    if (shishiTimerId) clearTimeout(shishiTimerId);
 
     if (audioCtx && audioCtx.state === "running") {
       masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
@@ -2078,6 +2497,8 @@ permalink: /projects/ai-asmr/index.html
       if (noiseFilterL && noiseFilterR) {
         noiseFilterL.frequency.setTargetAtTime(targetFreq, now, 0.08);
         noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
+        noiseFilterL.Q.setTargetAtTime(0.8, now, 0.08);
+        noiseFilterR.Q.setTargetAtTime(0.8, now, 0.08);
       }
 
       const hudFreq = document.getElementById("hudFilterFreq");
@@ -2089,7 +2510,7 @@ permalink: /projects/ai-asmr/index.html
       const cutoff = Math.min(state.userLowpass, 1200 + (1 - state.tapSoftness) * 1100);
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(cutoff) + " Hz";
-    } else {
+    } else if (state.activeCategory === "friction") {
       // 摩擦声模式：关闭雨声底噪，由调度器触发平滑软触剪切包络
       if (noiseGain) noiseGain.gain.setTargetAtTime(0.0001, now, 0.1);
 
@@ -2098,6 +2519,22 @@ permalink: /projects/ai-asmr/index.html
       const cutoff = Math.min(state.userLowpass, baseCutoff);
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(cutoff) + " Hz";
+    } else if (state.activeCategory === "water") {
+      // 水流声模式：启动微扰动清润水体底流 (Water Stream Bed)
+      const scene = WATER_SCENARIOS[state.currentWaterScene];
+      const targetFreq = Math.min(scene.filterFreq, state.userLowpass);
+      if (noiseFilterL && noiseFilterR) {
+        noiseFilterL.frequency.setTargetAtTime(targetFreq, now, 0.08);
+        noiseFilterR.frequency.setTargetAtTime(targetFreq, now, 0.08);
+        noiseFilterL.Q.setTargetAtTime(scene.filterQ, now, 0.08);
+        noiseFilterR.Q.setTargetAtTime(scene.filterQ, now, 0.08);
+      }
+      if (noiseGain) {
+        const streamVol = scene.baseVolume * 0.72;
+        noiseGain.gain.setTargetAtTime(streamVol, now, 0.1);
+      }
+      const hudFreq = document.getElementById("hudFilterFreq");
+      if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
     }
   }
 
@@ -2111,6 +2548,9 @@ permalink: /projects/ai-asmr/index.html
   let tapShockwaves = [];
   let fricStrokes = [];
   let fricParticles = [];
+  let waterBubbles = [];
+  let waterRipples = [];
+  let waterWaveOffset = 0;
   let earWavesL = [];
   let earWavesR = [];
   let animFrameId = null;
@@ -2288,6 +2728,53 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
+  function createWaterVisualEvent(azimuth, vel, baseFreq, isClack = false) {
+    const isDark = isDarkThemeActive();
+    const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.78) + (logicalWidth * 0.11);
+    const isLeft = azimuth < 0;
+    const colorPrefix = isLeft
+      ? (isDark ? "rgba(45, 212, 191," : "rgba(13, 148, 136,")
+      : (isDark ? "rgba(56, 189, 248," : "rgba(2, 132, 199,");
+
+    const centerY = logicalHeight / 2 + 15;
+
+    if (isClack) {
+      // 添水竹筒叩石专属沉稳大涟漪
+      if (waterRipples.length < 45) {
+        waterRipples.push({
+          x: posX,
+          y: centerY,
+          rx: 4,
+          ry: 1.5,
+          maxR: 52 + vel * 32,
+          alpha: 0.9,
+          color: isDark ? "rgba(94, 234, 212," : "rgba(15, 118, 110,"
+        });
+      }
+    } else {
+      // 产生升腾微气泡与水花涟漪
+      if (waterBubbles.length < 40) {
+        const bubbleR = 3.5 + vel * 5.5;
+        waterBubbles.push({
+          x: posX + (Math.random() * 24 - 12),
+          y: centerY + 25 + (Math.random() * 35),
+          targetY: centerY - 25 - (Math.random() * 20),
+          r: bubbleR,
+          vy: 0.9 + Math.random() * 1.1,
+          wobblePhase: Math.random() * Math.PI * 2,
+          alpha: 0.85,
+          color: colorPrefix
+        });
+      }
+    }
+
+    if (isLeft) {
+      earWavesL.push({ r: 6, maxR: 44 + vel * 28, alpha: 0.75 });
+    } else {
+      earWavesR.push({ r: 6, maxR: 44 + vel * 28, alpha: 0.75 });
+    }
+  }
+
   function renderLoop() {
     // 1. 绝对物理清屏：重置变换矩阵为 1:1，抹除整个物理像素缓冲区，彻底杜绝任何边缘累积
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -2325,7 +2812,7 @@ permalink: /projects/ai-asmr/index.html
         ctx.setLineDash([4, 6]);
         ctx.stroke();
         ctx.restore();
-      } else {
+      } else if (state.activeCategory === "friction") {
         // 摩擦模式：绘制中央柔和天鹅绒/触感底台光晕与轨迹
         ctx.save();
         const centerX = logicalWidth / 2;
@@ -2351,6 +2838,110 @@ permalink: /projects/ai-asmr/index.html
         ctx.setLineDash([3, 7]);
         ctx.stroke();
         ctx.restore();
+      } else if (state.activeCategory === "water") {
+        // 水流模式：绘制流动波纹流光与清澈溪流背景 (Flowing Stream Waveforms)
+        ctx.save();
+        waterWaveOffset += 0.024 * state.waterSpeedMultiplier;
+        const centerY = logicalHeight / 2 + 10;
+
+        const waveLayers = [
+          { yOff: -28, amp: 13, freq: 0.007, speed: 1.0, alpha: isDark ? 0.22 : 0.28 },
+          { yOff: 0, amp: 18, freq: 0.005, speed: 0.75, alpha: isDark ? 0.32 : 0.35 },
+          { yOff: 28, amp: 15, freq: 0.008, speed: 1.15, alpha: isDark ? 0.25 : 0.28 }
+        ];
+
+        for (const layer of waveLayers) {
+          ctx.beginPath();
+          ctx.moveTo(0, logicalHeight);
+          for (let x = 0; x <= logicalWidth; x += 15) {
+            const waveY = centerY + layer.yOff + Math.sin(x * layer.freq + waterWaveOffset * layer.speed) * layer.amp;
+            ctx.lineTo(x, waveY);
+          }
+          ctx.lineTo(logicalWidth, logicalHeight);
+          ctx.closePath();
+
+          const grad = ctx.createLinearGradient(0, centerY + layer.yOff - 20, 0, logicalHeight);
+          if (isDark) {
+            grad.addColorStop(0, `rgba(45, 212, 191, ${layer.alpha})`);
+            grad.addColorStop(0.5, `rgba(56, 189, 248, ${layer.alpha * 0.6})`);
+            grad.addColorStop(1, "rgba(10, 17, 20, 0.1)");
+          } else {
+            grad.addColorStop(0, `rgba(13, 148, 136, ${layer.alpha})`);
+            grad.addColorStop(0.5, `rgba(2, 132, 199, ${layer.alpha * 0.7})`);
+            grad.addColorStop(1, "rgba(237, 245, 246, 0.2)");
+          }
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          ctx.beginPath();
+          for (let x = 0; x <= logicalWidth; x += 15) {
+            const waveY = centerY + layer.yOff + Math.sin(x * layer.freq + waterWaveOffset * layer.speed) * layer.amp;
+            if (x === 0) ctx.moveTo(x, waveY);
+            else ctx.lineTo(x, waveY);
+          }
+          ctx.strokeStyle = isDark ? `rgba(94, 234, 212, ${layer.alpha * 1.5})` : `rgba(15, 118, 110, ${layer.alpha * 1.6})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    // 绘制水流专属浮动升腾气泡 (Rising Water Bubbles)
+    for (let i = waterBubbles.length - 1; i >= 0; i--) {
+      const b = waterBubbles[i];
+      b.x += Math.sin(b.wobblePhase) * 0.45;
+      b.wobblePhase += 0.08;
+      b.y -= b.vy;
+      b.alpha *= 0.985;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.fillStyle = b.color + (b.alpha * 0.45).toFixed(3) + ")";
+      ctx.fill();
+      ctx.strokeStyle = b.color + b.alpha.toFixed(3) + ")";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 气泡微反光高光
+      ctx.beginPath();
+      ctx.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, Math.max(0.8, b.r * 0.25), 0, Math.PI * 2);
+      ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${(b.alpha * 0.8).toFixed(3)})` : `rgba(255, 255, 255, ${(b.alpha * 0.9).toFixed(3)})`;
+      ctx.fill();
+      ctx.restore();
+
+      if (b.alpha < 0.02 || b.y < b.targetY) {
+        if (waterRipples.length < 40) {
+          waterRipples.push({
+            x: b.x,
+            y: b.y,
+            rx: 2,
+            ry: 0.6,
+            maxR: 12 + b.r * 2.5,
+            alpha: 0.7,
+            color: b.color
+          });
+        }
+        waterBubbles.splice(i, 1);
+      }
+    }
+
+    // 绘制水流微涟漪 (Water Ripples)
+    for (let i = waterRipples.length - 1; i >= 0; i--) {
+      const r = waterRipples[i];
+      r.rx += 1.2;
+      r.ry += 0.42;
+      r.alpha *= 0.935;
+
+      ctx.beginPath();
+      ctx.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = r.color + r.alpha.toFixed(3) + ")";
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+
+      if (r.alpha < 0.02 || r.rx > r.maxR) {
+        waterRipples.splice(i, 1);
       }
     }
 
@@ -2445,9 +3036,21 @@ permalink: /projects/ai-asmr/index.html
     ctx.ellipse(0, 0, 32, 44, 0, 0, Math.PI * 2);
     ctx.fillStyle = isDark ? "rgba(22, 38, 44, 0.75)" : "rgba(255, 255, 255, 0.92)";
     if (isDark) {
-      ctx.strokeStyle = state.activeCategory === "rain" ? "rgba(45, 212, 191, 0.28)" : (state.activeCategory === "tapping" ? "rgba(241, 166, 90, 0.28)" : "rgba(244, 114, 182, 0.28)");
+      ctx.strokeStyle = state.activeCategory === "rain"
+        ? "rgba(45, 212, 191, 0.28)"
+        : (state.activeCategory === "tapping"
+          ? "rgba(241, 166, 90, 0.28)"
+          : (state.activeCategory === "friction"
+            ? "rgba(244, 114, 182, 0.28)"
+            : "rgba(56, 189, 248, 0.35)"));
     } else {
-      ctx.strokeStyle = state.activeCategory === "rain" ? "rgba(15, 129, 141, 0.42)" : (state.activeCategory === "tapping" ? "rgba(217, 119, 6, 0.42)" : "rgba(190, 24, 93, 0.42)");
+      ctx.strokeStyle = state.activeCategory === "rain"
+        ? "rgba(15, 129, 141, 0.42)"
+        : (state.activeCategory === "tapping"
+          ? "rgba(217, 119, 6, 0.42)"
+          : (state.activeCategory === "friction"
+            ? "rgba(190, 24, 93, 0.42)"
+            : "rgba(2, 132, 199, 0.45)"));
     }
     ctx.lineWidth = 1.5;
     ctx.fill();
@@ -2564,7 +3167,7 @@ permalink: /projects/ai-asmr/index.html
       const hudDesc = document.getElementById("hudPresetDesc");
       if (hudTitle) hudTitle.textContent = mat.name + " · " + style.name;
       if (hudDesc) hudDesc.textContent = mat.desc;
-    } else {
+    } else if (state.activeCategory === "friction") {
       // 摩擦声提示词
       const mat = FRICTION_MATERIALS[state.currentFricMat];
       const style = FRICTION_STYLES[state.currentFricStyle];
@@ -2583,6 +3186,31 @@ permalink: /projects/ai-asmr/index.html
       const hudDesc = document.getElementById("hudPresetDesc");
       if (hudTitle) hudTitle.textContent = mat.name + " · " + style.name;
       if (hudDesc) hudDesc.textContent = mat.desc;
+    } else {
+      // 水流声提示词
+      const scene = WATER_SCENARIOS[state.currentWaterScene];
+      const style = WATER_STYLES[state.currentWaterStyle];
+
+      en = "ASMR, binaural 3Dio style recording, " + scene.enName + " with " + style.enName + " in extreme close-up. ";
+      en += "Delicate liquid micro-droplets, ultra-gentle and cushioned bubbling trickle, mellow low-mid aqueous resonance, repetitive and hypnotic sleep flow. ";
+      en += "Intimate close-up ear-to-ear panning, pure dry studio acoustics, soundproof room, zero harsh splashing, zero reverberation, comforting stream ambience.";
+      if (scene.shishi) {
+        en += " Intermittent deep hollow bamboo clack on river stone in the quiet distance, no sudden startling crack.";
+      }
+
+      zh = "ASMR双耳3Dio录音，以" + style.zhPrompt + "在极近距离聆听" + scene.zhPrompt + "。";
+      zh += "细腻清润微水滴颗粒，轻柔钝感气泡微破与缓流声，温润中低频流体共鸣，催眠平稳的连绵水韵白噪音。";
+      zh += "极致贴耳近讲双耳空间游弋，无突兀拍水杂音，无刺耳高频飞溅，消音室纯净干燥声学，零空间混响。";
+      if (scene.shishi) {
+        zh += " 伴随间歇性日式竹筒汲满水后轻叩溪石的沉稳空灵木质钝响。";
+      }
+
+      neg = "harsh splashes, loud gushing, jarring waterfall roar, shrill high frequencies, digital clipping, distortion, echo, heavy cavernous reverb, muddy rumbling, loud background hiss, sudden startling pops, water slapping, noisy river torrent";
+
+      const hudTitle = document.getElementById("hudPresetTitle");
+      const hudDesc = document.getElementById("hudPresetDesc");
+      if (hudTitle) hudTitle.textContent = scene.name + " · " + style.name;
+      if (hudDesc) hudDesc.textContent = scene.desc;
     }
 
     const txtEn = document.getElementById("txtGeneratedEnPrompt");
@@ -2617,6 +3245,7 @@ permalink: /projects/ai-asmr/index.html
     const panelRain = document.getElementById("panelRainCategory");
     const panelTapping = document.getElementById("panelTappingCategory");
     const panelFriction = document.getElementById("panelFrictionCategory");
+    const panelWater = document.getElementById("panelWaterCategory");
     if (panelRain) {
       panelRain.classList.toggle("active", cat === "rain");
       panelRain.hidden = cat !== "rain";
@@ -2629,11 +3258,16 @@ permalink: /projects/ai-asmr/index.html
       panelFriction.classList.toggle("active", cat === "friction");
       panelFriction.hidden = cat !== "friction";
     }
+    if (panelWater) {
+      panelWater.classList.toggle("active", cat === "water");
+      panelWater.hidden = cat !== "water";
+    }
 
     // 切换调音台控件可见性
     document.querySelectorAll(".rain-tweak").forEach(el => el.hidden = (cat !== "rain"));
     document.querySelectorAll(".tap-tweak").forEach(el => el.hidden = (cat !== "tapping"));
     document.querySelectorAll(".fric-tweak").forEach(el => el.hidden = (cat !== "friction"));
+    document.querySelectorAll(".water-tweak").forEach(el => el.hidden = (cat !== "water"));
 
     // 切换标题与文字
     const stageTitle = document.getElementById("stageMainTitle");
@@ -2648,10 +3282,14 @@ permalink: /projects/ai-asmr/index.html
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL TAPPING SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放敲击声 (Space)";
       if (badge) badge.textContent = "敲击声提示词已联动";
-    } else {
+    } else if (cat === "friction") {
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL FRICTION SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放摩擦声 (Space)";
       if (badge) badge.textContent = "摩擦声提示词已联动";
+    } else {
+      if (stageTitle) stageTitle.textContent = "3Dio BINAURAL WATER SOUNDSTAGE";
+      if (playBtnText) playBtnText.textContent = "播放水流声 (Space)";
+      if (badge) badge.textContent = "水流声提示词已联动";
     }
 
     updateAcousticNodes();
@@ -2662,6 +3300,8 @@ permalink: /projects/ai-asmr/index.html
     tapShockwaves = [];
     fricStrokes = [];
     fricParticles = [];
+    waterBubbles = [];
+    waterRipples = [];
 
     if (wasPlaying) {
       startAudio();
@@ -2672,7 +3312,13 @@ permalink: /projects/ai-asmr/index.html
     const btn = document.getElementById("btnMainPlay");
     const pulse = document.getElementById("statusPulse");
     const playText = document.getElementById("playBtnText");
-    const catName = state.activeCategory === "rain" ? "雨声" : (state.activeCategory === "tapping" ? "敲击声" : "摩擦声");
+    const catMap = {
+      rain: "雨声",
+      tapping: "敲击声",
+      friction: "摩擦声",
+      water: "水流声"
+    };
+    const catName = catMap[state.activeCategory] || "声音";
 
     if (state.isPlaying) {
       btn.classList.add("playing");
@@ -2834,6 +3480,45 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
+    // 5.4 水流场景选择
+    document.querySelectorAll(".water-scene-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".water-scene-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentWaterScene = btn.getAttribute("data-scene");
+
+        if (shishiTimerId) {
+          clearTimeout(shishiTimerId);
+          shishiTimerId = null;
+        }
+        if (state.isPlaying && state.activeCategory === "water" && WATER_SCENARIOS[state.currentWaterScene].shishi) {
+          shishiTimerId = setTimeout(scheduleNextShishiOdoshi, 3000);
+        }
+
+        updateAcousticNodes();
+        generatePrompt();
+      });
+    });
+
+    // 5.5 水流动态与手法选择
+    document.querySelectorAll(".water-style-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".water-style-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentWaterStyle = btn.getAttribute("data-style");
+
+        generatePrompt();
+      });
+    });
+
     // 6. 视觉模式切换
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2944,6 +3629,28 @@ permalink: /projects/ai-asmr/index.html
         state.fricCushion = parseFloat(rangeFricCush.value);
         const pct = Math.round(state.fricCushion * 100);
         valFricCush.textContent = pct > 65 ? `绒感钝响 (${pct}%)` : `细腻刷毛 (${pct}%)`;
+        updateAcousticNodes();
+      });
+    }
+
+    // 14.4 水流速度与气泡频率
+    const rangeWaterSpd = document.getElementById("rangeWaterSpeed");
+    const valWaterSpd = document.getElementById("valWaterSpeed");
+    if (rangeWaterSpd && valWaterSpd) {
+      rangeWaterSpd.addEventListener("input", () => {
+        state.waterSpeedMultiplier = parseFloat(rangeWaterSpd.value);
+        valWaterSpd.textContent = state.waterSpeedMultiplier.toFixed(1) + "x";
+      });
+    }
+
+    // 14.5 气泡微破与清润度
+    const rangeWaterSoft = document.getElementById("rangeWaterSoftness");
+    const valWaterSoft = document.getElementById("valWaterSoftness");
+    if (rangeWaterSoft && valWaterSoft) {
+      rangeWaterSoft.addEventListener("input", () => {
+        state.waterSoftness = parseFloat(rangeWaterSoft.value);
+        const pct = Math.round(state.waterSoftness * 100);
+        valWaterSoft.textContent = pct > 60 ? `清润微钝 (${pct}%)` : `清脆水滴 (${pct}%)`;
         updateAcousticNodes();
       });
     }
