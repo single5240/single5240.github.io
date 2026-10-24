@@ -282,6 +282,7 @@ int32_t Font_FindGlyphIndex(const uint16_t *unicodeTable, uint16_t count, uint16
 
 通过标准 Python 脚本解析 BDF/TTF 字体，提取文案涉及的字符并生成 C99 数组：
 
+{% raw %}
 ```python
 # bdf_subset_generator.py (轻量生成流水线核心实现)
 def bdf_glyph_to_c_bytes(hex_lines, width, height):
@@ -301,15 +302,15 @@ def generate_font_c_file(chars, bdf_dict, font_name, width, height):
     print(f"/* 自动生成的 {font_name} 1-bit 点阵字库 */")
     print(f"const uint16_t {font_name}_Index[{len(sorted_chars)}] = {{")
     print("    " + ", ".join(f"0x{ord(c):04X}" for c in sorted_chars))
-    print("};
-")
-    print(f"const uint8_t {font_name}_Bitmaps[{len(sorted_chars)} * {stride * height}] = {")
+    print("};")
+    print(f"const uint8_t {font_name}_Bitmaps[{len(sorted_chars)} * {stride * height}] = {{")
     for c in sorted_chars:
         bytes_list = bdf_glyph_to_c_bytes(bdf_dict[c], width, height)
         hex_str = ", ".join(f"0x{b:02X}" for b in bytes_list)
         print(f"    /* '{c}' U+{ord(c):04X} */ {hex_str},")
     print("};")
 ```
+{% endraw %}
 
 生成后的工程核查要点：
 
