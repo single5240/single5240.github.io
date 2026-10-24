@@ -1208,7 +1208,18 @@ permalink: /projects/ai-asmr/index.html
   height: 380px;
   background: radial-gradient(circle at 50% 40%, #15242b 0%, #0a1114 100%);
   overflow: hidden;
-  transition: background 0.3s ease;
+  transition: background 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* 3Dio 声学雷达模式：监听级消音室深空声场暗调 */
+.stage-viewport.mode-radar {
+  background: radial-gradient(circle at 50% 45%, #081720 0%, #03070a 100%) !important;
+  box-shadow: inset 0 0 60px rgba(6, 78, 89, 0.45);
+}
+
+/* 极简休眠模式：深度纯净睡眠暗场 */
+.stage-viewport.mode-minimal {
+  background: #030608 !important;
 }
 
 :root[data-theme="light"] .stage-viewport,
@@ -1217,9 +1228,29 @@ permalink: /projects/ai-asmr/index.html
   background: radial-gradient(circle at 50% 40%, #edf5f6 0%, #d5e5e8 100%);
 }
 
+:root[data-theme="light"] .stage-viewport.mode-radar,
+:root[data-theme="swiss"] .stage-viewport.mode-radar,
+:root[data-theme="mono"] .stage-viewport.mode-radar {
+  background: radial-gradient(circle at 50% 45%, #0b1e29 0%, #03080d 100%) !important;
+  box-shadow: inset 0 0 60px rgba(14, 116, 144, 0.45);
+}
+
+:root[data-theme="light"] .stage-viewport.mode-minimal,
+:root[data-theme="swiss"] .stage-viewport.mode-minimal,
+:root[data-theme="mono"] .stage-viewport.mode-minimal {
+  background: #030608 !important;
+}
+
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) .stage-viewport {
     background: radial-gradient(circle at 50% 40%, #edf5f6 0%, #d5e5e8 100%);
+  }
+  :root:not([data-theme]) .stage-viewport.mode-radar {
+    background: radial-gradient(circle at 50% 45%, #0b1e29 0%, #03080d 100%) !important;
+    box-shadow: inset 0 0 60px rgba(14, 116, 144, 0.45);
+  }
+  :root:not([data-theme]) .stage-viewport.mode-minimal {
+    background: #030608 !important;
   }
 }
 
@@ -4775,7 +4806,7 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
-  // --------------------------------------------------------------------------
+// --------------------------------------------------------------------------
   // C. Canvas 动画渲染引擎 (雨丝/敲击波纹/3Dio 声场环)
   // --------------------------------------------------------------------------
   const canvas = document.getElementById("asmrCanvas");
@@ -4795,6 +4826,19 @@ permalink: /projects/ai-asmr/index.html
   let earWavesL = [];
   let earWavesR = [];
   let animFrameId = null;
+
+  // 3Dio 双耳空间全景声学雷达与实时声场监视器状态
+  let radarSweepAngle = -Math.PI / 2;
+  let radarBeacons = []; // 实时声源信标
+  let earDiffractionL = []; // 左耳 HRTF 衍射光环
+  let earDiffractionR = []; // 右耳 HRTF 衍射光环
+  let meterLevelL = 0; // 左声道声压 (0~1)
+  let meterLevelR = 0; // 右声道声压 (0~1)
+  let meterPeakL = 0;  // 左声道峰值
+  let meterPeakR = 0;  // 右声道峰值
+  let meterPeakHoldTimerL = 0;
+  let meterPeakHoldTimerR = 0;
+  let goniometerAngle = 0;
 
   let logicalWidth = 960;
   let logicalHeight = 380;
@@ -4818,26 +4862,23 @@ permalink: /projects/ai-asmr/index.html
       this.y = randomY ? Math.random() * logicalHeight : -20;
       this.len = 10 + Math.random() * 20;
       this.speed = 3.5 + Math.random() * 6.5;
-      const curRain = RAIN_PRESETS[state.currentRain];
-      this.wind = (curRain ? curRain.windSpeed : 0.7) * (0.8 + Math.random() * 0.4);
-      this.alpha = 0.15 + Math.random() * 0.45;
+      this.wind = -0.5 + Math.random() * 1.0;
+      this.alpha = 0.15 + Math.random() * 0.35;
       this.width = 0.8 + Math.random() * 0.8;
     }
-    update(windSpeed) {
+    update(windSpeed = 0) {
       this.y += this.speed;
-      this.x += this.wind;
-
-      if (this.y > logicalHeight - 30 || this.x > logicalWidth + 40 || this.x < -40) {
-        if (this.y > logicalHeight - 30 && Math.random() < 0.15 && rippleParticles.length < 45) {
-          const isDark = isDarkThemeActive();
+      this.x += this.wind + windSpeed * 0.8;
+      if (this.y > logicalHeight - 35) {
+        if (Math.random() < 0.22 && rippleParticles.length < 45) {
           rippleParticles.push({
-            x: Math.max(10, Math.min(logicalWidth - 10, this.x)),
+            x: this.x,
             y: logicalHeight - 35 + (Math.random() * 20 - 10),
             rx: 2,
-            ry: 0.6,
-            maxR: 12 + Math.random() * 18,
-            alpha: 0.4,
-            color: isDark ? "rgba(45, 212, 191," : "rgba(13, 148, 136,"
+            ry: 0.8,
+            maxR: 12 + Math.random() * 14,
+            alpha: 0.45,
+            color: isDarkThemeActive() ? "rgba(45, 212, 191," : "rgba(13, 148, 136,"
           });
         }
         this.reset(false);
@@ -4862,8 +4903,67 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
+  // 统一声学事件注册（驱动 3Dio 声学雷达、双耳电平表、示波器）
+  function registerAcousticEvent(azimuth, vel, category = "ambient", label = "Sound") {
+    const isDark = isDarkThemeActive();
+    const az = Math.max(-1, Math.min(1, azimuth));
+    const leftWeight = Math.max(0.15, (1 - az) / 2);
+    const rightWeight = Math.max(0.15, (1 + az) / 2);
+    const energyL = Math.min(1.0, vel * leftWeight * 1.6);
+    const energyR = Math.min(1.0, vel * rightWeight * 1.6);
+
+    meterLevelL = Math.max(meterLevelL, energyL);
+    meterLevelR = Math.max(meterLevelR, energyR);
+
+    if (meterLevelL > meterPeakL) {
+      meterPeakL = meterLevelL;
+      meterPeakHoldTimerL = 24;
+    }
+    if (meterLevelR > meterPeakR) {
+      meterPeakR = meterLevelR;
+      meterPeakHoldTimerR = 24;
+    }
+
+    // 激发 3Dio 假人头左右耳廓的 HRTF 空间声波衍射光环
+    if (energyL > 0.12 && earDiffractionL.length < 14) {
+      earDiffractionL.push({ r: 6, maxR: 35 + energyL * 45, alpha: 0.9, speed: 1.6 + energyL * 1.4 });
+    }
+    if (energyR > 0.12 && earDiffractionR.length < 14) {
+      earDiffractionR.push({ r: 6, maxR: 35 + energyR * 45, alpha: 0.9, speed: 1.6 + energyR * 1.4 });
+    }
+
+    // 在 3Dio 极坐标雷达上投射高精声源信标 (Acoustic Beacon)
+    if (radarBeacons.length < 22) {
+      const radarAngle = -Math.PI / 2 + az * (Math.PI * 0.48);
+      const radarDist = 65 + (1 - Math.min(1, vel * 0.7)) * 80 + (Math.random() * 16 - 8);
+
+      let beaconColor = isDark ? "rgba(45, 212, 191, " : "rgba(13, 148, 136, ";
+      if (az < -0.25) {
+        beaconColor = isDark ? "rgba(45, 212, 191, " : "rgba(13, 148, 136, ";
+      } else if (az > 0.25) {
+        beaconColor = isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, ";
+      } else {
+        beaconColor = isDark ? "rgba(251, 191, 36, " : "rgba(217, 119, 6, ";
+      }
+
+      radarBeacons.push({
+        angle: radarAngle,
+        dist: radarDist,
+        azimuth: az,
+        vel,
+        label: label || category || "Sound",
+        alpha: 1.0,
+        color: beaconColor,
+        waveR: 4,
+        maxWaveR: 48 + vel * 36
+      });
+    }
+  }
+
   // 接收 Web Audio 触发可视化事件 (主题自适应高对比色调)
   function createVisualEvent(azimuth, vel, type = "rain") {
+    registerAcousticEvent(azimuth, vel, type, type === "rain" ? "Raindrop" : "Tapping");
+
     const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.82) + (logicalWidth * 0.09);
     const isLeft = azimuth < 0;
@@ -4908,6 +5008,9 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createFrictionVisualStroke(panStart, panEnd, duration, matKey, styleKey) {
+    const midPan = (panStart + panEnd) / 2;
+    registerAcousticEvent(midPan, 0.72, "friction", "Friction · " + matKey);
+
     const isDark = isDarkThemeActive();
     const x1 = ((panStart + 1) / 2) * (logicalWidth * 0.72) + (logicalWidth * 0.14);
     const x2 = ((panEnd + 1) / 2) * (logicalWidth * 0.72) + (logicalWidth * 0.14);
@@ -4970,6 +5073,8 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createWaterVisualEvent(azimuth, vel, baseFreq, isClack = false) {
+    registerAcousticEvent(azimuth, vel, "water", isClack ? "Shishi-odoshi" : "Water Bubble");
+
     const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.78) + (logicalWidth * 0.11);
     const isLeft = azimuth < 0;
@@ -5017,6 +5122,8 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createBowlVisualEvent(azimuth, vel, baseFreq) {
+    registerAcousticEvent(azimuth, vel, "bowls", "Bowl · " + Math.round(baseFreq) + "Hz");
+
     const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.74) + (logicalWidth * 0.13);
     const centerY = logicalHeight / 2 - 12;
@@ -5071,6 +5178,8 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createToolVisualEvent(type, azimuth, vel) {
+    registerAcousticEvent(azimuth, vel, "tools", "Tool · " + type);
+
     const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.74) + (logicalWidth * 0.13);
     const centerY = logicalHeight / 2 - 12;
@@ -5169,6 +5278,8 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createFireVisualEvent(type, azimuth, vel) {
+    registerAcousticEvent(azimuth, vel, "fire", "Fire · " + type);
+
     const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.74) + (logicalWidth * 0.13);
     const centerY = logicalHeight / 2 - 12;
@@ -5213,6 +5324,8 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createSquishVisualEvent(type, azimuth, vel) {
+    registerAcousticEvent(azimuth, vel, "squish", "Squish · " + type);
+
     const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.74) + (logicalWidth * 0.13);
     const centerY = logicalHeight / 2 - 12;
@@ -5272,489 +5385,851 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
-  function renderLoop() {
-    // 1. 绝对物理清屏：重置变换矩阵为 1:1，抹除整个物理像素缓冲区，彻底杜绝任何边缘累积
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // ==========================================================================
+  // 模式 1: 3Dio 双耳空间全景声学雷达监视器 (3Dio Acoustic Radar & Vectorscope)
+  // ==========================================================================
+  function draw3DioRadarScope(context, isDark) {
+    const centerX = logicalWidth / 2;
+    const centerY = logicalHeight / 2 - 10;
+    const maxR = Math.min(160, logicalHeight * 0.40);
 
-    // 2. 切换回基于 DPR 的高精视网膜逻辑坐标系
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // 0. 电平表阻尼回落与峰值衰减
+    meterLevelL *= 0.91;
+    meterLevelR *= 0.91;
+    if (meterPeakHoldTimerL > 0) {
+      meterPeakHoldTimerL--;
+    } else {
+      meterPeakL = Math.max(0, meterPeakL - 0.015);
+    }
+    if (meterPeakHoldTimerR > 0) {
+      meterPeakHoldTimerR--;
+    } else {
+      meterPeakR = Math.max(0, meterPeakR - 0.015);
+    }
 
-    const isPlaying = state.isPlaying;
-    const isDark = isDarkThemeActive();
+    // 1. 雷达极坐标背景网格与同心圈
+    context.save();
+    const ringRadii = [maxR * 0.32, maxR * 0.58, maxR * 0.82, maxR];
+    const ringLabels = ["-18 dB", "-12 dB", "-6 dB", "0 dB PEAK"];
 
-    if (state.visualMode !== "minimal") {
-      if (state.activeCategory === "rain") {
-        // 雨声模式：绘制雨丝
-        const rain = RAIN_PRESETS[state.currentRain];
-        const activeCount = isPlaying
-          ? Math.floor(rainParticles.length * (rain.dropRate / 100))
-          : 25;
+    for (let i = 0; i < ringRadii.length; i++) {
+      const r = ringRadii[i];
+      context.beginPath();
+      context.arc(centerX, centerY, r, 0, Math.PI * 2);
+      context.strokeStyle = isDark ? "rgba(45, 212, 191, 0.16)" : "rgba(13, 148, 136, 0.22)";
+      context.lineWidth = i === ringRadii.length - 1 ? 1.4 : 1;
+      if (i < ringRadii.length - 1) {
+        context.setLineDash([3, 5]);
+      } else {
+        context.setLineDash([]);
+      }
+      context.stroke();
 
-        const limit = Math.min(rainParticles.length, Math.max(18, activeCount));
-        for (let i = 0; i < limit; i++) {
-          const p = rainParticles[i];
-          p.update(rain.windSpeed);
-          p.draw(ctx);
-        }
-      } else if (state.activeCategory === "tapping") {
-        // 敲击模式：绘制底部材质共鸣台面 (Acoustic Tapping Surface)
-        ctx.save();
-        const padY = logicalHeight - 50;
-        ctx.beginPath();
-        ctx.moveTo(logicalWidth * 0.08, padY);
-        ctx.lineTo(logicalWidth * 0.92, padY);
-        ctx.strokeStyle = isDark ? "rgba(45, 212, 191, 0.25)" : "rgba(15, 129, 141, 0.35)";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 6]);
-        ctx.stroke();
-        ctx.restore();
-      } else if (state.activeCategory === "friction") {
-        // 摩擦模式：绘制中央柔和天鹅绒/触感底台光晕与轨迹
-        ctx.save();
-        const centerX = logicalWidth / 2;
-        const centerY = logicalHeight / 2 - 12;
-        const bgGrad = ctx.createRadialGradient(centerX, centerY, 30, centerX, centerY, logicalWidth * 0.38);
-        if (isDark) {
-          bgGrad.addColorStop(0, "rgba(244, 114, 182, 0.08)");
-          bgGrad.addColorStop(0.5, "rgba(45, 212, 191, 0.03)");
-        } else {
-          bgGrad.addColorStop(0, "rgba(219, 39, 119, 0.09)");
-          bgGrad.addColorStop(0.5, "rgba(13, 148, 136, 0.04)");
-        }
-        bgGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = bgGrad;
-        ctx.beginPath();
-        ctx.ellipse(centerX, centerY, logicalWidth * 0.38, 95, 0, 0, Math.PI * 2);
-        ctx.fill();
+      // 同心圆分贝标签
+      context.font = "9px monospace";
+      context.fillStyle = isDark ? "rgba(45, 212, 191, 0.5)" : "rgba(13, 148, 136, 0.6)";
+      context.fillText(ringLabels[i], centerX + 6, centerY - r + 11);
+    }
+    context.setLineDash([]);
 
-        ctx.beginPath();
-        ctx.ellipse(centerX, centerY, logicalWidth * 0.34, 75, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = isDark ? "rgba(244, 114, 182, 0.16)" : "rgba(219, 39, 119, 0.25)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 7]);
-        ctx.stroke();
-        ctx.restore();
-      } else if (state.activeCategory === "water") {
-        // 水流模式：绘制流动波纹流光与清澈溪流背景 (Flowing Stream Waveforms)
-        ctx.save();
-        waterWaveOffset += 0.024 * state.waterSpeedMultiplier;
-        const centerY = logicalHeight / 2 + 10;
+    // 2. 方位角经线与刻度短线
+    const angles = [
+      { a: -Math.PI / 2, label: "0° FRONT" },
+      { a: -Math.PI * 0.75, label: "-45° L" },
+      { a: -Math.PI, label: "-90° L-EAR" },
+      { a: -Math.PI * 0.25, label: "+45° R" },
+      { a: 0, label: "+90° R-EAR" },
+      { a: Math.PI / 2, label: "180° REAR" }
+    ];
 
-        const waveLayers = [
-          { yOff: -28, amp: 13, freq: 0.007, speed: 1.0, alpha: isDark ? 0.22 : 0.28 },
-          { yOff: 0, amp: 18, freq: 0.005, speed: 0.75, alpha: isDark ? 0.32 : 0.35 },
-          { yOff: 28, amp: 15, freq: 0.008, speed: 1.15, alpha: isDark ? 0.25 : 0.28 }
-        ];
+    for (const ang of angles) {
+      context.beginPath();
+      context.moveTo(centerX, centerY);
+      context.lineTo(centerX + Math.cos(ang.a) * maxR, centerY + Math.sin(ang.a) * maxR);
+      context.strokeStyle = isDark ? "rgba(45, 212, 191, 0.12)" : "rgba(13, 148, 136, 0.16)";
+      context.lineWidth = 1;
+      context.setLineDash([2, 6]);
+      context.stroke();
 
-        for (const layer of waveLayers) {
-          ctx.beginPath();
-          ctx.moveTo(0, logicalHeight);
-          for (let x = 0; x <= logicalWidth; x += 15) {
-            const waveY = centerY + layer.yOff + Math.sin(x * layer.freq + waterWaveOffset * layer.speed) * layer.amp;
-            ctx.lineTo(x, waveY);
-          }
-          ctx.lineTo(logicalWidth, logicalHeight);
-          ctx.closePath();
+      // 文本方位角标签
+      const tx = centerX + Math.cos(ang.a) * (maxR + 16);
+      const ty = centerY + Math.sin(ang.a) * (maxR + 16);
+      context.font = "9px monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillStyle = isDark ? "rgba(148, 163, 184, 0.65)" : "rgba(71, 85, 105, 0.75)";
+      context.fillText(ang.label, tx, ty);
+    }
+    context.setLineDash([]);
 
-          const grad = ctx.createLinearGradient(0, centerY + layer.yOff - 20, 0, logicalHeight);
-          if (isDark) {
-            grad.addColorStop(0, `rgba(45, 212, 191, ${layer.alpha})`);
-            grad.addColorStop(0.5, `rgba(56, 189, 248, ${layer.alpha * 0.6})`);
-            grad.addColorStop(1, "rgba(10, 17, 20, 0.1)");
-          } else {
-            grad.addColorStop(0, `rgba(13, 148, 136, ${layer.alpha})`);
-            grad.addColorStop(0.5, `rgba(2, 132, 199, ${layer.alpha * 0.7})`);
-            grad.addColorStop(1, "rgba(237, 245, 246, 0.2)");
-          }
-          ctx.fillStyle = grad;
-          ctx.fill();
+    // 外圈细微刻度 (Ticks every 10 deg)
+    for (let deg = 0; deg < 360; deg += 10) {
+      const rad = (deg * Math.PI) / 180;
+      const isMajor = deg % 30 === 0;
+      const len = isMajor ? 6 : 3;
+      context.beginPath();
+      context.moveTo(centerX + Math.cos(rad) * maxR, centerY + Math.sin(rad) * maxR);
+      context.lineTo(centerX + Math.cos(rad) * (maxR + len), centerY + Math.sin(rad) * (maxR + len));
+      context.strokeStyle = isDark ? "rgba(45, 212, 191, 0.25)" : "rgba(13, 148, 136, 0.30)";
+      context.lineWidth = isMajor ? 1.2 : 0.8;
+      context.stroke();
+    }
 
-          ctx.beginPath();
-          for (let x = 0; x <= logicalWidth; x += 15) {
-            const waveY = centerY + layer.yOff + Math.sin(x * layer.freq + waterWaveOffset * layer.speed) * layer.amp;
-            if (x === 0) ctx.moveTo(x, waveY);
-            else ctx.lineTo(x, waveY);
-          }
-          ctx.strokeStyle = isDark ? `rgba(94, 234, 212, ${layer.alpha * 1.5})` : `rgba(15, 118, 110, ${layer.alpha * 1.6})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
-        ctx.restore();
-      } else if (state.activeCategory === "bowls") {
-        // 音疗钵铃模式：绘制空灵同心能量驻波光晕与神圣几何脉动
-        ctx.save();
-        const centerX = logicalWidth / 2;
-        const centerY = logicalHeight / 2 - 12;
-        bowlRimAngle += 0.012;
+    // 3. 雷达 360° 旋转相控阵扫描光束 (Radar Beam Sweep with Phosphor Afterglow)
+    radarSweepAngle = (radarSweepAngle + 0.024) % (Math.PI * 2);
+    const sweepWedge = Math.PI * 0.25; // 45 度扫描扇区
+    const wedgeSegments = 14;
+    for (let i = 0; i < wedgeSegments; i++) {
+      const aStart = radarSweepAngle - (sweepWedge * (i + 1)) / wedgeSegments;
+      const aEnd = radarSweepAngle - (sweepWedge * i) / wedgeSegments;
+      const alpha = (1 - i / wedgeSegments) * (isDark ? 0.16 : 0.14);
+      context.beginPath();
+      context.moveTo(centerX, centerY);
+      context.arc(centerX, centerY, maxR, aStart, aEnd);
+      context.closePath();
+      context.fillStyle = isDark
+        ? "rgba(45, 212, 191, " + alpha + ")"
+        : "rgba(13, 148, 136, " + alpha + ")";
+      context.fill();
+    }
+    // 扫描线前锋
+    context.beginPath();
+    context.moveTo(centerX, centerY);
+    context.lineTo(centerX + Math.cos(radarSweepAngle) * maxR, centerY + Math.sin(radarSweepAngle) * maxR);
+    context.strokeStyle = isDark ? "rgba(94, 234, 212, 0.85)" : "rgba(15, 118, 110, 0.92)";
+    context.lineWidth = 1.6;
+    context.stroke();
 
-        const auraGrad = ctx.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
-        if (isDark) {
-          auraGrad.addColorStop(0, "rgba(245, 158, 11, 0.12)");
-          auraGrad.addColorStop(0.45, "rgba(168, 85, 247, 0.06)");
-          auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        } else {
-          auraGrad.addColorStop(0, "rgba(217, 119, 6, 0.12)");
-          auraGrad.addColorStop(0.45, "rgba(124, 58, 237, 0.06)");
-          auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        }
-        ctx.fillStyle = auraGrad;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, logicalWidth * 0.36, 0, Math.PI * 2);
-        ctx.fill();
+    // 4. 绘制实时声源信标 (Acoustic Beacons & Wavefronts)
+    for (let i = radarBeacons.length - 1; i >= 0; i--) {
+      const b = radarBeacons[i];
+      const bx = centerX + Math.cos(b.angle) * b.dist;
+      const by = centerY + Math.sin(b.angle) * b.dist;
 
-        // 柔光微旋转星芒圆环
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 85 + Math.sin(Date.now() / 850) * 4, 0, Math.PI * 2);
-        ctx.strokeStyle = isDark ? "rgba(245, 158, 11, 0.22)" : "rgba(217, 119, 6, 0.32)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 8]);
-        ctx.stroke();
+      // 扩散波环向假人头传递
+      b.waveR += 1.8;
+      context.beginPath();
+      context.arc(bx, by, b.waveR, 0, Math.PI * 2);
+      context.strokeStyle = b.color + (b.alpha * 0.5 * Math.max(0, 1 - b.waveR / b.maxWaveR)).toFixed(3) + ")";
+      context.lineWidth = 1.2;
+      context.stroke();
 
-        ctx.restore();
-      } else if (state.activeCategory === "tools") {
-        // 伴读微机械与理发沙龙模式：绘制沉静工作台桌面暖光与精密标尺光斑
-        ctx.save();
-        const centerX = logicalWidth / 2;
-        const centerY = logicalHeight / 2 - 12;
+      // 声波到 3Dio 机身对应耳部的连接射线 (ITD Arrival Path)
+      const targetEarX = b.azimuth < 0 ? centerX - 46 : centerX + 46;
+      context.beginPath();
+      context.moveTo(bx, by);
+      context.lineTo(targetEarX, centerY);
+      context.strokeStyle = b.color + (b.alpha * 0.22).toFixed(3) + ")";
+      context.lineWidth = 1;
+      context.setLineDash([2, 4]);
+      context.stroke();
+      context.setLineDash([]);
 
-        const auraGrad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, logicalWidth * 0.38);
-        if (isDark) {
-          auraGrad.addColorStop(0, "rgba(56, 189, 248, 0.10)");
-          auraGrad.addColorStop(0.5, "rgba(148, 163, 184, 0.04)");
-          auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        } else {
-          auraGrad.addColorStop(0, "rgba(2, 132, 199, 0.09)");
-          auraGrad.addColorStop(0.5, "rgba(71, 85, 105, 0.03)");
-          auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        }
-        ctx.fillStyle = auraGrad;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, logicalWidth * 0.38, 0, Math.PI * 2);
-        ctx.fill();
+      // 十字准星瞄准标记
+      const crossSize = 5;
+      context.beginPath();
+      context.moveTo(bx - crossSize, by);
+      context.lineTo(bx + crossSize, by);
+      context.moveTo(bx, by - crossSize);
+      context.lineTo(bx, by + crossSize);
+      context.strokeStyle = b.color + b.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.5;
+      context.stroke();
 
-        // 桌面素描精密虚线十字基准线
-        ctx.beginPath();
-        ctx.moveTo(centerX - 100, centerY);
-        ctx.lineTo(centerX + 100, centerY);
-        ctx.moveTo(centerX, centerY - 60);
-        ctx.lineTo(centerX, centerY + 60);
-        ctx.strokeStyle = isDark ? "rgba(56, 189, 248, 0.12)" : "rgba(2, 132, 199, 0.18)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([3, 6]);
-        ctx.stroke();
+      // 声源核心亮斑
+      context.beginPath();
+      context.arc(bx, by, 3, 0, Math.PI * 2);
+      context.fillStyle = "#ffffff";
+      context.fill();
 
-        ctx.restore();
-      } else if (state.activeCategory === "fire") {
-        // 暖冬壁炉模式：绘制炉膛深处温暖红橙微漾热气与火光辐射
-        ctx.save();
-        const centerX = logicalWidth / 2;
-        const centerY = logicalHeight / 2 - 12;
+      // 信标小文本
+      context.font = "9px monospace";
+      context.textAlign = bx > centerX ? "left" : "right";
+      context.fillStyle = b.color + (b.alpha * 0.9).toFixed(3) + ")";
+      const offsetSign = bx > centerX ? 8 : -8;
+      context.fillText(b.label, bx + offsetSign, by - 4);
 
-        const fireGrad = ctx.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.38);
-        if (isDark) {
-          fireGrad.addColorStop(0, "rgba(249, 115, 22, 0.16)");
-          fireGrad.addColorStop(0.45, "rgba(239, 68, 68, 0.06)");
-          fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        } else {
-          fireGrad.addColorStop(0, "rgba(234, 88, 12, 0.14)");
-          fireGrad.addColorStop(0.45, "rgba(185, 28, 28, 0.05)");
-          fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        }
-        ctx.fillStyle = fireGrad;
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, logicalWidth * 0.38, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 柔和炭火跳动光环
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 90 + Math.sin(Date.now() / 650) * 5, 0, Math.PI * 2);
-        ctx.strokeStyle = isDark ? "rgba(249, 115, 22, 0.25)" : "rgba(194, 65, 12, 0.35)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 8]);
-        ctx.stroke();
-
-        ctx.restore();
-      } else if (state.activeCategory === "squish") {
-        // 触觉揉捏与软胶模式：绘制中央粘弹性形变软体基底 (Viscoelastic Gel Core)
-        ctx.save();
-        const centerX = logicalWidth / 2;
-        const centerY = logicalHeight / 2 - 12;
-
-        // 阻尼回弹动力学 (Spring Damping Rebound)
-        squishCompression *= 0.94;
-
-        // 根据当前所选材质动态定制柔光色调
-        let coreColor1 = isDark ? "rgba(52, 211, 153, " : "rgba(5, 150, 105, ";
-        let coreColor2 = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, ";
-        if (state.currentSquishMat === "warm_beeswax") {
-          coreColor1 = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, ";
-          coreColor2 = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, ";
-        } else if (state.currentSquishMat === "soft_slime") {
-          coreColor1 = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, ";
-          coreColor2 = isDark ? "rgba(236, 72, 153, " : "rgba(219, 39, 119, ";
-        } else if (state.currentSquishMat === "linen_parchment") {
-          coreColor1 = isDark ? "rgba(251, 191, 36, " : "rgba(180, 83, 9, ";
-          coreColor2 = isDark ? "rgba(217, 119, 6, " : "rgba(161, 98, 7, ";
-        } else if (state.currentSquishMat === "kinetic_sand") {
-          coreColor1 = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, ";
-          coreColor2 = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, ";
-        }
-
-        const breath = Math.sin(Date.now() / 950) * 4;
-        const gelGrad = ctx.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
-        gelGrad.addColorStop(0, coreColor1 + (isDark ? "0.16)" : "0.14)"));
-        gelGrad.addColorStop(0.45, coreColor2 + (isDark ? "0.06)" : "0.05)"));
-        gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-        ctx.fillStyle = gelGrad;
-        ctx.beginPath();
-        const radiusX = (logicalWidth * 0.34 + breath) * (1 + squishCompression * 0.22);
-        const radiusY = Math.max(20, (78 - breath * 0.5) * (1 - squishCompression * 0.25));
-        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 柔润凝胶外层粘滞虚线形变环
-        ctx.beginPath();
-        ctx.ellipse(centerX, centerY, (88 + breath * 0.8) * (1 + squishCompression * 0.28), Math.max(15, (65 - breath * 0.4) * (1 - squishCompression * 0.28)), 0, 0, Math.PI * 2);
-        ctx.strokeStyle = coreColor1 + (isDark ? "0.32)" : "0.42)");
-        ctx.lineWidth = 1.4;
-        ctx.setLineDash([4, 6]);
-        ctx.stroke();
-
-        ctx.restore();
+      b.alpha *= 0.955;
+      if (b.alpha < 0.02 || b.waveR > b.maxWaveR) {
+        radarBeacons.splice(i, 1);
       }
     }
 
-    // 绘制钵铃专属同心能量谐振光环 (Harmonic Cymatics Rings)
+    // 5. 居中绘制 3Dio Free Space 仿真假人头硬件模型
+    // 5.1 铝合金机身中控箱 (Free Space Chassis)
+    const boxW = 66;
+    const boxH = 40;
+    const boxX = centerX - boxW / 2;
+    const boxY = centerY - boxH / 2;
+    const boxRadius = 6;
+
+    const metalGrad = context.createLinearGradient(boxX, boxY, boxX, boxY + boxH);
+    if (isDark) {
+      metalGrad.addColorStop(0, "#2c3b42");
+      metalGrad.addColorStop(0.2, "#1e292e");
+      metalGrad.addColorStop(0.8, "#141c20");
+      metalGrad.addColorStop(1, "#0d1316");
+    } else {
+      metalGrad.addColorStop(0, "#f8fafc");
+      metalGrad.addColorStop(0.2, "#e2e8f0");
+      metalGrad.addColorStop(0.8, "#cbd5e1");
+      metalGrad.addColorStop(1, "#94a3b8");
+    }
+
+    context.beginPath();
+    context.roundRect(boxX, boxY, boxW, boxH, boxRadius);
+    context.fillStyle = metalGrad;
+    context.fill();
+    context.strokeStyle = isDark ? "rgba(94, 234, 212, 0.45)" : "rgba(15, 118, 110, 0.55)";
+    context.lineWidth = 1.4;
+    context.stroke();
+
+    // 3Dio 铭牌印字
+    context.font = "bold 11px sans-serif";
+    context.textAlign = "center";
+    context.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
+    context.fillText("3Dio", centerX, centerY - 2);
+
+    context.font = "7px monospace";
+    context.fillStyle = isDark ? "rgba(94, 234, 212, 0.85)" : "rgba(15, 118, 110, 0.9)";
+    context.fillText("FREE SPACE", centerX, centerY + 8);
+
+    // 电源与工作状态指示灯 (LED)
+    const ledY = centerY + 14;
+    context.beginPath();
+    context.arc(centerX, ledY, 2.5, 0, Math.PI * 2);
+    context.fillStyle = "#34d399";
+    context.fill();
+    const ledPulse = Math.sin(Date.now() / 350) * 0.3 + 0.7;
+    context.beginPath();
+    context.arc(centerX, ledY, 5 * ledPulse, 0, Math.PI * 2);
+    context.fillStyle = "rgba(52, 211, 153, " + (0.4 * ledPulse) + ")";
+    context.fill();
+
+    // 5.2 绘制高保真仿真硅胶人耳 (Left & Right Silicone Pinnae)
+    function drawPinna(earX, earY, isLeft) {
+      context.save();
+      context.translate(earX, earY);
+      if (!isLeft) context.scale(-1, 1);
+
+      context.beginPath();
+      context.moveTo(-2, -18);
+      context.bezierCurveTo(-14, -18, -17, -8, -16, 2);
+      context.bezierCurveTo(-15, 10, -11, 17, -4, 18);
+      context.bezierCurveTo(0, 18, 2, 14, 0, 8);
+      context.bezierCurveTo(-1, 2, 2, -4, 2, -10);
+      context.bezierCurveTo(2, -16, 1, -18, -2, -18);
+      context.closePath();
+
+      const pinnaGrad = context.createLinearGradient(-15, -18, 0, 18);
+      if (isDark) {
+        pinnaGrad.addColorStop(0, "rgba(45, 212, 191, 0.45)");
+        pinnaGrad.addColorStop(0.5, "rgba(22, 78, 99, 0.85)");
+        pinnaGrad.addColorStop(1, "rgba(15, 23, 42, 0.95)");
+      } else {
+        pinnaGrad.addColorStop(0, "rgba(204, 251, 241, 0.95)");
+        pinnaGrad.addColorStop(0.5, "rgba(153, 246, 228, 0.85)");
+        pinnaGrad.addColorStop(1, "rgba(94, 234, 212, 0.75)");
+      }
+      context.fillStyle = pinnaGrad;
+      context.fill();
+      context.strokeStyle = isDark ? "rgba(94, 234, 212, 0.65)" : "rgba(15, 118, 110, 0.75)";
+      context.lineWidth = 1.2;
+      context.stroke();
+
+      // 内对耳轮立体凹陷 (Antihelix & Concha)
+      context.beginPath();
+      context.moveTo(-6, -11);
+      context.bezierCurveTo(-10, -5, -9, 3, -4, 7);
+      context.strokeStyle = isDark ? "rgba(6, 182, 212, 0.5)" : "rgba(14, 116, 144, 0.6)";
+      context.lineWidth = 1.4;
+      context.stroke();
+
+      // 耳道开口 (Ear Canal Hole)
+      context.beginPath();
+      context.ellipse(-3, 1, 2.5, 4, -0.2, 0, Math.PI * 2);
+      context.fillStyle = isDark ? "#020617" : "#0f766e";
+      context.fill();
+
+      context.restore();
+    }
+
+    drawPinna(centerX - 46, centerY, true);
+    drawPinna(centerX + 46, centerY, false);
+
+    // 左右耳标注标签 [ L ] / [ R ]
+    context.font = "bold 9px monospace";
+    context.textAlign = "center";
+    context.fillStyle = isDark ? "#2dd4bf" : "#0f766e";
+    context.fillText("L", centerX - 46, centerY - 24);
+    context.fillStyle = isDark ? "#38bdf8" : "#0284c7";
+    context.fillText("R", centerX + 46, centerY - 24);
+
+    // 5.3 绘制双耳 HRTF 空间衍射光环 (Ear Diffraction Wavefronts)
+    for (let i = earDiffractionL.length - 1; i >= 0; i--) {
+      const ed = earDiffractionL[i];
+      ed.r += ed.speed;
+      ed.alpha *= 0.93;
+      context.beginPath();
+      context.arc(centerX - 46, centerY, ed.r, Math.PI * 0.45, Math.PI * 1.55);
+      context.strokeStyle = (isDark ? "rgba(45, 212, 191, " : "rgba(13, 148, 136, ") + ed.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.6;
+      context.stroke();
+      if (ed.alpha < 0.02 || ed.r > ed.maxR) earDiffractionL.splice(i, 1);
+    }
+
+    for (let i = earDiffractionR.length - 1; i >= 0; i--) {
+      const ed = earDiffractionR[i];
+      ed.r += ed.speed;
+      ed.alpha *= 0.93;
+      context.beginPath();
+      context.arc(centerX + 46, centerY, ed.r, -Math.PI * 0.55, Math.PI * 0.55);
+      context.strokeStyle = (isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, ") + ed.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.6;
+      context.stroke();
+      if (ed.alpha < 0.02 || ed.r > ed.maxR) earDiffractionR.splice(i, 1);
+    }
+
+    // 6. 左右两侧声学 VU 实时电平表 (Binaural Peak Meters)
+    function drawVUMeter(x, y, h, level, peak, isLeftChannel) {
+      const segments = 14;
+      const segW = 10;
+      const segH = (h - (segments - 1) * 2) / segments;
+      const litCount = Math.round(level * segments);
+
+      context.save();
+      // 外框底槽
+      context.beginPath();
+      context.roundRect(x - 2, y - 2, segW + 4, h + 4, 3);
+      context.fillStyle = isDark ? "rgba(15, 23, 42, 0.65)" : "rgba(241, 245, 249, 0.85)";
+      context.fill();
+      context.strokeStyle = isDark ? "rgba(51, 65, 85, 0.5)" : "rgba(203, 213, 225, 0.8)";
+      context.lineWidth = 1;
+      context.stroke();
+
+      for (let s = 0; s < segments; s++) {
+        const segY = y + h - (s + 1) * (segH + 2);
+        const isLit = s < litCount;
+        let segColor = "";
+
+        if (s < 9) {
+          segColor = isLit ? "#10b981" : (isDark ? "rgba(16, 185, 129, 0.15)" : "rgba(16, 185, 129, 0.2)");
+        } else if (s < 12) {
+          segColor = isLit ? "#f59e0b" : (isDark ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.2)");
+        } else {
+          segColor = isLit ? "#ef4444" : (isDark ? "rgba(239, 68, 68, 0.15)" : "rgba(239, 68, 68, 0.2)");
+        }
+
+        context.fillStyle = segColor;
+        context.fillRect(x, segY, segW, segH);
+      }
+
+      // 峰值悬停横线 (Peak Hold Line)
+      if (peak > 0.05) {
+        const peakSeg = Math.min(segments - 1, Math.floor(peak * segments));
+        const peakY = y + h - (peakSeg + 1) * (segH + 2);
+        context.fillStyle = "#ef4444";
+        context.fillRect(x - 1, peakY - 1, segW + 2, 2.5);
+      }
+
+      context.font = "bold 9px monospace";
+      context.textAlign = "center";
+      context.fillStyle = isDark ? (isLeftChannel ? "#2dd4bf" : "#38bdf8") : (isLeftChannel ? "#0f766e" : "#0284c7");
+      context.fillText(isLeftChannel ? "CH-L" : "CH-R", x + segW / 2, y - 8);
+
+      const dbVal = level > 0.01 ? (20 * Math.log10(level)).toFixed(0) + "dB" : "-inf";
+      context.font = "8px monospace";
+      context.fillStyle = isDark ? "rgba(148, 163, 184, 0.65)" : "rgba(71, 85, 105, 0.75)";
+      context.fillText(dbVal, x + segW / 2, y + h + 12);
+
+      context.restore();
+    }
+
+    const meterH = 125;
+    const meterY = centerY - meterH / 2;
+    drawVUMeter(26, meterY, meterH, meterLevelL, meterPeakL, true);
+    drawVUMeter(logicalWidth - 36, meterY, meterH, meterLevelR, meterPeakR, false);
+
+    // 7. 中央假人头正下方：双耳李萨如矢量示波器 (Binaural Lissajous Goniometer)
+    context.save();
+    const gonioW = 100;
+    const gonioH = 26;
+    const gonioX = centerX - gonioW / 2;
+    const gonioY = centerY + maxR * 0.68;
+
+    context.beginPath();
+    context.roundRect(gonioX, gonioY, gonioW, gonioH, 4);
+    context.fillStyle = isDark ? "rgba(15, 23, 42, 0.55)" : "rgba(241, 245, 249, 0.65)";
+    context.fill();
+    context.strokeStyle = isDark ? "rgba(45, 212, 191, 0.25)" : "rgba(13, 148, 136, 0.35)";
+    context.lineWidth = 1;
+    context.stroke();
+
+    context.beginPath();
+    context.moveTo(centerX - 15, gonioY + gonioH / 2);
+    context.lineTo(centerX + 15, gonioY + gonioH / 2);
+    context.moveTo(centerX, gonioY + 4);
+    context.lineTo(centerX, gonioY + gonioH - 4);
+    context.strokeStyle = isDark ? "rgba(148, 163, 184, 0.2)" : "rgba(71, 85, 105, 0.25)";
+    context.lineWidth = 0.8;
+    context.stroke();
+
+    context.beginPath();
+    goniometerAngle += 0.08;
+    const radX = Math.max(3, (meterLevelL + 0.05) * 35);
+    const radY = Math.max(2, (meterLevelR + 0.05) * 9);
+    const rot = (meterLevelR - meterLevelL) * 0.8;
+    context.ellipse(centerX, gonioY + gonioH / 2, radX, radY, rot, 0, Math.PI * 2);
+    context.strokeStyle = isDark ? "rgba(94, 234, 212, 0.75)" : "rgba(15, 118, 110, 0.85)";
+    context.lineWidth = 1.2;
+    context.stroke();
+
+    context.font = "8px monospace";
+    context.textAlign = "center";
+    context.fillStyle = isDark ? "rgba(148, 163, 184, 0.55)" : "rgba(71, 85, 105, 0.65)";
+    context.fillText("STEREO GONIOMETER", centerX, gonioY + gonioH + 9);
+
+    context.restore();
+
+    // 8. 四角微科技 HUD 声学参数标注 (Acoustic Telemetry Overlay)
+    context.font = "9px monospace";
+    context.fillStyle = isDark ? "rgba(148, 163, 184, 0.5)" : "rgba(71, 85, 105, 0.65)";
+    context.textAlign = "left";
+    context.fillText("● 3Dio ACOUSTIC RADAR // 360° SPATIAL TRACKER", 54, 24);
+    context.fillText("SAMPLING: 48kHz 32-BIT // ITD ACTIVE", 54, 38);
+
+    context.textAlign = "right";
+    const widthPct = state.stereoWidth || 100;
+    context.fillText("STEREO WIDTH: " + widthPct + "% // HRTF ENGAGED", logicalWidth - 54, 24);
+    context.fillText("ACTIVE SOURCES: " + radarBeacons.length + " BEACONS", logicalWidth - 54, 38);
+
+    context.restore();
+  }
+
+  // ==========================================================================
+  // 模式 2: 极简休眠暗光模式 (Minimal Sleep & Calming Ambient Glow)
+  // ==========================================================================
+  function drawMinimalSleepView(context, isDark) {
+    const centerX = logicalWidth / 2;
+    const centerY = logicalHeight / 2 - 10;
+    const breath = Math.sin(Date.now() / 2500) * 0.5 + 0.5; // 0 ~ 1, 周期 5s
+    const maxR = 120 + breath * 25;
+
+    context.save();
+    const grad = context.createRadialGradient(centerX, centerY, 5, centerX, centerY, maxR);
+    if (isDark) {
+      grad.addColorStop(0, "rgba(45, 212, 191, " + (0.04 + breath * 0.05) + ")");
+      grad.addColorStop(0.5, "rgba(15, 23, 42, " + (0.02 + breath * 0.02) + ")");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+    } else {
+      grad.addColorStop(0, "rgba(13, 148, 136, " + (0.05 + breath * 0.06) + ")");
+      grad.addColorStop(0.5, "rgba(203, 213, 225, " + (0.03 + breath * 0.02) + ")");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+    }
+    context.fillStyle = grad;
+    context.beginPath();
+    context.arc(centerX, centerY, maxR, 0, Math.PI * 2);
+    context.fill();
+
+    context.beginPath();
+    context.arc(centerX, centerY, 18 + breath * 4, 0, Math.PI * 2);
+    context.strokeStyle = isDark ? "rgba(94, 234, 212, " + (0.12 + breath * 0.15) + ")" : "rgba(15, 118, 110, " + (0.18 + breath * 0.18) + ")";
+    context.lineWidth = 1;
+    context.stroke();
+
+    context.font = "10px sans-serif";
+    context.textAlign = "center";
+    context.fillStyle = isDark ? "rgba(148, 163, 184, 0.45)" : "rgba(71, 85, 105, 0.55)";
+    context.fillText("🌙 极简休眠 · 静心助眠", centerX, centerY + 42);
+
+    context.restore();
+  }
+
+  // ==========================================================================
+  // 模式 3: 沉浸拟物粒子模式 (Scenic Physical Particle Soundstage)
+  // ==========================================================================
+  function drawScenicParticleView(context, isDark) {
+    const isPlaying = state.isPlaying;
+
+    if (state.activeCategory === "rain") {
+      const rain = RAIN_PRESETS[state.currentRain];
+      const activeCount = isPlaying
+        ? Math.floor(rainParticles.length * (rain.dropRate / 100))
+        : 25;
+
+      const limit = Math.min(rainParticles.length, Math.max(18, activeCount));
+      for (let i = 0; i < limit; i++) {
+        const p = rainParticles[i];
+        p.update(rain.windSpeed);
+        p.draw(context);
+      }
+    } else if (state.activeCategory === "tapping") {
+      context.save();
+      const padY = logicalHeight - 50;
+      context.beginPath();
+      context.moveTo(logicalWidth * 0.08, padY);
+      context.lineTo(logicalWidth * 0.92, padY);
+      context.strokeStyle = isDark ? "rgba(45, 212, 191, 0.25)" : "rgba(15, 129, 141, 0.35)";
+      context.lineWidth = 2;
+      context.setLineDash([4, 6]);
+      context.stroke();
+      context.restore();
+    } else if (state.activeCategory === "friction") {
+      context.save();
+      const centerX = logicalWidth / 2;
+      const centerY = logicalHeight / 2 - 12;
+      const bgGrad = context.createRadialGradient(centerX, centerY, 30, centerX, centerY, logicalWidth * 0.38);
+      if (isDark) {
+        bgGrad.addColorStop(0, "rgba(244, 114, 182, 0.08)");
+        bgGrad.addColorStop(0.5, "rgba(45, 212, 191, 0.03)");
+      } else {
+        bgGrad.addColorStop(0, "rgba(219, 39, 119, 0.09)");
+        bgGrad.addColorStop(0.5, "rgba(13, 148, 136, 0.04)");
+      }
+      bgGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      context.fillStyle = bgGrad;
+      context.beginPath();
+      context.ellipse(centerX, centerY, logicalWidth * 0.38, 95, 0, 0, Math.PI * 2);
+      context.fill();
+
+      context.beginPath();
+      context.ellipse(centerX, centerY, logicalWidth * 0.34, 75, 0, 0, Math.PI * 2);
+      context.strokeStyle = isDark ? "rgba(244, 114, 182, 0.16)" : "rgba(219, 39, 119, 0.25)";
+      context.lineWidth = 1;
+      context.setLineDash([3, 7]);
+      context.stroke();
+      context.restore();
+    } else if (state.activeCategory === "water") {
+      context.save();
+      waterWaveOffset += 0.024 * state.waterSpeedMultiplier;
+      const centerY = logicalHeight / 2 + 10;
+
+      const waveLayers = [
+        { yOff: -28, amp: 13, freq: 0.007, speed: 1.0, alpha: isDark ? 0.22 : 0.28 },
+        { yOff: 0, amp: 18, freq: 0.005, speed: 0.75, alpha: isDark ? 0.32 : 0.35 },
+        { yOff: 28, amp: 15, freq: 0.008, speed: 1.15, alpha: isDark ? 0.25 : 0.28 }
+      ];
+
+      for (const layer of waveLayers) {
+        context.beginPath();
+        context.moveTo(0, logicalHeight);
+        for (let x = 0; x <= logicalWidth; x += 15) {
+          const waveY = centerY + layer.yOff + Math.sin(x * layer.freq + waterWaveOffset * layer.speed) * layer.amp;
+          context.lineTo(x, waveY);
+        }
+        context.lineTo(logicalWidth, logicalHeight);
+        context.closePath();
+
+        const grad = context.createLinearGradient(0, centerY + layer.yOff - 20, 0, logicalHeight);
+        if (isDark) {
+          grad.addColorStop(0, "rgba(45, 212, 191, " + layer.alpha + ")");
+          grad.addColorStop(0.5, "rgba(56, 189, 248, " + (layer.alpha * 0.6) + ")");
+          grad.addColorStop(1, "rgba(10, 17, 20, 0.1)");
+        } else {
+          grad.addColorStop(0, "rgba(13, 148, 136, " + layer.alpha + ")");
+          grad.addColorStop(0.5, "rgba(2, 132, 199, " + (layer.alpha * 0.7) + ")");
+          grad.addColorStop(1, "rgba(237, 245, 246, 0.2)");
+        }
+        context.fillStyle = grad;
+        context.fill();
+
+        context.beginPath();
+        for (let x = 0; x <= logicalWidth; x += 15) {
+          const waveY = centerY + layer.yOff + Math.sin(x * layer.freq + waterWaveOffset * layer.speed) * layer.amp;
+          if (x === 0) context.moveTo(x, waveY);
+          else context.lineTo(x, waveY);
+        }
+        context.strokeStyle = isDark ? "rgba(94, 234, 212, " + (layer.alpha * 1.5) + ")" : "rgba(15, 118, 110, " + (layer.alpha * 1.6) + ")";
+        context.lineWidth = 1.5;
+        context.stroke();
+      }
+      context.restore();
+    } else if (state.activeCategory === "bowls") {
+      context.save();
+      const centerX = logicalWidth / 2;
+      const centerY = logicalHeight / 2 - 12;
+      bowlRimAngle += 0.012;
+
+      const auraGrad = context.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
+      if (isDark) {
+        auraGrad.addColorStop(0, "rgba(245, 158, 11, 0.12)");
+        auraGrad.addColorStop(0.45, "rgba(168, 85, 247, 0.06)");
+        auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      } else {
+        auraGrad.addColorStop(0, "rgba(217, 119, 6, 0.12)");
+        auraGrad.addColorStop(0.45, "rgba(124, 58, 237, 0.06)");
+        auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      }
+      context.fillStyle = auraGrad;
+      context.beginPath();
+      context.arc(centerX, centerY, logicalWidth * 0.36, 0, Math.PI * 2);
+      context.fill();
+
+      context.beginPath();
+      context.arc(centerX, centerY, 85 + Math.sin(Date.now() / 850) * 4, 0, Math.PI * 2);
+      context.strokeStyle = isDark ? "rgba(245, 158, 11, 0.22)" : "rgba(217, 119, 6, 0.32)";
+      context.lineWidth = 1;
+      context.setLineDash([4, 8]);
+      context.stroke();
+      context.restore();
+    } else if (state.activeCategory === "tools") {
+      context.save();
+      const centerX = logicalWidth / 2;
+      const centerY = logicalHeight / 2 - 12;
+
+      const auraGrad = context.createRadialGradient(centerX, centerY, 20, centerX, centerY, logicalWidth * 0.38);
+      if (isDark) {
+        auraGrad.addColorStop(0, "rgba(56, 189, 248, 0.10)");
+        auraGrad.addColorStop(0.5, "rgba(148, 163, 184, 0.04)");
+        auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      } else {
+        auraGrad.addColorStop(0, "rgba(2, 132, 199, 0.09)");
+        auraGrad.addColorStop(0.5, "rgba(71, 85, 105, 0.03)");
+        auraGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      }
+      context.fillStyle = auraGrad;
+      context.beginPath();
+      context.arc(centerX, centerY, logicalWidth * 0.38, 0, Math.PI * 2);
+      context.fill();
+
+      context.beginPath();
+      context.moveTo(centerX - 100, centerY);
+      context.lineTo(centerX + 100, centerY);
+      context.moveTo(centerX, centerY - 60);
+      context.lineTo(centerX, centerY + 60);
+      context.strokeStyle = isDark ? "rgba(56, 189, 248, 0.12)" : "rgba(2, 132, 199, 0.18)";
+      context.lineWidth = 1;
+      context.setLineDash([3, 6]);
+      context.stroke();
+      context.restore();
+    } else if (state.activeCategory === "fire") {
+      context.save();
+      const centerX = logicalWidth / 2;
+      const centerY = logicalHeight / 2 - 12;
+
+      const fireGrad = context.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.38);
+      if (isDark) {
+        fireGrad.addColorStop(0, "rgba(249, 115, 22, 0.16)");
+        fireGrad.addColorStop(0.45, "rgba(239, 68, 68, 0.06)");
+        fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      } else {
+        fireGrad.addColorStop(0, "rgba(234, 88, 12, 0.14)");
+        fireGrad.addColorStop(0.45, "rgba(185, 28, 28, 0.05)");
+        fireGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      }
+      context.fillStyle = fireGrad;
+      context.beginPath();
+      context.arc(centerX, centerY, logicalWidth * 0.38, 0, Math.PI * 2);
+      context.fill();
+
+      context.beginPath();
+      context.arc(centerX, centerY, 90 + Math.sin(Date.now() / 650) * 5, 0, Math.PI * 2);
+      context.strokeStyle = isDark ? "rgba(249, 115, 22, 0.25)" : "rgba(194, 65, 12, 0.35)";
+      context.lineWidth = 1;
+      context.setLineDash([5, 8]);
+      context.stroke();
+      context.restore();
+    } else if (state.activeCategory === "squish") {
+      context.save();
+      const centerX = logicalWidth / 2;
+      const centerY = logicalHeight / 2 - 12;
+      squishCompression *= 0.94;
+
+      let coreColor1 = isDark ? "rgba(52, 211, 153, " : "rgba(5, 150, 105, ";
+      let coreColor2 = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, ";
+      if (state.currentSquishMat === "warm_beeswax") {
+        coreColor1 = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, ";
+        coreColor2 = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, ";
+      } else if (state.currentSquishMat === "soft_slime") {
+        coreColor1 = isDark ? "rgba(167, 139, 250, " : "rgba(124, 58, 237, ";
+        coreColor2 = isDark ? "rgba(236, 72, 153, " : "rgba(219, 39, 119, ";
+      } else if (state.currentSquishMat === "linen_parchment") {
+        coreColor1 = isDark ? "rgba(251, 191, 36, " : "rgba(180, 83, 9, ";
+        coreColor2 = isDark ? "rgba(217, 119, 6, " : "rgba(161, 98, 7, ";
+      } else if (state.currentSquishMat === "kinetic_sand") {
+        coreColor1 = isDark ? "rgba(251, 146, 60, " : "rgba(194, 65, 12, ";
+        coreColor2 = isDark ? "rgba(245, 158, 11, " : "rgba(217, 119, 6, ";
+      }
+
+      const breath = Math.sin(Date.now() / 950) * 4;
+      const gelGrad = context.createRadialGradient(centerX, centerY, 15, centerX, centerY, logicalWidth * 0.36);
+      gelGrad.addColorStop(0, coreColor1 + (isDark ? "0.16)" : "0.14)"));
+      gelGrad.addColorStop(0.45, coreColor2 + (isDark ? "0.06)" : "0.05)"));
+      gelGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      context.fillStyle = gelGrad;
+      context.beginPath();
+      const radiusX = (logicalWidth * 0.34 + breath) * (1 + squishCompression * 0.22);
+      const radiusY = Math.max(20, (78 - breath * 0.5) * (1 - squishCompression * 0.25));
+      context.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+      context.fill();
+
+      context.beginPath();
+      context.ellipse(centerX, centerY, (88 + breath * 0.8) * (1 + squishCompression * 0.28), Math.max(15, (65 - breath * 0.4) * (1 - squishCompression * 0.28)), 0, 0, Math.PI * 2);
+      context.strokeStyle = coreColor1 + (isDark ? "0.32)" : "0.42)");
+      context.lineWidth = 1.4;
+      context.setLineDash([4, 6]);
+      context.stroke();
+      context.restore();
+    }
+
+    // 绘制各分类动态粒子
     for (let i = bowlRings.length - 1; i >= 0; i--) {
       const ring = bowlRings[i];
       ring.r += ring.expandSpeed;
       ring.alpha *= 0.985;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(ring.x, ring.y, ring.r, 0, Math.PI * 2);
-      ctx.strokeStyle = ring.color + ring.alpha.toFixed(3) + ")";
-      ctx.lineWidth = ring.width;
-      ctx.stroke();
-      ctx.restore();
-
-      if (ring.alpha < 0.015 || ring.r > ring.maxR) {
-        bowlRings.splice(i, 1);
-      }
+      context.save();
+      context.beginPath();
+      context.arc(ring.x, ring.y, ring.r, 0, Math.PI * 2);
+      context.strokeStyle = ring.color + ring.alpha.toFixed(3) + ")";
+      context.lineWidth = ring.width;
+      context.stroke();
+      context.restore();
+      if (ring.alpha < 0.015 || ring.r > ring.maxR) bowlRings.splice(i, 1);
     }
 
-    // 绘制空灵微光星尘微粒 (Chime Sparkles)
     for (let i = chimeSparkles.length - 1; i >= 0; i--) {
       const sp = chimeSparkles[i];
       sp.x += sp.vx;
       sp.y += sp.vy;
       sp.alpha *= sp.decay;
       sp.phase += 0.08;
-
-      ctx.save();
-      const currentSize = sp.size * (0.8 + 0.3 * Math.sin(sp.phase));
-      ctx.beginPath();
-      ctx.arc(sp.x, sp.y, Math.max(0.6, currentSize), 0, Math.PI * 2);
-      ctx.fillStyle = sp.color + sp.alpha.toFixed(3) + ")";
-      ctx.fill();
-      ctx.restore();
-
-      if (sp.alpha < 0.02) {
-        chimeSparkles.splice(i, 1);
-      }
+      const currentSize = sp.size * (0.8 + Math.sin(sp.phase) * 0.3);
+      context.save();
+      context.beginPath();
+      context.arc(sp.x, sp.y, Math.max(0.6, currentSize), 0, Math.PI * 2);
+      context.fillStyle = sp.color + sp.alpha.toFixed(3) + ")";
+      context.fill();
+      context.restore();
+      if (sp.alpha < 0.02) chimeSparkles.splice(i, 1);
     }
 
-    // 绘制伴读工具与微机械专属动态视觉 (Grooming & Tools Visuals)
     for (let i = toolVisualEvents.length - 1; i >= 0; i--) {
       const ev = toolVisualEvents[i];
-      ctx.save();
-
+      context.save();
       if (ev.type === "scissors") {
-        ev.progress += 0.08;
-        ev.alpha *= 0.95;
-        const bladeAngle = Math.max(0.04, 0.42 * (1 - ev.progress));
-        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
-        ctx.lineWidth = 1.6;
-        ctx.lineCap = "round";
-
-        // 上刀刃
-        ctx.beginPath();
-        ctx.moveTo(ev.x, ev.y);
-        ctx.lineTo(ev.x + Math.cos(ev.angle + bladeAngle) * ev.len, ev.y + Math.sin(ev.angle + bladeAngle) * ev.len);
-        ctx.stroke();
-
-        // 下刀刃
-        ctx.beginPath();
-        ctx.moveTo(ev.x, ev.y);
-        ctx.lineTo(ev.x + Math.cos(ev.angle - bladeAngle) * ev.len, ev.y + Math.sin(ev.angle - bladeAngle) * ev.len);
-        ctx.stroke();
-
-        if (ev.alpha < 0.02 || ev.progress >= 1.2) toolVisualEvents.splice(i, 1);
-
+        ev.progress += 0.09;
+        ev.alpha *= 0.94;
+        const bladeAngle = Math.sin(ev.progress * Math.PI) * 0.32;
+        context.translate(ev.x, ev.y);
+        context.rotate(ev.angle);
+        context.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.moveTo(-15, 0);
+        context.lineTo(ev.len * Math.cos(-bladeAngle), ev.len * Math.sin(-bladeAngle));
+        context.moveTo(-15, 0);
+        context.lineTo(ev.len * Math.cos(bladeAngle), ev.len * Math.sin(bladeAngle));
+        context.stroke();
       } else if (ev.type === "comb") {
-        ev.progress += 1.2;
+        ev.progress += 0.06;
         ev.alpha *= 0.95;
-        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
-        ctx.lineWidth = 1.4;
-        ctx.lineCap = "round";
-
+        context.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        context.lineWidth = 1.2;
         for (let t = 0; t < ev.teeth; t++) {
           const tx = ev.x + (t - ev.teeth / 2) * ev.spacing;
-          ctx.beginPath();
-          ctx.moveTo(tx, ev.y + ev.progress);
-          ctx.lineTo(tx, ev.y + ev.progress + 14);
-          ctx.stroke();
+          context.beginPath();
+          context.moveTo(tx, ev.y + ev.progress * 25);
+          context.lineTo(tx, ev.y + 16 + ev.progress * 25);
+          context.stroke();
         }
-
-        if (ev.alpha < 0.02 || ev.progress > 38) toolVisualEvents.splice(i, 1);
-
       } else if (ev.type === "pencil") {
-        ev.alpha *= 0.96;
-        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
-        ctx.lineWidth = 1.8;
-        ctx.lineCap = "round";
-
-        ctx.beginPath();
-        ctx.moveTo(ev.x - Math.cos(ev.angle) * ev.len * 0.5, ev.y - Math.sin(ev.angle) * ev.len * 0.5);
-        ctx.lineTo(ev.x + Math.cos(ev.angle) * ev.len * 0.5, ev.y + Math.sin(ev.angle) * ev.len * 0.5);
-        ctx.stroke();
-
-        if (ev.alpha < 0.02) toolVisualEvents.splice(i, 1);
-
-      } else if (ev.type === "typewriter") {
-        ev.r += 1.8;
         ev.alpha *= 0.94;
-        ctx.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
-        ctx.lineWidth = 1.5;
-
-        ctx.beginPath();
-        ctx.arc(ev.x, ev.y, ev.r, 0, Math.PI * 2);
-        ctx.stroke();
-
-        if (ev.alpha < 0.02 || ev.r > ev.maxR) toolVisualEvents.splice(i, 1);
-
+        context.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        context.lineWidth = 1.4;
+        context.beginPath();
+        context.arc(ev.x, ev.y, ev.len, ev.angle, ev.angle + 0.5);
+        context.stroke();
+      } else if (ev.type === "typewriter") {
+        ev.r += 2.2;
+        ev.alpha *= 0.92;
+        context.strokeStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.arc(ev.x, ev.y, ev.r, 0, Math.PI * 2);
+        context.stroke();
       } else if (ev.type === "spray_drop") {
         ev.x += ev.vx;
         ev.y += ev.vy;
         ev.alpha *= ev.decay;
-
-        ctx.fillStyle = ev.color + ev.alpha.toFixed(3) + ")";
-        ctx.beginPath();
-        ctx.arc(ev.x, ev.y, ev.r, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (ev.alpha < 0.02) toolVisualEvents.splice(i, 1);
+        context.fillStyle = ev.color + ev.alpha.toFixed(3) + ")";
+        context.beginPath();
+        context.arc(ev.x, ev.y, ev.r, 0, Math.PI * 2);
+        context.fill();
       }
-
-      ctx.restore();
+      context.restore();
+      if (ev.alpha < 0.02) toolVisualEvents.splice(i, 1);
     }
 
-    // 绘制壁炉与炭火专属升腾余烬微粒 (Rising Fire Embers)
     for (let i = fireEmbers.length - 1; i >= 0; i--) {
-      const e = fireEmbers[i];
-      e.x += e.vx + Math.sin(e.wobblePhase) * 0.35;
-      e.y += e.vy;
-      e.wobblePhase += 0.08;
-      e.alpha *= e.decay;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(e.x, e.y, Math.max(0.6, e.size), 0, Math.PI * 2);
-      ctx.fillStyle = e.color + e.alpha.toFixed(3) + ")";
-      ctx.fill();
-      ctx.restore();
-
-      if (e.alpha < 0.02 || e.y < -10) {
-        fireEmbers.splice(i, 1);
-      }
+      const em = fireEmbers[i];
+      em.x += em.vx + Math.sin(em.wobblePhase) * 0.4;
+      em.y += em.vy;
+      em.wobblePhase += 0.06;
+      em.alpha *= em.decay;
+      context.save();
+      context.beginPath();
+      context.arc(em.x, em.y, Math.max(0.8, em.size), 0, Math.PI * 2);
+      context.fillStyle = em.color + em.alpha.toFixed(3) + ")";
+      context.fill();
+      context.restore();
+      if (em.alpha < 0.02 || em.y < -10) fireEmbers.splice(i, 1);
     }
 
-    // 绘制触觉揉捏专属慢回弹形变环 (Viscoelastic Soft Rebound Rings)
-    for (let i = squishRipples.length - 1; i >= 0; i--) {
-      const r = squishRipples[i];
-      r.rx += r.expandSpeed * 1.35;
-      r.ry += r.expandSpeed * 0.85;
-      r.alpha *= 0.955;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = r.color + r.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.6;
-      ctx.setLineDash([4, 6]);
-      ctx.stroke();
-      ctx.restore();
-
-      if (r.alpha < 0.02 || r.rx > r.maxR) {
-        squishRipples.splice(i, 1);
-      }
-    }
-
-    // 绘制触觉揉捏专属凝胶微珠与慢回弹微泡 (Viscous Gel Blobs & Beads)
     for (let i = squishBlobs.length - 1; i >= 0; i--) {
-      const b = squishBlobs[i];
-      b.x += b.vx;
-      b.y += b.vy;
-      b.vx *= 0.94; // 粘滞阻尼迅速减速
-      b.vy *= 0.94;
-      b.alpha *= b.decay;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, Math.max(0.8, b.r), 0, Math.PI * 2);
-      ctx.fillStyle = b.color + (b.alpha * 0.45).toFixed(3) + ")";
-      ctx.fill();
-      ctx.strokeStyle = b.color + b.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // 微凝胶高光
-      ctx.beginPath();
-      ctx.arc(b.x - b.r * 0.3, b.y - b.r * 0.3, Math.max(0.6, b.r * 0.28), 0, Math.PI * 2);
-      ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${(b.alpha * 0.75).toFixed(3)})` : `rgba(255, 255, 255, ${(b.alpha * 0.85).toFixed(3)})`;
-      ctx.fill();
-      ctx.restore();
-
-      if (b.alpha < 0.02) {
-        squishBlobs.splice(i, 1);
-      }
+      const sb = squishBlobs[i];
+      sb.x += sb.vx;
+      sb.y += sb.vy;
+      sb.alpha *= sb.decay;
+      sb.r = Math.max(0.5, sb.r * 0.985);
+      context.save();
+      context.beginPath();
+      context.arc(sb.x, sb.y, sb.r, 0, Math.PI * 2);
+      context.fillStyle = sb.color + sb.alpha.toFixed(3) + ")";
+      context.fill();
+      context.restore();
+      if (sb.alpha < 0.02) squishBlobs.splice(i, 1);
     }
 
-    // 绘制水流专属浮动升腾气泡 (Rising Water Bubbles)
+    for (let i = squishRipples.length - 1; i >= 0; i--) {
+      const sr = squishRipples[i];
+      sr.rx += sr.expandSpeed * 1.5;
+      sr.ry += sr.expandSpeed * 0.9;
+      sr.alpha *= 0.95;
+      context.save();
+      context.beginPath();
+      context.ellipse(sr.x, sr.y, sr.rx, sr.ry, 0, 0, Math.PI * 2);
+      context.strokeStyle = sr.color + sr.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.5;
+      context.stroke();
+      context.restore();
+      if (sr.alpha < 0.02 || sr.rx > sr.maxR) squishRipples.splice(i, 1);
+    }
+
     for (let i = waterBubbles.length - 1; i >= 0; i--) {
       const b = waterBubbles[i];
-      b.x += Math.sin(b.wobblePhase) * 0.45;
-      b.wobblePhase += 0.08;
       b.y -= b.vy;
+      b.wobblePhase += 0.08;
+      const wobbleX = Math.sin(b.wobblePhase) * 1.5;
       b.alpha *= 0.985;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-      ctx.fillStyle = b.color + (b.alpha * 0.45).toFixed(3) + ")";
-      ctx.fill();
-      ctx.strokeStyle = b.color + b.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // 气泡微反光高光
-      ctx.beginPath();
-      ctx.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, Math.max(0.8, b.r * 0.25), 0, Math.PI * 2);
-      ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${(b.alpha * 0.8).toFixed(3)})` : `rgba(255, 255, 255, ${(b.alpha * 0.9).toFixed(3)})`;
-      ctx.fill();
-      ctx.restore();
-
-      if (b.alpha < 0.02 || b.y < b.targetY) {
-        if (waterRipples.length < 40) {
+      context.beginPath();
+      context.arc(b.x + wobbleX, b.y, b.r, 0, Math.PI * 2);
+      context.strokeStyle = b.color + b.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.2;
+      context.stroke();
+      context.beginPath();
+      context.arc(b.x + wobbleX - b.r * 0.3, b.y - b.r * 0.3, Math.max(0.8, b.r * 0.35), 0, Math.PI * 2);
+      context.fillStyle = b.color + (b.alpha * 0.8).toFixed(3) + ")";
+      context.fill();
+      if (b.y <= b.targetY || b.alpha < 0.05) {
+        if (waterRipples.length < 45) {
           waterRipples.push({
             x: b.x,
-            y: b.y,
+            y: b.targetY,
             rx: 2,
-            ry: 0.6,
-            maxR: 12 + b.r * 2.5,
-            alpha: 0.7,
+            ry: 0.8,
+            maxR: 18 + b.r * 2.5,
+            alpha: 0.75,
             color: b.color
           });
         }
@@ -5762,114 +6237,87 @@ permalink: /projects/ai-asmr/index.html
       }
     }
 
-    // 绘制水流微涟漪 (Water Ripples)
     for (let i = waterRipples.length - 1; i >= 0; i--) {
       const r = waterRipples[i];
-      r.rx += 1.2;
-      r.ry += 0.42;
-      r.alpha *= 0.935;
-
-      ctx.beginPath();
-      ctx.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = r.color + r.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.3;
-      ctx.stroke();
-
-      if (r.alpha < 0.02 || r.rx > r.maxR) {
-        waterRipples.splice(i, 1);
-      }
+      r.rx += 1.3;
+      r.ry += 0.52;
+      r.alpha *= 0.95;
+      context.beginPath();
+      context.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
+      context.strokeStyle = r.color + r.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.2;
+      context.stroke();
+      if (r.alpha < 0.02 || r.rx > r.maxR) waterRipples.splice(i, 1);
     }
 
-    // 绘制摩擦专属抚摩光弧
     for (let i = fricStrokes.length - 1; i >= 0; i--) {
       const s = fricStrokes[i];
       s.progress += s.speed;
-      s.alpha *= 0.96;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(s.x1, s.y1);
-      ctx.quadraticCurveTo(s.cx, s.cy, s.x2, s.y2);
-      ctx.strokeStyle = s.color + s.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 2.2;
-      ctx.lineCap = "round";
-      ctx.stroke();
-      ctx.restore();
-
-      if (s.alpha < 0.02 || s.progress >= 1.5) {
-        fricStrokes.splice(i, 1);
-      }
+      s.alpha *= 0.985;
+      context.save();
+      context.beginPath();
+      context.moveTo(s.x1, s.y1);
+      context.quadraticCurveTo(s.cx, s.cy, s.x1 + (s.x2 - s.x1) * Math.min(1, s.progress), s.y1 + (s.y2 - s.y1) * Math.min(1, s.progress));
+      context.strokeStyle = s.color + s.alpha.toFixed(3) + ")";
+      context.lineWidth = 3;
+      context.lineCap = "round";
+      context.stroke();
+      context.restore();
+      if (s.progress >= 1.2 || s.alpha < 0.02) fricStrokes.splice(i, 1);
     }
 
-    // 绘制飞舞纤维微粒
     for (let i = fricParticles.length - 1; i >= 0; i--) {
-      const p = fricParticles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.alpha *= p.decay;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = p.color + p.alpha.toFixed(3) + ")";
-      ctx.fill();
-
-      if (p.alpha < 0.02) {
-        fricParticles.splice(i, 1);
-      }
+      const fp = fricParticles[i];
+      fp.x += fp.vx;
+      fp.y += fp.vy;
+      fp.alpha *= fp.decay;
+      context.beginPath();
+      context.arc(fp.x, fp.y, fp.size, 0, Math.PI * 2);
+      context.fillStyle = fp.color + fp.alpha.toFixed(3) + ")";
+      context.fill();
+      if (fp.alpha < 0.02) fricParticles.splice(i, 1);
     }
 
-    // 绘制地面雨滴柔和涟漪
     for (let i = rippleParticles.length - 1; i >= 0; i--) {
-      const r = rippleParticles[i];
-      r.rx += 1.1;
-      r.ry += 0.38;
-      r.alpha *= 0.94;
-
-      ctx.beginPath();
-      ctx.ellipse(r.x, r.y, r.rx, r.ry, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = r.color + r.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      if (r.alpha < 0.02 || r.rx > r.maxR) {
-        rippleParticles.splice(i, 1);
-      }
+      const rip = rippleParticles[i];
+      rip.rx += 0.9;
+      rip.ry += 0.35;
+      rip.alpha *= 0.95;
+      context.beginPath();
+      context.ellipse(rip.x, rip.y, rip.rx, rip.ry, 0, 0, Math.PI * 2);
+      context.strokeStyle = rip.color + rip.alpha.toFixed(2) + ")";
+      context.lineWidth = 1.2;
+      context.stroke();
+      if (rip.alpha < 0.02 || rip.rx > rip.maxR) rippleParticles.splice(i, 1);
     }
 
-    // 绘制敲击专属声学脉冲波纹 (Tap Shockwaves)
     for (let i = tapShockwaves.length - 1; i >= 0; i--) {
       const s = tapShockwaves[i];
       s.r += 1.8;
-      s.alpha *= 0.93;
+      s.alpha *= 0.94;
+      context.beginPath();
+      context.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      context.strokeStyle = s.color + s.alpha.toFixed(3) + ")";
+      context.lineWidth = 2;
+      context.stroke();
 
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.strokeStyle = s.color + s.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-
-      // 内核亮光微核
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, Math.max(1, 3 * s.alpha), 0, Math.PI * 2);
-      ctx.fillStyle = s.color + s.alpha.toFixed(3) + ")";
-      ctx.fill();
-
-      if (s.alpha < 0.02 || s.r > s.maxR) {
-        tapShockwaves.splice(i, 1);
-      }
+      context.beginPath();
+      context.arc(s.x, s.y, Math.max(1, 3 * s.alpha), 0, Math.PI * 2);
+      context.fillStyle = s.color + s.alpha.toFixed(3) + ")";
+      context.fill();
+      if (s.alpha < 0.02 || s.r > s.maxR) tapShockwaves.splice(i, 1);
     }
 
-    // 绘制 3Dio 双耳声场指示环 (中央区域居中，全主题换色)
+    // 绘制中央 3Dio 轻量人耳位置示意
     const centerX = logicalWidth / 2;
     const centerY = logicalHeight / 2 - 12;
 
-    ctx.save();
-    ctx.translate(centerX, centerY);
+    context.save();
+    context.translate(centerX, centerY);
 
-    // 头部主体柔光圆弧
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 32, 44, 0, 0, Math.PI * 2);
-    ctx.fillStyle = isDark ? "rgba(22, 38, 44, 0.75)" : "rgba(255, 255, 255, 0.92)";
+    context.beginPath();
+    context.ellipse(0, 0, 32, 44, 0, 0, Math.PI * 2);
+    context.fillStyle = isDark ? "rgba(22, 38, 44, 0.75)" : "rgba(255, 255, 255, 0.92)";
     const headStrokeDark = {
       rain: "rgba(45, 212, 191, 0.28)",
       tapping: "rgba(241, 166, 90, 0.28)",
@@ -5890,41 +6338,38 @@ permalink: /projects/ai-asmr/index.html
       fire: "rgba(194, 65, 12, 0.50)",
       squish: "rgba(5, 150, 105, 0.50)"
     };
-    ctx.strokeStyle = isDark
+    context.strokeStyle = isDark
       ? (headStrokeDark[state.activeCategory] || "rgba(52, 211, 153, 0.45)")
       : (headStrokeLight[state.activeCategory] || "rgba(5, 150, 105, 0.50)");
-    ctx.lineWidth = 1.5;
-    ctx.fill();
-    ctx.stroke();
+    context.lineWidth = 1.5;
+    context.fill();
+    context.stroke();
 
-    // 左耳模型 (L)
-    ctx.beginPath();
-    ctx.ellipse(-38, 0, 7, 16, 0, 0, Math.PI * 2);
-    ctx.fillStyle = isDark ? "rgba(15, 118, 110, 0.85)" : "rgba(13, 148, 136, 0.92)";
-    ctx.strokeStyle = isDark ? "#2dd4bf" : "#0f766e";
-    ctx.lineWidth = 1.5;
-    ctx.fill();
-    ctx.stroke();
+    context.beginPath();
+    context.ellipse(-38, 0, 7, 16, 0, 0, Math.PI * 2);
+    context.fillStyle = isDark ? "rgba(15, 118, 110, 0.85)" : "rgba(13, 148, 136, 0.92)";
+    context.strokeStyle = isDark ? "#2dd4bf" : "#0f766e";
+    context.lineWidth = 1.5;
+    context.fill();
+    context.stroke();
 
-    // 右耳模型 (R)
-    ctx.beginPath();
-    ctx.ellipse(38, 0, 7, 16, 0, 0, Math.PI * 2);
-    ctx.fillStyle = isDark ? "rgba(3, 105, 161, 0.85)" : "rgba(2, 132, 199, 0.92)";
-    ctx.strokeStyle = isDark ? "#38bdf8" : "#0284c7";
-    ctx.lineWidth = 1.5;
-    ctx.fill();
-    ctx.stroke();
+    context.beginPath();
+    context.ellipse(38, 0, 7, 16, 0, 0, Math.PI * 2);
+    context.fillStyle = isDark ? "rgba(3, 105, 161, 0.85)" : "rgba(2, 132, 199, 0.92)";
+    context.strokeStyle = isDark ? "#38bdf8" : "#0284c7";
+    context.lineWidth = 1.5;
+    context.fill();
+    context.stroke();
 
-    // 动态双耳扩散波环
     for (let i = earWavesL.length - 1; i >= 0; i--) {
       const e = earWavesL[i];
       e.r += 1.4;
       e.alpha *= 0.93;
-      ctx.beginPath();
-      ctx.arc(-38, 0, e.r, Math.PI * 0.5, Math.PI * 1.5);
-      ctx.strokeStyle = (isDark ? "rgba(45, 212, 191, " : "rgba(13, 148, 136, ") + e.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      context.beginPath();
+      context.arc(-38, 0, e.r, Math.PI * 0.5, Math.PI * 1.5);
+      context.strokeStyle = (isDark ? "rgba(45, 212, 191, " : "rgba(13, 148, 136, ") + e.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.5;
+      context.stroke();
       if (e.alpha < 0.02 || e.r > e.maxR) earWavesL.splice(i, 1);
     }
 
@@ -5932,15 +6377,34 @@ permalink: /projects/ai-asmr/index.html
       const e = earWavesR[i];
       e.r += 1.4;
       e.alpha *= 0.93;
-      ctx.beginPath();
-      ctx.arc(38, 0, e.r, -Math.PI * 0.5, Math.PI * 0.5);
-      ctx.strokeStyle = (isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, ") + e.alpha.toFixed(3) + ")";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      context.beginPath();
+      context.arc(38, 0, e.r, -Math.PI * 0.5, Math.PI * 0.5);
+      context.strokeStyle = (isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, ") + e.alpha.toFixed(3) + ")";
+      context.lineWidth = 1.5;
+      context.stroke();
       if (e.alpha < 0.02 || e.r > e.maxR) earWavesR.splice(i, 1);
     }
 
-    ctx.restore();
+    context.restore();
+  }
+
+  // ==========================================================================
+  // 主渲染循环调度器 (Master Animation Render Loop)
+  // ==========================================================================
+  function renderLoop() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const isDark = isDarkThemeActive();
+
+    if (state.visualMode === "radar") {
+      draw3DioRadarScope(ctx, isDark);
+    } else if (state.visualMode === "minimal") {
+      drawMinimalSleepView(ctx, isDark);
+    } else {
+      drawScenicParticleView(ctx, isDark);
+    }
 
     animFrameId = requestAnimationFrame(renderLoop);
   }
@@ -6623,14 +7087,37 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
-    // 6. 视觉模式切换
+    // 6. 视觉模式切换 (联动 stageViewport 样式与 HUD 状态)
+    const stageVp = document.getElementById("stageViewport");
+    const hudEarTip = document.getElementById("hudEarTip");
+
+    function applyVisualMode(mode) {
+      state.visualMode = mode;
+      document.querySelectorAll(".mode-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-mode") === mode);
+      });
+      if (stageVp) {
+        stageVp.classList.remove("mode-scenic", "mode-radar", "mode-minimal");
+        stageVp.classList.add("mode-" + mode);
+      }
+      if (hudEarTip) {
+        if (mode === "radar") {
+          hudEarTip.textContent = "🎯 3Dio 声学雷达：360° 声相与 ITD 空间微延迟实时追踪";
+        } else if (mode === "minimal") {
+          hudEarTip.textContent = "🌙 极简休眠暗光：低视觉刺激，伴您安然入眠";
+        } else {
+          hudEarTip.textContent = "戴上耳机体验耳畔空间环绕";
+        }
+      }
+    }
+
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        state.visualMode = btn.getAttribute("data-mode");
+        applyVisualMode(btn.getAttribute("data-mode"));
       });
     });
+
+    applyVisualMode("scenic");
 
     // 7. 定时休眠
     const selectTimer = document.getElementById("selectSleepTimer");
