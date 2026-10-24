@@ -1188,15 +1188,15 @@
 }
 
 .font-c-export {
-  background: #1e1e1e;
+  background: var(--code-bg);
   border-radius: 8px;
   padding: 12px;
-  color: #d4d4d4;
+  color: var(--code-ink);
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12px;
   line-height: 1.5;
   overflow-x: auto;
-  border: 1px solid #333;
+  border: 1px solid var(--line);
 }
 
 .font-c-export pre {
@@ -1247,13 +1247,13 @@
 }
 
 .font-compare-badge.bad {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--note);
 }
 
 .font-compare-badge.good {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--soft);
+  color: var(--accent-dark);
 }
 
 .font-zoom-canvas {
@@ -1455,8 +1455,8 @@
 }
 
 .ecat-status-val.error {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
   font-weight: 700;
 }
 
@@ -1491,12 +1491,12 @@
 }
 
 .ecat-btn.danger {
-  border-color: #fca5a5;
-  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
 }
 
 .ecat-btn.danger:hover:not(:disabled) {
-  background: #fee2e2;
+  background: rgba(239, 68, 68, 0.12);
   border-color: #ef4444;
 }
 
@@ -1639,10 +1639,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #1e1e1e;
+  background: var(--subtle-bg);
   border-radius: 8px;
   padding: 10px 16px;
-  color: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
   gap: 10px;
@@ -2181,7 +2182,7 @@
   font-weight: 700;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #e2e8f0;
+  color: var(--code-ink);
 }
 
 .reg-pill.active {
@@ -2219,7 +2220,8 @@
 .pitfall-desc {
   font-size: 13px;
   line-height: 1.7;
-  color: #cbd5e1;
+  color: var(--code-ink);
+  opacity: 0.9;
   max-width: 650px;
 }
 
@@ -2466,7 +2468,7 @@
   padding: 1px 4px;
   border-radius: 3px;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
   font-weight: 700;
   margin-left: 4px;
   vertical-align: middle;

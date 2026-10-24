@@ -329,7 +329,7 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
                 <span class="strip-screen-val" id="strip-screen-val">45.20</span>
                 <span class="strip-screen-unit">N</span>
               </div>
-              <small style="color: #63707a; font-size: 9px; margin-top: 2px;">实时拉力测量读数</small>
+              <small style="color: var(--muted); font-size: 9px; margin-top: 2px;">实时拉力测量读数</small>
             </div>
             <canvas class="strip-screen-waveform" id="strip-canvas" width="220" height="70"></canvas>
             <div class="strip-screen-bot">

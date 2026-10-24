@@ -301,13 +301,13 @@ permalink: /projects/retro-robot/index.html
 
 /* 示波器 CRT 外壳 */
 .lab-crt-frame {
-  background: #141c1f;
-  border: 1px solid var(--line, #28373e);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 20px 22px 18px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow);
   position: relative;
 }
 
@@ -319,7 +319,7 @@ permalink: /projects/retro-robot/index.html
   gap: 10px;
   margin-bottom: 14px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line);
 }
 
 .lab-crt-brand {
@@ -329,7 +329,7 @@ permalink: /projects/retro-robot/index.html
   font-family: ui-monospace, Consolas, monospace;
   font-size: 11px;
   font-weight: 700;
-  color: #7ee787;
+  color: var(--accent-dark);
   letter-spacing: 0.05em;
 }
 
@@ -337,18 +337,18 @@ permalink: /projects/retro-robot/index.html
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #7ee787;
-  box-shadow: 0 0 8px #7ee787;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
   display: inline-block;
 }
 
 .crt-tag {
-  background: rgba(126, 231, 135, 0.15);
-  border: 1px solid rgba(126, 231, 135, 0.3);
+  background: var(--soft);
+  border: 1px solid var(--raised-border);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 10px;
-  color: #a6f3a6;
+  color: var(--accent-dark);
 }
 
 .lab-crt-metrics {
@@ -357,28 +357,28 @@ permalink: /projects/retro-robot/index.html
   gap: 12px;
   font-family: ui-monospace, monospace;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--muted);
 }
 
 .lab-metric-item {
-  background: #090e11;
+  background: var(--subtle-bg);
   padding: 3px 8px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
 }
 
 .lab-trig-badge {
-  color: #38bdf8;
+  color: var(--accent);
   font-weight: 700;
   animation: trigPulse 1.6s infinite ease-in-out;
 }
 
 @keyframes trigPulse {
   0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; text-shadow: 0 0 6px #38bdf8; }
+  50% { opacity: 1; text-shadow: 0 0 6px var(--accent); }
 }
 
-/* 示波器屏幕区域 */
+/* 示波器屏幕区域 (硬件荧光屏质感) */
 .lab-screen-wrapper {
   position: relative;
   background: radial-gradient(ellipse at center, #0f1c1a 0%, #060c0c 100%);
@@ -427,24 +427,24 @@ permalink: /projects/retro-robot/index.html
 }
 
 .hud-ch-badge {
-  background: #0284c7;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 3px;
-  box-shadow: 0 0 8px rgba(2, 132, 199, 0.6);
+  box-shadow: 0 0 8px var(--accent);
 }
 
 #hudWaveName {
   font-size: 14px;
-  color: #38bdf8;
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent);
 }
 
 .hud-formula {
   font-size: 11px;
-  color: #80c7a7;
+  color: var(--accent-dark);
   opacity: 0.85;
 }
 
@@ -465,7 +465,7 @@ permalink: /projects/retro-robot/index.html
 
 .scope-ctrl-group label {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--muted);
   font-family: ui-monospace, monospace;
 }
 
@@ -477,14 +477,14 @@ permalink: /projects/retro-robot/index.html
 
 .range-wrap input[type="range"] {
   flex: 1;
-  accent-color: #38bdf8;
+  accent-color: var(--accent);
   height: 5px;
 }
 
 .range-val {
   font-family: ui-monospace, monospace;
   font-size: 11px;
-  color: #e2e8f0;
+  color: var(--ink);
   min-width: 38px;
   text-align: right;
 }
@@ -496,9 +496,9 @@ permalink: /projects/retro-robot/index.html
 }
 
 .scope-btn {
-  background: #1e293b;
-  color: #e2e8f0;
-  border: 1px solid #334155;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
   padding: 8px 12px;
   border-radius: 6px;
   font-family: ui-monospace, monospace;
@@ -511,22 +511,23 @@ permalink: /projects/retro-robot/index.html
 }
 
 .scope-btn:hover {
-  background: #334155;
-  border-color: #475569;
+  background: var(--soft);
+  border-color: var(--accent);
+  color: var(--accent-dark);
 }
 
 .scope-btn.active {
-  background: #0369a1;
-  border-color: #38bdf8;
-  color: #fff;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0 10px var(--accent);
 }
 
 .btn-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #38bdf8;
+  background: var(--accent);
   display: inline-block;
 }
 
@@ -537,14 +538,14 @@ permalink: /projects/retro-robot/index.html
 }
 
 .station-card {
-  background: var(--raised-bg, #1a2226);
-  border: 1px solid var(--line, #28373e);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   height: 100%;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-small);
 }
 
 .station-header {
@@ -554,20 +555,20 @@ permalink: /projects/retro-robot/index.html
   font-family: ui-monospace, monospace;
   font-size: 11px;
   margin-bottom: 14px;
-  color: var(--muted, #94a3b8);
+  color: var(--muted);
 }
 
 .station-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 8px #38bdf8;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
 }
 
 .station-title {
   font-weight: 700;
-  color: var(--ink, #f1f5f9);
+  color: var(--ink);
 }
 
 .station-meta {
@@ -578,14 +579,14 @@ permalink: /projects/retro-robot/index.html
 
 /* 对话气泡 */
 .station-bubble {
-  background: var(--alt-bg, #11181c);
-  border: 1px solid var(--line, #2c3e47);
-  border-left: 3px solid #38bdf8;
+  background: var(--alt-bg);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
   border-radius: 8px;
   padding: 12px 14px;
   font-size: 12px;
   line-height: 1.6;
-  color: var(--body-copy, #cbd5e1);
+  color: var(--body-copy);
   min-height: 64px;
   display: flex;
   gap: 6px;
@@ -595,7 +596,7 @@ permalink: /projects/retro-robot/index.html
 }
 
 .bubble-prefix {
-  color: #38bdf8;
+  color: var(--accent-dark);
   font-weight: 700;
 }
 
@@ -631,9 +632,9 @@ permalink: /projects/retro-robot/index.html
 }
 
 .bot-act-btn {
-  background: var(--card-bg, #1e293b);
-  border: 1px solid var(--line, #334155);
-  color: var(--body-copy, #cbd5e1);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--body-copy);
   padding: 7px 10px;
   border-radius: 6px;
   font-size: 11px;
@@ -643,9 +644,9 @@ permalink: /projects/retro-robot/index.html
 }
 
 .bot-act-btn:hover {
-  background: #0284c7;
-  border-color: #38bdf8;
-  color: #fff;
+  background: var(--soft);
+  border-color: var(--accent);
+  color: var(--accent-dark);
   transform: translateY(-1px);
 }
 
@@ -654,9 +655,9 @@ permalink: /projects/retro-robot/index.html
   align-items: flex-start;
   gap: 8px;
   font-size: 11px;
-  color: var(--muted, #64748b);
+  color: var(--muted);
   line-height: 1.5;
-  border-top: 1px dashed var(--line, #28373e);
+  border-top: 1px dashed var(--line);
   padding-top: 12px;
 }
 
@@ -678,7 +679,7 @@ permalink: /projects/retro-robot/index.html
 
 .section-title-wrap p {
   font-size: 14px;
-  color: var(--muted, #94a3b8);
+  color: var(--muted);
   margin: 0;
 }
 
@@ -690,9 +691,9 @@ permalink: /projects/retro-robot/index.html
 }
 
 .wave-tab {
-  background: var(--card-bg, #1e293b);
-  border: 1px solid var(--line, #334155);
-  color: var(--muted, #94a3b8);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--muted);
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 12px;
@@ -701,14 +702,14 @@ permalink: /projects/retro-robot/index.html
 }
 
 .wave-tab:hover {
-  color: var(--ink, #f1f5f9);
-  border-color: #64748b;
+  color: var(--ink);
+  border-color: var(--accent);
 }
 
 .wave-tab.active {
-  background: #0284c7;
-  border-color: #38bdf8;
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -721,8 +722,8 @@ permalink: /projects/retro-robot/index.html
 
 .wave-card {
   text-align: left;
-  background: var(--raised-bg, #1a2226);
-  border: 1px solid var(--line, #28373e);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px 14px;
   cursor: pointer;
@@ -734,14 +735,14 @@ permalink: /projects/retro-robot/index.html
 
 .wave-card:hover {
   transform: translateY(-2px);
-  border-color: #38bdf8;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-small);
 }
 
 .wave-card.is-active {
-  border-color: #38bdf8;
-  background: linear-gradient(145deg, rgba(2, 132, 199, 0.15), var(--raised-bg, #1a2226));
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+  border-color: var(--accent);
+  background: var(--soft);
+  box-shadow: 0 0 0 2px var(--raised-border);
 }
 
 .wave-card-top {
@@ -753,34 +754,34 @@ permalink: /projects/retro-robot/index.html
 .wave-card-idx {
   font-family: ui-monospace, monospace;
   font-size: 10px;
-  color: #38bdf8;
+  color: var(--accent-dark);
   font-weight: 700;
 }
 
 .wave-card-cat {
   font-size: 9px;
-  color: var(--muted, #64748b);
+  color: var(--muted);
 }
 
 .wave-card-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--ink, #f1f5f9);
+  color: var(--ink);
 }
 
 .wave-card-spec {
   font-family: ui-monospace, monospace;
   font-size: 10px;
-  color: var(--muted, #94a3b8);
+  color: var(--muted);
 }
 
 /* 详情解密面板 */
 .wave-detail-panel {
-  background: var(--alt-bg, #10161a);
-  border: 1px solid var(--line, #28373e);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-small);
 }
 
 .wave-detail-head {
@@ -792,8 +793,8 @@ permalink: /projects/retro-robot/index.html
 }
 
 .detail-badge {
-  background: #0284c7;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
@@ -803,25 +804,25 @@ permalink: /projects/retro-robot/index.html
 .wave-detail-head h3 {
   margin: 0;
   font-size: 18px;
-  color: var(--ink, #f1f5f9);
+  color: var(--ink);
 }
 
 .detail-spec {
   font-family: ui-monospace, monospace;
   font-size: 12px;
-  color: #7ee787;
+  color: var(--accent-dark);
 }
 
 .detail-desc {
   font-size: 14px;
   line-height: 1.7;
-  color: var(--body-copy, #cbd5e1);
+  color: var(--body-copy);
   margin: 0 0 16px;
 }
 
 .detail-formula-box {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 14px;
   font-family: ui-monospace, monospace;
@@ -833,17 +834,17 @@ permalink: /projects/retro-robot/index.html
 }
 
 .formula-label {
-  color: var(--muted, #94a3b8);
+  color: var(--muted);
 }
 
 .detail-formula-box code {
-  color: #38bdf8;
+  color: var(--accent-dark);
   font-weight: 600;
 }
 
 /* ==========================================================================
    3. 架构卡片网格
-   ======================================================================== */
+   ========================================================================== */
 .arch-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -851,8 +852,8 @@ permalink: /projects/retro-robot/index.html
 }
 
 .arch-card {
-  background: var(--raised-bg, #1a2226);
-  border: 1px solid var(--line, #28373e);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 22px;
   display: flex;
@@ -867,13 +868,13 @@ permalink: /projects/retro-robot/index.html
 .arch-card h3 {
   font-size: 16px;
   margin: 0 0 10px;
-  color: var(--ink, #f1f5f9);
+  color: var(--ink);
 }
 
 .arch-card p {
   font-size: 13px;
   line-height: 1.7;
-  color: var(--body-copy, #94a3b8);
+  color: var(--body-copy);
   margin: 0 0 16px;
   flex: 1;
 }
@@ -881,17 +882,17 @@ permalink: /projects/retro-robot/index.html
 .arch-meta {
   font-family: ui-monospace, monospace;
   font-size: 10.5px;
-  color: #38bdf8;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--accent-dark);
+  border-top: 1px solid var(--line);
   padding-top: 10px;
 }
 
 /* ==========================================================================
    4. 代码复用与关联卡片
-   ======================================================================== */
+   ========================================================================== */
 .integration-code-block {
-  background: #090e11;
-  border: 1px solid #1e293b;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -900,18 +901,18 @@ permalink: /projects/retro-robot/index.html
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #10161a;
+  background: var(--deep);
   padding: 10px 16px;
   font-family: ui-monospace, monospace;
   font-size: 12px;
-  color: #94a3b8;
-  border-bottom: 1px solid #1e293b;
+  color: var(--code-ink);
+  border-bottom: 1px solid var(--line);
 }
 
 .copy-btn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #e2e8f0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--ink);
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 11px;
@@ -920,8 +921,8 @@ permalink: /projects/retro-robot/index.html
 }
 
 .copy-btn:hover {
-  background: #0284c7;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .integration-code-block pre {
@@ -930,7 +931,7 @@ permalink: /projects/retro-robot/index.html
   font-family: ui-monospace, Consolas, monospace;
   font-size: 12.5px;
   line-height: 1.6;
-  color: #e2e8f0;
+  color: var(--code-ink);
   overflow-x: auto;
 }
 
@@ -942,8 +943,8 @@ permalink: /projects/retro-robot/index.html
 }
 
 .related-card {
-  background: var(--raised-bg, #1a2226);
-  border: 1px solid var(--line, #28373e);
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 18px 20px;
   text-decoration: none;
@@ -954,73 +955,87 @@ permalink: /projects/retro-robot/index.html
 
 .related-card:hover {
   transform: translateY(-2px);
-  border-color: #38bdf8;
+  border-color: var(--accent);
 }
 
 .rel-tag {
   font-size: 10px;
   font-family: ui-monospace, monospace;
-  color: #38bdf8;
+  color: var(--accent-dark);
   margin-bottom: 6px;
 }
 
 .related-card strong {
   font-size: 14px;
-  color: var(--ink, #f1f5f9);
+  color: var(--ink);
   margin-bottom: 8px;
 }
 
 .related-card p {
   font-size: 12px;
   line-height: 1.6;
-  color: var(--muted, #94a3b8);
+  color: var(--muted);
   margin: 0;
 }
 
 .end-note {
-  margin-top: 24px;
+  background: var(--alt-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
 }
 
-.end-note a {
-  color: var(--accent-dark, #38bdf8);
+.end-note p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.end-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.end-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
   font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.end-note a:hover {
-  text-decoration: underline;
+.end-btn.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.end-btn.primary:hover {
+  background: var(--accent-dark);
+}
+
+.end-btn.secondary {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.end-btn.secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
 }
 
 @media (max-width: 900px) {
   .lab-stage-container {
     grid-template-columns: 1fr;
   }
-}
-
-@media (max-width: 620px) {
-  .robot-lab-page { padding-top: 0; }
-  .lab-stage-container { margin: 22px 0 32px; gap: 18px; }
-  .lab-crt-frame { min-width: 0; padding: 14px 12px; }
-  .lab-crt-brand, .lab-crt-metrics { flex-wrap: wrap; gap: 8px; }
-  .lab-screen-wrapper { min-height: 0; height: 220px; }
-  .lab-scope-controls { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .scope-ctrl-group, .range-wrap { min-width: 0; }
-  .range-wrap input[type="range"] { min-width: 0; height: 32px; }
-  .scope-btn-group { flex-wrap: wrap; }
-  .scope-btn, .wave-tab, .bot-act-btn, .copy-btn { min-height: 44px; }
-  .scope-btn { flex: 1; justify-content: center; }
-  .wave-cat-tabs { gap: 8px; }
-  .wave-tab { padding-inline: 10px; }
-  .wave-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .wave-card { min-width: 0; padding: 12px 10px; overflow-wrap: anywhere; }
-  .wave-detail-panel { padding: 18px 14px; }
-  .wave-detail-head, .detail-formula-box { flex-wrap: wrap; }
-  .detail-formula-box code { overflow-wrap: anywhere; }
-  .arch-cards-grid, .related-links-grid { grid-template-columns: minmax(0, 1fr); }
-  .arch-card { min-width: 0; padding: 20px 16px; }
-  .arch-card p, .section-title-wrap p { overflow-wrap: anywhere; }
-  .integration-code-block { min-width: 0; }
-  .integration-code-block pre { overscroll-behavior-x: contain; }
 }
 </style>
 

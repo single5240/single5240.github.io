@@ -71,6 +71,7 @@ html {
     --inline-code: #8de5e9;
     --contact-copy: #cbd7dd;
     --note: #f1a06f;
+    --on-accent: #ffffff;
     --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.45);
     --shadow: 0 3px 6px rgba(0, 0, 0, 0.35), 0 14px 36px -4px rgba(0, 0, 0, 0.6);
     --shadow-small: 0 1.5px 3px rgba(0, 0, 0, 0.28), 0 8px 20px -2px rgba(0, 0, 0, 0.48);
@@ -105,6 +106,7 @@ html {
   --inline-code: #8de5e9;
   --contact-copy: #cbd7dd;
   --note: #f1a06f;
+  --on-accent: #ffffff;
   --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.45);
   --shadow: 0 3px 6px rgba(0, 0, 0, 0.35), 0 14px 36px -4px rgba(0, 0, 0, 0.6);
   --shadow-small: 0 1.5px 3px rgba(0, 0, 0, 0.28), 0 8px 20px -2px rgba(0, 0, 0, 0.48);
@@ -143,6 +145,7 @@ html {
   --inline-code: #cc251b;
   --contact-copy: #cbd7dd;
   --note: #cc251b;
+  --on-accent: #ffffff;
   --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
   --shadow: 0 2px 4px rgba(17, 17, 17, 0.05), 0 12px 28px -4px rgba(17, 17, 17, 0.12);
   --shadow-small: 0 1px 3px rgba(17, 17, 17, 0.04), 0 6px 16px -2px rgba(17, 17, 17, 0.08);
@@ -177,6 +180,7 @@ html {
   --inline-code: #52d8e8;
   --contact-copy: #cbd7dd;
   --note: #ffd166;
+  --on-accent: #02070e;
   --panel-bevel: inset 0 1px 0 rgba(82, 216, 232, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
   --shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 16px 42px -4px rgba(0, 0, 0, 0.75);
   --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.35), 0 8px 22px -2px rgba(0, 0, 0, 0.6);
@@ -210,6 +214,8 @@ html {
   --code-ink: #faf9f6;
   --inline-code: #141414;
   --contact-copy: #cbd7dd;
+  --note: #4a4a4a;
+  --on-accent: #ffffff;
   --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(0, 0, 0, 0.08);
   --shadow: 0 2px 4px rgba(0, 0, 0, 0.05), 0 12px 28px -4px rgba(0, 0, 0, 0.12);
   --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px -2px rgba(0, 0, 0, 0.08);

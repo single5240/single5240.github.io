@@ -166,7 +166,7 @@ bool             W25q128_IsOperationActive(void);
         <span class="w25q-flag">BUSY</span>
       </div>
       <span id="w25q-mode-badge" class="ecat-status-val">当前模式：非阻塞状态机</span>
-      <button class="ecat-btn" id="w25q-mode-toggle" style="background:#2a2a2a; border-color:#444; color:#fff;">切换为：阻塞轮询 while(BUSY)</button>
+      <button class="ecat-btn" id="w25q-mode-toggle" >切换为：阻塞轮询 while(BUSY)</button>
     </div>
   </div>
 
@@ -235,7 +235,7 @@ bool             W25q128_IsOperationActive(void);
     <div class="w25q-ctrl-card">
       <div class="w25q-ctrl-title">发起 Flash 硬件操作</div>
       <div class="w25q-btn-row">
-        <button class="ecat-btn" id="w25q-btn-erase" style="background:var(--accent); color:#fff; border-color:var(--accent);">
+        <button class="ecat-btn" id="w25q-btn-erase" style="background:var(--accent); color:var(--on-accent); border-color:var(--accent);">
           🧹 4 KiB 扇区擦除 (~88 ms)
         </button>
         <button class="ecat-btn" id="w25q-btn-prog">
@@ -252,7 +252,7 @@ bool             W25q128_IsOperationActive(void);
 
     <div class="w25q-ctrl-card">
       <div class="w25q-ctrl-title">驱动状态机与 SPI 事件日志</div>
-      <div id="w25q-log" style="flex:1; min-height:110px; max-height:140px; overflow-y:auto; background:#1e1e1e; border-radius:6px; padding:8px 10px; font-family:ui-monospace, Consolas, monospace; font-size:11px; line-height:1.5;"></div>
+      <div id="w25q-log" style="flex:1; min-height:110px; max-height:140px; overflow-y:auto; background:var(--code-bg); color:var(--code-ink); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-family:ui-monospace, Consolas, monospace; font-size:11px; line-height:1.5;"></div>
     </div>
   </div>
 </div>

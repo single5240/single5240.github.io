@@ -408,7 +408,7 @@ SSC 协议栈中处理状态转换请求的核心入口函数是 `AL_ControlInd(
       <div class="ecat-card-title" style="margin-top:14px; margin-bottom:6px;">
         <span>TwinCAT 3 / ESC 状态诊断日志</span>
       </div>
-      <div id="ecat-log" style="flex:1; min-height:120px; max-height:160px; overflow-y:auto; background:#1e1e1e; border-radius:6px; padding:8px 10px; font-family:ui-monospace, Consolas, monospace; font-size:11px; line-height:1.5;"></div>
+      <div id="ecat-log" style="flex:1; min-height:120px; max-height:160px; overflow-y:auto; background:var(--code-bg); color:var(--code-ink); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-family:ui-monospace, Consolas, monospace; font-size:11px; line-height:1.5;"></div>
     </div>
   </div>
 </div>

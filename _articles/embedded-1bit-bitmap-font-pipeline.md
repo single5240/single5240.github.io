@@ -152,7 +152,7 @@ tags:
       <div class="font-bsearch-controls">
         <label style="font-size:13px; font-weight:600;">输入查找字符或 Unicode 码点：</label>
         <input type="text" id="font-bsearch-input" class="font-bsearch-input" value="荷" maxlength="4">
-        <button class="ecat-btn" id="font-bsearch-step-btn" style="background:var(--accent); color:#fff; border-color:var(--accent);">单步探测 (Step)</button>
+        <button class="ecat-btn" id="font-bsearch-step-btn" style="background:var(--accent); color:var(--on-accent); border-color:var(--accent);">单步探测 (Step)</button>
         <button class="ecat-btn" id="font-bsearch-reset-btn">重置探测</button>
         <span style="font-size:12px; color:var(--muted); margin-left:auto;">
           表中收录 28 个典型字形（已升序排列），最多只需要 ⌈log₂(28)⌉ = 5 次比较
