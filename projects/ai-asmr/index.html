@@ -45,6 +45,13 @@ permalink: /projects/ai-asmr/index.html
         <span class="cat-tab-desc">空心木盒 · 复古精装书 · 软硅胶 · 厚陶杯 · 竹节</span>
       </span>
     </button>
+    <button type="button" class="cat-tab-btn" id="tabFrictionCategory" role="tab" aria-selected="false" data-cat="friction">
+      <span class="cat-tab-icon">🪶</span>
+      <span class="cat-tab-content">
+        <strong class="cat-tab-title">细腻摩擦声触发器 (Friction Stage)</strong>
+        <span class="cat-tab-desc">蓬松化妆刷 · 天鹅绒 · 细腻微砂 · 指腹轻摩 · 书页</span>
+      </span>
+    </button>
   </nav>
 
   <!-- ========================================================================
@@ -263,6 +270,76 @@ permalink: /projects/ai-asmr/index.html
     </div>
   </section>
 
+  <!-- 3.3 摩擦声大类控制区 (Friction Stage) -->
+  <section class="asmr-matrix-grid category-panel" id="panelFrictionCategory" aria-label="摩擦声调控面板" hidden>
+    <!-- 左卡片：摩擦材质与介质 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>1. 摩擦声材质触发器 (Friction Materials)</h2>
+        <span class="card-badge">软触剪切摩擦</span>
+      </div>
+      <p class="card-intro">精选超柔软低阻尼介质，平滑剪切微声，全频段去高频刮痕与刺耳齿音：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="摩擦材质选择">
+        <button type="button" class="fric-mat-btn active" data-mat="brush" role="radio" aria-checked="true">
+          <span class="preset-icon">🖌️</span>
+          <span class="preset-name">蓬松软毛刷 (Fluffy Makeup Brush)</span>
+          <span class="preset-desc">极柔细刷毛抚过仿真假耳，轻柔微风与毛絮摩挲，细腻温软</span>
+        </button>
+        <button type="button" class="fric-mat-btn" data-mat="velvet" role="radio" aria-checked="false">
+          <span class="preset-icon">🧣</span>
+          <span class="preset-name">细腻天鹅绒 (Velvet Fabric)</span>
+          <span class="preset-desc">厚实织物深层纤维往复摩擦，温暖深沉钝感，完全无尖锐毛刺</span>
+        </button>
+        <button type="button" class="fric-mat-btn" data-mat="microsand" role="radio" aria-checked="false">
+          <span class="preset-icon">⏳</span>
+          <span class="preset-name">细腻微砂台 (Fine Micro-Sand)</span>
+          <span class="preset-desc">如沙画台般极其均匀的细微软砂流推拂，细密催眠微颗粒感</span>
+        </button>
+        <button type="button" class="fric-mat-btn" data-mat="finger" role="radio" aria-checked="false">
+          <span class="preset-icon">🤲</span>
+          <span class="preset-name">温暖指腹轻摩 (Warm Finger Swiping)</span>
+          <span class="preset-desc">干燥指腹在柔软硅胶耳廓慢速游走，带呼吸般的微肉感起伏</span>
+        </button>
+        <button type="button" class="fric-mat-btn" data-mat="bookpage" role="radio" aria-checked="false">
+          <span class="preset-icon">📜</span>
+          <span class="preset-name">复古厚书页 (Linen Book Page)</span>
+          <span class="preset-desc">厚质棉纸与亚麻书页指尖慢滑抚摩，古朴宁静的纤维质感</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 右卡片：摩擦手法与运动轨迹 -->
+    <div class="control-card">
+      <div class="card-head">
+        <h2>2. 摩擦手法与运动轨迹 (Friction Styles &amp; Motions)</h2>
+        <span class="card-badge">双耳贴耳环绕</span>
+      </div>
+      <p class="card-intro">模拟专业 ASMR 创作者抚摩轨迹：支持往复推抚、耳廓打圈与沉浸长抚：</p>
+      <div class="selector-btn-grid" role="radiogroup" aria-label="摩擦手法选择">
+        <button type="button" class="fric-style-btn active" data-style="swiping" role="radio" aria-checked="true">
+          <span class="preset-icon">↔️</span>
+          <span class="preset-name">慢速往复推抚 (Back &amp; Forth Swipes)</span>
+          <span class="preset-desc">如摇篮般的双向往复慢抚，自然的强弱呼吸起伏与声像微摇</span>
+        </button>
+        <button type="button" class="fric-style-btn" data-style="circle" role="radio" aria-checked="false">
+          <span class="preset-icon">🔄</span>
+          <span class="preset-name">3Dio 耳廓打圈 (Circular Ear Massage)</span>
+          <span class="preset-desc">声像在左右两耳之间圆润绕圈游走，全方位包围式颅内微触</span>
+        </button>
+        <button type="button" class="fric-style-btn" data-style="feather" role="radio" aria-checked="false">
+          <span class="preset-icon">🪶</span>
+          <span class="preset-name">羽化轻柔短拂 (Feathery Light Strokes)</span>
+          <span class="preset-desc">短促轻巧的向外轻拂，轻盈如羽毛掠过，细密富有规律</span>
+        </button>
+        <button type="button" class="fric-style-btn" data-style="continuous" role="radio" aria-checked="false">
+          <span class="preset-icon">🌊</span>
+          <span class="preset-name">绵延催眠慢抚 (Continuous Slow Caress)</span>
+          <span class="preset-desc">长达 4 秒以上的无缝渐变长拂，海浪般绵延不绝，极度助眠</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- ========================================================================
        4. 3Dio 双耳声学微调面板
        ======================================================================== -->
@@ -327,6 +404,25 @@ permalink: /projects/ai-asmr/index.html
         <input type="range" id="rangeTapSoftness" min="0" max="1" step="0.05" value="0.7" aria-label="敲击软化程度">
         <small class="tweak-hint">向右滑动增加肉感钝度与软包络，向左增加轻柔圆润甲触</small>
       </div>
+
+      <!-- 摩擦声模式专属微调项 -->
+      <div class="tweak-item fric-tweak" id="tweakItemFricSpeed" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeFricSpeed">摩擦往复速度 (Friction Tempo)</label>
+          <span class="tweak-val" id="valFricSpeed">标准 (1.0x)</span>
+        </div>
+        <input type="range" id="rangeFricSpeed" min="0.4" max="2.0" step="0.1" value="1.0" aria-label="摩擦往复速度">
+        <small class="tweak-hint">调节推抚/打圈周期的快慢与呼吸节奏，越慢越催眠</small>
+      </div>
+
+      <div class="tweak-item fric-tweak" id="tweakItemFricCushion" hidden>
+        <div class="tweak-label-wrap">
+          <label for="rangeFricCushion">绒感吸音缓冲 (Velvet Cushioning)</label>
+          <span class="tweak-val" id="valFricCushion">绒感钝响 (75%)</span>
+        </div>
+        <input type="range" id="rangeFricCushion" min="0" max="1" step="0.05" value="0.75" aria-label="绒感吸音缓冲">
+        <small class="tweak-hint">高值消除一切高频刮擦，呈现深层天鹅绒钝响；低值显现细腻纤微毛绒感</small>
+      </div>
     </div>
   </section>
 
@@ -340,7 +436,7 @@ permalink: /projects/ai-asmr/index.html
     </div>
     <p class="card-intro">
       如果你希望在 <strong>Stable Audio、ElevenLabs、AudioLDM2 或 Suno/Udio</strong> 中用 AI 生成高品质 ASMR 声音，
-      下方已根据你当前选定的<strong>大类（雨声/敲击声）、材质、手法与声学特性</strong>实时计算出工业级提示词：
+      下方已根据你当前选定的<strong>大类（雨声/敲击声/摩擦声）、材质、手法与声学特性</strong>实时计算出工业级提示词：
     </p>
 
     <!-- 动态 Prompt 生成展示区 -->
@@ -465,11 +561,11 @@ permalink: /projects/ai-asmr/index.html
 /* 核心大类切换导航 */
 .category-switch-bar {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
   margin: 1.5rem 0 1rem;
 }
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .category-switch-bar {
     grid-template-columns: 1fr;
   }
@@ -817,7 +913,9 @@ permalink: /projects/ai-asmr/index.html
 .preset-btn,
 .surface-btn,
 .tap-mat-btn,
-.tap-style-btn {
+.tap-style-btn,
+.fric-mat-btn,
+.fric-style-btn {
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -835,7 +933,9 @@ permalink: /projects/ai-asmr/index.html
 .preset-btn:hover,
 .surface-btn:hover,
 .tap-mat-btn:hover,
-.tap-style-btn:hover {
+.tap-style-btn:hover,
+.fric-mat-btn:hover,
+.fric-style-btn:hover {
   border-color: var(--accent);
   background: var(--alt-bg);
   transform: translateX(2px);
@@ -843,7 +943,9 @@ permalink: /projects/ai-asmr/index.html
 .preset-btn.active,
 .surface-btn.active,
 .tap-mat-btn.active,
-.tap-style-btn.active {
+.tap-style-btn.active,
+.fric-mat-btn.active,
+.fric-style-btn.active {
   border-color: var(--accent);
   background: var(--soft);
   box-shadow: inset 3px 0 0 var(--accent);
@@ -1044,6 +1146,8 @@ permalink: /projects/ai-asmr/index.html
   .surface-btn:hover,
   .tap-mat-btn:hover,
   .tap-style-btn:hover,
+  .fric-mat-btn:hover,
+  .fric-style-btn:hover,
   .cat-tab-btn:hover,
   .main-play-btn:hover {
     transform: none;
@@ -1259,6 +1363,96 @@ permalink: /projects/ai-asmr/index.html
     }
   };
 
+  // 摩擦声物理材质与介质参数 (Friction Materials)
+  const FRICTION_MATERIALS = {
+    brush: {
+      name: "蓬松软毛刷 (Fluffy Makeup Brush)",
+      enName: "fluffy soft-bristle makeup brush",
+      zhPrompt: "超蓬松羊毛/纤维化妆刷拂过仿真假耳",
+      baseFreq: 1250,       // 刷毛细腻微风与毛絮中心频率 (Hz)
+      q: 0.9,
+      bodyWarmth: 320,      // 低频拂动微风感
+      velScale: 0.85,
+      desc: "Ultra-Delicate Micro-Bristle Fluff · Cushioned Whispering Air"
+    },
+    velvet: {
+      name: "细腻天鹅绒 (Velvet Fabric)",
+      enName: "smooth plush velvet and fleece cloth",
+      zhPrompt: "厚实温软的天鹅绒与抓绒布料",
+      baseFreq: 820,
+      q: 1.4,
+      bodyWarmth: 240,
+      velScale: 0.95,
+      desc: "Deep Warm Fabric Caress · Zero High Treble · Muffled Velvet"
+    },
+    microsand: {
+      name: "细腻微砂台 (Fine Micro-Sand)",
+      enName: "ultra-fine smooth micro-sand surface",
+      zhPrompt: "极细微的流沙与细腻软木板轻抚",
+      baseFreq: 1450,
+      q: 1.2,
+      bodyWarmth: 450,
+      velScale: 0.8,
+      desc: "Delicate Micro-Grain Texture · Even & Hypnotic Drift"
+    },
+    finger: {
+      name: "温暖指腹轻摩 (Warm Finger Swiping)",
+      enName: "gentle dry finger pad friction on soft silicone ears",
+      zhPrompt: "温暖干燥指腹在柔软硅胶耳廓上平缓抚摩",
+      baseFreq: 680,
+      q: 1.8,
+      bodyWarmth: 190,
+      velScale: 1.0,
+      desc: "Organic Flesh Warmth · Deep Tactile Proximity · Gentle Drag"
+    },
+    bookpage: {
+      name: "复古厚书页 (Linen Book Page)",
+      enName: "heavyweight cotton paper and linen book pages",
+      zhPrompt: "厚实质感棉质书页与织物封面轻抚",
+      baseFreq: 1050,
+      q: 1.1,
+      bodyWarmth: 360,
+      velScale: 0.88,
+      desc: "Cozy Paper Fiber Rustle · Antiquarian Warmth & Peace"
+    }
+  };
+
+  // 摩擦手法与运动轨迹 (Friction Styles)
+  const FRICTION_STYLES = {
+    swiping: {
+      name: "慢速往复推抚 (Back & Forth Swipes)",
+      enName: "gentle rhythmic back-and-forth swiping",
+      zhPrompt: "平缓均匀的双向往复推抚",
+      cycleTime: 2200, // 毫秒
+      motion: "linear",
+      desc: "Rhythmic Cradle-Like Sway · Breathing Volume Dynamic"
+    },
+    circle: {
+      name: "3Dio 耳廓打圈 (Circular Ear Massage)",
+      enName: "circular binaural massage around 3Dio silicone ears",
+      zhPrompt: "在 3Dio 双耳耳廓周围平滑绕圈抚摩",
+      cycleTime: 3200,
+      motion: "circular",
+      desc: "Smooth 360° Panning Orbit · Hypnotic Ear-to-Ear Encirclement"
+    },
+    feather: {
+      name: "羽化轻柔短拂 (Feathery Light Strokes)",
+      enName: "delicate feathery short flicking strokes",
+      zhPrompt: "轻盈向外的羽化轻快短拂",
+      cycleTime: 1350,
+      motion: "feather",
+      desc: "Light & Airy Micro-Sweeps · Dense Delicate Repetition"
+    },
+    continuous: {
+      name: "绵延催眠慢抚 (Continuous Slow Caress)",
+      enName: "continuous slow meditative long strokes",
+      zhPrompt: "超长周期的无缝沉浸催眠慢抚",
+      cycleTime: 4600,
+      motion: "continuous",
+      desc: "Ocean-Wave Deep Relaxation · Endless Soothing Cocoon"
+    }
+  };
+
   let state = {
     activeCategory: "rain", // "rain" | "tapping"
     isPlaying: false,
@@ -1275,6 +1469,12 @@ permalink: /projects/ai-asmr/index.html
     tapCadenceMultiplier: 1.0,
     tapSoftness: 0.7, // 0 (较轻快甲触) ~ 1 (极软肉感指腹)
     orbitStep: 0,
+
+    // 摩擦声参数
+    currentFricMat: "brush",
+    currentFricStyle: "swiping",
+    fricSpeedMultiplier: 1.0,
+    fricCushion: 0.75, // 0 (较轻柔纤细微刷毛) ~ 1 (深厚天鹅绒钝感)
 
     // 通用声学
     visualMode: "scenic", // scenic | radar | minimal
@@ -1304,6 +1504,9 @@ permalink: /projects/ai-asmr/index.html
   let rainDropTimerId = null;
   let thunderTimerId = null;
   let tapTimerId = null;
+  let fricTimerId = null;
+  let fricNoiseBuffer = null;
+  let fricMotionPhase = 0;
 
   function initAudioEngine() {
     if (audioCtx) return;
@@ -1639,6 +1842,146 @@ permalink: /projects/ai-asmr/index.html
   }
 
   // --------------------------------------------------------------------------
+  // B3. 摩擦声物理声学合成核心 (Friction Synthesizer Engine)
+  // --------------------------------------------------------------------------
+  function getFrictionNoiseBuffer() {
+    if (!audioCtx) return null;
+    if (fricNoiseBuffer) return fricNoiseBuffer;
+    // 4 秒超平滑立体声粉红噪声 (Pink & Soft Velvet Noise)，完全去直流偏置与去毛刺
+    const bufferSize = audioCtx.sampleRate * 4;
+    fricNoiseBuffer = audioCtx.createBuffer(2, bufferSize, audioCtx.sampleRate);
+    for (let channel = 0; channel < 2; channel++) {
+      const output = fricNoiseBuffer.getChannelData(channel);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.09;
+        b6 = white * 0.115926;
+      }
+    }
+    return fricNoiseBuffer;
+  }
+
+  function triggerFrictionStroke(panStart, panEnd, duration, velScale = 1.0) {
+    if (!audioCtx || !state.isPlaying || state.activeCategory !== "friction") return;
+
+    const mat = FRICTION_MATERIALS[state.currentFricMat];
+    const buf = getFrictionNoiseBuffer();
+    if (!buf) return;
+
+    const now = audioCtx.currentTime;
+    const dur = Math.max(0.18, duration);
+
+    // 1. 噪声源 (微随机 offset 循环播放)
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const offset = Math.random() * 2.0;
+
+    // 2. 双重物理滤波 (低通钝化去刺 + 材质中频温润共鸣)
+    const baseCutoff = mat.baseFreq * (0.65 + (1 - state.fricCushion) * 0.7);
+    const effectiveCutoff = Math.min(state.userLowpass, baseCutoff);
+
+    const lpf = audioCtx.createBiquadFilter();
+    lpf.type = "lowpass";
+    lpf.frequency.setValueAtTime(effectiveCutoff, now);
+    lpf.Q.setValueAtTime(mat.q, now);
+
+    const warmthFilter = audioCtx.createBiquadFilter();
+    warmthFilter.type = "peaking";
+    warmthFilter.frequency.setValueAtTime(mat.bodyWarmth, now);
+    warmthFilter.Q.setValueAtTime(1.5, now);
+    warmthFilter.gain.setValueAtTime(3.5, now);
+
+    // 3. 柔化平滑呼吸式触碰剪切增益包络
+    const gainNode = audioCtx.createGain();
+    const peakGain = 0.36 * mat.velScale * velScale;
+    const attackDur = dur * 0.42;
+
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.linearRampToValueAtTime(peakGain, now + attackDur);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+    // 4. 3Dio 双耳空间声相平移
+    let panner = null;
+    if (audioCtx.createStereoPanner) {
+      panner = audioCtx.createStereoPanner();
+      const p1 = panStart * state.stereoWidth;
+      const p2 = panEnd * state.stereoWidth;
+      panner.pan.setValueAtTime(p1, now);
+      panner.pan.linearRampToValueAtTime(p2, now + dur);
+    }
+
+    src.connect(lpf);
+    lpf.connect(warmthFilter);
+    warmthFilter.connect(gainNode);
+
+    if (panner) {
+      gainNode.connect(panner);
+      panner.connect(masterLimiter);
+    } else {
+      gainNode.connect(masterLimiter);
+    }
+
+    src.start(now, offset);
+    src.stop(now + dur + 0.05);
+
+    createFrictionVisualStroke(panStart, panEnd, dur, state.currentFricMat, state.currentFricStyle);
+  }
+
+  function scheduleNextFrictionStroke() {
+    if (!state.isPlaying || state.activeCategory !== "friction") return;
+
+    const style = FRICTION_STYLES[state.currentFricStyle];
+    const baseCycle = (style.cycleTime / state.fricSpeedMultiplier);
+
+    if (state.currentFricStyle === "swiping") {
+      const dir = (fricMotionPhase % 2 === 0) ? 1 : -1;
+      const pStart = -0.75 * dir;
+      const pEnd = 0.75 * dir;
+      const dur = (baseCycle / 1000) * 0.88;
+      triggerFrictionStroke(pStart, pEnd, dur, 1.0);
+      fricMotionPhase++;
+      fricTimerId = setTimeout(scheduleNextFrictionStroke, baseCycle * (0.92 + Math.random() * 0.1));
+    } else if (state.currentFricStyle === "circle") {
+      const angles = [-0.85, -0.3, 0.3, 0.85, 0.3, -0.3];
+      const pStart = angles[fricMotionPhase % angles.length];
+      const pEnd = angles[(fricMotionPhase + 1) % angles.length];
+      const dur = (baseCycle / angles.length / 1000) * 1.25;
+      triggerFrictionStroke(pStart, pEnd, dur, 0.95);
+      fricMotionPhase++;
+      fricTimerId = setTimeout(scheduleNextFrictionStroke, (baseCycle / angles.length));
+    } else if (state.currentFricStyle === "feather") {
+      const burstCount = 3;
+      const burstInterval = 160 / state.fricSpeedMultiplier;
+      const baseSide = (Math.random() > 0.5 ? 0.65 : -0.65);
+
+      for (let i = 0; i < burstCount; i++) {
+        setTimeout(() => {
+          if (state.isPlaying && state.activeCategory === "friction") {
+            const pStart = baseSide + (Math.random() * 0.2 - 0.1);
+            const pEnd = pStart + (baseSide > 0 ? 0.2 : -0.2);
+            triggerFrictionStroke(pStart, pEnd, 0.28, 0.82 + i * 0.06);
+          }
+        }, i * burstInterval);
+      }
+      fricTimerId = setTimeout(scheduleNextFrictionStroke, baseCycle * (0.88 + Math.random() * 0.2));
+    } else {
+      const dur = (baseCycle / 1000) * 0.95;
+      const pStart = (Math.random() * 0.6 - 0.3);
+      const pEnd = (Math.random() * 0.6 - 0.3);
+      triggerFrictionStroke(pStart, pEnd, dur, 0.85);
+      fricTimerId = setTimeout(scheduleNextFrictionStroke, baseCycle * 0.82);
+    }
+  }
+
+  // --------------------------------------------------------------------------
   // B3. 启停与节点更新
   // --------------------------------------------------------------------------
   function startAudio() {
@@ -1655,8 +1998,10 @@ permalink: /projects/ai-asmr/index.html
       if (RAIN_PRESETS[state.currentRain].thunder) {
         thunderTimerId = setTimeout(scheduleNextThunder, 2500);
       }
-    } else {
+    } else if (state.activeCategory === "tapping") {
       scheduleNextTap();
+    } else if (state.activeCategory === "friction") {
+      scheduleNextFrictionStroke();
     }
 
     updateUIPlayState();
@@ -1668,6 +2013,7 @@ permalink: /projects/ai-asmr/index.html
     if (rainDropTimerId) clearTimeout(rainDropTimerId);
     if (thunderTimerId) clearTimeout(thunderTimerId);
     if (tapTimerId) clearTimeout(tapTimerId);
+    if (fricTimerId) clearTimeout(fricTimerId);
 
     if (audioCtx && audioCtx.state === "running") {
       masterGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
@@ -1701,11 +2047,20 @@ permalink: /projects/ai-asmr/index.html
 
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(targetFreq) + " Hz";
-    } else {
+    } else if (state.activeCategory === "tapping") {
       // 敲击声模式：关闭雨声持续底噪，保持极度干净干燥的敲击直达声
       if (noiseGain) noiseGain.gain.setTargetAtTime(0.0001, now, 0.1);
 
       const cutoff = Math.min(state.userLowpass, 1200 + (1 - state.tapSoftness) * 1100);
+      const hudFreq = document.getElementById("hudFilterFreq");
+      if (hudFreq) hudFreq.textContent = "LPF " + Math.round(cutoff) + " Hz";
+    } else {
+      // 摩擦声模式：关闭雨声底噪，由调度器触发平滑软触剪切包络
+      if (noiseGain) noiseGain.gain.setTargetAtTime(0.0001, now, 0.1);
+
+      const mat = FRICTION_MATERIALS[state.currentFricMat];
+      const baseCutoff = mat.baseFreq * (0.65 + (1 - state.fricCushion) * 0.7);
+      const cutoff = Math.min(state.userLowpass, baseCutoff);
       const hudFreq = document.getElementById("hudFilterFreq");
       if (hudFreq) hudFreq.textContent = "LPF " + Math.round(cutoff) + " Hz";
     }
@@ -1719,6 +2074,8 @@ permalink: /projects/ai-asmr/index.html
   let rainParticles = [];
   let rippleParticles = [];
   let tapShockwaves = [];
+  let fricStrokes = [];
+  let fricParticles = [];
   let earWavesL = [];
   let earWavesR = [];
   let animFrameId = null;
@@ -1819,6 +2176,59 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
+  function createFrictionVisualStroke(panStart, panEnd, duration, matKey, styleKey) {
+    const x1 = ((panStart + 1) / 2) * (logicalWidth * 0.72) + (logicalWidth * 0.14);
+    const x2 = ((panEnd + 1) / 2) * (logicalWidth * 0.72) + (logicalWidth * 0.14);
+    const yCenter = logicalHeight / 2 - 12;
+    const yOffset = (Math.random() * 36 - 18);
+
+    const matColors = {
+      brush: "rgba(251, 191, 160,",
+      velvet: "rgba(244, 114, 182,",
+      microsand: "rgba(251, 191, 36,",
+      finger: "rgba(253, 186, 116,",
+      bookpage: "rgba(254, 240, 138,"
+    };
+    const color = matColors[matKey] || "rgba(251, 191, 160,";
+
+    if (fricStrokes.length < 15) {
+      fricStrokes.push({
+        x1,
+        y1: yCenter + yOffset,
+        x2,
+        y2: yCenter + yOffset + (Math.random() * 20 - 10),
+        cx: (x1 + x2) / 2,
+        cy: yCenter + (styleKey === "circle" ? (panStart < panEnd ? -45 : 45) : yOffset),
+        progress: 0,
+        speed: 1 / Math.max(12, duration * 60),
+        alpha: 0.85,
+        color
+      });
+    }
+
+    if (panStart < -0.2 || panEnd < -0.2) {
+      earWavesL.push({ r: 6, maxR: 44, alpha: 0.75 });
+    }
+    if (panStart > 0.2 || panEnd > 0.2) {
+      earWavesR.push({ r: 6, maxR: 44, alpha: 0.75 });
+    }
+
+    if (fricParticles.length < 65) {
+      for (let i = 0; i < 7; i++) {
+        fricParticles.push({
+          x: x1 + (Math.random() * 32 - 16),
+          y: yCenter + yOffset + (Math.random() * 32 - 16),
+          vx: (panEnd - panStart) * (0.6 + Math.random() * 0.8),
+          vy: Math.random() * 1.0 - 0.5,
+          alpha: 0.7 + Math.random() * 0.25,
+          decay: 0.94 + Math.random() * 0.03,
+          size: 1.0 + Math.random() * 1.8,
+          color
+        });
+      }
+    }
+  }
+
   function renderLoop() {
     // 1. 绝对物理清屏：重置变换矩阵为 1:1，抹除整个物理像素缓冲区，彻底杜绝任何边缘累积
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1843,7 +2253,7 @@ permalink: /projects/ai-asmr/index.html
           p.update(rain.windSpeed);
           p.draw(ctx);
         }
-      } else {
+      } else if (state.activeCategory === "tapping") {
         // 敲击模式：绘制底部材质共鸣台面 (Acoustic Tapping Surface)
         ctx.save();
         const padY = logicalHeight - 50;
@@ -1855,6 +2265,65 @@ permalink: /projects/ai-asmr/index.html
         ctx.setLineDash([4, 6]);
         ctx.stroke();
         ctx.restore();
+      } else {
+        // 摩擦模式：绘制中央柔和天鹅绒/触感底台光晕与轨迹
+        ctx.save();
+        const centerX = logicalWidth / 2;
+        const centerY = logicalHeight / 2 - 12;
+        const bgGrad = ctx.createRadialGradient(centerX, centerY, 30, centerX, centerY, logicalWidth * 0.38);
+        bgGrad.addColorStop(0, "rgba(244, 114, 182, 0.08)");
+        bgGrad.addColorStop(0.5, "rgba(45, 212, 191, 0.03)");
+        bgGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = bgGrad;
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, logicalWidth * 0.38, 95, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, logicalWidth * 0.34, 75, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(244, 114, 182, 0.16)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 7]);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // 绘制摩擦专属抚摩光弧
+    for (let i = fricStrokes.length - 1; i >= 0; i--) {
+      const s = fricStrokes[i];
+      s.progress += s.speed;
+      s.alpha *= 0.96;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(s.x1, s.y1);
+      ctx.quadraticCurveTo(s.cx, s.cy, s.x2, s.y2);
+      ctx.strokeStyle = s.color + s.alpha.toFixed(3) + ")";
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = "round";
+      ctx.stroke();
+      ctx.restore();
+
+      if (s.alpha < 0.02 || s.progress >= 1.5) {
+        fricStrokes.splice(i, 1);
+      }
+    }
+
+    // 绘制飞舞纤维微粒
+    for (let i = fricParticles.length - 1; i >= 0; i--) {
+      const p = fricParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha *= p.decay;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha.toFixed(3) + ")";
+      ctx.fill();
+
+      if (p.alpha < 0.02) {
+        fricParticles.splice(i, 1);
       }
     }
 
@@ -2007,7 +2476,7 @@ permalink: /projects/ai-asmr/index.html
       const hudDesc = document.getElementById("hudPresetDesc");
       if (hudTitle) hudTitle.textContent = rain.name + " · " + surf.name;
       if (hudDesc) hudDesc.textContent = rain.desc;
-    } else {
+    } else if (state.activeCategory === "tapping") {
       // 敲击声提示词
       const mat = TAPPING_MATERIALS[state.currentTapMat];
       const style = TAPPING_STYLES[state.currentTapStyle];
@@ -2021,6 +2490,25 @@ permalink: /projects/ai-asmr/index.html
       zh += "极致贴耳近场双耳空间流动，无尖锐指甲刮擦杂音，无塑料硬脆声，消音室干燥声学，纯净颅内酥麻。";
 
       neg = "harsh, sharp plastic clicks, fingernail scraping, piercing clatter, loud smacks, metallic ticks, erratic chaotic tempo, sudden jumpscares, echoey room, cavernous reverb, distorted transients, clipping, noisy background hiss";
+
+      const hudTitle = document.getElementById("hudPresetTitle");
+      const hudDesc = document.getElementById("hudPresetDesc");
+      if (hudTitle) hudTitle.textContent = mat.name + " · " + style.name;
+      if (hudDesc) hudDesc.textContent = mat.desc;
+    } else {
+      // 摩擦声提示词
+      const mat = FRICTION_MATERIALS[state.currentFricMat];
+      const style = FRICTION_STYLES[state.currentFricStyle];
+
+      en = "ASMR, binaural 3Dio style recording, " + style.enName + " with a " + mat.enName + " across sensitive silicone dummy head ears. ";
+      en += "Delicate micro-textures, ultra-gentle and cushioned dull friction, mellow low-mid acoustic warmth, rhythmic and repetitive hypnotic swiping. ";
+      en += "Intimate close-up ear-to-ear spatial movement, zero harsh scratchy noises, zero sharp fingernail scraping, zero chalkboard screeches, dry soundproof studio acoustics, no reverberation.";
+
+      zh = "ASMR双耳3Dio录音，使用" + mat.zhPrompt + "在仿真硅胶人耳表面进行" + style.zhPrompt + "。";
+      zh += "细腻微纤维质感，极其轻柔且具有软垫包裹的钝感摩擦，温润中低频共鸣，催眠有节奏的重复抚摩。";
+      zh += "极致贴耳近讲双耳穿梭移动，无刺耳粗糙刮擦，无尖锐指甲划黑板尖鸣，消音室纯净干燥声学，零空间混响。";
+
+      neg = "harsh scratching, screeching, fingernails on chalkboard, sharp friction, scraping, ear-piercing high frequencies, plastic squeaks, loud abrasive rubbing, clipping, distortion, sudden startling noises, heavy reverb, noisy background hiss";
 
       const hudTitle = document.getElementById("hudPresetTitle");
       const hudDesc = document.getElementById("hudPresetDesc");
@@ -2059,16 +2547,24 @@ permalink: /projects/ai-asmr/index.html
     // 切换控制面板
     const panelRain = document.getElementById("panelRainCategory");
     const panelTapping = document.getElementById("panelTappingCategory");
-    if (panelRain && panelTapping) {
+    const panelFriction = document.getElementById("panelFrictionCategory");
+    if (panelRain) {
       panelRain.classList.toggle("active", cat === "rain");
       panelRain.hidden = cat !== "rain";
+    }
+    if (panelTapping) {
       panelTapping.classList.toggle("active", cat === "tapping");
       panelTapping.hidden = cat !== "tapping";
+    }
+    if (panelFriction) {
+      panelFriction.classList.toggle("active", cat === "friction");
+      panelFriction.hidden = cat !== "friction";
     }
 
     // 切换调音台控件可见性
     document.querySelectorAll(".rain-tweak").forEach(el => el.hidden = (cat !== "rain"));
     document.querySelectorAll(".tap-tweak").forEach(el => el.hidden = (cat !== "tapping"));
+    document.querySelectorAll(".fric-tweak").forEach(el => el.hidden = (cat !== "friction"));
 
     // 切换标题与文字
     const stageTitle = document.getElementById("stageMainTitle");
@@ -2079,10 +2575,14 @@ permalink: /projects/ai-asmr/index.html
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL RAIN SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放雨声 (Space)";
       if (badge) badge.textContent = "雨声提示词已联动";
-    } else {
+    } else if (cat === "tapping") {
       if (stageTitle) stageTitle.textContent = "3Dio BINAURAL TAPPING SOUNDSTAGE";
       if (playBtnText) playBtnText.textContent = "播放敲击声 (Space)";
       if (badge) badge.textContent = "敲击声提示词已联动";
+    } else {
+      if (stageTitle) stageTitle.textContent = "3Dio BINAURAL FRICTION SOUNDSTAGE";
+      if (playBtnText) playBtnText.textContent = "播放摩擦声 (Space)";
+      if (badge) badge.textContent = "摩擦声提示词已联动";
     }
 
     updateAcousticNodes();
@@ -2091,6 +2591,8 @@ permalink: /projects/ai-asmr/index.html
     // 清空旧特效残留
     rippleParticles = [];
     tapShockwaves = [];
+    fricStrokes = [];
+    fricParticles = [];
 
     if (wasPlaying) {
       startAudio();
@@ -2101,7 +2603,7 @@ permalink: /projects/ai-asmr/index.html
     const btn = document.getElementById("btnMainPlay");
     const pulse = document.getElementById("statusPulse");
     const playText = document.getElementById("playBtnText");
-    const catName = state.activeCategory === "rain" ? "雨声" : "敲击声";
+    const catName = state.activeCategory === "rain" ? "雨声" : (state.activeCategory === "tapping" ? "敲击声" : "摩擦声");
 
     if (state.isPlaying) {
       btn.classList.add("playing");
@@ -2232,6 +2734,37 @@ permalink: /projects/ai-asmr/index.html
       });
     });
 
+    // 5.2 摩擦材质选择
+    document.querySelectorAll(".fric-mat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".fric-mat-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentFricMat = btn.getAttribute("data-mat");
+
+        updateAcousticNodes();
+        generatePrompt();
+      });
+    });
+
+    // 5.3 摩擦手法与轨迹选择
+    document.querySelectorAll(".fric-style-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".fric-style-btn").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-checked", "false");
+        });
+        btn.classList.add("active");
+        btn.setAttribute("aria-checked", "true");
+        state.currentFricStyle = btn.getAttribute("data-style");
+
+        generatePrompt();
+      });
+    });
+
     // 6. 视觉模式切换
     document.querySelectorAll(".mode-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2320,6 +2853,28 @@ permalink: /projects/ai-asmr/index.html
         state.tapSoftness = parseFloat(rangeSoftness.value);
         const pct = Math.round(state.tapSoftness * 100);
         valSoftness.textContent = pct > 60 ? `肉感指腹 (${pct}%)` : `轻柔甲触 (${pct}%)`;
+        updateAcousticNodes();
+      });
+    }
+
+    // 14.2 摩擦往复速度
+    const rangeFricSpd = document.getElementById("rangeFricSpeed");
+    const valFricSpd = document.getElementById("valFricSpeed");
+    if (rangeFricSpd && valFricSpd) {
+      rangeFricSpd.addEventListener("input", () => {
+        state.fricSpeedMultiplier = parseFloat(rangeFricSpd.value);
+        valFricSpd.textContent = state.fricSpeedMultiplier.toFixed(1) + "x";
+      });
+    }
+
+    // 14.3 摩擦绒感吸音缓冲
+    const rangeFricCush = document.getElementById("rangeFricCushion");
+    const valFricCush = document.getElementById("valFricCushion");
+    if (rangeFricCush && valFricCush) {
+      rangeFricCush.addEventListener("input", () => {
+        state.fricCushion = parseFloat(rangeFricCush.value);
+        const pct = Math.round(state.fricCushion * 100);
+        valFricCush.textContent = pct > 65 ? `绒感钝响 (${pct}%)` : `细腻刷毛 (${pct}%)`;
         updateAcousticNodes();
       });
     }
