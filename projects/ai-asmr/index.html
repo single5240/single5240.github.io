@@ -611,15 +611,16 @@ permalink: /projects/ai-asmr/index.html
   color: var(--muted);
 }
 
-/* 1. 核心舞台卡片 */
+/* 1. 核心舞台卡片 (支持明暗全主题自动响应) */
 .asmr-stage-card {
-  background: #0f181c;
-  border: 1px solid #23373e;
+  background: var(--panel);
+  border: 1px solid var(--line);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 16px 40px -8px rgba(10, 20, 25, 0.45);
+  box-shadow: var(--shadow);
   margin-bottom: 2rem;
-  color: #e2e8f0;
+  color: var(--ink);
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 .stage-header {
@@ -629,8 +630,9 @@ permalink: /projects/ai-asmr/index.html
   flex-wrap: wrap;
   gap: 0.75rem;
   padding: 0.85rem 1.25rem;
-  background: #152227;
-  border-bottom: 1px solid #23373e;
+  background: var(--alt-bg);
+  border-bottom: 1px solid var(--line);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 .stage-brand {
   display: flex;
@@ -641,12 +643,12 @@ permalink: /projects/ai-asmr/index.html
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #64748b;
+  background: var(--muted);
   transition: all 0.3s ease;
 }
 .pulse-indicator.active {
-  background: #2dd4bf;
-  box-shadow: 0 0 10px #2dd4bf;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
   animation: asmrPulse 2s infinite ease-in-out;
 }
 @keyframes asmrPulse {
@@ -659,16 +661,16 @@ permalink: /projects/ai-asmr/index.html
   font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: #94a3b8;
+  color: var(--ink);
 }
 .stage-pill {
   font-family: monospace;
   font-size: 0.75rem;
   padding: 0.15rem 0.45rem;
-  background: #0b1316;
-  border: 1px solid #1e3239;
+  background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: 4px;
-  color: #2dd4bf;
+  color: var(--accent);
 }
 
 .stage-visual-modes {
@@ -676,9 +678,9 @@ permalink: /projects/ai-asmr/index.html
   gap: 0.35rem;
 }
 .mode-btn {
-  background: #1b2b31;
-  color: #94a3b8;
-  border: 1px solid #28404a;
+  background: var(--paper);
+  color: var(--muted);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.3rem 0.6rem;
   font-size: 0.75rem;
@@ -686,13 +688,13 @@ permalink: /projects/ai-asmr/index.html
   transition: all 0.2s ease;
 }
 .mode-btn:hover {
-  color: #e2e8f0;
-  border-color: #2dd4bf;
+  color: var(--ink);
+  border-color: var(--accent);
 }
 .mode-btn.active {
-  background: #0f766e;
+  background: var(--accent);
   color: #ffffff;
-  border-color: #2dd4bf;
+  border-color: var(--accent);
 }
 
 /* Canvas 视口与 HUD 覆盖层 */
@@ -702,7 +704,21 @@ permalink: /projects/ai-asmr/index.html
   height: 380px;
   background: radial-gradient(circle at 50% 40%, #15242b 0%, #0a1114 100%);
   overflow: hidden;
+  transition: background 0.3s ease;
 }
+
+:root[data-theme="light"] .stage-viewport,
+:root[data-theme="swiss"] .stage-viewport,
+:root[data-theme="mono"] .stage-viewport {
+  background: radial-gradient(circle at 50% 40%, #edf5f6 0%, #d5e5e8 100%);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .stage-viewport {
+    background: radial-gradient(circle at 50% 40%, #edf5f6 0%, #d5e5e8 100%);
+  }
+}
+
 #asmrCanvas {
   display: block;
   width: 100%;
@@ -722,17 +738,17 @@ permalink: /projects/ai-asmr/index.html
   font-family: monospace;
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--muted);
   margin-bottom: 0.2rem;
 }
 .hud-val {
   font-size: 1rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--ink);
 }
 .hud-sub {
   font-size: 0.75rem;
-  color: #2dd4bf;
+  color: var(--accent);
   margin-top: 0.15rem;
 }
 .hud-center {
@@ -743,40 +759,43 @@ permalink: /projects/ai-asmr/index.html
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(11, 20, 24, 0.75);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(45, 212, 191, 0.3);
+  background: var(--raised-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
   padding: 0.35rem 0.85rem;
   border-radius: 999px;
   font-family: monospace;
   font-size: 0.8125rem;
+  color: var(--ink);
+  box-shadow: var(--shadow-small);
 }
 .ear-tag {
   font-weight: 800;
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
 }
-.ear-tag.l { background: #0f766e; color: #2dd4bf; }
-.ear-tag.r { background: #0369a1; color: #38bdf8; }
+.ear-tag.l { background: var(--soft); color: var(--accent); border: 1px solid var(--accent); }
+.ear-tag.r { background: var(--alt-bg); color: var(--accent-dark); border: 1px solid var(--line); }
 .ear-icon {
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--ink);
 }
 .ear-line {
   width: 12px;
   height: 1px;
-  background: #334e58;
+  background: var(--line);
 }
 .ear-tip {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--muted);
   margin-top: 0.4rem;
 }
 .hud-right {
   text-align: right;
 }
 .hud-right .hud-sub {
-  color: #f1a65a;
+  color: var(--warm);
 }
 
 /* 底部工具条 */
@@ -787,32 +806,34 @@ permalink: /projects/ai-asmr/index.html
   flex-wrap: wrap;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background: #111d21;
-  border-top: 1px solid #1f3239;
+  background: var(--alt-bg);
+  border-top: 1px solid var(--line);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 .main-play-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  background: #0f766e;
+  background: var(--accent);
   color: #ffffff;
-  border: 1px solid #2dd4bf;
+  border: 1px solid var(--accent);
   border-radius: 8px;
   padding: 0.65rem 1.4rem;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35);
+  box-shadow: var(--shadow-small);
 }
 .main-play-btn:hover {
-  background: #115e59;
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
   transform: translateY(-1px);
 }
 .main-play-btn.playing {
-  background: #be123c;
-  border-color: #f43f5e;
-  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+  background: var(--warm);
+  border-color: var(--warm);
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
 }
 .play-icon {
   font-size: 1rem;
@@ -823,16 +844,17 @@ permalink: /projects/ai-asmr/index.html
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--muted);
 }
 .asmr-select {
-  background: #192a30;
-  color: #e2e8f0;
-  border: 1px solid #2d4852;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.4rem 0.65rem;
   font-size: 0.8125rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 .timer-countdown {
   font-family: monospace;
@@ -1002,7 +1024,7 @@ permalink: /projects/ai-asmr/index.html
   line-height: 1.4;
 }
 
-/* 3. AI ASMR 提示词工坊 */
+/* 3. AI ASMR 提示词工坊 (支持明暗全主题自动响应) */
 .prompt-lab-card {
   margin-bottom: 2rem;
 }
@@ -1010,11 +1032,14 @@ permalink: /projects/ai-asmr/index.html
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
-  background: var(--deep);
+  background: var(--alt-bg);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1.25rem;
   margin: 1rem 0 1.5rem;
-  color: #e2e8f0;
+  color: var(--ink);
+  box-shadow: var(--shadow-small);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 .field-head {
   display: flex;
@@ -1027,12 +1052,12 @@ permalink: /projects/ai-asmr/index.html
 .field-head label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--ink);
 }
 .copy-btn {
-  background: #1e293b;
-  color: #38bdf8;
-  border: 1px solid #334155;
+  background: var(--paper);
+  color: var(--accent);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.25rem 0.65rem;
   font-size: 0.75rem;
@@ -1040,24 +1065,34 @@ permalink: /projects/ai-asmr/index.html
   transition: all 0.2s ease;
 }
 .copy-btn:hover {
-  background: #0284c7;
-  color: #ffffff;
-  border-color: #38bdf8;
+  background: var(--soft);
+  color: var(--accent-dark);
+  border-color: var(--accent);
 }
 .prompt-textarea {
   width: 100%;
-  background: #090e11;
-  color: #2dd4bf;
-  border: 1px solid #1e333a;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.65rem 0.85rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8125rem;
   line-height: 1.5;
   resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.25s ease, color 0.25s ease;
+}
+.prompt-textarea:focus {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+#txtGeneratedEnPrompt {
+  color: var(--accent-dark);
+  font-weight: 500;
 }
 #txtNegativePrompt {
-  color: #f87171;
+  color: var(--warm);
+  font-weight: 500;
 }
 
 /* 4 大避坑指南卡片 */
@@ -2084,6 +2119,14 @@ permalink: /projects/ai-asmr/index.html
   let logicalHeight = 380;
   let dpr = 1;
 
+  // 检测全局站点是否处于深色主题模式 (联动 theme.js / base.css / system)
+  function isDarkThemeActive() {
+    const theme = document.documentElement.dataset.theme;
+    if (theme === "dark" || theme === "hud") return true;
+    if (theme === "light" || theme === "swiss" || theme === "mono") return false;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
   // 雨丝粒子类
   class RainStreak {
     constructor() {
@@ -2105,6 +2148,7 @@ permalink: /projects/ai-asmr/index.html
 
       if (this.y > logicalHeight - 30 || this.x > logicalWidth + 40 || this.x < -40) {
         if (this.y > logicalHeight - 30 && Math.random() < 0.15 && rippleParticles.length < 45) {
+          const isDark = isDarkThemeActive();
           rippleParticles.push({
             x: Math.max(10, Math.min(logicalWidth - 10, this.x)),
             y: logicalHeight - 35 + (Math.random() * 20 - 10),
@@ -2112,7 +2156,7 @@ permalink: /projects/ai-asmr/index.html
             ry: 0.6,
             maxR: 12 + Math.random() * 18,
             alpha: 0.4,
-            color: "rgba(45, 212, 191,"
+            color: isDark ? "rgba(45, 212, 191," : "rgba(13, 148, 136,"
           });
         }
         this.reset(false);
@@ -2122,7 +2166,8 @@ permalink: /projects/ai-asmr/index.html
       context.beginPath();
       context.moveTo(this.x, this.y);
       context.lineTo(this.x + this.wind * 1.8, this.y + this.len);
-      context.strokeStyle = "rgba(186, 230, 253, " + this.alpha.toFixed(2) + ")";
+      const isDark = isDarkThemeActive();
+      context.strokeStyle = (isDark ? "rgba(186, 230, 253, " : "rgba(14, 116, 144, ") + this.alpha.toFixed(2) + ")";
       context.lineWidth = this.width;
       context.stroke();
     }
@@ -2136,11 +2181,14 @@ permalink: /projects/ai-asmr/index.html
     }
   }
 
-  // 接收 Web Audio 触发可视化事件
+  // 接收 Web Audio 触发可视化事件 (主题自适应高对比色调)
   function createVisualEvent(azimuth, vel, type = "rain") {
+    const isDark = isDarkThemeActive();
     const posX = ((azimuth + 1) / 2) * (logicalWidth * 0.82) + (logicalWidth * 0.09);
     const isLeft = azimuth < 0;
-    const colorPrefix = isLeft ? "rgba(45, 212, 191," : "rgba(56, 189, 248,";
+    const rainColorPrefix = isLeft
+      ? (isDark ? "rgba(45, 212, 191," : "rgba(13, 148, 136,")
+      : (isDark ? "rgba(56, 189, 248," : "rgba(2, 132, 199,");
 
     if (type === "rain") {
       if (rippleParticles.length < 50) {
@@ -2151,7 +2199,7 @@ permalink: /projects/ai-asmr/index.html
           ry: 0.7,
           maxR: 24 + vel * 32,
           alpha: 0.65,
-          color: colorPrefix
+          color: rainColorPrefix
         });
       }
     } else {
@@ -2163,7 +2211,9 @@ permalink: /projects/ai-asmr/index.html
           r: 4,
           maxR: 35 + vel * 45,
           alpha: 0.85,
-          color: isLeft ? "rgba(45, 212, 191," : "rgba(241, 166, 90,"
+          color: isLeft
+            ? (isDark ? "rgba(45, 212, 191," : "rgba(13, 148, 136,")
+            : (isDark ? "rgba(241, 166, 90," : "rgba(217, 119, 6,")
         });
       }
     }
@@ -2177,19 +2227,28 @@ permalink: /projects/ai-asmr/index.html
   }
 
   function createFrictionVisualStroke(panStart, panEnd, duration, matKey, styleKey) {
+    const isDark = isDarkThemeActive();
     const x1 = ((panStart + 1) / 2) * (logicalWidth * 0.72) + (logicalWidth * 0.14);
     const x2 = ((panEnd + 1) / 2) * (logicalWidth * 0.72) + (logicalWidth * 0.14);
     const yCenter = logicalHeight / 2 - 12;
     const yOffset = (Math.random() * 36 - 18);
 
-    const matColors = {
+    const darkColors = {
       brush: "rgba(251, 191, 160,",
       velvet: "rgba(244, 114, 182,",
       microsand: "rgba(251, 191, 36,",
       finger: "rgba(253, 186, 116,",
       bookpage: "rgba(254, 240, 138,"
     };
-    const color = matColors[matKey] || "rgba(251, 191, 160,";
+    const lightColors = {
+      brush: "rgba(225, 112, 85,",
+      velvet: "rgba(190, 24, 93,",
+      microsand: "rgba(180, 83, 9,",
+      finger: "rgba(194, 65, 12,",
+      bookpage: "rgba(161, 98, 7,"
+    };
+    const matColors = isDark ? darkColors : lightColors;
+    const color = matColors[matKey] || (isDark ? "rgba(251, 191, 160," : "rgba(225, 112, 85,");
 
     if (fricStrokes.length < 15) {
       fricStrokes.push({
@@ -2238,6 +2297,7 @@ permalink: /projects/ai-asmr/index.html
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const isPlaying = state.isPlaying;
+    const isDark = isDarkThemeActive();
 
     if (state.visualMode !== "minimal") {
       if (state.activeCategory === "rain") {
@@ -2260,7 +2320,7 @@ permalink: /projects/ai-asmr/index.html
         ctx.beginPath();
         ctx.moveTo(logicalWidth * 0.08, padY);
         ctx.lineTo(logicalWidth * 0.92, padY);
-        ctx.strokeStyle = "rgba(45, 212, 191, 0.25)";
+        ctx.strokeStyle = isDark ? "rgba(45, 212, 191, 0.25)" : "rgba(15, 129, 141, 0.35)";
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 6]);
         ctx.stroke();
@@ -2271,8 +2331,13 @@ permalink: /projects/ai-asmr/index.html
         const centerX = logicalWidth / 2;
         const centerY = logicalHeight / 2 - 12;
         const bgGrad = ctx.createRadialGradient(centerX, centerY, 30, centerX, centerY, logicalWidth * 0.38);
-        bgGrad.addColorStop(0, "rgba(244, 114, 182, 0.08)");
-        bgGrad.addColorStop(0.5, "rgba(45, 212, 191, 0.03)");
+        if (isDark) {
+          bgGrad.addColorStop(0, "rgba(244, 114, 182, 0.08)");
+          bgGrad.addColorStop(0.5, "rgba(45, 212, 191, 0.03)");
+        } else {
+          bgGrad.addColorStop(0, "rgba(219, 39, 119, 0.09)");
+          bgGrad.addColorStop(0.5, "rgba(13, 148, 136, 0.04)");
+        }
         bgGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
         ctx.fillStyle = bgGrad;
         ctx.beginPath();
@@ -2281,7 +2346,7 @@ permalink: /projects/ai-asmr/index.html
 
         ctx.beginPath();
         ctx.ellipse(centerX, centerY, logicalWidth * 0.34, 75, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(244, 114, 182, 0.16)";
+        ctx.strokeStyle = isDark ? "rgba(244, 114, 182, 0.16)" : "rgba(219, 39, 119, 0.25)";
         ctx.lineWidth = 1;
         ctx.setLineDash([3, 7]);
         ctx.stroke();
@@ -2368,7 +2433,7 @@ permalink: /projects/ai-asmr/index.html
       }
     }
 
-    // 绘制 3Dio 双耳声场指示环 (中央区域居中)
+    // 绘制 3Dio 双耳声场指示环 (中央区域居中，全主题换色)
     const centerX = logicalWidth / 2;
     const centerY = logicalHeight / 2 - 12;
 
@@ -2378,8 +2443,12 @@ permalink: /projects/ai-asmr/index.html
     // 头部主体柔光圆弧
     ctx.beginPath();
     ctx.ellipse(0, 0, 32, 44, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(22, 38, 44, 0.7)";
-    ctx.strokeStyle = state.activeCategory === "rain" ? "rgba(45, 212, 191, 0.25)" : "rgba(241, 166, 90, 0.25)";
+    ctx.fillStyle = isDark ? "rgba(22, 38, 44, 0.75)" : "rgba(255, 255, 255, 0.92)";
+    if (isDark) {
+      ctx.strokeStyle = state.activeCategory === "rain" ? "rgba(45, 212, 191, 0.28)" : (state.activeCategory === "tapping" ? "rgba(241, 166, 90, 0.28)" : "rgba(244, 114, 182, 0.28)");
+    } else {
+      ctx.strokeStyle = state.activeCategory === "rain" ? "rgba(15, 129, 141, 0.42)" : (state.activeCategory === "tapping" ? "rgba(217, 119, 6, 0.42)" : "rgba(190, 24, 93, 0.42)");
+    }
     ctx.lineWidth = 1.5;
     ctx.fill();
     ctx.stroke();
@@ -2387,8 +2456,8 @@ permalink: /projects/ai-asmr/index.html
     // 左耳模型 (L)
     ctx.beginPath();
     ctx.ellipse(-38, 0, 7, 16, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(15, 118, 110, 0.85)";
-    ctx.strokeStyle = "#2dd4bf";
+    ctx.fillStyle = isDark ? "rgba(15, 118, 110, 0.85)" : "rgba(13, 148, 136, 0.92)";
+    ctx.strokeStyle = isDark ? "#2dd4bf" : "#0f766e";
     ctx.lineWidth = 1.5;
     ctx.fill();
     ctx.stroke();
@@ -2396,8 +2465,8 @@ permalink: /projects/ai-asmr/index.html
     // 右耳模型 (R)
     ctx.beginPath();
     ctx.ellipse(38, 0, 7, 16, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(3, 105, 161, 0.85)";
-    ctx.strokeStyle = "#38bdf8";
+    ctx.fillStyle = isDark ? "rgba(3, 105, 161, 0.85)" : "rgba(2, 132, 199, 0.92)";
+    ctx.strokeStyle = isDark ? "#38bdf8" : "#0284c7";
     ctx.lineWidth = 1.5;
     ctx.fill();
     ctx.stroke();
@@ -2409,7 +2478,7 @@ permalink: /projects/ai-asmr/index.html
       e.alpha *= 0.93;
       ctx.beginPath();
       ctx.arc(-38, 0, e.r, Math.PI * 0.5, Math.PI * 1.5);
-      ctx.strokeStyle = "rgba(45, 212, 191, " + e.alpha.toFixed(3) + ")";
+      ctx.strokeStyle = (isDark ? "rgba(45, 212, 191, " : "rgba(13, 148, 136, ") + e.alpha.toFixed(3) + ")";
       ctx.lineWidth = 1.5;
       ctx.stroke();
       if (e.alpha < 0.02 || e.r > e.maxR) earWavesL.splice(i, 1);
@@ -2421,7 +2490,7 @@ permalink: /projects/ai-asmr/index.html
       e.alpha *= 0.93;
       ctx.beginPath();
       ctx.arc(38, 0, e.r, -Math.PI * 0.5, Math.PI * 0.5);
-      ctx.strokeStyle = "rgba(56, 189, 248, " + e.alpha.toFixed(3) + ")";
+      ctx.strokeStyle = (isDark ? "rgba(56, 189, 248, " : "rgba(2, 132, 199, ") + e.alpha.toFixed(3) + ")";
       ctx.lineWidth = 1.5;
       ctx.stroke();
       if (e.alpha < 0.02 || e.r > e.maxR) earWavesR.splice(i, 1);
