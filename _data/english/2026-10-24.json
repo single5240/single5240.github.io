@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-24",
+  "sentence": "I have a dream that my four little children will one day live in a nation where they will not be judged by the color of their skin but by the content of their character.",
+  "source": {
+    "author": "Martin Luther King Jr.",
+    "work": "I Have a Dream",
+    "year": "1963",
+    "detail": "1963 年 8 月 28 日在华盛顿林肯纪念堂前的演讲（March on Washington）"
+  },
+  "translation": "我梦想有一天，我的四个孩子将生活在一个不以肤色、而以品格来评判他们的国度里。",
+  "grammar": [
+    "句子主干是 I have a dream，后面的 that 从句是同位语从句，解释 dream 的具体内容（梦想的是什么），that 不充当成分、不能省略成 which。",
+    "where they will not be judged ... 是定语从句，修饰 a nation；where 相当于 in which，因为 nation 在从句里是地点状语。",
+    "will not be judged 是一般将来时的被动语态（will be + 过去分词），强调孩子们是“被评判”的对象。",
+    "not by A but by B 是“不是靠 A，而是靠 B”的对比结构，两个 by 短语结构平行，读起来有力，是演讲里常见的修辞。"
+  ],
+  "vocab": [
+    {
+      "word": "one day",
+      "phonetic": "/wʌn deɪ/",
+      "pos": "phrase",
+      "meaning": "（将来的）某一天；（过去的）有一天",
+      "collocation": "one day soon; someday",
+      "example": "One day I'll design my own MCU board."
+    },
+    {
+      "word": "judge",
+      "phonetic": "/dʒʌdʒ/",
+      "pos": "v. / n.",
+      "meaning": "评判，判断（句中为被动 be judged by）",
+      "collocation": "judge sb by sth; judge from; don't judge a book by its cover",
+      "example": "Don't judge a programmer by the number of lines they write."
+    },
+    {
+      "word": "content",
+      "phonetic": "/ˈkɒntent/",
+      "pos": "n.",
+      "meaning": "内容；（内在的）实质（句中 the content of their character 指品格本身）",
+      "collocation": "the content of; table of contents; content creator",
+      "example": "The content of the datasheet matters more than its layout."
+    },
+    {
+      "word": "character",
+      "phonetic": "/ˈkærəktə(r)/",
+      "pos": "n.",
+      "meaning": "品格，性格；（也指）字符、角色",
+      "collocation": "strength of character; a man of character; special characters",
+      "example": "Hard times reveal a person's character."
+    },
+    {
+      "word": "nation",
+      "phonetic": "/ˈneɪʃn/",
+      "pos": "n.",
+      "meaning": "国家，民族",
+      "collocation": "the whole nation; nation-wide; the United Nations",
+      "example": "The speech moved the whole nation."
+    }
+  ],
+  "note": "小提醒：content 作名词“内容”重音在前 /ˈkɒntent/，作形容词“满足的”重音在后 /kənˈtent/。小练习：用 not by ... but by ... 造一句，比如 “Good code is judged not by its length but by its clarity.”"
+}

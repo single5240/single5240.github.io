@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-25",
+  "sentence": "Made weak by time and fate, but strong in will / To strive, to seek, to find, and not to yield.",
+  "source": {
+    "author": "Alfred, Lord Tennyson",
+    "work": "Ulysses",
+    "year": "1842",
+    "detail": "诗作《尤利西斯》最后两行，年迈的奥德修斯决心再次出海远航"
+  },
+  "translation": "虽被时光与命运磨去了力气，意志却依然坚强——去奋斗，去探寻，去发现，永不屈服。",
+  "grammar": [
+    "这两行出自一个长句的结尾，完整骨架是 \"...that which we are, we are; / One equal temper of heroic hearts, / Made weak by time and fate, but strong in will / To strive...\"。这里的 Made weak... 和 strong in will... 都是修饰前面 heroic hearts 的后置成分，本身不是完整句子，没有自己的谓语。",
+    "Made weak by time and fate 是过去分词短语，表被动：(hearts that are) made weak by time and fate，“被时光和命运变得虚弱”。结构是 make + 宾语 + 形容词（make sb weak）的被动形式，by 引出动作的施加者。",
+    "but 连接两个并列成分：过去分词短语 made weak... 和形容词短语 strong in will...，形成“身体弱、意志强”的鲜明对比。strong in sth 表示“在某方面强”。",
+    "To strive, to seek, to find, and not to yield 是四个并列的不定式，作 will 的后置定语，说明是“做什么的意志”（will to do sth）。注意否定不定式的写法是 not to do，not 放在 to 前面。四个动词节奏层层推进，最后用否定收尾，力量感很强。"
+  ],
+  "vocab": [
+    {
+      "word": "strive",
+      "phonetic": "/straɪv/",
+      "pos": "v.（strove, striven）",
+      "meaning": "奋斗，努力争取",
+      "collocation": "strive for sth / strive to do sth / strive against sth",
+      "example": "We strive to keep the firmware small and reliable."
+    },
+    {
+      "word": "yield",
+      "phonetic": "/jiːld/",
+      "pos": "v. / n.",
+      "meaning": "屈服，让步（句中义）；也有“产出、产量”的意思",
+      "collocation": "yield to pressure / yield results / a high yield",
+      "example": "She refused to yield to pressure from her boss."
+    },
+    {
+      "word": "will",
+      "phonetic": "/wɪl/",
+      "pos": "n.",
+      "meaning": "意志，决心",
+      "collocation": "strong will / the will to do sth / against one's will / willpower",
+      "example": "He has the will to finish what he starts."
+    },
+    {
+      "word": "fate",
+      "phonetic": "/feɪt/",
+      "pos": "n.",
+      "meaning": "命运，天命",
+      "collocation": "by fate / a twist of fate / decide sb's fate / tempt fate",
+      "example": "By a twist of fate, they met again ten years later."
+    },
+    {
+      "word": "seek",
+      "phonetic": "/siːk/",
+      "pos": "v.（sought, sought）",
+      "meaning": "寻找，探求",
+      "collocation": "seek advice / seek help / seek to do sth",
+      "example": "If you're stuck, don't be afraid to seek help."
+    }
+  ],
+  "note": "小练习：模仿 \"strong in will to strive\" 的结构，用 \"strong in + 名词 + to do\" 写一句描述自己的话，比如 \"Tired in body, but strong in will to finish this project.\" 另外记住：不定式的否定，规范写法是把 not 放在 to 前面，即 not to do。"
+}
