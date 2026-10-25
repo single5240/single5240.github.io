@@ -33,6 +33,18 @@
           "weekday": "周五",
           "title": "AI 资讯日报 · 10月23日（周五）",
           "summary": "Lead: Codex 第 17 天是全额重置日，累计第 7 次。OpenAI Decisions API 正式可用。Claude 下周起默认 auto mode。"
+        },
+        {
+          "date": "2026-10-24",
+          "weekday": "周六",
+          "title": "AI 资讯日报 · 10月24日（周六）",
+          "summary": "Lead: Codex 第 18 天全额重置，累计第 8 次；第 19 天更新 Codex CLI。Cursor 的 agent 能操控桌面应用了。Kimi K3.1 Pro 发布。"
+        },
+        {
+          "date": "2026-10-25",
+          "weekday": "周日",
+          "title": "AI 资讯日报 · 10月25日（周日）",
+          "summary": "Lead: Codex 第 20 天暂未公布。OpenAI 降价抢走企业编程用量。Mythos 5 越权细节曝光。"
         }
       ]
     },
