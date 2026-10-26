@@ -947,6 +947,8 @@
         ? strokeMeta.isReturn
         : (panEnd < panStart);
       const napAsym = mat.napAsymmetry || 0.14;
+      const isSilk = state.currentFricMat === "silk_ribbon";
+      const isVelvet = state.currentFricMat === "velvet";
       const napToneShift = isReturn ? (1 - napAsym * 0.65) : (1 + napAsym * 0.45);
       const napVelShift = isReturn ? (1 - napAsym * 0.45) : (1 + napAsym * 0.22);
 
@@ -974,7 +976,13 @@
 
       // 双重物理滤波 (低通钝化去刺 + 动态受力扫频 + 材质中频温润共鸣)
       const spotPitchJitter = 0.90 + Math.random() * 0.20;
-      const baseCutoff = mat.baseFreq * (0.62 + (1 - state.fricCushion) * 0.72) * napToneShift * spotPitchJitter;
+      let bodyFreq = mat.baseFreq;
+      if (isSilk) bodyFreq = (mat.shearFreq || 1420) * 0.86;
+      else if (isVelvet && isReturn) bodyFreq *= 0.84;
+      const cushion = isSilk
+        ? (0.78 + (1 - state.fricCushion) * 0.28)
+        : (0.62 + (1 - state.fricCushion) * 0.72);
+      const baseCutoff = bodyFreq * cushion * napToneShift * spotPitchJitter;
       const effectiveCutoff = Math.max(240, Math.min(state.userLowpass, baseCutoff));
       const startCutoff = Math.max(160, effectiveCutoff * (0.58 + Math.random() * 0.18));
       const peakCutoff = Math.min(state.userLowpass, effectiveCutoff * (1.12 + Math.random() * 0.22));
@@ -986,7 +994,7 @@
       lpf.frequency.exponentialRampToValueAtTime(peakCutoff, now + attackDur);
 
       // 长程抚摩 (> 1.35s) 引入双波峰呼吸式滤波与压力起伏，消除长音死板平坦感
-      const hasDualCrest = dur > 1.35 && Math.random() < 0.78;
+      const hasDualCrest = !isSilk && dur > 1.35 && Math.random() < 0.78;
       const dipTime = now + dur * (0.48 + Math.random() * 0.12);
       const crest2Time = now + dur * (0.70 + Math.random() * 0.12);
       if (hasDualCrest) {
@@ -996,13 +1004,14 @@
         lpf.frequency.exponentialRampToValueAtTime(crest2Cutoff, crest2Time);
       }
       lpf.frequency.exponentialRampToValueAtTime(endCutoff, now + dur);
-      lpf.Q.setValueAtTime(mat.q * (0.88 + Math.random() * 0.24), now);
+      const qBias = isVelvet && isReturn ? 1.28 : 1;
+      lpf.Q.setValueAtTime(mat.q * qBias * (0.88 + Math.random() * 0.24), now);
 
       const warmthFilter = audioCtx.createBiquadFilter();
       warmthFilter.type = "peaking";
       warmthFilter.frequency.setValueAtTime(mat.bodyWarmth * (0.92 + Math.random() * 0.16), now);
       warmthFilter.Q.setValueAtTime(1.35, now);
-      warmthFilter.gain.setValueAtTime(3.8 + state.fricCushion * 1.4, now);
+      warmthFilter.gain.setValueAtTime(isSilk ? 1.6 : (3.8 + state.fricCushion * 1.4), now);
 
       // 3. 柔化平滑呼吸式触碰剪切增益包络（支持单峰偏态与双波峰长抚）
       const fricBus = audioCtx.createGain();
@@ -1051,7 +1060,9 @@
 
         const proxLp = audioCtx.createBiquadFilter();
         proxLp.type = "lowpass";
-        const proxBase = state.currentFricMat === "brush" ? 155 : (state.currentFricMat === "finger" ? 135 : 175);
+        const proxBase = state.currentFricMat === "brush" ? 155
+          : (state.currentFricMat === "finger" ? 135
+          : (state.currentFricMat === "velvet" ? 118 : 175));
         proxLp.frequency.setValueAtTime(proxBase * 0.78, now);
         proxLp.frequency.exponentialRampToValueAtTime(proxBase * (1.25 + Math.random() * 0.25), now + attackDur);
         proxLp.frequency.exponentialRampToValueAtTime(proxBase * 0.72, now + dur);
@@ -1199,6 +1210,56 @@
           pageGain.connect(fricBus);
           pageThud.start(pageReleaseTime);
           pageThud.stop(pageReleaseTime + 0.044);
+        }
+      } else if (isVelvet && isReturn) {
+        // 🧣 逆毛才刮到绒尖：2~4 下错落短擦，频率高于被压低的绒体，顺毛不再叠一条同频噪声
+        const scuffs = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < scuffs; i++) {
+          const scuffDur = 0.016 + Math.random() * 0.022;
+          const scuffAt = now + dur * (0.16 + Math.random() * 0.62);
+          if (scuffAt + scuffDur > now + dur) continue;
+          const scuffSrc = audioCtx.createBufferSource();
+          scuffSrc.buffer = buf;
+          const scuffBp = audioCtx.createBiquadFilter();
+          scuffBp.type = "bandpass";
+          const scuffFreq = Math.min(state.userLowpass * 0.9, 760 + Math.random() * 340);
+          scuffBp.frequency.setValueAtTime(scuffFreq, scuffAt);
+          scuffBp.frequency.exponentialRampToValueAtTime(Math.max(180, scuffFreq * 0.82), scuffAt + scuffDur);
+          scuffBp.Q.setValueAtTime(1.6, scuffAt);
+          const scuffGain = audioCtx.createGain();
+          scuffGain.gain.setValueAtTime(0.0001, scuffAt);
+          scuffGain.gain.linearRampToValueAtTime(peakGain * (0.12 + Math.random() * 0.08), scuffAt + 0.002);
+          scuffGain.gain.exponentialRampToValueAtTime(0.0001, scuffAt + scuffDur);
+          scuffSrc.connect(scuffBp);
+          scuffBp.connect(scuffGain);
+          scuffGain.connect(fricBus);
+          scuffSrc.start(scuffAt, Math.random() * 3.0);
+          scuffSrc.stop(scuffAt + scuffDur + 0.01);
+        }
+      } else if (isSilk) {
+        // 🎀 光泽只出现在速度最高的那一段，不跟整笔摩擦再铺一层嘶声
+        const sheenDur = Math.min(dur * 0.38, Math.max(0.1, attackDur));
+        const sheenAt = now + Math.max(0, attackDur * 0.55);
+        if (sheenAt + sheenDur < now + dur) {
+          const sheenSrc = audioCtx.createBufferSource();
+          sheenSrc.buffer = buf;
+          sheenSrc.loop = true;
+          const sheenBp = audioCtx.createBiquadFilter();
+          sheenBp.type = "bandpass";
+          const sheenFreq = Math.min(state.userLowpass * 0.92, (mat.shearFreq || 1420) * (1.02 + Math.random() * 0.06));
+          sheenBp.frequency.setValueAtTime(Math.max(320, sheenFreq * 0.92), sheenAt);
+          sheenBp.frequency.exponentialRampToValueAtTime(Math.max(340, sheenFreq), sheenAt + sheenDur * 0.45);
+          sheenBp.frequency.exponentialRampToValueAtTime(Math.max(300, sheenFreq * 0.88), sheenAt + sheenDur);
+          sheenBp.Q.setValueAtTime(0.55, sheenAt);
+          const sheenGain = audioCtx.createGain();
+          sheenGain.gain.setValueAtTime(0.0001, sheenAt);
+          sheenGain.gain.linearRampToValueAtTime(peakGain * 0.16, sheenAt + 0.02);
+          sheenGain.gain.exponentialRampToValueAtTime(0.0001, sheenAt + sheenDur);
+          sheenSrc.connect(sheenBp);
+          sheenBp.connect(sheenGain);
+          sheenGain.connect(fricBus);
+          sheenSrc.start(sheenAt, (offset + 2.1) % 3.2);
+          sheenSrc.stop(sheenAt + sheenDur + 0.02);
         }
       }
 
@@ -4140,9 +4201,7 @@
       connectTo3DioStage(ambBus, azimuth, now);
 
       if (state.currentAmbMedia === "vinyl_record") {
-        // 1. 复古黑胶唱机：33⅓ RPM 旋转偏心微抖晃 (1.818s周期) + 音轨微尘轻爆 + 偶发周期性划痕微响 (Groove Speck)
-        state.ambTurntableAngle = ((state.ambTurntableAngle || 0) + 0.55 * Math.PI * 2 * 0.18) % (Math.PI * 2);
-
+        // 1. 复古黑胶唱机：音轨微尘轻爆 + 偶发划痕。转盘 33⅓ RPM 偏心在连续调制里作用到唱针低频
         // 微尘爆音 (Micro-Dust Crackles)
         const isSpeck = (state.ambVinylSpeckRemaining || 0) > 0;
         if (isSpeck) {
@@ -4589,6 +4648,39 @@
           if (noiseFilterL && noiseFilterR) {
             noiseFilterL.frequency.setTargetAtTime(cocoonFilter, now, 0.16);
             noiseFilterR.frequency.setTargetAtTime(cocoonFilter * 0.98, now, 0.16);
+          }
+        }
+        if (state.currentAmbMedia === "vinyl_record" && ambDroneOsc1 && ambDroneOsc2 && ambSubOsc) {
+          // 33⅓ RPM = 1.8 s。音高只做很轻的抖晃；偏心主要是每圈一次的沟槽低频起伏
+          const platterHz = (100 / 3) / 60;
+          const angle = (now * platterHz * Math.PI * 2) % (Math.PI * 2);
+          const wrapped = angle < (state.ambTurntableAngle || 0);
+          state.ambTurntableAngle = angle;
+          const flutter = 1 + Math.sin(angle) * 0.004;
+          ambDroneOsc1.frequency.setTargetAtTime(med.baseFreq * flutter, now, 0.09);
+          ambDroneOsc2.frequency.setTargetAtTime(med.baseFreq * 1.498 * flutter, now, 0.09);
+          ambSubOsc.frequency.setTargetAtTime(Math.max(24, med.baseFreq * 0.5) * flutter, now, 0.09);
+          if (wrapped && state.isPlaying) {
+            const grooveBuf = getFrictionNoiseBuffer();
+            if (grooveBuf) {
+              const rumbleDur = 0.08 + Math.random() * 0.025;
+              const rumbleSrc = audioCtx.createBufferSource();
+              rumbleSrc.buffer = grooveBuf;
+              const rumbleLp = audioCtx.createBiquadFilter();
+              rumbleLp.type = "lowpass";
+              const rumbleTop = Math.min(state.userLowpass, 168);
+              rumbleLp.frequency.setValueAtTime(rumbleTop, now);
+              rumbleLp.frequency.exponentialRampToValueAtTime(64, now + rumbleDur);
+              const rumbleGain = audioCtx.createGain();
+              rumbleGain.gain.setValueAtTime(0.0001, now);
+              rumbleGain.gain.linearRampToValueAtTime(Math.max(0.0005, 0.05 * state.ambGrain), now + 0.006);
+              rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + rumbleDur);
+              rumbleSrc.connect(rumbleLp);
+              rumbleLp.connect(rumbleGain);
+              connectTo3DioStage(rumbleGain, (Math.random() * 0.12 - 0.06) * state.stereoWidth, now);
+              rumbleSrc.start(now, Math.random() * 2.5);
+              rumbleSrc.stop(now + rumbleDur + 0.02);
+            }
           }
         }
       }
