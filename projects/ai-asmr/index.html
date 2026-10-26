@@ -11,22 +11,88 @@ permalink: /projects/ai-asmr/index.html
   <header class="page-heading">
     <a class="eyebrow" href="{{ '/projects/index.html' | relative_url }}">← 返回项目实验室</a>
     <h1>AI-ASMR 声音实验室</h1>
-    <p class="lede">
-      基于 <strong>Web Audio API 纯本地物理算法合成</strong> 的双耳声音发生器，无需加载外部音频文件。
-      <span class="lab-intro-detail">提供雨声、敲击、摩擦、流水、钵铃、伴读工具、壁炉炭火、软胶揉捏、机械键盘与复古氛围共 10 类声学体系，
-      内置双耳立体声定位、非周期自然律动与低通柔化滤波，呈现平稳、柔和、无尖锐杂音的声音细节，并提供配套的 AI 提示词参考。</span>
-    </p>
-    <div class="head-badges" role="region" aria-label="核心声学特性">
-      <span class="badge-item">🎧 3Dio 双耳立体声</span>
-      <span class="badge-item">🎛️ 10 类物理声学合成</span>
-      <span class="badge-item">🛡️ 低通柔化与软限幅</span>
-      <span class="badge-item">⚡ 纯本地合成 · 零音频加载</span>
-    </div>
+    <p class="lede">戴上耳机，先听一场微雨。随时切换声音、调整音量，或展开混音组合自己的环境声。</p>
+    <details class="lab-intro-more"><summary>关于声音与合成方式</summary><p>雨声、敲击、摩擦、流水等 10 类声音由浏览器 Web Audio API 本地合成，不加载外部音频。支持双耳定位、自然律动与低通柔化；下方可展开详细参数和 AI 提示词参考。</p></details>
   </header>
 
   <!-- ========================================================================
        1. 核心大类切换导航 (Rain / Tapping / Friction / Water / Bowls / Tools / Fire / Squish)
        ======================================================================== -->
+  <section class="asmr-stage-card" aria-label="3Dio 双耳声场与物理粒子可视化实验台">
+    <div class="stage-header">
+      <div class="stage-brand">
+        <span class="pulse-indicator" id="statusPulse" aria-hidden="true"></span>
+        <span class="stage-title" id="stageMainTitle">3Dio BINAURAL SOUNDSTAGE</span>
+        <span class="stage-pill" id="dspRateBadge">48 kHz · 32-bit DSP</span>
+      </div>
+      <div class="stage-visual-modes" role="group" aria-label="画面模式选择">
+        <button type="button" class="mode-btn active" id="btnModeScenic" data-mode="scenic" title="粒子与双耳声场">🌧️ 粒子声场</button>
+        <button type="button" class="mode-btn" id="btnModeRadar" data-mode="radar" title="3Dio 双耳声学雷达">🎯 3Dio 声场</button>
+        <button type="button" class="mode-btn" id="btnModeMinimal" data-mode="minimal" title="极简睡眠暗光">🌙 极简暗光</button>
+      </div>
+    </div>
+
+    <!-- 播放、定时和音量优先于可视化 -->
+    <div class="stage-toolbar">
+      <button type="button" class="main-play-btn" id="btnMainPlay" aria-pressed="false">
+        <span class="play-icon" id="playBtnIcon" aria-hidden="true">
+          <svg class="icon-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="m4.5 2.5 9 5.5-9 5.5z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3.5 2.5h3.5v11H3.5zm5.5 0H12.5v11H9z"/></svg>
+        </span>
+        <span class="play-text" id="playBtnText">播放雨声 (Space)</span>
+      </button>
+
+      <div class="quick-timer">
+        <label for="selectSleepTimer">⏲️ 定时关闭：</label>
+        <select id="selectSleepTimer" class="asmr-select">
+          <option value="0">常开（不限时）</option>
+          <option value="15">15 分钟后淡出</option>
+          <option value="30">30 分钟后淡出</option>
+          <option value="45">45 分钟后淡出</option>
+          <option value="60">60 分钟后淡出</option>
+        </select>
+        <span class="timer-countdown" id="timerDisplay" aria-live="polite"></span>
+      </div>
+
+      <div class="master-vol-group">
+        <label for="rangeMasterVol">主音量：</label>
+        <input type="range" id="rangeMasterVol" min="0" max="1" step="0.01" value="0.75" aria-label="总音量调节">
+        <span class="val-badge" id="valMasterVol">75%</span>
+      </div>
+    </div>
+
+    <!-- Canvas 主视口 -->
+    <div class="stage-viewport" id="stageViewport">
+      <canvas id="asmrCanvas" width="960" height="380" aria-label="双耳物理粒子与声场动态可视化"></canvas>
+
+      <!-- 画面覆盖层 HUD -->
+      <div class="stage-hud" aria-hidden="true">
+        <div class="hud-left">
+          <div class="hud-tag">CURRENT PRESET</div>
+          <div class="hud-val" id="hudPresetTitle">微雨 · 帆布帐篷</div>
+          <div class="hud-sub" id="hudPresetDesc">柔和细密雨点与帐篷低频阻尼</div>
+        </div>
+        <div class="hud-center">
+          <div class="binaural-badge">
+            <span class="ear-tag l">L</span>
+            <span class="ear-line"></span>
+            <span class="ear-icon">3Dio</span>
+            <span class="ear-line"></span>
+            <span class="ear-tag r">R</span>
+          </div>
+          <div class="ear-tip" id="hudEarTip">佩戴耳机体验双耳空间感</div>
+        </div>
+        <div class="hud-right">
+          <div class="hud-tag">ACOUSTIC FILTER</div>
+          <div class="hud-val" id="hudFilterFreq">LPF 1600 Hz</div>
+          <div class="hud-sub" id="hudFilterQuality">高频柔化 · 消除刺耳音</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="playback-status" id="playbackStatus" role="status">主区域独立试听，右侧组合混音，两种播放自动互斥。</p>
+  </section>
+
   <p class="category-scroll-hint" id="categoryScrollHint">选择声音独立试听 · 右侧可展开混音</p>
   <nav class="category-switch-bar" role="tablist" aria-label="ASMR 声音大类选择" aria-describedby="categoryScrollHint">
     <button type="button" class="cat-tab-btn active" id="tabRainCategory" role="tab" aria-selected="true" data-cat="rain">
@@ -134,79 +200,7 @@ permalink: /projects/ai-asmr/index.html
   <!-- ========================================================================
        2. 核心交互舞台：Canvas 双耳声场可视化 + 雨丝/敲击波纹动画
        ======================================================================== -->
-  <section class="asmr-stage-card" aria-label="3Dio 双耳声场与物理粒子可视化实验台">
-    <div class="stage-header">
-      <div class="stage-brand">
-        <span class="pulse-indicator" id="statusPulse" aria-hidden="true"></span>
-        <span class="stage-title" id="stageMainTitle">3Dio BINAURAL SOUNDSTAGE</span>
-        <span class="stage-pill" id="dspRateBadge">48 kHz · 32-bit DSP</span>
-      </div>
-      <div class="stage-visual-modes" role="group" aria-label="画面模式选择">
-        <button type="button" class="mode-btn active" id="btnModeScenic" data-mode="scenic" title="粒子与双耳声场">🌧️ 粒子声场</button>
-        <button type="button" class="mode-btn" id="btnModeRadar" data-mode="radar" title="3Dio 双耳声学雷达">🎯 3Dio 声场</button>
-        <button type="button" class="mode-btn" id="btnModeMinimal" data-mode="minimal" title="极简睡眠暗光">🌙 极简暗光</button>
-      </div>
-    </div>
 
-    <!-- Canvas 主视口 -->
-    <div class="stage-viewport" id="stageViewport">
-      <canvas id="asmrCanvas" width="960" height="380" aria-label="双耳物理粒子与声场动态可视化"></canvas>
-
-      <!-- 画面覆盖层 HUD -->
-      <div class="stage-hud" aria-hidden="true">
-        <div class="hud-left">
-          <div class="hud-tag">CURRENT PRESET</div>
-          <div class="hud-val" id="hudPresetTitle">微雨 · 帆布帐篷</div>
-          <div class="hud-sub" id="hudPresetDesc">柔和细密雨点与帐篷低频阻尼</div>
-        </div>
-        <div class="hud-center">
-          <div class="binaural-badge">
-            <span class="ear-tag l">L</span>
-            <span class="ear-line"></span>
-            <span class="ear-icon">3Dio</span>
-            <span class="ear-line"></span>
-            <span class="ear-tag r">R</span>
-          </div>
-          <div class="ear-tip" id="hudEarTip">佩戴耳机体验双耳空间感</div>
-        </div>
-        <div class="hud-right">
-          <div class="hud-tag">ACOUSTIC FILTER</div>
-          <div class="hud-val" id="hudFilterFreq">LPF 1600 Hz</div>
-          <div class="hud-sub" id="hudFilterQuality">高频柔化 · 消除刺耳音</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部主控条 -->
-    <div class="stage-toolbar">
-      <button type="button" class="main-play-btn" id="btnMainPlay" aria-pressed="false">
-        <span class="play-icon" id="playBtnIcon" aria-hidden="true">
-          <svg class="icon-play" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="m4.5 2.5 9 5.5-9 5.5z"/></svg>
-          <svg class="icon-pause" viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M3.5 2.5h3.5v11H3.5zm5.5 0H12.5v11H9z"/></svg>
-        </span>
-        <span class="play-text" id="playBtnText">播放雨声 (Space)</span>
-      </button>
-
-      <div class="quick-timer">
-        <label for="selectSleepTimer">⏲️ 定时关闭：</label>
-        <select id="selectSleepTimer" class="asmr-select">
-          <option value="0">常开（不限时）</option>
-          <option value="15">15 分钟后淡出</option>
-          <option value="30">30 分钟后淡出</option>
-          <option value="45">45 分钟后淡出</option>
-          <option value="60">60 分钟后淡出</option>
-        </select>
-        <span class="timer-countdown" id="timerDisplay" aria-live="polite"></span>
-      </div>
-
-      <div class="master-vol-group">
-        <label for="rangeMasterVol">主音量：</label>
-        <input type="range" id="rangeMasterVol" min="0" max="1" step="0.01" value="0.75" aria-label="总音量调节">
-        <span class="val-badge" id="valMasterVol">75%</span>
-      </div>
-    </div>
-    <p class="playback-status" id="playbackStatus" role="status">主区域独立试听，右侧组合混音，两种播放自动互斥。</p>
-  </section>
 
   <!-- ========================================================================
        3. 核心调控区：大类选项联动面板
@@ -1034,6 +1028,7 @@ permalink: /projects/ai-asmr/index.html
   <!-- ========================================================================
        4. 3Dio 双耳声学微调面板
        ======================================================================== -->
+  <details class="lab-disclosure"><summary>微调声学参数</summary>
   <section class="acoustic-tweak-card" aria-label="物理声学参数微调">
     <div class="card-head">
       <h2>3. 声学参数调节</h2>
@@ -1249,10 +1244,12 @@ permalink: /projects/ai-asmr/index.html
       </div>
     </div>
   </section>
+  </details>
 
   <!-- ========================================================================
        5. 核心工具：AI ASMR 提示词工坊与避坑指南
        ======================================================================== -->
+  <details class="lab-disclosure"><summary>查看 AI 提示词与声音说明</summary>
   <section class="prompt-lab-card" aria-label="AI ASMR 提示词工坊与生成器">
     <div class="card-head">
       <h2>4. AI ASMR 提示词参考 (AI Sound Prompt Generator)</h2>
@@ -1351,6 +1348,7 @@ permalink: /projects/ai-asmr/index.html
       </div>
     </div>
   </section>
+  </details>
 </div>
 
 <style>
@@ -2293,6 +2291,20 @@ permalink: /projects/ai-asmr/index.html
     .mixer-dock { top: .5rem; }
     .mixer-panel { max-height: calc(100dvh - 9rem); }
   }
+
+/* Start listening before exploring the complete sound library. */
+.lab-intro-more { color: var(--muted); font-size: .875rem; line-height: 1.8; }
+.lab-intro-more summary, .lab-disclosure > summary { cursor: pointer; min-height: 44px; padding-block: .75rem; }
+.lab-disclosure { margin-top: 1.5rem; border-top: 1px solid var(--line); }
+.lab-disclosure > summary { color: var(--accent-dark); font-weight: 650; }
+.lab-disclosure .acoustic-tweak-card, .lab-disclosure .prompt-lab-card { margin-top: .5rem; }
+.asmr-stage-card { margin-top: 1.5rem; }
+.stage-viewport { height: 220px; }
+.stage-toolbar { border-bottom: 1px solid var(--line); }
+@media (max-width: 760px) {
+  .stage-viewport { height: 180px; }
+  .asmr-lab-page .page-heading { margin-bottom: 1rem; }
+}
 </style>
 <script src="{{ '/assets/js/ai-asmr/runtime.js' | relative_url }}?v=20261025-r5"></script>
 <script src="{{ '/assets/js/ai-asmr/groove.js' | relative_url }}?v=20261025-r5"></script>

@@ -8,7 +8,7 @@
         <a href="{{ item.url | relative_url }}"{% if page.section == item.section or page.layout == 'article' and item.section == 'articles' %} aria-current="page"{% endif %}>{{ item.label }}</a>
         {% endfor %}
       </div>
-      <div class="system-status" aria-label="系统运行状态与北京时间" title="硬件心跳与系统时间">
+      <div class="system-status" aria-label="北京时间" title="当前北京时间">
         <span class="status-pulse" aria-hidden="true"></span>
         <span class="status-time" id="statusClock">{{ site.time | date: '%H:%M' }}</span>
         <span class="status-tag">BJT</span>

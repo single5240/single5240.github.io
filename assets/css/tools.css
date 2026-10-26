@@ -42,7 +42,7 @@
 }
 
 .tools-tab-btn:active,
-.tools-tab-btn[aria-selected="true"] {
+.tools-tab-btn[aria-current="location"] {
   border-color: var(--accent-dark);
   background: var(--soft);
   color: var(--accent-dark);

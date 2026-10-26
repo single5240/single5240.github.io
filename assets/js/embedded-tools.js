@@ -105,11 +105,12 @@
     function activate(targetId, scroll = false) {
       tabs.forEach((btn) => {
         const active = btn.getAttribute("data-tool-jump") === targetId;
-        btn.setAttribute("aria-selected", active ? "true" : "false");
+        if (active) btn.setAttribute("aria-current", "location");
+        else btn.removeAttribute("aria-current");
       });
       if (scroll) {
         const sec = document.getElementById(targetId);
-        if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (sec) sec.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
       }
     }
 

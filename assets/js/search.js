@@ -6,7 +6,27 @@
   const buttons = [...root.querySelectorAll('[data-topic-filter]')];
   const items = [...document.querySelectorAll('[data-search-item]')];
   const empty = document.querySelector('.search-empty');
-  const params = new URLSearchParams(location.search);
+  let params = new URLSearchParams(location.search);
+  const clearTopic = root.querySelector('[data-clear-topic]');
+  const highlightTargets = items.flatMap(item => [...item.querySelectorAll('h3 a, .item-body > p, .item-tags span')]).map(node => ({ node, text: node.textContent }));
+  const highlight = (words) => {
+    const escaped = words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const pattern = escaped.length ? new RegExp(escaped.sort((a, b) => b.length - a.length).join('|'), 'giu') : null;
+    highlightTargets.forEach(({ node, text }) => {
+      node.replaceChildren();
+      let offset = 0;
+      if (pattern) {
+        for (const match of text.matchAll(pattern)) {
+          node.append(text.slice(offset, match.index));
+          const mark = document.createElement('mark');
+          mark.textContent = match[0];
+          node.append(mark);
+          offset = match.index + match[0].length;
+        }
+      }
+      node.append(text.slice(offset));
+    });
+  };
   let topic = buttons.some(button => button.dataset.topicFilter === params.get('topic')) ? params.get('topic') : '';
   // Server-rendered text is the fallback if the optional index is unavailable.
   const normalize = text => String(text || '').normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
@@ -20,6 +40,8 @@
       item.hidden = !matches;
       if (matches) count += 1;
     });
+    highlight(words);
+    clearTopic.hidden = !topic;
     buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.topicFilter === topic)));
     status.textContent = `显示 ${count} / ${items.length} 篇笔记${input.value.trim() ? ` · 搜索“${input.value.trim()}”` : ''}`;
     empty.hidden = count !== 0;
@@ -34,12 +56,22 @@
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       input.value = '';
-      topic = '';
       render();
-      input.blur();
     }
   });
-  root.querySelector('.clear-search').addEventListener('click', () => { input.value = ''; topic = ''; render(); input.focus(); });
+  root.querySelector('.clear-search').addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+  clearTopic.addEventListener('click', () => { topic = ''; render(); buttons[0].focus(); });
+  addEventListener('popstate', () => {
+    params = new URLSearchParams(location.search);
+    input.value = params.get('q') || '';
+    topic = buttons.some(button => button.dataset.topicFilter === params.get('topic')) ? params.get('topic') : '';
+    render();
+  });
+  addEventListener('pageshow', render);
+  root.closest('main').addEventListener('click', (event) => {
+    if (!event.target.closest('[data-search-item] h3 a')) return;
+    try { sessionStorage.setItem('article-archive-return', location.pathname + location.search + '#search'); } catch { /* Optional convenience. */ }
+  });
   buttons.forEach(button => button.addEventListener('click', () => { topic = (topic === button.dataset.topicFilter && topic !== '') ? '' : button.dataset.topicFilter; render(); }));
   render();
   fetch(root.dataset.indexUrl).then(response => {

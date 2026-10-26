@@ -12,7 +12,7 @@ section: home
     <div class="workbench-header">
       <div class="workbench-status-badge">
         <span class="status-pulse-dot" aria-hidden="true"></span>
-        <span>ONLINE / SYS: READY</span>
+        <span>NOTES / EXPERIMENTS</span>
       </div>
       <div class="workbench-meta-tags">
         <span class="chip">N32G455 / STM32</span>
@@ -26,51 +26,19 @@ section: home
       <div class="workbench-intro">
         <div class="workbench-eyebrow">LABORATORY & WORKBENCH</div>
         <h1 id="workbench-title" class="workbench-main-title">
-          硬件驱动、底层时序<br>与 <span class="text-gradient">Web 交互实验室</span>
+          把工程经验写成笔记，<br>把原理做成<span class="text-gradient">交互实验</span>
         </h1>
         <p class="workbench-desc">
-          记录真实单片机裸机架构、DMA 无锁队列、Flash 掉电安全存储与仪器 UI 设计；并在浏览器中 1:1 复刻硬件实验台。
+          从 MCU 驱动、Linux 到 Qt，记录真实开发中的问题与解法。读一篇笔记，或打开实验台亲手试试。
         </p>
-
-        <!-- 4 格仪表指标 HUD (Metrics HUD) -->
-        <div class="workbench-hud-grid">
-          <div class="hud-item">
-            <span class="hud-num">{{ site.articles.size }}</span>
-            <span class="hud-label">深度笔记</span>
-            <span class="hud-sub">实战复盘 / 源码</span>
-          </div>
-          <div class="hud-item">
-            <span class="hud-num">{{ site.data.projects.size }}</span>
-            <span class="hud-label">在线项目</span>
-            <span class="hud-sub">带 Web 仿真操作</span>
-          </div>
-          <div class="hud-item">
-            <span class="hud-num">16</span>
-            <span class="hud-label">Agent Skills</span>
-            <span class="hud-sub">驱动/时序自动化</span>
-          </div>
-          <div class="hud-item">
-            <span class="hud-num">8+</span>
-            <span class="hud-label">工程工具</span>
-            <span class="hud-sub">CRC/字模/HardFault</span>
-          </div>
-        </div>
 
         <!-- 快捷操作按钮组 -->
         <div class="workbench-actions">
-          <a class="button primary" href="{{ '/projects/n32g455-tensile/' | relative_url }}">
-            <span>数显拉力计仿真</span>
-            <span class="button-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a class="button" href="{{ '/tools/index.html' | relative_url }}">
-            <span>在线工具箱</span>
-            <span class="button-arrow" aria-hidden="true">↗</span>
-          </a>
-          <a class="button" href="{{ '/articles/index.html' | relative_url }}">
-            <span>归档与搜索</span>
-            <span class="button-arrow" aria-hidden="true">↗</span>
-          </a>
+          <a class="button primary" href="{{ '/articles/index.html' | relative_url }}">阅读工程笔记 <span aria-hidden="true">→</span></a>
+          <a class="button" href="#demos-title">体验交互项目 <span aria-hidden="true">↓</span></a>
+          <a class="text-link" href="{{ '/tools/index.html' | relative_url }}">在线工具箱 →</a>
         </div>
+        <p class="workbench-summary">{{ site.articles.size }} 篇笔记 <span aria-hidden="true">·</span> {{ site.data.projects.size }} 个项目与工具 <span aria-hidden="true">·</span> {{ site.skills.size }} 个 Skills</p>
       </div>
 
       <!-- 右侧：仪器示波器显示屏视窗与伴读机器人 (Instrument Scope Bay) -->
@@ -117,13 +85,14 @@ section: home
     <div class="section-heading">
       <div>
         <div class="eyebrow">INTERACTIVE LAB & PROJECTS</div>
-        <h2 id="demos-title">工程交互展台</h2>
+        <h2 id="demos-title">精选交互项目</h2>
       </div>
-      <a class="text-link" href="{{ '/projects/index.html' | relative_url }}">全部项目与详细介绍 ↗</a>
+      <a class="text-link" href="{{ '/projects/index.html' | relative_url }}">浏览全部项目 →</a>
     </div>
 
     <div class="workbench-projects-grid">
-      {% for project in site.data.projects %}
+      {% assign featured_projects = site.data.projects | where: 'featured', true %}
+      {% for project in featured_projects %}
         {% include project-mini-card.html project=project %}
       {% endfor %}
     </div>
@@ -210,14 +179,18 @@ section: home
           <p class="aside-text">无需安装调试助手，在浏览器直接完成嵌入式高频计算：</p>
           <div class="aside-tools-list">
             <a href="{{ '/tools/index.html#radix' | relative_url }}"><span>⚡ 进制与字节序转换</span><span aria-hidden="true">→</span></a>
-            <a href="{{ '/tools/index.html#modbus' | relative_url }}"><span>🔍 CRC16 / Modbus 校验</span><span aria-hidden="true">→</span></a>
-            <a href="{{ '/tools/index.html#hardfault' | relative_url }}"><span>💥 HardFault 故障解码</span><span aria-hidden="true">→</span></a>
-            <a href="{{ '/tools/index.html#rgb565' | relative_url }}"><span>🎨 RGB565 / 字模生成</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#crc-modbus' | relative_url }}"><span>🔍 CRC16 / Modbus 校验</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#register-fault' | relative_url }}"><span>💥 HardFault 故障解码</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#display-font' | relative_url }}"><span>🎨 RGB565 / 字模生成</span><span aria-hidden="true">→</span></a>
           </div>
           <a class="aside-more-link" href="{{ '/tools/index.html' | relative_url }}">打开完整工具箱 ↗</a>
         </div>
       </aside>
     </div>
+  </section>
+  <section class="home-section" aria-labelledby="more-projects-title">
+    <div class="section-heading"><h2 id="more-projects-title">继续探索</h2><a class="text-link" href="{{ '/projects/index.html' | relative_url }}">全部项目 →</a></div>
+    <div class="explore-links">{% for project in site.data.projects %}{% unless project.featured %}<a href="{{ project.url | relative_url }}"><span class="eyebrow">{{ project.kind }}</span><strong>{{ project.title }}</strong><span>{{ project.cta }} →</span></a>{% endunless %}{% endfor %}</div>
   </section>
 </main>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":{{ site.title | jsonify }},"url":{{ '/' | absolute_url | jsonify }},"description":{{ page.description | jsonify }},"inLanguage":"zh-CN"}</script>

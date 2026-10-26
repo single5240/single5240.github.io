@@ -6,8 +6,8 @@ layout: default
   <header class="article-header"><a class="eyebrow" href="{{ '/articles/index.html' | relative_url }}">← 返回文章归档</a><h1>{{ page.title | escape }}</h1><p class="description">{{ page.description | escape }}</p><div class="article-meta"><time datetime="{{ page.date | date_to_xmlschema }}">发布于 {{ page.date | date_to_xmlschema | slice: 0, 10 }}</time>{% if page.updated %}<time datetime="{{ page.updated | date_to_xmlschema }}">更新于 {{ page.updated | date: '%Y-%m-%d' }}</time>{% endif %}{% for topic in site.data.topics %}{% if topic.articles contains page.slug %}<a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}">{{ topic.title }}</a>{% endif %}{% endfor %}{% if page.status %}<span>{{ page.status | escape }}</span>{% endif %}</div>{% include series-progress.html position='top' %}</header>
   <div class="reading-grid">
     <aside class="reading-sidebar" id="reading-sidebar">
-      {% include article-robot.html %}
       <details class="toc" id="article-toc" open hidden><summary>本文目录</summary><ol></ol></details>
+      <details class="reading-companion"><summary>打开伴读工作台</summary>{% include article-robot.html %}</details>
     </aside>
     <div class="reading-main"><article class="content">{{ content }}</article>
       {% include series-progress.html position='bottom' %}

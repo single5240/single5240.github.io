@@ -1,6 +1,16 @@
 (() => {
   const content = document.querySelector('.content');
   if (!content) return;
+  try {
+    const saved = sessionStorage.getItem('article-archive-return');
+    const referrer = document.referrer ? new URL(document.referrer) : null;
+    if (saved && referrer?.origin === location.origin && referrer.pathname.endsWith('/articles/index.html')) {
+      const target = new URL(saved, location.origin);
+      if (target.origin === location.origin && target.pathname === referrer.pathname) {
+        document.querySelectorAll('.article-header > a, .reading-main > .back').forEach(link => { link.href = target.href; link.textContent = '← 返回搜索结果'; });
+      }
+    }
+  } catch { /* Archive links retain their static fallback. */ }
   const toc = document.querySelector('#article-toc');
   const list = toc ? toc.querySelector('ol') : null;
   const headings = [...content.querySelectorAll('h2,h3')];

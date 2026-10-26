@@ -19,6 +19,8 @@
   if (!ctx) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const pauseButton = document.querySelector("[data-scope-pause]");
+  let userPaused = false;
   const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
 
   const normMod = (val, mod) => ((val % mod) + mod) % mod;
@@ -581,7 +583,7 @@
   };
 
   const tick = () => {
-    if (!inView || reducedMotion.matches) {
+    if (!inView || reducedMotion.matches || userPaused || document.hidden) {
       rafId = null;
       return;
     }
@@ -615,7 +617,7 @@
   };
 
   const startLoop = () => {
-    if (reducedMotion.matches) {
+    if (reducedMotion.matches || userPaused || document.hidden) {
       drawScope();
       return;
     }
@@ -626,7 +628,7 @@
 
   // 全页面鼠标移动监听：无论鼠标在哪里划过，机器人眼睛与头颅都灵动跟随
   const onWindowPointerMove = (e) => {
-    if (reducedMotion.matches || !robot) return;
+    if (reducedMotion.matches || userPaused || !robot) return;
 
     const rect = robot.getBoundingClientRect();
     const centerX = rect.left + rect.width * 0.5;
@@ -767,7 +769,7 @@
   const startAutoSwitch = () => {
     clearInterval(autoSwitchTimer);
     autoSwitchTimer = setInterval(() => {
-      if (!inView || document.hidden || isStageHovered) return;
+      if (!inView || document.hidden || reducedMotion.matches || userPaused || isStageHovered) return;
       const step = 1 + Math.floor(Math.random() * (WAVEFORMS.length - 1));
       switchWaveform(currentWaveIndex + step, false);
     }, 10000);
@@ -778,8 +780,7 @@
 
     // 桌面文章侧栏保持 sticky；手机文章收起机器人，均不切换为悬浮卡片。
     const isArticleSidebar = document.querySelector("#reading-sidebar");
-    const keepDockInSidebar = isArticleSidebar &&
-      (window.innerWidth > 1000 || window.innerWidth <= 620);
+    const keepDockInSidebar = Boolean(isArticleSidebar) || window.innerWidth <= 620;
 
     if (keepDockInSidebar) {
       if (isFloating) {
@@ -858,6 +859,16 @@
     }
   });
 
+  if (pauseButton) {
+    pauseButton.addEventListener("click", () => {
+      userPaused = !userPaused;
+      pauseButton.setAttribute("aria-pressed", String(userPaused));
+      pauseButton.textContent = userPaused ? "继续动画" : "暂停动画";
+      if (userPaused && rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      if (!userPaused) startLoop();
+    });
+  }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) startLoop(); });
   syncWaveLabels();
   resize();
   updateFloatingDock();

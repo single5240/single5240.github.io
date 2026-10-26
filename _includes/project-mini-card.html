@@ -3,7 +3,7 @@
     <div class="project-mini-visual">
       <img src="{{ include.project.image | relative_url }}" width="320" height="200" alt="{{ include.project.image_alt | default: include.project.title }}" loading="lazy">
       {% if include.project.tags.size > 0 %}
-      <span class="project-mini-chip">{{ include.project.tags.first }}</span>
+      <span class="project-mini-chip">{{ include.project.kind | default: include.project.tags.first }}</span>
       {% endif %}
     </div>
     <div class="project-mini-body">

@@ -154,7 +154,7 @@
 
   // 6. 立体 3D 视差微倾斜（基于元素原生边界，彻底杜绝冒泡抖动）
   if (finePointer.matches && !reducedMotion.matches) {
-    const tiltSelector = ".article-item, .project-feature, .daily-links a, .daily-quote";
+    const tiltSelector = ".project-feature";
     const bindTilt = () => {
       const cards = document.querySelectorAll(tiltSelector);
       cards.forEach((card) => {

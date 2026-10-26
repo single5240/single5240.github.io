@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-CN" data-theme="dark" data-skin="grid">
 <head>{% include head.html %}</head>
-<body>
+<body class="section-{{ page.section | default: 'other' }} layout-{{ page.layout }}">
   <div class="site-ambience" aria-hidden="true"></div>
   {% include header.html %}
   {{ content }}

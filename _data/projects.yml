@@ -1,4 +1,6 @@
 - id: tensile
+  featured: true
+  kind: 仪器仿真
   title: 数显式拉力计
   subtitle: 240×320 仪表界面与按键操作
   description: 在浏览器中操作拉力计界面，切换测试模式、保存记录并演示双层校正。
@@ -20,8 +22,9 @@
     - n32g455-spi-dma-guide
   boundary: 力值由滑块模拟，不是真实计量结果。
 - id: my-skills
+  kind: 技能资料库
   title: 嵌入式与研发 AI Skills 库
-  subtitle: 按技术方向分类的 18 个 Agent Skills
+  subtitle: 按技术方向分类，提供使用说明与参考代码
   description: 收集外设驱动、存储、状态机、通信和调试任务的 Skill，提供使用说明、检查清单与参考代码。
   url: /projects/my-skills/index.html
   image: /assets/images/skills-preview.svg
@@ -32,6 +35,7 @@
     - n32g455-spi-dma-guide
   boundary: 使用前需核对适用芯片、工具链和项目约束。
 - id: embedded-tools
+  kind: 在线工具
   title: 嵌入式开发在线工具箱
   subtitle: 进制、CRC、寄存器、ADC 与字模计算
   description: 提供进制和字节序转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 解码、ADC 换算、定时器分频及 RGB565 字模工具。
@@ -46,6 +50,7 @@
     - n32g455-spi-dma-guide
   boundary: 计算在浏览器本地完成，可复制生成的 C99 代码。
 - id: retro-robot
+  kind: 交互实验
   title: 复古示波器伴读小机器人
   subtitle: 18 种模拟波形与鼠标跟随动画
   description: 用 Canvas 和 SVG 绘制示波器与小机器人。可切换波形、调节增益和噪声，点击机器人查看预设对话；阅读文章时可停靠右下角。
@@ -61,6 +66,8 @@
     - st7789-command-and-pixel-dma
   boundary: 波形由浏览器中的函数生成，页面显示的频率和电压是示例参数。
 - id: ai-asmr
+  featured: true
+  kind: 声音实验
   title: AI-ASMR 声音实验室
   subtitle: 纯算法合成的双耳雨声、材质敲击、水流与环境声
   description: 基于 Web Audio API 在浏览器本地合成雨声、敲击、摩擦、流水、钵铃、壁炉等 10 类声音，无需下载外部音频。支持双耳立体声调节与 AI 提示词生成。

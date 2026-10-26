@@ -2787,3 +2787,29 @@
     color: #0969da !important;
   }
 }
+
+/* Quiet reading surfaces; the interactive examples keep their own panels. */
+.article-header { max-width: none; padding: 0 0 28px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+.article-header h1 { max-width: 22em; font-size: clamp(28px, 3.2vw, 40px); }
+.article-header .description { max-width: 48em; }
+.reading-main { padding: 8px 28px 36px 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+.reading-grid { grid-template-columns: minmax(0, 760px) minmax(220px, 1fr); gap: 40px; }
+.toc { max-height: calc(100vh - 180px); box-shadow: none; font-size: 13px; }
+.toc .toc-sub { font-size: 12px; }
+.toc summary { font-size: 14px; }
+.reading-companion { min-width: 0; }
+.reading-companion > summary { min-height: 44px; padding: 12px 0; font-size: 13px; color: var(--muted); cursor: pointer; }
+.reading-companion .article-robot-card { box-shadow: none; }
+@media (max-width: 1000px) {
+  .reading-grid { display: flex; }
+  .reading-main { padding: 0; }
+  .toc { max-height: 350px; }
+  .reading-companion { display: none; }
+}
+@media (max-width: 620px) {
+  .reading-layout { width: calc(100% - 32px); }
+  .article-header { padding: 0 0 22px; }
+  .reading-main { padding: 0; }
+  .article-header h1 { font-size: 28px; }
+  .content h2 { font-size: 23px; }
+}
