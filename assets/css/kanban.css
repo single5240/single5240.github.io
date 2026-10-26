@@ -74,3 +74,12 @@
   .kb-dialog { padding: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .kb-app *, .kb-app *::before { scroll-behavior: auto; transition: none; } }
+.kb-workspace,
+.kb-column,
+.kb-card,
+.kb-dialog {
+  background: var(--raised-bg);
+  border-color: var(--glass-edge);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+}

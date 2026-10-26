@@ -386,9 +386,11 @@ h3 { font-size: 20px; line-height: 1.5; font-weight: 700; }
 }
 
 .scope-bay-frame {
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-edge);
   border-radius: 10px;
-  background: var(--panel);
+  background: var(--raised-bg);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
   box-shadow: var(--shadow-small);
   padding: 12px 14px 12px;
   position: relative;
@@ -1020,4 +1022,25 @@ mark { background: var(--soft); color: var(--accent-dark); border-radius: 2px; p
   .section-heading { flex-wrap: wrap; }
   .section-articles .archive-tools { padding-top: 0; }
   .scope-pause { min-height: 44px; }
+}
+
+.workbench-console,
+.scope-bay-frame,
+.project-mini-card,
+.project-feature,
+.aside-card,
+.daily-grid > div:first-child,
+.daily-links a,
+.daily-archive-grid section,
+.study,
+.prose,
+.skills-arch-card,
+.theme-menu,
+.article-robot-card,
+.robot-speech,
+.back-to-top {
+  background: var(--raised-bg);
+  border-color: var(--glass-edge);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
 }

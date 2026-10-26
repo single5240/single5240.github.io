@@ -529,3 +529,11 @@
     height: 12px;
   }
 }
+
+.kb-tool-entry,
+.tool-card {
+  background: var(--raised-bg);
+  border-color: var(--glass-edge);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+}

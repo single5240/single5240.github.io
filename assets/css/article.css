@@ -2813,3 +2813,20 @@
   .article-header h1 { font-size: 28px; }
   .content h2 { font-size: 23px; }
 }
+
+.toc,
+.article-interactive-widget,
+.font-demo-root,
+.ecat-demo-root,
+.w25q-demo-root,
+.article-robot-card {
+  background: var(--raised-bg);
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+}
+.article-interactive-widget,
+.font-demo-root,
+.ecat-demo-root,
+.w25q-demo-root {
+  border-color: var(--glass-edge);
+}
