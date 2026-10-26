@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-26",
+  "sentence": "The woods are lovely, dark and deep, / But I have promises to keep, / And miles to go before I sleep, / And miles to go before I sleep.",
+  "source": {
+    "author": "Robert Frost",
+    "work": "Stopping by Woods on a Snowy Evening",
+    "year": "1923",
+    "detail": "收录于诗集 New Hampshire，全诗最后一节（末行重复一次）"
+  },
+  "translation": "树林幽美，深暗而幽邃，可我还有诺言要守，还要赶很远的路才能安睡，还要赶很远的路才能安睡。",
+  "grammar": [
+    "主系表 + 并列形容词：The woods are lovely, dark and deep. 主语 The woods，系动词 are，后面三个形容词并列作表语，前两个用逗号、最后一个用 and 连接，这是英语列举三项的标准写法。注意 woods 用复数，表示“一片树林”。",
+    "不定式作后置定语：promises to keep、miles to go 里的 to keep / to go 修饰前面的名词，表示“要去守的诺言”“要去走的路”，带有“尚待完成”的意味。类似说法：I have a lot of work to do.",
+    "省略 + 时间状语从句：And miles to go 前面省略了 I have，承接上一行避免重复；before I sleep 是时间状语从句，从句用一般现在时表示将来（主将从现），不说 before I will sleep。"
+  ],
+  "vocab": [
+    {
+      "word": "lovely",
+      "phonetic": "/ˈlʌvli/",
+      "pos": "adj.",
+      "meaning": "美好的、可爱的、令人愉快的",
+      "collocation": "a lovely day; lovely weather; look lovely",
+      "example": "What a lovely surprise!"
+    },
+    {
+      "word": "promise",
+      "phonetic": "/ˈprɒmɪs/",
+      "pos": "n. / v.",
+      "meaning": "诺言、承诺；句中指自己承担的责任和约定",
+      "collocation": "keep a promise; break a promise; make a promise",
+      "example": "He always keeps his promises."
+    },
+    {
+      "word": "deep",
+      "phonetic": "/diːp/",
+      "pos": "adj.",
+      "meaning": "深的；句中形容树林幽深",
+      "collocation": "deep water; deep sleep; deep in thought",
+      "example": "She was deep in thought and didn't hear me."
+    },
+    {
+      "word": "miles to go",
+      "phonetic": "/maɪlz tə ɡəʊ/",
+      "pos": "phrase",
+      "meaning": "还有很长的路要走（字面是路程，也常比喻任务还远没完成）",
+      "collocation": "have miles to go; still have a long way to go",
+      "example": "The project is going well, but we still have miles to go."
+    }
+  ],
+  "note": "小练习：仿照“不定式作后置定语”造一句，比如 I have bugs to fix and code to review before I sleep. 想想自己今天有哪些 promises to keep？"
+}
