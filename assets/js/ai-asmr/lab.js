@@ -3121,6 +3121,9 @@
     const selectTimer = document.getElementById("selectSleepTimer");
     selectTimer.addEventListener("change", () => {
       state.sleepTimerMinutes = parseInt(selectTimer.value, 10);
+      if (audioCtx && masterGain && state.isPlaying) {
+        masterGain.gain.setTargetAtTime(state.masterVol, audioCtx.currentTime, 0.1);
+      }
       if (state.sleepTimerMinutes > 0) {
         state.sleepTimerEnd = Date.now() + state.sleepTimerMinutes * 60 * 1000;
         updateSleepTimer();
@@ -3128,9 +3131,6 @@
         if (sleepTimerTickId) {
           clearTimeout(sleepTimerTickId);
           sleepTimerTickId = null;
-        }
-        if (audioCtx && masterGain && state.isPlaying) {
-          masterGain.gain.setTargetAtTime(state.masterVol, audioCtx.currentTime, 0.1);
         }
         const display = document.getElementById("timerDisplay");
         if (display) display.textContent = "";

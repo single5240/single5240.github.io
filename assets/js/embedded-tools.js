@@ -406,6 +406,19 @@
     const mbInspectInput = $("#mb-inspect-input");
     const mbInspectResult = $("#mb-inspect-result");
 
+    function showModbusError(message) {
+      const item = document.createElement("div");
+      item.className = "fault-item is-fault";
+      const heading = document.createElement("div");
+      heading.className = "fault-head";
+      heading.textContent = "输入或帧格式错误";
+      const description = document.createElement("p");
+      description.className = "fault-desc";
+      description.textContent = message;
+      item.append(heading, description);
+      mbInspectResult.replaceChildren(item);
+    }
+
     function buildModbusFrame() {
       const slave = Number(mbSlave.value) & 0xff;
       const fc = Number(mbFunc.value) & 0xff;
@@ -414,11 +427,17 @@
 
       let pdu = [slave, fc, (addr >>> 8) & 0xff, addr & 0xff];
       if (fc === 0x10) {
-        const words = valStr
-          .split(/[\s,]+/)
-          .filter(Boolean)
-          .map((t) => (t.startsWith("0x") || t.startsWith("0X") ? parseInt(t, 16) : parseInt(t, 10)) & 0xffff);
-        const count = Math.max(1, words.length);
+        const tokens = valStr.split(/[\s,]+/).filter(Boolean);
+        if (!tokens.length || tokens.length > 123) {
+          showModbusError("10H 请填写 1～123 个寄存器值。");
+          return;
+        }
+        const words = tokens.map((token) => /^(?:0x[0-9a-f]+|\d+)$/i.test(token) ? Number(token) : NaN);
+        if (words.some((word) => !Number.isInteger(word) || word < 0 || word > 0xffff)) {
+          showModbusError("寄存器值须为 0～65535 的十进制整数或 0x 十六进制整数。");
+          return;
+        }
+        const count = words.length;
         pdu.push((count >>> 8) & 0xff, count & 0xff, (count * 2) & 0xff);
         for (const w of words) {
           pdu.push((w >>> 8) & 0xff, w & 0xff);
@@ -432,6 +451,7 @@
       const frame = [...pdu, crc & 0xff, (crc >>> 8) & 0xff];
       const hex = bytesToHexStr(frame);
       mbInspectInput.value = hex;
+      modeSelect.value = "hex";
       payloadInput.value = bytesToHexStr(pdu);
       updateCrc();
       inspectModbusFrame();
@@ -440,8 +460,15 @@
     function inspectModbusFrame() {
       const { bytes, error } = parseHexBytes(mbInspectInput.value, "hex");
       if (error || bytes.length < 4) {
-        mbInspectResult.innerHTML = `<div class="fault-item is-fault"><div class="fault-head">帧长不足或格式错误</div><p class="fault-desc">${error || "Modbus RTU 最小帧长为 4 字节（含 2 字节 CRC）。"}</p></div>`;
+        showModbusError(error || "Modbus RTU 最小帧长为 4 字节（含 2 字节 CRC）。");
         return;
+      }
+      if (bytes[1] === 0x10 && bytes.length !== 8) {
+        const count = (bytes[4] << 8) | bytes[5];
+        if (bytes.length < 9 || count < 1 || count > 123 || bytes[6] !== count * 2 || bytes.length !== 9 + bytes[6]) {
+          showModbusError("10H 请求的寄存器数量、字节计数与实际帧长不一致。");
+          return;
+        }
       }
       const body = bytes.slice(0, -2);
       const rxCrc = bytes[bytes.length - 2] | (bytes[bytes.length - 1] << 8);
@@ -790,7 +817,7 @@
       } else if (p.mode === "bipolar_offset") {
         code = Math.round((v / p.fullScaleV) * p.halfScale + p.halfScale);
       } else {
-        const sc = Math.round((v / p.fullScaleV) * p.halfScale);
+        const sc = Math.max(-p.halfScale, Math.min(p.halfScale - 1, Math.round((v / p.fullScaleV) * p.halfScale)));
         code = sc < 0 ? sc + Math.pow(2, p.bits) : sc;
       }
       code = Math.max(0, Math.min(p.maxCode, code));
@@ -815,7 +842,8 @@
       const clkMhz = Math.max(1, Number(timClkInput.value) || 144);
       const fClk = clkMhz * 1e6;
       const targetHz = Math.max(0.01, Number(timFreqInput.value) || 1000);
-      const duty = Math.min(100, Math.max(0, Number(timDutyInput.value) || 50));
+      const enteredDuty = timDutyInput.value.trim() === "" ? NaN : Number(timDutyInput.value);
+      const duty = Math.min(100, Math.max(0, Number.isFinite(enteredDuty) ? enteredDuty : 50));
 
       const totalCounts = fClk / targetHz;
       const candidates = [];

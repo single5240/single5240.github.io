@@ -260,10 +260,12 @@
     var buttons = document.querySelectorAll("#keys button");
     var states = [];
 
-    function press(index) {
+    function press(index, source) {
       var state = states[index];
+      if (state.down) return;
       var now = FG.now();
       state.down = true;
+      state.source = source;
       state.downTick = now;
       state.longFired = false;
       state.holdFired = false;
@@ -277,14 +279,15 @@
       self.ui.dispatch(name, FG.now());
     }
 
-    function release(index) {
+    function release(index, source) {
       var state = states[index];
-      if (!state.down) {
+      if (!state.down || state.source !== source) {
         return;
       }
       var now = FG.now();
       var elapsed = now - state.downTick;
       state.down = false;
+      state.source = null;
       state.element.classList.remove("active");
 
       switch (state.name) {
@@ -323,6 +326,15 @@
         default:
           break;
       }
+    }
+
+    function cancel(index) {
+      var state = states[index];
+      if (!state.down) return;
+      state.down = false;
+      state.source = null;
+      state.element.classList.remove("active");
+      if (state.name === "DATA") fire(FG.UI_EVENT.DATA_RELEASE);
     }
 
     function tick() {
@@ -365,6 +377,7 @@
           name: element.getAttribute("data-key"),
           element: element,
           down: false,
+          source: null,
           downTick: 0,
           longFired: false,
           holdFired: false,
@@ -372,24 +385,51 @@
         };
         states[index] = state;
         element.addEventListener("pointerdown", function (event) {
+          if (event.button !== 0) return;
           event.preventDefault();
+          element.focus({ preventScroll: true });
           element.setPointerCapture(event.pointerId);
-          press(index);
+          press(index, "pointer");
         });
         element.addEventListener("pointerup", function (event) {
           event.preventDefault();
-          release(index);
+          release(index, "pointer");
         });
         element.addEventListener("pointercancel", function () {
-          state.down = false;
-          state.element.classList.remove("active");
-          if (state.name === "DATA") fire(FG.UI_EVENT.DATA_RELEASE);
+          if (state.source === "pointer") cancel(index);
+        });
+        element.addEventListener("lostpointercapture", function () {
+          if (state.source === "pointer") cancel(index);
+        });
+        // Share the physical-key timing for Enter/Space, including long holds.
+        element.addEventListener("keydown", function (event) {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          if (!event.repeat) press(index, event.key);
+        });
+        element.addEventListener("keyup", function (event) {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          release(index, event.key);
+        });
+        element.addEventListener("blur", function () {
+          if (state.source !== "pointer") cancel(index);
+        });
+        element.addEventListener("click", function (event) {
+          // Assistive technologies can activate a button without key events.
+          if (event.detail === 0 && !state.down) {
+            press(index, "activation");
+            release(index, "activation");
+          }
         });
         element.addEventListener("contextmenu", function (event) {
           event.preventDefault();
         });
       })(i);
     }
+    window.addEventListener("blur", function () {
+      for (var index = 0; index < states.length; index++) cancel(index);
+    });
     window.requestAnimationFrame(tick);
   };
 
