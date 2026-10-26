@@ -10,9 +10,9 @@
   --warm: #d9822b;
   --soft: #e8f2ef;
   --deep: #17232a;
-  --header-bg: rgba(248, 250, 247, 0.92);
+  --header-bg: rgba(248, 250, 247, 0.97);
   --header-line: rgba(217, 225, 231, 0.8);
-  --raised-bg: rgba(255, 255, 255, 0.58);
+  --raised-bg: rgba(255, 255, 255, 0.92);
   --glass: blur(18px) saturate(1.5);
   --glass-edge: rgba(255, 255, 255, 0.72);
   --raised-border: rgba(15, 129, 141, 0.24);
@@ -59,9 +59,9 @@ html {
     --warm: #f1a65a;
     --soft: #23383a;
     --deep: #0b1114;
-    --header-bg: rgba(17, 25, 29, 0.92);
+    --header-bg: rgba(17, 25, 29, 0.97);
     --header-line: rgba(52, 69, 79, 0.82);
-    --raised-bg: rgba(24, 35, 41, 0.55);
+    --raised-bg: rgba(24, 35, 41, 0.92);
     --glass-edge: rgba(232, 242, 239, 0.16);
     --raised-border: rgba(120, 213, 220, 0.3);
     --alt-bg: #142126;
@@ -95,9 +95,9 @@ html {
   --warm: #f1a65a;
   --soft: #23383a;
   --deep: #0b1114;
-  --header-bg: rgba(17, 25, 29, 0.92);
+  --header-bg: rgba(17, 25, 29, 0.97);
   --header-line: rgba(52, 69, 79, 0.82);
-  --raised-bg: rgba(24, 35, 41, 0.55);
+  --raised-bg: rgba(24, 35, 41, 0.92);
   --glass-edge: rgba(232, 242, 239, 0.16);
   --raised-border: rgba(120, 213, 220, 0.3);
   --alt-bg: #142126;
@@ -135,9 +135,9 @@ html {
   --warm: #d84333;
   --soft: #fdeeee;
   --deep: #111111;
-  --header-bg: rgba(245, 245, 242, 0.94);
+  --header-bg: rgba(245, 245, 242, 0.97);
   --header-line: rgba(222, 220, 213, 0.9);
-  --raised-bg: rgba(255, 255, 255, 0.58);
+  --raised-bg: rgba(255, 255, 255, 0.92);
   --glass-edge: rgba(255, 255, 255, 0.78);
   --raised-border: rgba(230, 51, 41, 0.28);
   --alt-bg: #eceae3;
@@ -171,9 +171,9 @@ html {
   --warm: #ffd166;
   --soft: #0c253d;
   --deep: #02070e;
-  --header-bg: rgba(4, 11, 21, 0.92);
+  --header-bg: rgba(4, 11, 21, 0.97);
   --header-line: rgba(22, 51, 79, 0.85);
-  --raised-bg: rgba(7, 21, 38, 0.52);
+  --raised-bg: rgba(7, 21, 38, 0.92);
   --glass-edge: rgba(82, 216, 232, 0.28);
   --raised-border: rgba(82, 216, 232, 0.38);
   --alt-bg: #091a2e;
@@ -207,9 +207,9 @@ html {
   --warm: #4a4a4a;
   --soft: #eeebe3;
   --deep: #0a0a0a;
-  --header-bg: rgba(250, 249, 246, 0.94);
+  --header-bg: rgba(250, 249, 246, 0.97);
   --header-line: rgba(227, 222, 213, 0.9);
-  --raised-bg: rgba(255, 255, 255, 0.62);
+  --raised-bg: rgba(255, 255, 255, 0.92);
   --glass-edge: rgba(255, 255, 255, 0.8);
   --raised-border: rgba(20, 20, 20, 0.22);
   --alt-bg: #f2efe8;
@@ -1568,12 +1568,12 @@ time {
   :root,
   :root[data-theme="swiss"],
   :root[data-theme="mono"] {
-    --raised-bg: rgba(255, 255, 255, 0.94);
+    --raised-bg: rgba(255, 255, 255, 0.98);
   }
   :root[data-theme="dark"] {
-    --raised-bg: rgba(24, 35, 41, 0.94);
+    --raised-bg: rgba(24, 35, 41, 0.98);
   }
   :root[data-theme="hud"] {
-    --raised-bg: rgba(7, 21, 38, 0.94);
+    --raised-bg: rgba(7, 21, 38, 0.98);
   }
 }
