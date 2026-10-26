@@ -1424,26 +1424,27 @@ time {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
   font-family: ui-monospace, Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 11px;
   font-weight: 600;
   color: var(--muted);
   user-select: none;
   white-space: nowrap;
-  box-shadow: none;
+  box-shadow: var(--shadow-small);
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .status-pulse {
-  width: 4px;
-  height: 4px;
+  width: 6.5px;
+  height: 6.5px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: none;
-  animation: none;
+  background: #10b981;
+  box-shadow: 0 0 0 rgba(16, 185, 129, 0.6);
+  animation: pulse-glow 2.2s infinite ease-in-out;
 }
 
 @keyframes pulse-glow {
@@ -1463,8 +1464,8 @@ time {
 
 :root[data-theme="hud"] .status-pulse {
   background: var(--accent);
-  box-shadow: none;
-  animation: none;
+  box-shadow: 0 0 0 rgba(82, 216, 232, 0.6);
+  animation-name: pulse-glow-hud;
 }
 
 @keyframes pulse-glow-hud {
@@ -1484,7 +1485,7 @@ time {
 
 :root[data-theme="swiss"] .status-pulse {
   background: var(--accent);
-  animation: none;
+  animation-name: pulse-glow-swiss;
 }
 
 @keyframes pulse-glow-swiss {

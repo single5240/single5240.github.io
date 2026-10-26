@@ -7,15 +7,32 @@ section: home
 <main class="home workbench-home" id="main-content">
   <div id="top"></div>
 
+  <!-- 1. 工作台主仪表控制台 Hero (Workbench Master Console) -->
   <section class="workbench-console" aria-labelledby="workbench-title">
+    <div class="workbench-header">
+      <div class="workbench-status-badge">
+        <span class="status-pulse-dot" aria-hidden="true"></span>
+        <span>NOTES / EXPERIMENTS</span>
+      </div>
+      <div class="workbench-meta-tags">
+        <span class="chip">N32G455 / STM32</span>
+        <span class="chip">Baremetal C99</span>
+        <span class="chip">Web Simulators</span>
+      </div>
+    </div>
+
     <div class="workbench-hero-grid">
+      <!-- 左侧：工作台介绍与核心度量 HUD -->
       <div class="workbench-intro">
+        <div class="workbench-eyebrow">LABORATORY & WORKBENCH</div>
         <h1 id="workbench-title" class="workbench-main-title">
-          把工程经验写成笔记，<br>把原理做成<span class="title-mark">交互实验</span>
+          把工程经验写成笔记，<br>把原理做成<span class="text-gradient">交互实验</span>
         </h1>
         <p class="workbench-desc">
-          MCU、Linux 与 Qt 里真正卡住过的问题，按当时的解法记下来。读一篇笔记，或点开旁边的波形，看信号怎么走。
+          从 MCU 驱动、Linux 到 Qt，记录真实开发中的问题与解法。读一篇笔记，或打开实验台亲手试试。
         </p>
+
+        <!-- 快捷操作按钮组 -->
         <div class="workbench-actions">
           <a class="button primary" href="{{ '/articles/index.html' | relative_url }}">阅读工程笔记 <span aria-hidden="true">→</span></a>
           <a class="button" href="#demos-title">体验交互项目 <span aria-hidden="true">↓</span></a>
@@ -24,8 +41,23 @@ section: home
         <p class="workbench-summary">{{ site.articles.size }} 篇笔记 <span aria-hidden="true">·</span> {{ site.data.projects.size }} 个项目与工具 <span aria-hidden="true">·</span> {{ site.skills.size }} 个 Skills</p>
       </div>
 
+      <!-- 右侧：仪器示波器显示屏视窗与伴读机器人 (Instrument Scope Bay) -->
       <div class="workbench-scope-bay">
         <div class="scope-bay-frame">
+          <div class="scope-bay-header">
+            <div class="scope-bezel-screws" aria-hidden="true">
+              <span class="screw"></span>
+              <span class="screw"></span>
+            </div>
+            <div class="scope-title-tag">
+              <span class="dot-live" aria-hidden="true"></span>
+              <span>DSO-VIRTUAL OSCILLOSCOPE</span>
+            </div>
+            <div class="scope-screen-spec" aria-hidden="true">
+              <span>TIME: 2.0ms/DIV</span>
+            </div>
+          </div>
+
           <div class="scope-bay-body">
             {% include theme-spectrum.html %}
           </div>
@@ -33,8 +65,9 @@ section: home
       </div>
     </div>
 
+    <!-- 底部：专题频带切换 (Topic Channel Selector) -->
     <div class="workbench-channel-bar">
-      <span class="channel-label">专题</span>
+      <span class="channel-label">专题频段:</span>
       <nav class="home-topic-links" aria-label="文章专题">
         {% for topic in site.data.topics %}
         <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}" style="--topic-accent: {{ topic.color | default: 'var(--accent)' }}">
@@ -51,6 +84,7 @@ section: home
   <section class="home-section workbench-demos-section" aria-labelledby="demos-title">
     <div class="section-heading">
       <div>
+        <div class="eyebrow">INTERACTIVE LAB & PROJECTS</div>
         <h2 id="demos-title">精选交互项目</h2>
       </div>
       <a class="text-link" href="{{ '/projects/index.html' | relative_url }}">浏览全部项目 →</a>
@@ -71,6 +105,7 @@ section: home
       <div class="deck-primary-column">
         <div class="section-heading">
           <div>
+            <div class="eyebrow">FIELD NOTES & RESEARCH</div>
             <h2 id="articles-title">最新工程笔记</h2>
           </div>
           <a class="text-link" href="{{ '/articles/index.html' | relative_url }}">归档与搜索 ↗</a>
@@ -100,14 +135,17 @@ section: home
         <!-- 每日晨读卡片 -->
         <div class="aside-card daily-quote-box">
           <div class="aside-card-head">
+            <span class="aside-badge">DAILY THOUGHT</span>
             <span class="aside-label">每日思考</span>
           </div>
           {% include daily-quote.html %}
         </div>
 
+        <!-- 每日英语与 AI 资讯卡片 -->
         <div class="aside-card daily-feeds-box">
           <div class="aside-card-head">
-            <span class="aside-label">日常</span>
+            <span class="aside-badge">TELEMETRY</span>
+            <span class="aside-label">日常追踪</span>
           </div>
           <div class="aside-feed-links">
             {% assign english_days = site.english | sort: 'day' | reverse %}
@@ -135,13 +173,15 @@ section: home
         <!-- 快速在线工具箱小工具卡片 -->
         <div class="aside-card tools-quick-box">
           <div class="aside-card-head">
-            <span class="aside-label">小工具</span>
+            <span class="aside-badge">QUICK UTILITIES</span>
+            <span class="aside-label">嵌入式小工具</span>
           </div>
+          <p class="aside-text">无需安装调试助手，在浏览器直接完成嵌入式高频计算：</p>
           <div class="aside-tools-list">
-            <a href="{{ '/tools/index.html#radix' | relative_url }}"><span>进制与字节序</span><span aria-hidden="true">→</span></a>
-            <a href="{{ '/tools/index.html#crc-modbus' | relative_url }}"><span>CRC16 / Modbus</span><span aria-hidden="true">→</span></a>
-            <a href="{{ '/tools/index.html#register-fault' | relative_url }}"><span>HardFault 解码</span><span aria-hidden="true">→</span></a>
-            <a href="{{ '/tools/index.html#display-font' | relative_url }}"><span>RGB565 / 字模</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#radix' | relative_url }}"><span>⚡ 进制与字节序转换</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#crc-modbus' | relative_url }}"><span>🔍 CRC16 / Modbus 校验</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#register-fault' | relative_url }}"><span>💥 HardFault 故障解码</span><span aria-hidden="true">→</span></a>
+            <a href="{{ '/tools/index.html#display-font' | relative_url }}"><span>🎨 RGB565 / 字模生成</span><span aria-hidden="true">→</span></a>
           </div>
           <a class="aside-more-link" href="{{ '/tools/index.html' | relative_url }}">打开完整工具箱 ↗</a>
         </div>
