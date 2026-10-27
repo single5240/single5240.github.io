@@ -273,7 +273,7 @@
         (failed.length ? "\n" + failed.map(function (item) {
           return "✗ " + item.name + " " + item.detail;
         }).join("\n") : "");
-      element.className = failed.length ? "warn" : "";
+      element.className = failed.length ? "hint-list warn" : "hint-list";
     }
   }
 

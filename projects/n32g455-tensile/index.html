@@ -1,518 +1,680 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="纯静态网页，演示拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。">
-<meta name="theme-color" content="#101216">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="zh_CN">
-<meta property="og:site_name" content="single5240 笔记分享">
-<meta property="og:title" content="数显式拉力计 界面演示">
-<meta property="og:description" content="纯静态网页，演示拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。">
-<meta property="og:url" content="https://single5240.github.io/projects/n32g455-tensile/index.html">
-<meta property="og:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
-<meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="数显式拉力计 界面演示">
-<meta name="twitter:description" content="纯静态网页，演示拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。">
-<meta name="twitter:image" content="https://single5240.github.io/assets/images/engineer-computer-lineart.jpg">
-<title>数显式拉力计 界面演示</title>
-<link rel="canonical" href="https://single5240.github.io/projects/n32g455-tensile/index.html">
-<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<style>
-  :root {
-    --shell: #2b2f36;
-    --shell-edge: #14161a;
-    --panel: #3a4048;
-    --text: #d8dde4;
-    --accent: #25dcff;
-    --key: #4a515a;
-    --key-edge: #22262b;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #101216;
-    color: var(--text);
-    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-    font-size: 13px;
-  }
-  body {
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
-  :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-  .demo-top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 6px 18px;
-    width: min(1440px, calc(100% - 40px));
-    margin: 0 auto;
-    padding: 14px 0 0;
-  }
-  .demo-back {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .demo-back a {
-    color: #b7c2ce;
-    font-size: 13px;
-    font-weight: 650;
-    text-decoration: none;
-  }
-  .demo-back a:hover {
-    color: var(--accent);
-  }
-  .demo-top h1 {
-    margin: 0;
-    color: #c5ced8;
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1.4;
-  }
-  #app {
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: min(1440px, calc(100% - 40px));
-    margin: 0 auto;
-    padding: 0 0 28px;
-  }
-  #app::before,
-  #app::after {
-    content: "";
-    flex: 1 0 18px;
-  }
-  .demo-stage {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    column-gap: 28px;
-    align-items: center;
-    width: 100%;
-  }
-  /* 机壳 */
-  #device {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: center;
-    max-width: 100%;
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 168px;
-    grid-template-rows: auto minmax(320px, 1fr) auto auto auto;
-    grid-template-areas:
-      "lcd force-title"
-      "lcd slider"
-      "lcd readout"
-      "lcd controls"
-      "keys keys";
-    column-gap: 14px;
-    row-gap: 10px;
-    align-items: stretch;
-    background: linear-gradient(180deg, #343a42, #23272d);
-    border: 2px solid var(--shell-edge);
-    border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-  }
-  #lcd {
-    grid-area: lcd;
-    display: block;
-    width: 480px;
-    height: 640px;
-    min-width: 0;
-    justify-self: start;
-    align-self: start;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    background: #000;
-    border: 2px solid #0a0c0f;
-    border-radius: 4px;
-  }
-  /* 右侧演示控件（不在 240x320 逻辑画面内） */
-  #force-title {
-    grid-area: force-title;
-  }
-  #controls {
-    grid-area: controls;
-    width: auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .ctl-title {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    color: #8d97a4;
-    text-transform: uppercase;
-  }
-  #force-slider {
-    grid-area: slider;
-    position: relative;
-    align-self: stretch;
-    min-height: 320px;
-    height: auto;
-    background: linear-gradient(180deg, #3f4650, #2a2e34);
-    border: 1px solid var(--key-edge);
-    border-radius: 8px;
-    touch-action: none;
-    cursor: ns-resize;
-    user-select: none;
-  }
-  #force-slider .mid {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    background: #6b7683;
-  }
-  #force-slider .thumb {
-    position: absolute;
-    left: 50%;
-    width: 118px;
-    height: 12px;
-    margin-left: -59px;
-    margin-top: -6px;
-    background: linear-gradient(180deg, #6fd8ff, #1d8fb8);
-    border: 1px solid #0d5b75;
-    border-radius: 3px;
-    box-shadow: 0 0 8px rgba(37, 220, 255, 0.5);
-  }
-  #force-slider .top-label,
-  #force-slider .bottom-label {
-    position: absolute;
-    left: 4px;
-    font-size: 10px;
-    color: #7c8794;
-  }
-  #force-slider .top-label { top: 3px; }
-  #force-slider .bottom-label { bottom: 3px; }
-  #slider-readout {
-    grid-area: readout;
-    text-align: center;
-    font-family: Consolas, monospace;
-    font-size: 14px;
-    color: var(--accent);
-  }
-  #force-input-row {
-    display: flex;
-    gap: 6px;
-  }
-  #force-input {
-    flex: 1 1 auto;
-    min-width: 0;
-    background: #1b1e23;
-    border: 1px solid var(--key-edge);
-    border-radius: 4px;
-    color: #e6ebf1;
-    padding: 5px 6px;
-    font-family: Consolas, monospace;
-    font-size: 13px;
-  }
-  #controls button {
-    background: var(--key);
-    border: 1px solid var(--key-edge);
-    border-radius: 4px;
-    color: var(--text);
-    padding: 5px 8px;
-    cursor: pointer;
-    font-size: 12px;
-  }
-  #controls button:hover { background: #565e69; }
-  #controls button:active { background: #6b7480; }
-  .clamp-note {
-    min-height: 16px;
-    font-size: 11px;
-    color: #ffb066;
-  }
-  .switch-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    background: #262a30;
-    border: 1px solid var(--key-edge);
-    border-radius: 4px;
-    padding: 5px 8px;
-  }
-  .switch-row label { font-size: 12px; }
-  .switch-row input { transform: scale(1.15); }
-  .hint-list {
-    font-size: 11px;
-    color: #8d97a4;
-    line-height: 1.6;
-    max-width: 320px;
-  }
-  .hint-list code {
-    color: #cfe4ee;
-    background: #1b1e23;
-    border-radius: 3px;
-    padding: 0 3px;
-  }
-  /* 五个实体键 */
-  #keys {
-    grid-area: keys;
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-    justify-content: center;
-    min-width: 0;
-  }
-  #keys button {
-    flex: 1 1 0;
-    min-width: 0;
-    height: 44px;
-    background: linear-gradient(180deg, #4c545e, #2f353c);
-    border: 1px solid var(--key-edge);
-    border-bottom-width: 3px;
-    border-radius: 6px;
-    color: #e8edf2;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    touch-action: none;
-    user-select: none;
-  }
-  #keys button.active {
-    background: linear-gradient(180deg, #2a3037, #3b424b);
-    border-bottom-width: 1px;
-    transform: translateY(2px);
-  }
-  /* 右侧信息栏 */
-  #sidebar {
-    grid-column: 3;
-    grid-row: 1;
-    justify-self: start;
-    align-self: center;
-    width: min(300px, 100%);
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  #sidebar section {
-    background: #191c21;
-    border: 1px solid #262b32;
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-  #sidebar h2 {
-    margin: 0 0 8px;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    color: #8d97a4;
-    text-transform: uppercase;
-  }
-  #status-lines {
-    font-family: Consolas, monospace;
-    font-size: 12px;
-    line-height: 1.7;
-    color: #b9c4d0;
-    white-space: pre-wrap;
-  }
-  .warn { color: #ffb066; }
-  @media (max-width: 1180px) {
-    .demo-stage {
-      grid-template-columns: minmax(0, 1fr);
-      row-gap: 18px;
-      justify-items: center;
-    }
-    #device,
-    #sidebar {
-      grid-column: 1;
-      grid-row: auto;
-      justify-self: center;
-    }
-    #sidebar { width: min(100%, 720px); }
-  }
-  /* 窄屏：滑块收成细列，五个按键紧贴屏幕下方 */
-  @media (max-width: 720px) {
-    .demo-top,
-    #app {
-      width: min(1440px, calc(100% - 16px));
-    }
-    .demo-top { padding-top: 8px; }
-    #app { padding-bottom: 16px; }
-    #app::before,
-    #app::after { flex-basis: 8px; }
-    #device {
-      --slider-col: 56px;
-      container-type: inline-size;
-      grid-template-columns: minmax(0, 240px) var(--slider-col);
-      grid-template-rows: auto auto auto auto auto;
-      grid-template-areas:
-        "lcd slider"
-        "keys keys"
-        "force-title force-title"
-        "readout readout"
-        "controls controls";
-      column-gap: 8px;
-      row-gap: 8px;
-      align-items: start;
-      width: min(100%, calc(240px + var(--slider-col) + 8px + 16px + 4px));
-      padding: 8px;
-    }
-    #lcd {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 240 / 320;
-    }
-    #force-slider {
-      width: 100%;
-      min-height: min(320px, calc((100cqi - var(--slider-col) - 8px) * 4 / 3));
-      height: min(320px, calc((100cqi - var(--slider-col) - 8px) * 4 / 3));
-      align-self: start;
-    }
-    #force-slider .thumb {
-      width: 44px;
-      margin-left: -22px;
-    }
-    #force-slider .top-label,
-    #force-slider .bottom-label {
-      left: 1px;
-      right: 1px;
-      text-align: center;
-      font-size: 10px;
-      line-height: 1.15;
-      letter-spacing: 0;
-    }
-    #keys {
-      margin-top: 0;
-      gap: 4px;
-      width: 100%;
-    }
-    #slider-readout,
-    #force-title,
-    #controls {
-      width: 100%;
-    }
-  }
-  @media (max-width: 430px) {
-    #keys button {
-      font-size: 11px;
-      letter-spacing: 0;
-      padding: 0 2px;
-    }
-  }
-  @media (max-width: 720px) {
-    #force-input { font-size: 16px; min-height: 44px; }
-    #controls button, .switch-row { min-height: 44px; }
-    .switch-row { padding-block: 10px; }
-    .hint-list { font-size: 12px; line-height: 1.8; }
-    #sidebar { width: 100%; }
-    #sidebar h2 { font-size: 14px; }
-    #sidebar p { font-size: 13px; line-height: 1.8; }
-  }
-</style>
-</head>
-<body>
-<header class="demo-top">
-  <nav class="demo-back" aria-label="返回站点">
-    <a href="/">首页</a>
-    <a href="/projects/index.html">项目</a>
-  </nav>
-  <h1>数显式拉力计 界面演示</h1>
-</header>
-<div id="app">
-  <div class="demo-stage">
-  <!-- 机壳：240x320 逻辑画面 + 演示控件 + 五个按键 -->
-  <div id="device">
-    <canvas id="lcd" width="240" height="320"></canvas>
-    <div id="force-slider">
-      <div class="top-label">+FS 拉伸</div>
-      <div class="mid"></div>
-      <div class="bottom-label">-FS 压缩</div>
-      <div class="thumb" id="force-thumb"></div>
-    </div>
-    <div id="keys">
-      <button type="button" data-key="MENU">MENU</button>
-      <button type="button" data-key="UNIT">UNIT</button>
-      <button type="button" data-key="ZERO">ZERO</button>
-      <button type="button" data-key="DATA">DATA</button>
-      <button type="button" data-key="PWR">PWR</button>
-    </div>
-    <div class="ctl-title" id="force-title">模拟力值（毫牛输入）</div>
-    <div id="slider-readout">0.00 N</div>
-    <div id="controls">
-      <div class="ctl-title">力值输入</div>
-      <div id="force-input-row">
-        <input id="force-input" type="text" inputmode="decimal" placeholder="按当前单位">
-        <button id="force-hold" type="button">保持</button>
-        <button id="force-clear" type="button">清除</button>
-      </div>
-      <div class="clamp-note" id="clamp-note"></div>
+---
+layout: frame
+title: 数显式拉力计 界面演示
+description: 纯静态网页，演示拉力计在 240×320 屏幕上的界面与按键操作；力值由滑块模拟，不是真实计量结果。
+section: projects
+wide: true
+permalink: /projects/n32g455-tensile/index.html
+---
 
-      <div class="ctl-title">演示开关</div>
-      <button id="button-demo" type="button">演示按键曲线</button>
-      <div class="switch-row">
-        <label for="contact-switch">接点（PA11 / INSER）</label>
-        <input id="contact-switch" type="checkbox">
+<div class="tensile-lab-page">
+  <header class="page-heading">
+    <a class="eyebrow" href="{{ '/projects/index.html' | relative_url }}">← 返回项目实验室</a>
+    <h1>数显式拉力计 界面演示</h1>
+    <p class="lede">在浏览器里操作 240×320 拉力计界面：菜单、单位、峰值测试、记录和双层校正都可以点按体验。力值由滑块或输入框模拟，不是真实计量结果。</p>
+  </header>
+
+  <div class="tensile-stage">
+    <div id="device" class="tensile-device">
+      <div class="tensile-device-header">
+        <span class="tensile-brand">
+          <span class="tensile-brand-dot" aria-hidden="true"></span>
+          <span>N32G455 DIGITAL FORCE GAUGE</span>
+        </span>
+        <span class="tensile-tag">240×320 DEMO</span>
       </div>
-      <div class="switch-row">
-        <label for="orientation-switch">朝向（自动档用）</label>
-        <input id="orientation-switch" type="checkbox">
+      <canvas id="lcd" width="240" height="320" aria-label="拉力计 240×320 界面"></canvas>
+      <div id="force-slider">
+        <div class="top-label">+FS 拉伸</div>
+        <div class="mid"></div>
+        <div class="bottom-label">-FS 压缩</div>
+        <div class="thumb" id="force-thumb"></div>
+      </div>
+      <div id="keys">
+        <button type="button" data-key="MENU">MENU</button>
+        <button type="button" data-key="UNIT">UNIT</button>
+        <button type="button" data-key="ZERO">ZERO</button>
+        <button type="button" data-key="DATA">DATA</button>
+        <button type="button" data-key="PWR">PWR</button>
+      </div>
+      <div class="ctl-title" id="force-title">模拟力值（毫牛输入）</div>
+      <div id="slider-readout">0.00 N</div>
+      <div id="controls">
+        <div class="ctl-title">力值输入</div>
+        <div id="force-input-row">
+          <input id="force-input" type="text" inputmode="decimal" placeholder="按当前单位">
+          <button id="force-hold" type="button">保持</button>
+          <button id="force-clear" type="button">清除</button>
+        </div>
+        <div class="clamp-note" id="clamp-note"></div>
+
+        <div class="ctl-title">演示开关</div>
+        <button id="button-demo" type="button">演示按键曲线</button>
+        <div class="switch-row">
+          <label for="contact-switch">接点（PA11 / INSER）</label>
+          <input id="contact-switch" type="checkbox">
+        </div>
+        <div class="switch-row">
+          <label for="orientation-switch">朝向（自动档用）</label>
+          <input id="orientation-switch" type="checkbox">
+        </div>
       </div>
     </div>
+
+    <aside id="sidebar" class="tensile-sidebar">
+      <section>
+        <h2>运行状态</h2>
+        <div id="status-lines">初始化中…</div>
+      </section>
+      <section>
+        <h2>自检结果</h2>
+        <div id="selfcheck" class="hint-list">等待自检…</div>
+      </section>
+      <section>
+        <h2>操作说明</h2>
+        <div class="hint-list">
+          <p><b>滑块</b>：向上拖为拉伸（正），向下拖为压缩（负），中点为 0；松手后约 300 ms 回到 0，用于完成一次峰值测试。</p>
+          <p><b>力值输入框</b>：按当前单位输入，回车或点“保持”后力值保持不变；点“清除”或做一次有效的 ZERO 结束保持。</p>
+          <p><b>五个按键</b>：<code>UNIT</code> 按住 2 s 循环单位。首页 <code>DATA</code> 按住 2 s 进记录清单；松手后在清单内重新按住 5 s 进入清空确认，<code>PWR</code> 确认、<code>MENU</code> 取消。</p>
+          <p><b>测试</b>：基本设定选“峰值”，再选动作。压缩输入负值，拉伸/破断输入正值；插拔依次输入负、正值；接点保持启动后打开接点。前五种动作起始载荷需保持 200 ms。<code>ZERO</code> 清结果后可复测。</p>
+          <p><b>按键测试</b>：负向下压，按顺序识别按压峰值、谷值和释放谷值。可点击“演示按键曲线”加载一条模拟曲线，再短按 DATA 保存。基本设定可选 Fp、Fp/Fc、Fp/Fr、Fp/Cc、Fp/Cr。</p>
+          <p><b>记录</b>：清单内 PWR 进入单条选择，UNIT/DATA 移动，再按 PWR 进入确认，最后按 PWR 删除；MENU 取消。长按 DATA 5 s 仍可清空全部。</p>
+          <p><b>校正</b>：密码 0000；先选量程、大/小量程层，再选拉伸/压缩。大层目标 0/20/40/60/80/100%，小层 0/4/8/12/16/20%。稳定后按 PWR 采集，六点保存成功后生效。</p>
+          <p><b>显示</b>：基本设定有六档背光，传输速度位于通信设定；系统设定可关闭波形、切换简中/英文/繁中。地域重力参与 g/kg/lb 换算，公差可设负值。</p>
+          <p>本页是演示，力值由滑块或输入框给出，不代表真实计量校准结果。</p>
+        </div>
+      </section>
+    </aside>
   </div>
 
-  <div id="sidebar">
-    <section>
-      <h2>运行状态</h2>
-      <div id="status-lines">初始化中…</div>
-    </section>
-    <section>
-      <h2>自检结果</h2>
-      <div id="selfcheck" class="hint-list">等待自检…</div>
-    </section>
-    <section>
-      <h2>操作说明</h2>
-      <div class="hint-list">
-        <p><b>滑块</b>：向上拖为拉伸（正），向下拖为压缩（负），中点为 0；松手后约 300 ms 回到 0，用于完成一次峰值测试。</p>
-        <p><b>力值输入框</b>：按当前单位输入，回车或点“保持”后力值保持不变；点“清除”或做一次有效的 ZERO 结束保持。</p>
-        <p><b>五个按键</b>：<code>UNIT</code> 按住 2 s 循环单位。首页 <code>DATA</code> 按住 2 s 进记录清单；松手后在清单内重新按住 5 s 进入清空确认，<code>PWR</code> 确认、<code>MENU</code> 取消。</p>
-        <p><b>测试</b>：基本设定选“峰值”，再选动作。压缩输入负值，拉伸/破断输入正值；插拔依次输入负、正值；接点保持启动后打开接点。前五种动作起始载荷需保持 200 ms。<code>ZERO</code> 清结果后可复测。</p>
-        <p><b>按键测试</b>：负向下压，按顺序识别按压峰值、谷值和释放谷值。可点击“演示按键曲线”加载一条模拟曲线，再短按 DATA 保存。基本设定可选 Fp、Fp/Fc、Fp/Fr、Fp/Cc、Fp/Cr。</p>
-        <p><b>记录</b>：清单内 PWR 进入单条选择，UNIT/DATA 移动，再按 PWR 进入确认，最后按 PWR 删除；MENU 取消。长按 DATA 5 s 仍可清空全部。</p>
-        <p><b>校正</b>：密码 0000；先选量程、大/小量程层，再选拉伸/压缩。大层目标 0/20/40/60/80/100%，小层 0/4/8/12/16/20%。稳定后按 PWR 采集，六点保存成功后生效。</p>
-        <p><b>显示</b>：基本设定有六档背光，传输速度位于通信设定；系统设定可关闭波形、切换简中/英文/繁中。地域重力参与 g/kg/lb 换算，公差可设负值。</p>
-        <p>本页是演示，力值由滑块或输入框给出，不代表真实计量校准结果。</p>
-      </div>
-    </section>
-  </div>
-  </div>
+  <section class="tensile-related" aria-labelledby="tensile-related-title">
+    <h2 id="tensile-related-title">相关项目与技术笔记</h2>
+    <div class="tensile-related-grid">
+      <a class="tensile-related-card" href="{{ '/projects/retro-robot/index.html' | relative_url }}">
+        <span class="tensile-rel-tag">项目实验室</span>
+        <strong>复古示波器伴读小机器人 ↗</strong>
+        <p>切换模拟波形，调节时基、增益和噪声。</p>
+      </a>
+      <a class="tensile-related-card" href="{{ '/articles/n32g455-lcd-strip-rendering.html' | relative_url }}">
+        <span class="tensile-rel-tag">技术笔记</span>
+        <strong>N32G455 条带 LCD 刷新 ↗</strong>
+        <p>DMA 条带绘制与 240×320 界面刷新路径。</p>
+      </a>
+      <a class="tensile-related-card" href="{{ '/articles/c99-table-driven-state-machine.html' | relative_url }}">
+        <span class="tensile-rel-tag">技术笔记</span>
+        <strong>C99 表驱动有限状态机 ↗</strong>
+        <p>菜单、按键和测试流程对应的状态机写法。</p>
+      </a>
+      <a class="tensile-related-card" href="{{ '/projects/my-skills/index.html' | relative_url }}">
+        <span class="tensile-rel-tag">AI Skills</span>
+        <strong>嵌入式与研发 AI Skills 库 ↗</strong>
+        <p>LCD、字库、存储和状态机相关 Skill。</p>
+      </a>
+    </div>
+    <p class="end-note"><a href="{{ '/projects/index.html' | relative_url }}">← 返回项目实验室列表</a></p>
+  </section>
 </div>
 
-<!-- 普通脚本，按依赖顺序加载；不使用 ES module，保证双击本地文件即可打开 -->
-<script src="js/minifont.js"></script>
-<script src="js/fonts_font16.js"></script>
-<script src="js/fonts_font24.js"></script>
-<script src="js/fonts_num40.js"></script>
-<script src="js/screen.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/i18n.js"></script>
-<script src="js/units.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/force.js"></script>
-<script src="js/waveform.js"></script>
-<script src="js/button_test.js"></script>
-<script src="js/tests.js"></script>
-<script src="js/records.js"></script>
-<script src="js/calibration.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/main.js?v=20261026-r1"></script>
-<script src="js/selfcheck.js"></script>
-</body>
-</html>
+<style>
+.tensile-lab-page {
+  --tensile-mono: ui-monospace, Consolas, "Sarasa Mono SC", "Microsoft YaHei", monospace;
+}
+
+.tensile-stage {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(240px, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin: 8px 0 48px;
+}
+
+.tensile-device {
+  display: grid;
+  grid-template-columns: auto 200px;
+  grid-template-rows: auto auto minmax(320px, 1fr) auto auto auto;
+  grid-template-areas:
+    "header header"
+    "lcd force-title"
+    "lcd slider"
+    "lcd readout"
+    "lcd controls"
+    "keys keys";
+  column-gap: 14px;
+  row-gap: 10px;
+  align-items: stretch;
+  max-width: 100%;
+  padding: 16px 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--panel-bevel), var(--shadow);
+}
+
+.tensile-device-header {
+  grid-area: header;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tensile-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-dark);
+  font-family: var(--tensile-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.tensile-brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.tensile-tag {
+  padding: 2px 7px;
+  border: 1px solid var(--raised-border);
+  border-radius: 4px;
+  background: var(--soft);
+  color: var(--accent-dark);
+  font-family: var(--tensile-mono);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+#lcd {
+  grid-area: lcd;
+  display: block;
+  width: 480px;
+  height: 640px;
+  min-width: 0;
+  justify-self: start;
+  align-self: start;
+  background: #000;
+  border: 2px solid var(--deep);
+  border-radius: 6px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+#force-title {
+  grid-area: force-title;
+}
+
+#controls {
+  grid-area: controls;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ctl-title {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#force-slider {
+  grid-area: slider;
+  position: relative;
+  align-self: stretch;
+  min-height: 320px;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--alt-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  touch-action: none;
+  cursor: ns-resize;
+  user-select: none;
+}
+
+#force-slider .mid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--line);
+}
+
+#force-slider .thumb {
+  position: absolute;
+  left: 50%;
+  width: 118px;
+  height: 12px;
+  margin-left: -59px;
+  margin-top: -6px;
+  background: var(--accent);
+  border: 1px solid var(--accent-dark);
+  border-radius: 3px;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+#force-slider .top-label,
+#force-slider .bottom-label {
+  position: absolute;
+  left: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+#force-slider .top-label { top: 3px; }
+#force-slider .bottom-label { bottom: 3px; }
+
+#slider-readout {
+  grid-area: readout;
+  color: var(--accent-dark);
+  font-family: var(--tensile-mono);
+  font-size: 14px;
+  font-weight: 650;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+#force-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+#force-input-row button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#force-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--tensile-mono);
+  font-size: 13px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+#force-input:focus-visible,
+#controls button:focus-visible,
+#keys button:focus-visible,
+.switch-row input:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+#controls button {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: var(--panel-bevel);
+}
+
+#controls button:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  background: var(--soft);
+}
+
+#controls button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.14);
+}
+
+.clamp-note {
+  min-height: 16px;
+  color: var(--note);
+  font-size: 11px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.switch-row label {
+  color: var(--body-copy);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.switch-row input {
+  transform: scale(1.15);
+}
+
+.hint-list {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.hint-list p {
+  margin: 0 0 10px;
+}
+
+.hint-list p:last-child {
+  margin-bottom: 0;
+}
+
+.hint-list b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.hint-list code {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--soft);
+  color: var(--inline-code);
+  font-family: var(--tensile-mono);
+  font-size: 0.95em;
+}
+
+#keys {
+  grid-area: keys;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+#keys button {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: var(--subtle-bg);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  box-shadow: var(--panel-bevel);
+}
+
+#keys button:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+#keys button.active {
+  border-bottom-width: 1px;
+  background: var(--alt-bg);
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.16);
+}
+
+.tensile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.tensile-sidebar section {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--panel-bevel), var(--shadow-small);
+}
+
+.tensile-sidebar h2,
+.tensile-related h2 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#status-lines,
+#selfcheck {
+  color: var(--body-copy);
+  font-family: var(--tensile-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.warn,
+#selfcheck.warn {
+  color: var(--note);
+}
+
+.tensile-related {
+  margin-top: 8px;
+}
+
+.tensile-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.tensile-related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--raised-bg);
+  box-shadow: var(--panel-bevel), var(--shadow-small);
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tensile-related-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--panel-bevel), var(--shadow-hover);
+}
+
+.tensile-rel-tag {
+  color: var(--accent-dark);
+  font-family: var(--tensile-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.tensile-related-card strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.tensile-related-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.tensile-related .end-note {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+}
+
+.tensile-related .end-note a {
+  color: var(--accent-dark);
+  font-weight: 650;
+}
+
+@media (max-width: 1100px) {
+  .tensile-stage {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  .tensile-device,
+  .tensile-sidebar {
+    width: min(100%, 720px);
+  }
+}
+
+@media (max-width: 720px) {
+  .tensile-device {
+    --slider-col: 56px;
+    container-type: inline-size;
+    width: min(100%, calc(240px + var(--slider-col) + 8px + 16px + 4px));
+    grid-template-columns: minmax(0, 240px) var(--slider-col);
+    grid-template-rows: auto auto auto auto auto auto;
+    grid-template-areas:
+      "header header"
+      "lcd slider"
+      "keys keys"
+      "force-title force-title"
+      "readout readout"
+      "controls controls";
+    column-gap: 8px;
+    row-gap: 8px;
+    align-items: start;
+    padding: 10px;
+  }
+
+  #lcd {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 240 / 320;
+  }
+
+  #force-slider {
+    width: 100%;
+    min-height: min(320px, calc((100cqi - var(--slider-col) - 8px) * 4 / 3));
+    height: min(320px, calc((100cqi - var(--slider-col) - 8px) * 4 / 3));
+    align-self: start;
+  }
+
+  #force-slider .thumb {
+    width: 44px;
+    margin-left: -22px;
+  }
+
+  #force-slider .top-label,
+  #force-slider .bottom-label {
+    left: 1px;
+    right: 1px;
+    font-size: 10px;
+    letter-spacing: 0;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  #keys {
+    width: 100%;
+    gap: 4px;
+    margin-top: 0;
+  }
+
+  #slider-readout,
+  #force-title,
+  #controls,
+  .tensile-sidebar {
+    width: 100%;
+  }
+
+  #force-input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  #controls button,
+  .switch-row {
+    min-height: 44px;
+  }
+
+  .switch-row {
+    padding-block: 10px;
+  }
+
+  .hint-list {
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .tensile-sidebar h2 {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 430px) {
+  #keys button {
+    padding: 0 2px;
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tensile-related-card,
+  #controls button,
+  #keys button {
+    transition: none;
+  }
+
+  .tensile-related-card:hover,
+  #controls button:active,
+  #keys button.active {
+    transform: none;
+  }
+}
+</style>
+
+<!-- 普通脚本，按依赖顺序加载；不使用 ES module -->
+<script src="{{ '/projects/n32g455-tensile/js/minifont.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/fonts_font16.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/fonts_font24.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/fonts_num40.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/screen.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/storage.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/i18n.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/units.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/settings.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/force.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/waveform.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/button_test.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/tests.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/records.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/calibration.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/ui.js' | relative_url }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/main.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+<script src="{{ '/projects/n32g455-tensile/js/selfcheck.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
