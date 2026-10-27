@@ -9,6 +9,12 @@
           "weekday": "周一",
           "title": "AI 资讯日报 · 10月26日（周一）",
           "summary": "Lead: Codex 第 20 天全额重置。Cursor 状态通知今天起改到 status.x.ai。Pro 额度下调 10/30 生效。"
+        },
+        {
+          "date": "2026-10-27",
+          "weekday": "周二",
+          "title": "AI 资讯日报 · 10月27日（周二）",
+          "summary": "Lead: OpenAI 发布 GPT-6.1 Terra。Cursor 推出 Agent SDK。Codex 第 21 天重置，第 22 天上线 Terra。"
         }
       ]
     },
