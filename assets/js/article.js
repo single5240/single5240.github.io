@@ -61,7 +61,6 @@
       links.set(heading, link);
     });
     toc.hidden = headings.length < 2;
-    if (matchMedia('(max-width: 1000px)').matches) toc.open = false;
     list.addEventListener('click', (event) => {
       if (event.target.closest('a') && matchMedia('(max-width: 1000px)').matches) {
         toc.open = false;

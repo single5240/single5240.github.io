@@ -79,9 +79,7 @@ try {
   assert(await page.locator('.project-notes[open] .related-link').count() > 2);
   await page.goto(base + '/articles/n32g455-lcd-strip-rendering.html');
   assert(await page.locator('#article-toc').isVisible());
-  assert.equal(await page.locator('.reading-companion[open]').count(), 0);
-  await page.locator('.reading-companion summary').click();
-  assert(await page.locator('#retroRobot').isVisible());
+  assert(await page.locator('#reading-sidebar #retroRobot').isVisible(), 'Article sidebar keeps the robot beside the TOC');
   await page.goto(base);
   await page.locator('[data-scope-pause]').click();
   assert.equal(await page.locator('[data-scope-pause]').getAttribute('aria-pressed'), 'true');
