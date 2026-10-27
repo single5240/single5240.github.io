@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-27",
+  "sentence": "\"Hope\" is the thing with feathers - / That perches in the soul - / And sings the tune without the words - / And never stops - at all -",
+  "source": {
+    "author": "Emily Dickinson",
+    "work": "\"Hope\" is the thing with feathers",
+    "year": "1861",
+    "detail": "诗作第一节（约 1861 年创作，Johnson 编号 254 / Franklin 编号 314），诗人生前未发表，1891 年首次出版；破折号是狄金森原诗的标志性标点。"
+  },
+  "translation": "“希望”是长着羽毛的东西——它栖息在灵魂里——唱着没有歌词的曲子——从不停歇——永远。",
+  "grammar": [
+    "主干是最简单的主系表结构：\"Hope\" is the thing（希望是一种东西）。with feathers 是介词短语作后置定语，修饰 the thing，意思是“带羽毛的那种东西”，暗指小鸟。英语里介词短语修饰名词时要放在名词后面，和中文“长着羽毛的东西”语序相反。",
+    "后面三行是一个 that 引导的定语从句，先行词还是 the thing：that perches..., (that) sings..., and (that) never stops...。三个谓语动词 perches / sings / stops 并列共用一个关系代词 that，并且都用第三人称单数 -s，因为 that 指代单数的 the thing。这种“一个主语带多个并列谓语”的写法让句子很紧凑。",
+    "never stops at all：at all 用在否定句里加强语气，相当于“根本、一点也（不）”，比如 I don't mind at all。诗人用破折号把 at all 隔开，读起来像停顿后的坚定补充。"
+  ],
+  "vocab": [
+    {
+      "word": "feather",
+      "phonetic": "/ˈfeðə(r)/",
+      "pos": "n. 羽毛",
+      "meaning": "羽毛；句中 the thing with feathers 借代小鸟，把希望比作一只鸟。",
+      "collocation": "light as a feather（轻如鸿毛）；birds of a feather flock together（物以类聚）",
+      "example": "The box was as light as a feather."
+    },
+    {
+      "word": "perch",
+      "phonetic": "/pɜːtʃ/",
+      "pos": "v. （鸟）栖息；n. 栖木",
+      "meaning": "（鸟）落在、停歇在某处；句中指希望像鸟一样停在灵魂里。",
+      "collocation": "perch on a branch（栖在树枝上）；perch on the edge of（坐在……边上）",
+      "example": "A small bird perched on the windowsill."
+    },
+    {
+      "word": "soul",
+      "phonetic": "/səʊl/",
+      "pos": "n. 灵魂；心灵",
+      "meaning": "灵魂、内心深处。",
+      "collocation": "body and soul（全身心地）；heart and soul（全心全意）",
+      "example": "She put her heart and soul into the project."
+    },
+    {
+      "word": "tune",
+      "phonetic": "/tjuːn/",
+      "pos": "n. 曲调；v. 调音、调试",
+      "meaning": "曲调、旋律；句中指没有歌词、只有旋律的歌。",
+      "collocation": "in tune / out of tune（音准／跑调）；fine-tune（微调）",
+      "example": "We need to fine-tune the PID parameters before the demo."
+    },
+    {
+      "word": "at all",
+      "phonetic": "/ət ˈɔːl/",
+      "pos": "phr. 根本，一点也",
+      "meaning": "用于否定句或疑问句加强语气；句中 never stops at all 表示“从来不停”。",
+      "collocation": "not at all（一点也不／不客气）；if at all（即使有也很少）",
+      "example": "The firmware didn't crash at all during the overnight test."
+    }
+  ],
+  "note": "小结：狄金森用一个比喻把抽象的“希望”变成一只在心里唱歌的小鸟，语法上就是“主系表 + 一个带三个并列谓语的 that 定语从句”。小练习：仿写一句 \"Patience\" is the thing that ...，至少用两个并列谓语，比如 that waits ... and never ...。"
+}
