@@ -15,6 +15,12 @@
           "weekday": "周二",
           "title": "AI 资讯日报 · 10月27日（周二）",
           "summary": "Lead: OpenAI 发布 GPT-6.1 Terra。Cursor 推出 Agent SDK。Codex 第 21 天重置，第 22 天上线 Terra。"
+        },
+        {
+          "date": "2026-10-28",
+          "weekday": "周三",
+          "title": "AI 资讯日报 · 10月28日（周三）",
+          "summary": "Lead: Cursor 设计模式新增 Annotate。Codex 第 23 天暂未公布。Pro 200 额度下调还剩 2 天。"
         }
       ]
     },
