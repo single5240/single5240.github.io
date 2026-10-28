@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-28",
+  "sentence": "All that is gold does not glitter, / Not all those who wander are lost.",
+  "source": {
+    "author": "J. R. R. Tolkien",
+    "work": "The Fellowship of the Ring",
+    "year": "1954",
+    "detail": "第一卷第十章 Strider，甘道夫写给阿拉贡的诗（The Riddle of Strider）开头两行"
+  },
+  "translation": "金子未必都闪光，流浪者未必都迷途。",
+  "grammar": [
+    "两行都是部分否定：All ... not 和 Not all ... 表示“并非所有……都……”，不是“所有……都不……”。All that is gold does not glitter 的意思是“是金子的未必都闪闪发光”，而不是“金子都不发光”。这是英语里很容易误解的点，类似的还有 All that glitters is not gold（闪光的未必都是金子，莎士比亚《威尼斯商人》）。Tolkien 正是故意把这句老话反过来说。",
+    "主干拆解：第一行主语是 All that is gold（that is gold 是定语从句，修饰 all，that 在从句里作主语），谓语是 does not glitter；第二行主语是 Not all those who wander（who wander 是定语从句修饰 those），系动词 are，表语 lost。",
+    "lost 在这里是过去分词作形容词，表示状态“迷失的”，are lost 是系表结构而不是被动语态。"
+  ],
+  "vocab": [
+    {
+      "word": "glitter",
+      "phonetic": "/ˈɡlɪtər/",
+      "pos": "v. / n.",
+      "meaning": "闪闪发光；（名词）光彩、浮华",
+      "collocation": "glitter with（因……闪烁）；the glitter of fame（名利的浮华）",
+      "example": "Her eyes glittered with excitement."
+    },
+    {
+      "word": "wander",
+      "phonetic": "/ˈwɑːndər/",
+      "pos": "v.",
+      "meaning": "漫游、闲逛；（思绪）走神",
+      "collocation": "wander around / off；my mind wandered（我走神了）",
+      "example": "I let my mind wander during the long meeting."
+    },
+    {
+      "word": "lost",
+      "phonetic": "/lɔːst/",
+      "pos": "adj.",
+      "meaning": "迷路的；迷茫的",
+      "collocation": "get lost（迷路；口语里也有“走开”的意思）；be lost in thought（陷入沉思）",
+      "example": "He was so lost in thought that he missed his stop."
+    },
+    {
+      "word": "not all",
+      "phonetic": "",
+      "pos": "phrase",
+      "meaning": "并非所有（部分否定）",
+      "collocation": "not all ... / not every ... / not always ...",
+      "example": "Not all bugs are in the code; some are in the requirements."
+    }
+  ],
+  "note": "小结：all/every/always 和 not 搭在一起，通常是“并非都”。小练习：试着翻译 Not every compiler warning is harmless. 想一想它和 No compiler warning is harmless 意思差在哪。"
+}
