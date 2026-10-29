@@ -21,6 +21,12 @@
           "weekday": "周三",
           "title": "AI 资讯日报 · 10月28日（周三）",
           "summary": "Lead: Cursor 设计模式新增 Annotate。Codex 第 23 天暂未公布。Pro 200 额度下调还剩 2 天。"
+        },
+        {
+          "date": "2026-10-29",
+          "weekday": "周四",
+          "title": "AI 资讯日报 · 10月29日（周四）",
+          "summary": "Lead: Pro 和 Business 用户每月可领最多 500 美元 API 额度。Codex 第 23 天是全额重置。Pro 200 额度下调明天生效。"
         }
       ]
     },
