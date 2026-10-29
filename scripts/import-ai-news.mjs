@@ -115,7 +115,7 @@ function chromeBlock({ title, description, canonical }) {
   const image = `${origin}/assets/images/engineer-computer-lineart.jpg`;
   return `<!-- s5-news-chrome:start -->
 <meta name="description" content="${escapeHtml(description)}">
-<meta name="theme-color" content="#11191d">
+<meta name="theme-color" content="#f8faf7">
 <link rel="canonical" href="${escapeHtml(canonical)}">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
@@ -229,7 +229,7 @@ export function prepareNewsHtml(html, { date, sources }) {
   }
   next = stripUnmanagedMeta(next);
 
-  next = next.replace(/<html\b[^>]*>/i, '<html lang="zh-CN" data-theme="dark" data-skin="grid">');
+  next = next.replace(/<html\b[^>]*>/i, '<html lang="zh-CN" data-theme="light" data-skin="grid">');
 
   const title = pageTitle(next);
   const description = pageSummary(next, title) || title;

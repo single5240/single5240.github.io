@@ -48,14 +48,14 @@
   };
 
   const pickers = [];
-  let preference = "dark";
+  let preference = "light";
   let skinPreference = "grid";
 
   try {
     const stored = localStorage.getItem(storageKey);
     if (validThemes.includes(stored)) preference = stored;
   } catch {
-    // Storage can be unavailable in privacy modes; default dark mode still works.
+    // Storage can be unavailable in privacy modes; default light mode still works.
   }
 
   try {
@@ -77,8 +77,8 @@
 
   const updatePickers = () => {
     pickers.forEach((picker) => {
-      picker.icon.innerHTML = icons[preference] || icons.dark;
-      picker.toggle.setAttribute("aria-label", `外观设置：${labels[preference] || labels.dark} · ${skinLabels[skinPreference] || skinLabels.grid}`);
+      picker.icon.innerHTML = icons[preference] || icons.light;
+      picker.toggle.setAttribute("aria-label", `外观设置：${labels[preference] || labels.light} · ${skinLabels[skinPreference] || skinLabels.grid}`);
       picker.themeOptions.forEach((option) => {
         option.setAttribute("aria-checked", String(option.dataset.themeValue === preference));
       });
@@ -113,7 +113,7 @@
   };
 
   const savePreference = (value) => {
-    preference = validThemes.includes(value) ? value : "dark";
+    preference = validThemes.includes(value) ? value : "light";
     try {
       localStorage.setItem(storageKey, preference);
     } catch {
@@ -140,7 +140,7 @@
       const menuId = `theme-menu-${index + 1}`;
       element.innerHTML = `
         <button class="theme-toggle" type="button" aria-label="外观设置" aria-haspopup="menu" aria-expanded="false" aria-controls="${menuId}">
-          <span data-theme-current-icon>${icons[preference] || icons.dark}</span>
+          <span data-theme-current-icon>${icons[preference] || icons.light}</span>
           <span class="theme-toggle-label">外观</span>
         </button>
         <div class="theme-menu" id="${menuId}" role="menu" aria-label="选择色彩与复古硬件质感" hidden>
@@ -256,7 +256,7 @@
 
   window.addEventListener("storage", (event) => {
     if (event.key === storageKey) {
-      preference = validThemes.includes(event.newValue) ? event.newValue : "dark";
+      preference = validThemes.includes(event.newValue) ? event.newValue : "light";
       applyTheme();
     } else if (event.key === skinStorageKey) {
       skinPreference = validSkins.includes(event.newValue) ? event.newValue : "grid";
