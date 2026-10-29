@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-29",
+  "sentence": "A thing of beauty is a joy for ever: / Its loveliness increases; it will never / Pass into nothingness",
+  "source": {
+    "author": "John Keats",
+    "work": "Endymion",
+    "year": "1818",
+    "detail": "长诗《恩底弥翁》第一卷开篇前三行"
+  },
+  "translation": "美的事物是永恒的喜悦：它的可爱与日俱增，永远不会消逝于虚无。",
+  "grammar": [
+    "主干很简单：A thing of beauty（主语）+ is（系动词）+ a joy（表语），for ever 是状语。“a thing of beauty”是“a/an + 名词 + of + 抽象名词”结构，等于 a beautiful thing，但更庄重、更有诗意，类似 a man of courage（有勇气的人）、a matter of importance（重要的事）。",
+    "冒号和分号的分工：冒号后面是对前一句的解释说明（为什么是永恒的喜悦）；分号连接两个关系紧密的独立分句 Its loveliness increases 和 it will never pass into nothingness，不用 and 也能并列。注意 will never / Pass 是诗歌的跨行（enjambment），读的时候要连起来：will never pass into nothingness。"
+  ],
+  "vocab": [
+    {
+      "word": "loveliness",
+      "phonetic": "/ˈlʌvlinəs/",
+      "pos": "n.",
+      "meaning": "可爱，美好（lovely 的名词形式）",
+      "collocation": "the loveliness of nature / sheer loveliness",
+      "example": "We were struck by the loveliness of the mountain lake."
+    },
+    {
+      "word": "increase",
+      "phonetic": "动词 /ɪnˈkriːs/，名词 /ˈɪŋkriːs/",
+      "pos": "v. / n.",
+      "meaning": "增加，增长（句中为不及物动词）",
+      "collocation": "increase by 10% / an increase in sales / be on the increase",
+      "example": "The number of users increased by 20% last year."
+    },
+    {
+      "word": "pass into",
+      "phonetic": "/pɑːs ˈɪntuː/",
+      "pos": "phr. v.",
+      "meaning": "变成，进入（某种状态）",
+      "collocation": "pass into history / pass into legend / pass into common use",
+      "example": "The word has passed into everyday English."
+    },
+    {
+      "word": "nothingness",
+      "phonetic": "/ˈnʌθɪŋnəs/",
+      "pos": "n.",
+      "meaning": "虚无，不存在",
+      "collocation": "fade into nothingness / a sense of nothingness",
+      "example": "The sound slowly faded into nothingness."
+    },
+    {
+      "word": "for ever",
+      "phonetic": "/fər ˈevə(r)/",
+      "pos": "adv.",
+      "meaning": "永远（英式常分写为 for ever，美式多写 forever）",
+      "collocation": "last for ever / for ever and ever",
+      "example": "Good habits can stay with you for ever."
+    }
+  ],
+  "note": "小练习：用“a/an + 名词 + of + 抽象名词”改写 a very important matter 和 a wise man。（答案：a matter of great importance / a man of wisdom）"
+}
