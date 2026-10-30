@@ -1,8 +1,8 @@
 - id: mcu
   title: MCU 与驱动
   description: 外设配置、数据采集与固件调试。
-  color: "#2c4554"
-  color_end: "#1c303c"
+  color: "#1ba3b0"
+  color_end: "#0f7b88"
   articles:
     - battery-management-portable-design
     - nor-flash-powerfail-record-store
@@ -18,8 +18,8 @@
 - id: linux
   title: 嵌入式 Linux
   description: 从板子联网到服务部署，记录实际搭建过程。
-  color: "#a4692e"
-  color_end: "#855121"
+  color: "#f28e2b"
+  color_end: "#d96b14"
   articles:
     - atk-imx6u-qt-ui-deployment-guide
     - atk-imx6u-systemui-autostart
@@ -28,15 +28,15 @@
 - id: qt
   title: Qt / QML
   description: 声明式界面、C++ 集成与设备端部署。
-  color: "#3f5442"
-  color_end: "#2b3b2d"
+  color: "#48b871"
+  color_end: "#2e8f4f"
   articles:
     - qml-syntax-and-practice-guide
     - atk-imx6u-qt-ui-deployment-guide
 - id: industrial
   title: 工业通信
   description: EtherCAT 从站与协议栈移植笔记。
-  color: "#742d38"
-  color_end: "#551d26"
+  color: "#eb5e52"
+  color_end: "#c7382d"
   articles:
     - ecat-porting-basic

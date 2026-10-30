@@ -32,6 +32,21 @@
   --shadow-small: 0 1px 3px rgba(22, 35, 42, 0.05), 0 6px 18px -2px rgba(22, 35, 42, 0.1);
   --shadow-hover: 0 4px 8px rgba(22, 35, 42, 0.08), 0 16px 36px -4px rgba(15, 129, 141, 0.22);
   --focus-ring: #ff9f43;
+  /* 专题色谱：浅色主题（明亮、温润、具高辨识度的工程色盘） */
+  --topic-mcu-1: #1ba3b0;
+  --topic-mcu-2: #0f7b88;
+  --topic-mcu-accent: #0f818d;
+  --topic-linux-1: #f28e2b;
+  --topic-linux-2: #d96b14;
+  --topic-linux-accent: #e27418;
+  --topic-qt-1: #48b871;
+  --topic-qt-2: #2e8f4f;
+  --topic-qt-accent: #3ba363;
+  --topic-industrial-1: #eb5e52;
+  --topic-industrial-2: #c7382d;
+  --topic-industrial-accent: #d64437;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.36), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  --spectrum-shadow: 0 1px 3px rgba(22, 35, 42, 0.08);
   font-family: system-ui, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
 }
 
@@ -80,6 +95,21 @@ html {
     --shadow-small: 0 1.5px 3px rgba(0, 0, 0, 0.28), 0 8px 20px -2px rgba(0, 0, 0, 0.48);
     --shadow-hover: 0 6px 14px rgba(0, 0, 0, 0.4), 0 18px 44px -4px rgba(22, 138, 150, 0.38);
     --focus-ring: #ffb866;
+    /* 专题色谱：深色主题（沉稳、深邃低眩光） */
+    --topic-mcu-1: #2b586d;
+    --topic-mcu-2: #173644;
+    --topic-mcu-accent: #4ba7c2;
+    --topic-linux-1: #9c5f27;
+    --topic-linux-2: #6d3e13;
+    --topic-linux-accent: #c47d37;
+    --topic-qt-1: #3a6742;
+    --topic-qt-2: #224128;
+    --topic-qt-accent: #569261;
+    --topic-industrial-1: #86313d;
+    --topic-industrial-2: #541b23;
+    --topic-industrial-accent: #af4654;
+    --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    --spectrum-shadow: none;
   }
 }
 
@@ -116,6 +146,21 @@ html {
   --shadow-small: 0 1.5px 3px rgba(0, 0, 0, 0.28), 0 8px 20px -2px rgba(0, 0, 0, 0.48);
   --shadow-hover: 0 6px 14px rgba(0, 0, 0, 0.4), 0 18px 44px -4px rgba(22, 138, 150, 0.38);
   --focus-ring: #ffb866;
+  /* 专题色谱：深色主题 */
+  --topic-mcu-1: #2b586d;
+  --topic-mcu-2: #173644;
+  --topic-mcu-accent: #4ba7c2;
+  --topic-linux-1: #9c5f27;
+  --topic-linux-2: #6d3e13;
+  --topic-linux-accent: #c47d37;
+  --topic-qt-1: #3a6742;
+  --topic-qt-2: #224128;
+  --topic-qt-accent: #569261;
+  --topic-industrial-1: #86313d;
+  --topic-industrial-2: #541b23;
+  --topic-industrial-accent: #af4654;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --spectrum-shadow: none;
 }
 
 :root[data-theme="light"] {
@@ -156,6 +201,20 @@ html {
   --shadow-small: 0 1px 3px rgba(17, 17, 17, 0.04), 0 6px 16px -2px rgba(17, 17, 17, 0.08);
   --shadow-hover: 0 4px 8px rgba(230, 51, 41, 0.1), 0 16px 36px -4px rgba(230, 51, 41, 0.22);
   --focus-ring: #e63329;
+  --topic-mcu-1: #1c858f;
+  --topic-mcu-2: #0d575f;
+  --topic-mcu-accent: #1c858f;
+  --topic-linux-1: #e06e12;
+  --topic-linux-2: #a84a04;
+  --topic-linux-accent: #e06e12;
+  --topic-qt-1: #348f52;
+  --topic-qt-2: #1d5c32;
+  --topic-qt-accent: #348f52;
+  --topic-industrial-1: #e63329;
+  --topic-industrial-2: #a81a12;
+  --topic-industrial-accent: #e63329;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  --spectrum-shadow: 0 1px 2px rgba(17, 17, 17, 0.08);
 }
 
 /* 深空科技终端风格 (Orbital HUD) */
@@ -192,6 +251,20 @@ html {
   --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.35), 0 8px 22px -2px rgba(0, 0, 0, 0.6);
   --shadow-hover: 0 6px 14px rgba(82, 216, 232, 0.2), 0 20px 48px -4px rgba(82, 216, 232, 0.35);
   --focus-ring: #52d8e8;
+  --topic-mcu-1: #00b4d8;
+  --topic-mcu-2: #006699;
+  --topic-mcu-accent: #52d8e8;
+  --topic-linux-1: #ffb703;
+  --topic-linux-2: #c96f00;
+  --topic-linux-accent: #ffd166;
+  --topic-qt-1: #2ecc71;
+  --topic-qt-2: #1a7a42;
+  --topic-qt-accent: #3bf08b;
+  --topic-industrial-1: #ff4d6d;
+  --topic-industrial-2: #b01738;
+  --topic-industrial-accent: #ff4d6d;
+  --spectrum-bevel: inset 0 1px 0 rgba(82, 216, 232, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  --spectrum-shadow: 0 0 8px rgba(82, 216, 232, 0.2);
 }
 
 /* 极简单色建筑风格 (Minimal Monochrome) */
@@ -228,6 +301,20 @@ html {
   --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px -2px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.1), 0 16px 36px -4px rgba(0, 0, 0, 0.18);
   --focus-ring: #141414;
+  --topic-mcu-1: #4e5860;
+  --topic-mcu-2: #323a40;
+  --topic-mcu-accent: #4e5860;
+  --topic-linux-1: #686259;
+  --topic-linux-2: #474139;
+  --topic-linux-accent: #686259;
+  --topic-qt-1: #545c55;
+  --topic-qt-2: #373d38;
+  --topic-qt-accent: #545c55;
+  --topic-industrial-1: #424242;
+  --topic-industrial-2: #242424;
+  --topic-industrial-accent: #424242;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  --spectrum-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .motion-reveal {
@@ -1124,10 +1211,10 @@ time {
   justify-content: center;
   text-decoration: none;
   background: linear-gradient(145deg, var(--item-color-1), var(--item-color-2));
-  opacity: 0.92;
+  opacity: 0.98;
   border-radius: 4px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
-  transition: flex 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, filter 0.25s ease;
+  box-shadow: var(--spectrum-bevel), var(--spectrum-shadow);
+  transition: flex 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease;
 }
 
 .spectrum-item:hover,
@@ -1136,11 +1223,33 @@ time {
   flex: 2.8;
   opacity: 1;
   z-index: 2;
-  filter: brightness(1.08);
+  filter: brightness(1.06) saturate(1.08);
 }
 
 .spectrum-item.is-active {
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.65), var(--spectrum-bevel), var(--spectrum-shadow);
+}
+
+/* 专题色谱后备类绑定 */
+.spectrum-item[data-topic="mcu"],
+.spectrum-item--mcu {
+  --item-color-1: var(--topic-mcu-1);
+  --item-color-2: var(--topic-mcu-2);
+}
+.spectrum-item[data-topic="linux"],
+.spectrum-item--linux {
+  --item-color-1: var(--topic-linux-1);
+  --item-color-2: var(--topic-linux-2);
+}
+.spectrum-item[data-topic="qt"],
+.spectrum-item--qt {
+  --item-color-1: var(--topic-qt-1);
+  --item-color-2: var(--topic-qt-2);
+}
+.spectrum-item[data-topic="industrial"],
+.spectrum-item--industrial {
+  --item-color-1: var(--topic-industrial-1);
+  --item-color-2: var(--topic-industrial-2);
 }
 
 .spectrum-tooltip {

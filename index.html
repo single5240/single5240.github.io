@@ -70,7 +70,7 @@ section: home
       <span class="channel-label">专题频段:</span>
       <nav class="home-topic-links" aria-label="文章专题">
         {% for topic in site.data.topics %}
-        <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}" style="--topic-accent: {{ topic.color | default: 'var(--accent)' }}">
+        <a href="{{ '/topics/' | append: topic.id | append: '.html' | relative_url }}" data-topic="{{ topic.id }}" style="--topic-accent: var(--topic-{{ topic.id }}-accent, {{ topic.color | default: 'var(--accent)' }});">
           <span class="topic-dot" aria-hidden="true"></span>
           {{ topic.title }}
           <span class="topic-count">{{ topic.articles.size }}</span>
