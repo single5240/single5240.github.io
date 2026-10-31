@@ -1402,8 +1402,10 @@ permalink: /projects/ai-asmr/index.html
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  background: var(--paper);
-  border: 2px solid var(--line);
+  background: var(--raised-bg);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
+  border: 1.5px solid var(--glass-edge);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   cursor: pointer;
@@ -1448,8 +1450,10 @@ permalink: /projects/ai-asmr/index.html
 
 /* 1. 核心舞台卡片 (支持明暗全主题自动响应) */
 .asmr-stage-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: var(--raised-bg);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
+  border: 1px solid var(--glass-edge);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--shadow);

@@ -10,11 +10,11 @@
   --warm: #d97706;
   --soft: #f1f5f9;
   --deep: #0f172a;
-  --header-bg: rgba(248, 250, 252, 0.9);
+  --header-bg: rgba(248, 250, 252, 0.75);
   --header-line: rgba(226, 232, 240, 0.85);
-  --raised-bg: rgba(255, 255, 255, 0.88);
-  --glass: blur(16px) saturate(1.8);
-  --glass-edge: rgba(255, 255, 255, 0.85);
+  --raised-bg: rgba(255, 255, 255, 0.72);
+  --glass: blur(18px) saturate(180%);
+  --glass-edge: rgba(255, 255, 255, 0.75);
   --raised-border: rgba(13, 148, 136, 0.18);
   --alt-bg: #f1f5f9;
   --subtle-bg: #f8fafc;
@@ -27,7 +27,7 @@
   --contact-copy: #94a3b8;
   --note: #b45309;
   --on-accent: #ffffff;
-  --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+  --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
   --shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.08);
   --shadow-small: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.06);
   --shadow-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 16px 36px -6px rgba(13, 148, 136, 0.16);
@@ -76,10 +76,10 @@ html {
     --warm: #fbbf24;
     --soft: #162432;
     --deep: #070a0f;
-    --header-bg: rgba(11, 15, 23, 0.92);
+    --header-bg: rgba(11, 15, 23, 0.75);
     --header-line: rgba(30, 41, 59, 0.85);
-    --raised-bg: rgba(17, 24, 39, 0.88);
-    --glass-edge: rgba(255, 255, 255, 0.08);
+    --raised-bg: rgba(17, 24, 39, 0.72);
+    --glass-edge: rgba(255, 255, 255, 0.12);
     --raised-border: rgba(45, 212, 191, 0.22);
     --alt-bg: #151d2c;
     --subtle-bg: #1a2334;
@@ -92,7 +92,7 @@ html {
     --contact-copy: #94a3b8;
     --note: #fbbf24;
     --on-accent: #041217;
-    --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
     --shadow: 0 2px 5px rgba(0, 0, 0, 0.45), 0 12px 32px -4px rgba(0, 0, 0, 0.6);
     --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35);
     --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 20px 48px -6px rgba(20, 184, 166, 0.22);
@@ -127,10 +127,10 @@ html {
   --warm: #fbbf24;
   --soft: #162432;
   --deep: #070a0f;
-  --header-bg: rgba(11, 15, 23, 0.92);
+  --header-bg: rgba(11, 15, 23, 0.75);
   --header-line: rgba(30, 41, 59, 0.85);
-  --raised-bg: rgba(17, 24, 39, 0.88);
-  --glass-edge: rgba(255, 255, 255, 0.08);
+  --raised-bg: rgba(17, 24, 39, 0.72);
+  --glass-edge: rgba(255, 255, 255, 0.12);
   --raised-border: rgba(45, 212, 191, 0.22);
   --alt-bg: #151d2c;
   --subtle-bg: #1a2334;
@@ -143,7 +143,7 @@ html {
   --contact-copy: #94a3b8;
   --note: #fbbf24;
   --on-accent: #041217;
-  --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
   --shadow: 0 2px 5px rgba(0, 0, 0, 0.45), 0 12px 32px -4px rgba(0, 0, 0, 0.6);
   --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 20px 48px -6px rgba(20, 184, 166, 0.22);
@@ -182,9 +182,9 @@ html {
   --warm: #d84333;
   --soft: #fdeeee;
   --deep: #111111;
-  --header-bg: rgba(245, 245, 242, 0.97);
+  --header-bg: rgba(245, 245, 242, 0.8);
   --header-line: rgba(222, 220, 213, 0.9);
-  --raised-bg: rgba(255, 255, 255, 0.92);
+  --raised-bg: rgba(255, 255, 255, 0.76);
   --glass-edge: rgba(255, 255, 255, 0.78);
   --raised-border: rgba(230, 51, 41, 0.28);
   --alt-bg: #eceae3;
@@ -232,10 +232,10 @@ html {
   --warm: #ffd166;
   --soft: #0c253d;
   --deep: #02070e;
-  --header-bg: rgba(4, 11, 21, 0.97);
+  --header-bg: rgba(4, 11, 21, 0.75);
   --header-line: rgba(22, 51, 79, 0.85);
-  --raised-bg: rgba(7, 21, 38, 0.92);
-  --glass-edge: rgba(82, 216, 232, 0.28);
+  --raised-bg: rgba(7, 21, 38, 0.72);
+  --glass-edge: rgba(82, 216, 232, 0.32);
   --raised-border: rgba(82, 216, 232, 0.38);
   --alt-bg: #091a2e;
   --subtle-bg: #0c223a;
@@ -248,7 +248,7 @@ html {
   --contact-copy: #cbd7dd;
   --note: #ffd166;
   --on-accent: #02070e;
-  --panel-bevel: inset 0 1px 0 rgba(82, 216, 232, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  --panel-bevel: inset 0 1px 1px 0 rgba(82, 216, 232, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
   --shadow: 0 3px 6px rgba(0, 0, 0, 0.45), 0 16px 42px -4px rgba(0, 0, 0, 0.75);
   --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.35), 0 8px 22px -2px rgba(0, 0, 0, 0.6);
   --shadow-hover: 0 6px 14px rgba(82, 216, 232, 0.2), 0 20px 48px -4px rgba(82, 216, 232, 0.35);
@@ -282,9 +282,9 @@ html {
   --warm: #4a4a4a;
   --soft: #eeebe3;
   --deep: #0a0a0a;
-  --header-bg: rgba(250, 249, 246, 0.97);
+  --header-bg: rgba(250, 249, 246, 0.8);
   --header-line: rgba(227, 222, 213, 0.9);
-  --raised-bg: rgba(255, 255, 255, 0.92);
+  --raised-bg: rgba(255, 255, 255, 0.76);
   --glass-edge: rgba(255, 255, 255, 0.8);
   --raised-border: rgba(20, 20, 20, 0.22);
   --alt-bg: #f2efe8;
@@ -1314,9 +1314,13 @@ time {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: radial-gradient(rgba(17, 25, 29, 0.04) 1px, transparent 0);
-  background-size: 28px 28px;
-  opacity: 0.65;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(13, 148, 136, 0.09), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(6, 182, 212, 0.07), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(217, 119, 6, 0.04), transparent 60%),
+    radial-gradient(rgba(17, 25, 29, 0.04) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+  opacity: 0.85;
   transition: opacity 240ms ease;
 }
 
@@ -1330,9 +1334,11 @@ time {
 
 :root[data-theme="dark"] .site-ambience {
   background-image:
-    radial-gradient(ellipse at 50% -12%, rgba(22, 138, 150, 0.12), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(20, 184, 166, 0.14), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(56, 189, 248, 0.10), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(251, 191, 36, 0.05), transparent 60%),
     radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0);
-  background-size: 100% 100%, 28px 28px;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
   opacity: 1;
 }
 
@@ -1355,36 +1361,43 @@ time {
    -------------------------------------------------------------------------- */
 :root[data-skin="grid"] .site-ambience {
   background-image:
+    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(13, 148, 136, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(6, 182, 212, 0.07), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(217, 119, 6, 0.04), transparent 60%),
     linear-gradient(rgba(15, 129, 141, 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(15, 129, 141, 0.055) 1px, transparent 1px),
     linear-gradient(rgba(15, 129, 141, 0.022) 1px, transparent 1px),
     linear-gradient(90deg, rgba(15, 129, 141, 0.022) 1px, transparent 1px);
-  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
-  opacity: 0.85;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.92;
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-skin="grid"]:not([data-theme]) .site-ambience {
     background-image:
-      radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.12), transparent 70%),
+      radial-gradient(ellipse 70% 50% at 20% 12%, rgba(20, 184, 166, 0.15), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 85% 22%, rgba(56, 189, 248, 0.10), transparent 55%),
+      radial-gradient(ellipse 70% 55% at 50% 85%, rgba(251, 191, 36, 0.05), transparent 60%),
       linear-gradient(rgba(120, 213, 220, 0.065) 1px, transparent 1px),
       linear-gradient(90deg, rgba(120, 213, 220, 0.065) 1px, transparent 1px),
       linear-gradient(rgba(120, 213, 220, 0.022) 1px, transparent 1px),
       linear-gradient(90deg, rgba(120, 213, 220, 0.022) 1px, transparent 1px);
-    background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-    opacity: 0.9;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
+    opacity: 0.95;
   }
 }
 
 :root[data-skin="grid"][data-theme="dark"] .site-ambience {
   background-image:
-    radial-gradient(ellipse at 50% 15%, rgba(22, 138, 150, 0.12), transparent 70%),
+    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(20, 184, 166, 0.15), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(56, 189, 248, 0.10), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(251, 191, 36, 0.05), transparent 60%),
     linear-gradient(rgba(120, 213, 220, 0.065) 1px, transparent 1px),
     linear-gradient(90deg, rgba(120, 213, 220, 0.065) 1px, transparent 1px),
     linear-gradient(rgba(120, 213, 220, 0.022) 1px, transparent 1px),
     linear-gradient(90deg, rgba(120, 213, 220, 0.022) 1px, transparent 1px);
-  background-size: 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-  opacity: 0.9;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
+  opacity: 0.95;
 }
 
 :root[data-skin="grid"][data-theme="hud"] .site-ambience {
