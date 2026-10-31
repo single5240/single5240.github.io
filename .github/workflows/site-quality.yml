@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -60,3 +60,52 @@ jobs:
       - name: Deploy checked site
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-aliyun:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build-and-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ALIYUN_HOST: ${{ secrets.ALIYUN_HOST }}
+      ALIYUN_USER: ${{ secrets.ALIYUN_USER }}
+      ALIYUN_SSH_KEY: ${{ secrets.ALIYUN_SSH_KEY }}
+      ALIYUN_KNOWN_HOSTS: ${{ secrets.ALIYUN_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Download the checked website
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/aliyun-artifact
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in ALIYUN_HOST ALIYUN_USER ALIYUN_SSH_KEY ALIYUN_KNOWN_HOSTS; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing repository secret: $name"
+              exit 1
+            fi
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$ALIYUN_SSH_KEY" | tr -d '\r' > "$HOME/.ssh/aliyun_deploy"
+          printf '%s\n' "$ALIYUN_KNOWN_HOSTS" | tr -d '\r' > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/aliyun_deploy" "$HOME/.ssh/known_hosts"
+      - name: Upload and activate the website
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_id="${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          destination="${ALIYUN_USER}@${ALIYUN_HOST}"
+          archive="site-${release_id}.tar"
+          options=(-i "$HOME/.ssh/aliyun_deploy" -o IdentitiesOnly=yes
+            -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
+          scp "${options[@]}" "$RUNNER_TEMP/aliyun-artifact/artifact.tar" "$destination:$archive"
+          ssh "${options[@]}" "$destination" "bash -s -- '$archive' '$release_id'" < scripts/deploy-static-site.sh
+      - name: Remove temporary SSH credentials
+        if: always()
+        shell: bash
+        run: rm -f "$HOME/.ssh/aliyun_deploy" "$HOME/.ssh/known_hosts"
