@@ -27,6 +27,18 @@
           "weekday": "周四",
           "title": "AI 资讯日报 · 10月29日（周四）",
           "summary": "Lead: Pro 和 Business 用户每月可领最多 500 美元 API 额度。Codex 第 23 天是全额重置。Pro 200 额度下调明天生效。"
+        },
+        {
+          "date": "2026-10-30",
+          "weekday": "周五",
+          "title": "AI 资讯日报 · 10月30日（周五）",
+          "summary": "Lead: Pro 200 额度不降了。Codex 第 25 天把 Pro 和 Business Premium 的所有额度翻倍。Codex 应用开始提速冲刺。"
+        },
+        {
+          "date": "2026-10-31",
+          "weekday": "周六",
+          "title": "AI 资讯日报 · 10月31日（周六）",
+          "summary": "Lead: Cursor 扩展市场出现恶意 Claude Code 扩展，请升级到 2.1.314。Codex 第 26 天截至发稿未公布。Claude 套餐改名，Ultra 取消 5 小时限额。"
         }
       ]
     },
