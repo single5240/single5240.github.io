@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-31",
+  "sentence": "Deep into that darkness peering, long I stood there wondering, fearing, / Doubting, dreaming dreams no mortal ever dared to dream before;",
+  "source": {
+    "author": "Edgar Allan Poe",
+    "work": "The Raven",
+    "year": "1845",
+    "detail": "第五节开头两行；今天是万圣节，选一句爱伦·坡最有名的“暗夜”诗句应景"
+  },
+  "translation": "我久久伫立，凝望那深深的黑暗，惊疑、恐惧，满腹狐疑，做着从没有凡人敢做的梦。",
+  "grammar": [
+    "主干只有一句：I stood there（我站在那里）。long 是状语（久久地），被提到主语前面，形成 long I stood 的倒装语序，这是诗歌里为了节奏和强调常用的手法，正常散文语序是 I stood there long。",
+    "大量现在分词短语作伴随状语：peering, wondering, fearing, doubting, dreaming 都在描述“站着的同时”在做什么、感受什么。Deep into that darkness peering 也是倒装的分词短语，正常语序是 peering deep into that darkness，把 deep into that darkness 提前，画面感一下子就出来了。",
+    "dreams no mortal ever dared to dream before 是省略了关系代词的定语从句：dreams (that) no mortal ever dared to dream before。关系代词在从句中作宾语时可以省略，这在口语和写作里都很常见。另外 dreaming dreams 是“同源宾语”（动词和宾语同根），类似 live a happy life、smile a bitter smile，读起来更有力。"
+  ],
+  "vocab": [
+    {
+      "word": "peer",
+      "phonetic": "/pɪə(r)/",
+      "pos": "v.",
+      "meaning": "（因看不清而）仔细地看、凝视",
+      "collocation": "peer into / peer at / peer through",
+      "example": "She peered into the dark room, looking for the light switch."
+    },
+    {
+      "word": "wonder",
+      "phonetic": "/ˈwʌndə(r)/",
+      "pos": "v.",
+      "meaning": "疑惑，纳闷，想知道",
+      "collocation": "wonder about / wonder if / wonder why",
+      "example": "I wonder why the bootloader keeps resetting."
+    },
+    {
+      "word": "doubt",
+      "phonetic": "/daʊt/",
+      "pos": "v. / n.",
+      "meaning": "怀疑，拿不准",
+      "collocation": "no doubt / beyond doubt / doubt whether",
+      "example": "I doubt whether this fix will work on the old board."
+    },
+    {
+      "word": "mortal",
+      "phonetic": "/ˈmɔːtl/",
+      "pos": "n. / adj.",
+      "meaning": "凡人；终有一死的",
+      "collocation": "mere mortals / mortal danger / mortal enemy",
+      "example": "This kind of optimization is beyond us mere mortals."
+    },
+    {
+      "word": "dare",
+      "phonetic": "/deə(r)/",
+      "pos": "v.",
+      "meaning": "敢于，胆敢",
+      "collocation": "dare to do / how dare you / I dare say",
+      "example": "Few engineers dared to touch the legacy code."
+    }
+  ],
+  "note": "小练习：试着把这两行改回正常语序读一遍，I stood there long, peering deep into that darkness, wondering, fearing, doubting... 再对比原句，感受一下倒装带来的节奏。也可以学着用 mere mortals 自嘲一句，比如 This is too hard for us mere mortals. 万圣节快乐 🎃"
+}

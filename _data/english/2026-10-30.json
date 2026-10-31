@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-30",
+  "sentence": "This above all: to thine own self be true, / And it must follow, as the night the day, / Thou canst not then be false to any man.",
+  "source": {
+    "author": "William Shakespeare",
+    "work": "Hamlet",
+    "year": "c.1600",
+    "detail": "第一幕第三场，Polonius 送儿子 Laertes 远行前的叮嘱"
+  },
+  "translation": "最要紧的是：对你自己忠实；这样才会像黑夜跟随白昼一样，你也就不会对任何人虚伪。",
+  "grammar": [
+    "主干拆解：第一行 \"This above all\" 是省略句，补全是 \"This (is) above all\"（这一条比什么都重要），冒号后面才是\"这一条\"的内容。\"to thine own self be true\" 是祈使句，正常语序是 \"Be true to thine own self\"，莎士比亚把介词短语 to thine own self 提到前面，既强调\"对自己\"，又照顾诗行节奏（倒装/前置强调）。",
+    "as 引导的比较状语从句 + 省略：\"as the night the day\" 补全是 \"as the night (follows) the day\"，动词 follows 因为前面已出现 follow 而省略。整句意思是：结果必然随之而来，就像黑夜必然跟着白昼一样。英语里同样的动词在并列/比较结构中经常省略，避免重复。",
+    "\"it must follow (that) ...\" 是固定说法\"必然得出……的结论\"，it 是形式主语，真正的内容是后面的 \"Thou canst not then be false to any man\"，这里 that 被省略了。现代英语常写成 \"It follows that ...\"。"
+  ],
+  "vocab": [
+    {
+      "word": "above all",
+      "phonetic": "/əˈbʌv ɔːl/",
+      "pos": "phrase",
+      "meaning": "最重要的是，尤其",
+      "collocation": "above all else；but above all",
+      "example": "Above all, keep your code readable."
+    },
+    {
+      "word": "thine / thou / canst",
+      "phonetic": "/ðaɪn/ /ðaʊ/ /kænst/",
+      "pos": "古英语代词 / 情态动词",
+      "meaning": "thine = your（用在元音开头的词前），thou = you（主格），canst = can（搭配 thou）",
+      "collocation": "thine own self；thou art；thou canst",
+      "example": "Thou art my friend. （= You are my friend.）"
+    },
+    {
+      "word": "be true to",
+      "phonetic": "/truː/",
+      "pos": "phrase",
+      "meaning": "忠于，对……忠实",
+      "collocation": "be true to yourself；be true to your word；stay true to",
+      "example": "She stayed true to her values."
+    },
+    {
+      "word": "follow",
+      "phonetic": "/ˈfɒləʊ/",
+      "pos": "v.",
+      "meaning": "随之而来；必然得出（结论）",
+      "collocation": "it follows that ...；as follows；follow from",
+      "example": "If the test passes, it follows that the bug is fixed."
+    },
+    {
+      "word": "false",
+      "phonetic": "/fɔːls/",
+      "pos": "adj.",
+      "meaning": "（对人）不忠的，虚伪的；也指错误的",
+      "collocation": "be false to sb；false alarm；false positive",
+      "example": "The sensor triggered a false alarm."
+    }
+  ],
+  "note": "小练习：试着把 \"to thine own self be true\" 改写成现代英语（答案：Be true to yourself.），再用 \"It follows that ...\" 造一个和调试代码有关的句子。"
+}
