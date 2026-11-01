@@ -1,55 +1,57 @@
 :root {
   color-scheme: light;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --paper: #f8fafc;
-  --panel: #ffffff;
-  --accent: #0d9488;
-  --accent-dark: #0f766e;
-  --warm: #d97706;
-  --soft: #f1f5f9;
-  --deep: #0f172a;
-  --header-bg: rgba(248, 250, 252, 0.75);
-  --header-line: rgba(226, 232, 240, 0.85);
-  --raised-bg: rgba(255, 255, 255, 0.72);
-  --glass: blur(18px) saturate(180%);
-  --glass-edge: rgba(255, 255, 255, 0.75);
-  --raised-border: rgba(13, 148, 136, 0.18);
-  --alt-bg: #f1f5f9;
-  --subtle-bg: #f8fafc;
-  --body-copy: #334155;
-  --content-copy: #1e293b;
-  --tag-ink: #475569;
-  --code-bg: #0b1117;
-  --code-ink: #f1f5f9;
-  --inline-code: #0f766e;
-  --contact-copy: #94a3b8;
-  --note: #b45309;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --line: rgba(60, 60, 67, 0.14);
+  --paper: #e8e8ee;
+  --panel: #fbfbfd;
+  --accent: #007aff;
+  --accent-dark: #0062cc;
+  --warm: #ff9500;
+  --soft: rgba(0, 122, 255, 0.09);
+  --deep: #1d1d1f;
+  --header-bg: rgba(232, 232, 238, 0.78);
+  --header-line: rgba(60, 60, 67, 0.14);
+  --raised-bg: rgba(252, 252, 255, 0.85);
+  --glass: blur(24px) saturate(190%);
+  --glass-edge: rgba(60, 60, 67, 0.13);
+  --raised-border: rgba(0, 122, 255, 0.2);
+  --alt-bg: #eff0f5;
+  --subtle-bg: #ffffff;
+  --body-copy: #333336;
+  --content-copy: #1d1d1f;
+  --tag-ink: #333336;
+  --code-bg: #1c1c1e;
+  --code-ink: #f2f2f7;
+  --inline-code: #0062cc;
+  --contact-copy: #6e6e73;
+  --note: #ff9500;
   --on-accent: #ffffff;
-  --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.03);
-  --shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 24px -4px rgba(15, 23, 42, 0.08);
-  --shadow-small: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.06);
-  --shadow-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 16px 36px -6px rgba(13, 148, 136, 0.16);
-  --focus-ring: #0284c7;
-  --ease-tactile: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  /* 专题色谱：浅色主题（明亮、温润、具高辨识度的工程色盘） */
-  --topic-mcu-1: #0d9488;
-  --topic-mcu-2: #0f766e;
-  --topic-mcu-accent: #0d9488;
-  --topic-linux-1: #ea580c;
-  --topic-linux-2: #c2410c;
-  --topic-linux-accent: #ea580c;
-  --topic-qt-1: #16a34a;
-  --topic-qt-2: #15803d;
-  --topic-qt-accent: #16a34a;
-  --topic-industrial-1: #e11d48;
-  --topic-industrial-2: #be123c;
-  --topic-industrial-accent: #e11d48;
-  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.08);
-  --spectrum-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --panel-bevel: inset 0 1px 0 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 0 rgba(0, 0, 0, 0.04);
+  --shadow: 0 10px 30px -6px rgba(15, 20, 35, 0.08), 0 2px 6px -1px rgba(15, 20, 35, 0.05);
+  --shadow-small: 0 2px 8px -1px rgba(15, 20, 35, 0.06), 0 1px 2px rgba(15, 20, 35, 0.04);
+  --shadow-heavy: 0 22px 52px -10px rgba(15, 20, 35, 0.16), 0 4px 16px -2px rgba(15, 20, 35, 0.06);
+  --shadow-hover: 0 16px 38px -6px rgba(0, 122, 255, 0.18), 0 4px 14px -2px rgba(15, 20, 35, 0.07);
+  --focus-ring: #007aff;
+  --ease-tactile: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-smooth: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.25, 1, 0.5, 1);
+  /* 专题色谱：iOS 18 浅色调（清透高饱和） */
+  --topic-mcu-1: #007aff;
+  --topic-mcu-2: #005bb5;
+  --topic-mcu-accent: #007aff;
+  --topic-linux-1: #ff9500;
+  --topic-linux-2: #d97706;
+  --topic-linux-accent: #ff9500;
+  --topic-qt-1: #34c759;
+  --topic-qt-2: #248a3d;
+  --topic-qt-accent: #34c759;
+  --topic-industrial-1: #ff2d55;
+  --topic-industrial-2: #d8153b;
+  --topic-industrial-accent: #ff2d55;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  --spectrum-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Segoe UI", Roboto, sans-serif;
 }
 
 *,
@@ -66,102 +68,101 @@ html {
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --ink: #f8fafc;
-    --muted: #94a3b8;
-    --line: #1e293b;
-    --paper: #0b0f17;
-    --panel: #111827;
-    --accent: #14b8a6;
-    --accent-dark: #2dd4bf;
-    --warm: #fbbf24;
-    --soft: #162432;
-    --deep: #070a0f;
-    --header-bg: rgba(11, 15, 23, 0.75);
-    --header-line: rgba(30, 41, 59, 0.85);
-    --raised-bg: rgba(17, 24, 39, 0.72);
-    --glass-edge: rgba(255, 255, 255, 0.12);
-    --raised-border: rgba(45, 212, 191, 0.22);
-    --alt-bg: #151d2c;
-    --subtle-bg: #1a2334;
-    --body-copy: #cbd5e1;
-    --content-copy: #e2e8f0;
-    --tag-ink: #cbd5e1;
-    --code-bg: #070a0f;
-    --code-ink: #f1f5f9;
-    --inline-code: #2dd4bf;
-    --contact-copy: #94a3b8;
-    --note: #fbbf24;
-    --on-accent: #041217;
-    --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-    --shadow: 0 2px 5px rgba(0, 0, 0, 0.45), 0 12px 32px -4px rgba(0, 0, 0, 0.6);
-    --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35);
-    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 20px 48px -6px rgba(20, 184, 166, 0.22);
-    --focus-ring: #38bdf8;
-    /* 专题色谱：深色主题（沉稳、深邃低眩光） */
-    --topic-mcu-1: #14b8a6;
-    --topic-mcu-2: #0f766e;
-    --topic-mcu-accent: #2dd4bf;
-    --topic-linux-1: #f97316;
-    --topic-linux-2: #c2410c;
-    --topic-linux-accent: #fb923c;
-    --topic-qt-1: #22c55e;
-    --topic-qt-2: #15803d;
-    --topic-qt-accent: #4ade80;
-    --topic-industrial-1: #f43f5e;
-    --topic-industrial-2: #be123c;
-    --topic-industrial-accent: #fb7185;
-    --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    --ink: #f5f5f7;
+    --muted: #8e8e93;
+    --line: rgba(255, 255, 255, 0.12);
+    --paper: #000000;
+    --panel: #1c1c1e;
+    --accent: #0a84ff;
+    --accent-dark: #409cff;
+    --warm: #ff9f0a;
+    --soft: rgba(10, 132, 255, 0.16);
+    --deep: #000000;
+    --header-bg: rgba(0, 0, 0, 0.78);
+    --header-line: rgba(255, 255, 255, 0.1);
+    --raised-bg: rgba(28, 28, 30, 0.75);
+    --glass-edge: rgba(255, 255, 255, 0.16);
+    --raised-border: rgba(10, 132, 255, 0.25);
+    --alt-bg: #2c2c2e;
+    --subtle-bg: rgba(255, 255, 255, 0.07);
+    --body-copy: #d1d1d6;
+    --content-copy: #f5f5f7;
+    --tag-ink: #e5e5ea;
+    --code-bg: #0c0c0e;
+    --code-ink: #f5f5f7;
+    --inline-code: #409cff;
+    --contact-copy: #8e8e93;
+    --note: #ff9f0a;
+    --on-accent: #ffffff;
+    --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+    --shadow: 0 10px 32px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-small: 0 2px 10px rgba(0, 0, 0, 0.4);
+    --shadow-hover: 0 18px 45px rgba(0, 0, 0, 0.75), 0 0 24px rgba(10, 132, 255, 0.25);
+    --focus-ring: #0a84ff;
+    /* 专题色谱：iOS 18 深色高饱和霓虹 */
+    --topic-mcu-1: #0a84ff;
+    --topic-mcu-2: #005bb5;
+    --topic-mcu-accent: #409cff;
+    --topic-linux-1: #ff9f0a;
+    --topic-linux-2: #c97800;
+    --topic-linux-accent: #ffb340;
+    --topic-qt-1: #30d158;
+    --topic-qt-2: #1e8738;
+    --topic-qt-accent: #5ce680;
+    --topic-industrial-1: #ff375f;
+    --topic-industrial-2: #b81436;
+    --topic-industrial-accent: #ff6482;
+    --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
     --spectrum-shadow: none;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #f8fafc;
-  --muted: #94a3b8;
-  --line: #1e293b;
-  --paper: #0b0f17;
-  --panel: #111827;
-  --accent: #14b8a6;
-  --accent-dark: #2dd4bf;
-  --warm: #fbbf24;
-  --soft: #162432;
-  --deep: #070a0f;
-  --header-bg: rgba(11, 15, 23, 0.75);
-  --header-line: rgba(30, 41, 59, 0.85);
-  --raised-bg: rgba(17, 24, 39, 0.72);
-  --glass-edge: rgba(255, 255, 255, 0.12);
-  --raised-border: rgba(45, 212, 191, 0.22);
-  --alt-bg: #151d2c;
-  --subtle-bg: #1a2334;
-  --body-copy: #cbd5e1;
-  --content-copy: #e2e8f0;
-  --tag-ink: #cbd5e1;
-  --code-bg: #070a0f;
-  --code-ink: #f1f5f9;
-  --inline-code: #2dd4bf;
-  --contact-copy: #94a3b8;
-  --note: #fbbf24;
-  --on-accent: #041217;
-  --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-  --shadow: 0 2px 5px rgba(0, 0, 0, 0.45), 0 12px 32px -4px rgba(0, 0, 0, 0.6);
-  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 20px 48px -6px rgba(20, 184, 166, 0.22);
-  --focus-ring: #38bdf8;
-  /* 专题色谱：深色主题 */
-  --topic-mcu-1: #14b8a6;
-  --topic-mcu-2: #0f766e;
-  --topic-mcu-accent: #2dd4bf;
-  --topic-linux-1: #f97316;
-  --topic-linux-2: #c2410c;
-  --topic-linux-accent: #fb923c;
-  --topic-qt-1: #22c55e;
-  --topic-qt-2: #15803d;
-  --topic-qt-accent: #4ade80;
-  --topic-industrial-1: #f43f5e;
-  --topic-industrial-2: #be123c;
-  --topic-industrial-accent: #fb7185;
-  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --ink: #f5f5f7;
+  --muted: #8e8e93;
+  --line: rgba(255, 255, 255, 0.12);
+  --paper: #000000;
+  --panel: #1c1c1e;
+  --accent: #0a84ff;
+  --accent-dark: #409cff;
+  --warm: #ff9f0a;
+  --soft: rgba(10, 132, 255, 0.16);
+  --deep: #000000;
+  --header-bg: rgba(0, 0, 0, 0.78);
+  --header-line: rgba(255, 255, 255, 0.1);
+  --raised-bg: rgba(28, 28, 30, 0.75);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  --raised-border: rgba(10, 132, 255, 0.25);
+  --alt-bg: #2c2c2e;
+  --subtle-bg: rgba(255, 255, 255, 0.07);
+  --body-copy: #d1d1d6;
+  --content-copy: #f5f5f7;
+  --tag-ink: #e5e5ea;
+  --code-bg: #0c0c0e;
+  --code-ink: #f5f5f7;
+  --inline-code: #409cff;
+  --contact-copy: #8e8e93;
+  --note: #ff9f0a;
+  --on-accent: #ffffff;
+  --panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.6);
+  --shadow: 0 10px 32px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-small: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 18px 45px rgba(0, 0, 0, 0.75), 0 0 24px rgba(10, 132, 255, 0.25);
+  --focus-ring: #0a84ff;
+  --topic-mcu-1: #0a84ff;
+  --topic-mcu-2: #005bb5;
+  --topic-mcu-accent: #409cff;
+  --topic-linux-1: #ff9f0a;
+  --topic-linux-2: #c97800;
+  --topic-linux-accent: #ffb340;
+  --topic-qt-1: #30d158;
+  --topic-qt-2: #1e8738;
+  --topic-qt-accent: #5ce680;
+  --topic-industrial-1: #ff375f;
+  --topic-industrial-2: #b81436;
+  --topic-industrial-accent: #ff6482;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   --spectrum-shadow: none;
 }
 
@@ -413,38 +414,42 @@ body {
 
 .theme-toggle {
   display: inline-flex;
-  min-height: 38px;
-  padding: 0 10px;
+  min-height: 36px;
+  height: 36px;
+  padding: 0 12px;
   align-items: center;
   justify-content: center;
   gap: 7px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 9999px;
   background: var(--panel);
   color: var(--ink);
   font: inherit;
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+  box-shadow: var(--shadow-small);
+  transition: all 0.2s var(--ease-spring);
 }
 
 .theme-toggle:hover,
 .theme-toggle[aria-expanded="true"] {
   border-color: var(--accent);
   background: var(--soft);
-  color: var(--accent-dark);
+  color: var(--accent);
+  transform: scale(1.03);
+  box-shadow: var(--shadow);
 }
 
 .theme-toggle:active {
-  transform: translateY(1px);
+  transform: scale(0.96);
 }
 
 .theme-icon,
 .theme-option svg {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   flex: 0 0 auto;
   fill: none;
   stroke: currentColor;
@@ -463,17 +468,23 @@ body {
   top: calc(100% + 10px);
   right: 0;
   z-index: 100;
-  width: 226px;
-  max-height: min(520px, calc(100vh - 100px));
+  width: 236px;
+  max-height: min(540px, calc(100vh - 100px));
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 6px;
+  padding: 8px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 20px;
   background: var(--raised-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--shadow);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04);
+  animation: ios-menu-in 0.22s var(--ease-spring);
+}
+
+@keyframes ios-menu-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .theme-menu[hidden] {
@@ -481,10 +492,10 @@ body {
 }
 
 .theme-menu-title {
-  padding: 6px 10px 4px;
+  padding: 6px 12px 4px;
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.6px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: var(--muted);
   user-select: none;
 }
@@ -499,34 +510,36 @@ body {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) 18px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 9px 12px;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: all 0.16s ease;
 }
 
 .theme-option:hover,
 .theme-option[aria-checked="true"] {
   background: var(--soft);
-  color: var(--accent-dark);
+  color: var(--accent);
 }
 
 .theme-option-label {
-  font-size: 14px;
-  font-weight: 750;
+  font-size: 13.5px;
+  font-weight: 600;
 }
 
 .theme-option-check {
   opacity: 0;
-  font-size: 16px;
-  font-weight: 850;
+  font-size: 15px;
+  font-weight: 800;
   text-align: center;
+  color: var(--accent);
 }
 
 .theme-option[aria-checked="true"] .theme-option-check {
@@ -638,19 +651,19 @@ time {
   }
 }
 
-/* 顶部微型阅读进度条 */
+/* 顶部微型阅读进度条 (iOS 18 dynamic gradient) */
 .reading-progress {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 2.5px;
+  height: 3px;
   transform: scaleX(0);
   transform-origin: left;
-  background: linear-gradient(90deg, var(--accent), var(--warm));
+  background: linear-gradient(90deg, #007aff, #5856d6 50%, #af52de);
   z-index: 1000;
   pointer-events: none;
-  box-shadow: 0 1px 6px rgba(15, 129, 141, 0.35);
+  box-shadow: 0 1px 8px rgba(0, 122, 255, 0.4);
   transition: transform 60ms linear;
 }
 
@@ -1194,13 +1207,13 @@ time {
 
 .theme-spectrum {
   display: flex;
-  height: 38px;
-  border-radius: 6px;
+  height: 36px;
+  border-radius: 9999px;
   overflow: hidden;
-  gap: 2px;
-  padding: 2px;
+  gap: 3px;
+  padding: 3px;
   border: 1px solid var(--line);
-  background: var(--line);
+  background: var(--alt-bg);
   box-shadow: var(--shadow-small);
 }
 
@@ -1214,9 +1227,9 @@ time {
   text-decoration: none;
   background: linear-gradient(145deg, var(--item-color-1), var(--item-color-2));
   opacity: 0.98;
-  border-radius: 4px;
+  border-radius: 9999px;
   box-shadow: var(--spectrum-bevel), var(--spectrum-shadow);
-  transition: flex 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease;
+  transition: flex 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease, filter 0.25s ease, box-shadow 0.25s ease;
 }
 
 .spectrum-item:hover,
@@ -1315,45 +1328,44 @@ time {
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(13, 148, 136, 0.09), transparent 60%),
-    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(6, 182, 212, 0.07), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(217, 119, 6, 0.04), transparent 60%),
-    radial-gradient(rgba(17, 25, 29, 0.04) 1px, transparent 0);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
-  opacity: 0.85;
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.45) 0%, transparent 62%),
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(190, 192, 204, 0.32) 100%),
+    radial-gradient(circle at 18% 14%, rgba(0, 122, 255, 0.09) 0%, transparent 48%),
+    radial-gradient(circle at 86% 20%, rgba(88, 86, 214, 0.07) 0%, transparent 42%),
+    radial-gradient(circle at 50% 82%, rgba(255, 149, 0, 0.05) 0%, transparent 48%),
+    radial-gradient(circle at 82% 86%, rgba(52, 199, 89, 0.06) 0%, transparent 45%);
+  background-size: 100% 100%;
+  opacity: 0.95;
   transition: opacity 240ms ease;
 }
 
 :root[data-theme="hud"] .site-ambience {
   background-image:
-    radial-gradient(ellipse at 50% -12%, rgba(82, 216, 232, 0.14), transparent 60%),
-    radial-gradient(rgba(82, 216, 232, 0.05) 1px, transparent 0);
-  background-size: 100% 100%, 28px 28px;
+    radial-gradient(circle at 50% 12%, rgba(82, 216, 232, 0.20) 0%, transparent 55%),
+    radial-gradient(circle at 85% 75%, rgba(112, 201, 214, 0.12) 0%, transparent 45%);
   opacity: 1;
 }
 
 :root[data-theme="dark"] .site-ambience {
   background-image:
-    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(20, 184, 166, 0.14), transparent 60%),
-    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(56, 189, 248, 0.10), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(251, 191, 36, 0.05), transparent 60%),
-    radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 0);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+    radial-gradient(circle at 20% 15%, rgba(10, 132, 255, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 85% 25%, rgba(94, 92, 230, 0.16) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(50, 173, 230, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 88%, rgba(48, 209, 88, 0.08) 0%, transparent 45%);
   opacity: 1;
 }
 
 :root[data-theme="swiss"] .site-ambience {
   background-image:
-    radial-gradient(rgba(230, 51, 41, 0.035) 1px, transparent 0),
-    radial-gradient(rgba(17, 17, 17, 0.03) 1px, transparent 0);
-  background-size: 32px 32px, 16px 16px;
-  opacity: 0.8;
+    radial-gradient(circle at 20% 20%, rgba(230, 51, 41, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(230, 51, 41, 0.05) 0%, transparent 45%);
+  opacity: 0.9;
 }
 
 :root[data-theme="mono"] .site-ambience {
-  background-image: radial-gradient(rgba(20, 20, 20, 0.04) 1px, transparent 0);
-  background-size: 24px 24px;
-  opacity: 0.6;
+  background-image:
+    radial-gradient(circle at 50% 20%, rgba(20, 20, 20, 0.04) 0%, transparent 50%);
+  opacity: 0.8;
 }
 
 /* --------------------------------------------------------------------------
@@ -1361,43 +1373,45 @@ time {
    -------------------------------------------------------------------------- */
 :root[data-skin="grid"] .site-ambience {
   background-image:
-    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(13, 148, 136, 0.10), transparent 60%),
-    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(6, 182, 212, 0.07), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(217, 119, 6, 0.04), transparent 60%),
-    linear-gradient(rgba(15, 129, 141, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 129, 141, 0.055) 1px, transparent 1px),
-    linear-gradient(rgba(15, 129, 141, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 129, 141, 0.022) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 96px 96px, 96px 96px, 24px 24px, 24px 24px;
-  opacity: 0.92;
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.42) 0%, transparent 62%),
+    radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(190, 192, 204, 0.28) 100%),
+    radial-gradient(circle at 18% 14%, rgba(0, 122, 255, 0.09) 0%, transparent 48%),
+    radial-gradient(circle at 86% 20%, rgba(88, 86, 214, 0.07) 0%, transparent 42%),
+    radial-gradient(circle at 50% 82%, rgba(255, 149, 0, 0.05) 0%, transparent 48%),
+    linear-gradient(rgba(0, 122, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 122, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(0, 122, 255, 0.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 122, 255, 0.016) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.95;
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-skin="grid"]:not([data-theme]) .site-ambience {
     background-image:
-      radial-gradient(ellipse 70% 50% at 20% 12%, rgba(20, 184, 166, 0.15), transparent 60%),
-      radial-gradient(ellipse 60% 45% at 85% 22%, rgba(56, 189, 248, 0.10), transparent 55%),
-      radial-gradient(ellipse 70% 55% at 50% 85%, rgba(251, 191, 36, 0.05), transparent 60%),
-      linear-gradient(rgba(120, 213, 220, 0.065) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(120, 213, 220, 0.065) 1px, transparent 1px),
-      linear-gradient(rgba(120, 213, 220, 0.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(120, 213, 220, 0.022) 1px, transparent 1px);
+      radial-gradient(circle at 20% 15%, rgba(10, 132, 255, 0.18) 0%, transparent 50%),
+      radial-gradient(circle at 85% 25%, rgba(94, 92, 230, 0.16) 0%, transparent 45%),
+      radial-gradient(circle at 50% 85%, rgba(50, 173, 230, 0.12) 0%, transparent 50%),
+      linear-gradient(rgba(10, 132, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 132, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(rgba(10, 132, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 132, 255, 0.02) 1px, transparent 1px);
     background-size: 100% 100%, 100% 100%, 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-    opacity: 0.95;
+    opacity: 0.98;
   }
 }
 
 :root[data-skin="grid"][data-theme="dark"] .site-ambience {
   background-image:
-    radial-gradient(ellipse 70% 50% at 20% 12%, rgba(20, 184, 166, 0.15), transparent 60%),
-    radial-gradient(ellipse 60% 45% at 85% 22%, rgba(56, 189, 248, 0.10), transparent 55%),
-    radial-gradient(ellipse 70% 55% at 50% 85%, rgba(251, 191, 36, 0.05), transparent 60%),
-    linear-gradient(rgba(120, 213, 220, 0.065) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 213, 220, 0.065) 1px, transparent 1px),
-    linear-gradient(rgba(120, 213, 220, 0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 213, 220, 0.022) 1px, transparent 1px);
+    radial-gradient(circle at 20% 15%, rgba(10, 132, 255, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 85% 25%, rgba(94, 92, 230, 0.16) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(50, 173, 230, 0.12) 0%, transparent 50%),
+    linear-gradient(rgba(10, 132, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 132, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(10, 132, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 132, 255, 0.02) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 128px 128px, 128px 128px, 32px 32px, 32px 32px;
-  opacity: 0.95;
+  opacity: 0.98;
 }
 
 :root[data-skin="grid"][data-theme="hud"] .site-ambience {
@@ -1550,46 +1564,46 @@ time {
   letter-spacing: 0.5px;
 }
 
-/* 嵌入式系统心跳指示灯与状态时钟 */
+/* 嵌入式系统心跳指示灯与状态时钟 (iOS 18 Dynamic Island Pill) */
 .system-status {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 4px 10px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
   border: 1px solid var(--line);
   background: var(--panel);
   font-family: ui-monospace, Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--muted);
   user-select: none;
   white-space: nowrap;
   box-shadow: var(--shadow-small);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.2s var(--ease-spring);
 }
 
 .status-pulse {
-  width: 6.5px;
-  height: 6.5px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 0 rgba(16, 185, 129, 0.6);
+  background: #34c759;
+  box-shadow: 0 0 0 rgba(52, 199, 89, 0.6);
   animation: pulse-glow 2.2s infinite ease-in-out;
 }
 
 @keyframes pulse-glow {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7);
   }
   65% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 6px rgba(52, 199, 89, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
   }
 }
 

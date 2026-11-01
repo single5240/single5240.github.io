@@ -40,8 +40,8 @@
   };
 
   const themeColors = {
-    light: "#f8fafc",
-    dark: "#0b0f17",
+    light: "#e8e8ee",
+    dark: "#000000",
     swiss: "#f5f5f2",
     hud: "#040b15",
     mono: "#faf9f6",
