@@ -10,3 +10,15 @@ permalink: /about/index.html
   <p class="lede">MCU 驱动、Linux、Qt 和工业通信。调试写成笔记，界面和逻辑做成可以打开的演示。</p>
   <p class="about-contact"><a href="mailto:jwslove40@163.com">jwslove40@163.com</a><a href="https://github.com/single5240" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="{{ '/feed.xml' | relative_url }}">RSS</a></p>
 </header>
+
+<section class="about-guestbook" aria-labelledby="guestbook-title">
+  <div class="eyebrow">GUESTBOOK</div>
+  <h2 id="guestbook-title">留言板</h2>
+  <p>有什么想交流的，欢迎在这里留言。技术问题、文章建议，或只是打个招呼，都可以。</p>
+  <p class="guestbook-note">使用 GitHub 账号登录后即可留言，留言会公开保存在本站仓库的 Issues 中。请勿填写联系方式、密码等私人信息。</p>
+  <p class="guestbook-note">如果下方留言框无法加载，可以<a href="https://github.com/single5240/single5240.github.io/issues?q=is%3Aissue%20in%3Atitle%20about-guestbook" target="_blank" rel="noopener noreferrer">前往 GitHub 查看留言 ↗</a>。</p>
+  <p id="guestbook-status" class="guestbook-note" role="status" hidden></p>
+  <div id="guestbook-comments" aria-label="GitHub 留言区"></div>
+  <noscript><p>启用 JavaScript 后即可在此查看和发表留言，也可以通过上方链接访问 GitHub。</p></noscript>
+</section>
+<script src="{{ '/assets/js/guestbook.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
