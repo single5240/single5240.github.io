@@ -13,6 +13,7 @@
   --header-bg: rgba(235, 238, 246, 0.58);
   --header-line: rgba(255, 255, 255, 0.65);
   --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0.38) 100%);
+  --popover-bg: linear-gradient(165deg, rgba(252, 253, 255, 0.96) 0%, rgba(241, 244, 251, 0.93) 100%);
   --glass: blur(32px) saturate(210%);
   --glass-edge: rgba(255, 255, 255, 0.76);
   --raised-border: rgba(0, 122, 255, 0.25);
@@ -85,6 +86,7 @@ html {
     --header-bg: rgba(10, 12, 20, 0.56);
     --header-line: rgba(255, 255, 255, 0.12);
     --raised-bg: linear-gradient(135deg, rgba(42, 45, 56, 0.58) 0%, rgba(22, 24, 32, 0.40) 100%);
+    --popover-bg: linear-gradient(165deg, rgba(38, 41, 52, 0.96) 0%, rgba(24, 26, 35, 0.94) 100%);
     --glass: blur(32px) saturate(200%);
     --glass-edge: rgba(255, 255, 255, 0.18);
     --raised-border: rgba(10, 132, 255, 0.28);
@@ -138,6 +140,7 @@ html {
   --header-bg: rgba(10, 12, 20, 0.56);
   --header-line: rgba(255, 255, 255, 0.12);
   --raised-bg: linear-gradient(135deg, rgba(42, 45, 56, 0.58) 0%, rgba(22, 24, 32, 0.40) 100%);
+  --popover-bg: linear-gradient(165deg, rgba(38, 41, 52, 0.96) 0%, rgba(24, 26, 35, 0.94) 100%);
   --glass: blur(32px) saturate(200%);
   --glass-edge: rgba(255, 255, 255, 0.18);
   --raised-border: rgba(10, 132, 255, 0.28);
@@ -194,6 +197,7 @@ html {
   --header-bg: rgba(238, 236, 229, 0.62);
   --header-line: rgba(255, 255, 255, 0.65);
   --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.42) 100%);
+  --popover-bg: linear-gradient(165deg, rgba(252, 251, 248, 0.96) 0%, rgba(242, 240, 234, 0.94) 100%);
   --glass-edge: rgba(255, 255, 255, 0.78);
   --raised-border: rgba(230, 51, 41, 0.28);
   --alt-bg: rgba(17, 17, 17, 0.055);
@@ -244,6 +248,7 @@ html {
   --header-bg: rgba(4, 11, 21, 0.58);
   --header-line: rgba(82, 216, 232, 0.22);
   --raised-bg: linear-gradient(135deg, rgba(10, 28, 50, 0.62) 0%, rgba(5, 15, 28, 0.42) 100%);
+  --popover-bg: linear-gradient(165deg, rgba(10, 26, 46, 0.97) 0%, rgba(5, 14, 26, 0.95) 100%);
   --glass-edge: rgba(82, 216, 232, 0.32);
   --raised-border: rgba(82, 216, 232, 0.38);
   --alt-bg: rgba(82, 216, 232, 0.07);
@@ -294,6 +299,7 @@ html {
   --header-bg: rgba(238, 236, 230, 0.6);
   --header-line: rgba(255, 255, 255, 0.65);
   --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.40) 100%);
+  --popover-bg: linear-gradient(165deg, rgba(252, 251, 248, 0.96) 0%, rgba(240, 238, 232, 0.94) 100%);
   --glass-edge: rgba(255, 255, 255, 0.78);
   --raised-border: rgba(20, 20, 20, 0.22);
   --alt-bg: rgba(20, 20, 20, 0.055);
@@ -531,12 +537,12 @@ body {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-edge);
   border-radius: 20px;
-  background: var(--raised-bg);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: var(--popover-bg);
+  backdrop-filter: blur(36px) saturate(210%);
+  -webkit-backdrop-filter: blur(36px) saturate(210%);
+  box-shadow: var(--panel-bevel), var(--shadow-heavy);
   transform-origin: top right;
   animation: ios-menu-in 0.32s var(--ease-spring-snappy);
 }
@@ -545,12 +551,10 @@ body {
   from {
     opacity: 0;
     transform: translateY(-10px) scale(0.86);
-    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0px);
   }
 }
 
@@ -1203,9 +1207,9 @@ time {
   font-weight: 600;
   line-height: 1.45;
   color: var(--ink);
-  background: var(--raised-bg);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--popover-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
   border: 1px solid var(--raised-border);
   border-radius: 8px;
   padding: 5px 11px;

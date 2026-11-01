@@ -1459,9 +1459,7 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
 .study,
 .prose,
 .skills-arch-card,
-.theme-menu,
 .article-robot-card,
-.robot-speech,
 .back-to-top,
 .explore-links a,
 .load-more-btn {
@@ -1469,6 +1467,14 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   border-color: var(--glass-edge);
   -webkit-backdrop-filter: var(--glass);
   backdrop-filter: var(--glass);
+}
+
+.theme-menu,
+.robot-speech {
+  background: var(--popover-bg);
+  border-color: var(--glass-edge);
+  -webkit-backdrop-filter: blur(36px) saturate(210%);
+  backdrop-filter: blur(36px) saturate(210%);
 }
 
 .button:not(.primary),
