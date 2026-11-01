@@ -1498,3 +1498,393 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   backdrop-filter: blur(20px) saturate(190%);
   box-shadow: var(--panel-bevel), var(--shadow-small);
 }
+
+/* ==========================================================================
+   iOS 18 Fluid Interactive Motion System (全站流体弹簧动效体系)
+   ========================================================================== */
+
+/* 1. 顶部导航栏胶囊流体滑块 (Segmented Control Fluid Glider) */
+.nav-links {
+  position: relative;
+}
+
+.nav-links a {
+  position: relative;
+  z-index: 1;
+  transition:
+    color 0.22s ease,
+    transform 0.34s var(--ease-spring-bounce),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.nav-pill-glider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 9999px;
+  background: var(--subtle-bg);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.09),
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.96);
+  transition:
+    transform 0.38s var(--ease-spring-snappy),
+    width 0.34s var(--ease-spring-snappy),
+    height 0.34s var(--ease-spring-snappy),
+    opacity 0.2s ease,
+    background-color 0.22s ease;
+  will-change: transform, width, height;
+}
+
+:root[data-theme="dark"] .nav-pill-glider {
+  background: var(--subtle-bg);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.nav-pill-glider.is-gliding {
+  transform: translate3d(var(--glider-x, 0px), var(--glider-y, 0px), 0) scaleX(1.04) scaleY(0.94);
+}
+
+.nav-links.has-glider a[aria-current="page"],
+.nav-links.has-glider a:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+.nav-links a:active,
+.nav-links a.is-pressing {
+  transform: scale(0.91) !important;
+  transition-duration: 80ms !important;
+}
+
+/* 2. 品牌徽标与搜索按钮弹簧微动效 */
+.brand {
+  transition: transform 0.34s var(--ease-spring-bounce), opacity 0.2s ease;
+}
+
+.brand-mark {
+  transition: transform 0.42s var(--ease-spring-bounce), box-shadow 0.28s var(--ease-spring);
+}
+
+.brand:hover .brand-mark {
+  transform: scale(1.1) rotate(-6deg);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+
+.brand:active,
+.brand.is-pressing {
+  transform: scale(0.95) !important;
+  transition-duration: 80ms !important;
+}
+
+.search-link {
+  transition:
+    transform 0.38s var(--ease-spring-bounce),
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.25s var(--ease-spring);
+}
+
+.search-link svg {
+  transition: transform 0.38s var(--ease-spring-bounce);
+}
+
+.search-link:hover {
+  transform: scale(1.08);
+}
+
+.search-link:hover svg {
+  transform: scale(1.12) rotate(-8deg);
+}
+
+.search-link:active,
+.search-link.is-pressing {
+  transform: scale(0.88) !important;
+  transition-duration: 80ms !important;
+}
+
+/* 3. 按钮、药丸胶囊与筛选器物理按压回弹 (Tactile Press & Spring Release) */
+.button,
+.load-more-btn,
+.home-topic-links a,
+.filter-list button,
+.scope-pause {
+  transition:
+    transform 0.38s var(--ease-spring-bounce),
+    box-shadow 0.28s var(--ease-spring),
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.button span[aria-hidden="true"],
+.load-more-btn span[aria-hidden="true"],
+.aside-tools-list a span[aria-hidden="true"],
+.explore-links a > span:last-child,
+.feed-arrow {
+  display: inline-block;
+  transition: transform 0.34s var(--ease-spring-bounce), color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .button:hover,
+  .load-more-btn:hover {
+    transform: translateY(-2.5px) scale(1.02);
+  }
+
+  .button:hover span[aria-hidden="true"],
+  .load-more-btn:hover span[aria-hidden="true"] {
+    transform: translateX(4px);
+  }
+
+  .home-topic-links a:hover {
+    transform: translateY(-2.5px) scale(1.03);
+  }
+
+  .filter-list button:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  .scope-pause:hover {
+    transform: scale(1.05);
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+}
+
+.button:active,
+.button.is-pressing,
+.load-more-btn:active,
+.load-more-btn.is-pressing,
+.home-topic-links a:active,
+.home-topic-links a.is-pressing,
+.filter-list button:active,
+.filter-list button.is-pressing,
+.scope-pause:active,
+.scope-pause.is-pressing,
+.clear-search:active,
+.clear-search.is-pressing {
+  transform: scale(0.93) !important;
+  transition-duration: 80ms !important;
+}
+
+/* 文本链接微动效 */
+.text-link,
+.aside-more-link,
+.related-link {
+  transition: color 0.18s ease, transform 0.32s var(--ease-spring-bounce), opacity 0.18s ease;
+}
+
+@media (hover: hover) {
+  .text-link:hover,
+  .aside-more-link:hover {
+    transform: translateX(3px);
+  }
+
+  .related-link:hover {
+    transform: translateX(4px);
+  }
+}
+
+.text-link:active,
+.aside-more-link:active,
+.related-link:active {
+  transform: scale(0.96);
+}
+
+/* 4. 列表行、工具入口与 HUD 指标微交互 (Inset Grouped Row Physics) */
+.article-item {
+  transition:
+    background-color 0.22s ease,
+    transform 0.36s var(--ease-spring),
+    box-shadow 0.24s var(--ease-spring);
+}
+
+.item-arrow {
+  transition:
+    transform 0.36s var(--ease-spring-bounce),
+    color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.item-tags span {
+  transition: transform 0.3s var(--ease-spring-bounce), border-color 0.2s ease, background-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .article-item:hover {
+    background: var(--subtle-bg);
+    transform: scale(1.008) translateX(2px);
+    box-shadow: var(--shadow-small);
+  }
+
+  .article-item:hover .item-arrow {
+    background: var(--accent);
+    color: #ffffff;
+    transform: translate(3px, -3px) scale(1.1);
+    box-shadow: 0 3px 10px rgba(0, 122, 255, 0.3);
+  }
+
+  .article-item:hover .item-tags span {
+    border-color: rgba(0, 122, 255, 0.24);
+  }
+
+  .feed-item:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-small);
+  }
+
+  .feed-item:hover .feed-arrow {
+    transform: translate(3px, -3px) scale(1.15);
+  }
+
+  .aside-tools-list a:hover {
+    transform: translateX(4px) scale(1.01);
+    box-shadow: var(--shadow-small);
+  }
+
+  .aside-tools-list a:hover span[aria-hidden="true"] {
+    transform: translateX(4px);
+  }
+
+  .explore-links a:hover > span:last-child {
+    transform: translateX(5px);
+  }
+}
+
+.article-item:active,
+.article-item.is-pressing {
+  transform: scale(0.985) !important;
+  transition-duration: 85ms !important;
+}
+
+.feed-item:active,
+.feed-item.is-pressing,
+.aside-tools-list a:active,
+.aside-tools-list a.is-pressing {
+  transform: scale(0.965) !important;
+  transition-duration: 80ms !important;
+}
+
+/* HUD 指标悬停微弹跳 */
+.hud-item {
+  transition: transform 0.34s var(--ease-spring-bounce);
+}
+
+.hud-num {
+  transition: transform 0.38s var(--ease-spring-bounce), color 0.2s ease;
+  display: inline-block;
+  transform-origin: left center;
+}
+
+@media (hover: hover) {
+  .hud-item:hover .hud-num {
+    transform: scale(1.07) translateY(-1px);
+  }
+}
+
+/* 5. 卡片按压触感与毛玻璃动态追光 (Specular Glass Spotlight & Card Squish) */
+.project-mini-card,
+.project-feature,
+.aside-card,
+.skills-arch-card,
+.explore-links a,
+.daily-links a {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.42s var(--ease-spring),
+    border-color 0.24s ease,
+    box-shadow 0.32s var(--ease-spring),
+    background-color 0.24s ease;
+}
+
+.project-mini-card:active,
+.project-mini-card.is-pressing,
+.explore-links a:active,
+.explore-links a.is-pressing,
+.daily-links a:active,
+.daily-links a.is-pressing,
+.skills-arch-card:active,
+.skills-arch-card.is-pressing {
+  transform: scale(0.976) !important;
+  transition-duration: 90ms !important;
+}
+
+.ios-specular {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  background: radial-gradient(
+    360px circle at var(--spot-x, 50%) var(--spot-y, 0%),
+    rgba(255, 255, 255, 0.28),
+    transparent 68%
+  );
+  transition: opacity 0.35s ease;
+}
+
+:root[data-theme="dark"] .ios-specular {
+  background: radial-gradient(
+    360px circle at var(--spot-x, 50%) var(--spot-y, 0%),
+    rgba(255, 255, 255, 0.09),
+    transparent 68%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  *:hover > .ios-specular {
+    opacity: 1;
+  }
+}
+
+/* 6. 折叠详情面板 (Accordion Details) 与搜索筛选流体动画 */
+.project-notes summary {
+  transition: color 0.2s ease, transform 0.28s var(--ease-spring-bounce);
+}
+
+.project-notes summary:active {
+  transform: scale(0.97);
+}
+
+.project-notes[open] > *:not(summary) {
+  animation: ios-accordion-in 0.34s var(--ease-spring);
+}
+
+@keyframes ios-accordion-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.article-item.is-filtering-in {
+  animation: ios-filter-pop 0.38s var(--ease-spring) both;
+  animation-delay: calc(var(--filter-idx, 0) * 32ms);
+}
+
+@keyframes ios-filter-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

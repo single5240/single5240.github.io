@@ -3196,3 +3196,64 @@
 .w25q-demo-root {
   border-color: var(--glass-edge);
 }
+
+/* iOS 18 Interactive Motion for Article View */
+.toc a {
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    transform 0.32s var(--ease-spring-bounce);
+}
+
+@media (hover: hover) {
+  .toc a:hover {
+    transform: translateX(3px);
+  }
+}
+
+.toc a:active,
+.toc a.is-pressing {
+  transform: scale(0.96) !important;
+  transition-duration: 80ms !important;
+}
+
+.copy-button {
+  transition:
+    transform 0.34s var(--ease-spring-bounce),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+  .copy-button:hover {
+    transform: scale(1.05);
+  }
+}
+
+.copy-button:active,
+.copy-button.is-pressing {
+  transform: scale(0.9) !important;
+  transition-duration: 80ms !important;
+}
+
+.article-navigation a {
+  transition:
+    transform 0.38s var(--ease-spring-bounce),
+    border-color 0.22s ease,
+    box-shadow 0.28s var(--ease-spring),
+    background-color 0.22s ease;
+}
+
+@media (hover: hover) {
+  .article-navigation a:hover {
+    transform: translateY(-3px) scale(1.01);
+  }
+}
+
+.article-navigation a:active,
+.article-navigation a.is-pressing {
+  transform: scale(0.975) !important;
+  transition-duration: 85ms !important;
+}

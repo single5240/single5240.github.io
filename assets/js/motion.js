@@ -7,14 +7,45 @@
     document.querySelectorAll(".project-notes").forEach((notes) => { notes.open = false; });
   }
 
-  // 1. 内容淡入动画
-  const revealItems = [...document.querySelectorAll(".article-card, .panel, .article-item, .project-feature")];
+  // 1. iOS 18 级联弹簧入场动画 (Staggered Spring Reveal)
+  const revealSelector = [
+    ".workbench-console",
+    ".project-mini-card",
+    ".article-card",
+    ".panel",
+    ".article-item",
+    ".project-feature",
+    ".aside-card",
+    ".explore-links a",
+    ".skills-arch-card",
+    ".tool-card",
+    ".daily-links a",
+    ".daily-archive-grid section",
+    ".article-interactive-widget"
+  ].join(", ");
+
+  const revealItems = [...document.querySelectorAll(revealSelector)];
+  const parentCounts = new Map();
+
   revealItems.forEach((item) => {
     item.classList.add("motion-reveal");
+    const parent = item.parentElement;
+    if (parent) {
+      const idx = parentCounts.get(parent) || 0;
+      item.style.setProperty("--stagger-idx", String(Math.min(idx, 6)));
+      parentCounts.set(parent, idx + 1);
+    }
+    item.addEventListener("transitionend", (e) => {
+      if (e.target === item && item.classList.contains("is-visible")) {
+        item.classList.add("is-settled");
+      }
+    }, { passive: true });
   });
 
   if (reducedMotion.matches || !("IntersectionObserver" in window)) {
-    revealItems.forEach((item) => item.classList.add("is-visible"));
+    revealItems.forEach((item) => {
+      item.classList.add("is-visible", "is-settled");
+    });
   } else {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -22,9 +53,136 @@
         entry.target.classList.add("is-visible");
         observer.unobserve(entry.target);
       });
-    }, { rootMargin: "0px 0px -8%", threshold: 0.12 });
+    }, { rootMargin: "0px 0px -6%", threshold: 0.08 });
 
     revealItems.forEach((item) => observer.observe(item));
+  }
+
+  // 1.5 iOS 18 导航栏分段胶囊流体滑块 (Segmented Control Fluid Glider)
+  const initNavGlider = () => {
+    const navLinks = document.querySelector(".nav-links");
+    if (!navLinks || navLinks.querySelector(".nav-pill-glider")) return;
+
+    const links = [...navLinks.querySelectorAll("a")];
+    if (!links.length) return;
+
+    const glider = document.createElement("span");
+    glider.className = "nav-pill-glider";
+    glider.setAttribute("aria-hidden", "true");
+    navLinks.prepend(glider);
+    navLinks.classList.add("has-glider");
+
+    const currentLink = () => navLinks.querySelector('a[aria-current="page"]');
+    let activeTarget = currentLink();
+    let glideTimer = null;
+
+    const moveGliderTo = (target, animateStretch = true) => {
+      if (!target) {
+        glider.style.opacity = "0";
+        return;
+      }
+      const x = target.offsetLeft;
+      const y = target.offsetTop;
+      const w = target.offsetWidth;
+      const h = target.offsetHeight;
+
+      glider.style.width = `${w}px`;
+      glider.style.height = `${h}px`;
+      glider.style.setProperty("--glider-x", `${x}px`);
+      glider.style.setProperty("--glider-y", `${y}px`);
+      glider.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      glider.style.opacity = "1";
+
+      if (animateStretch && !reducedMotion.matches) {
+        glider.classList.add("is-gliding");
+        if (glideTimer) clearTimeout(glideTimer);
+        glideTimer = setTimeout(() => {
+          glider.classList.remove("is-gliding");
+        }, 210);
+      }
+    };
+
+    // 初次定位无拉伸
+    moveGliderTo(activeTarget, false);
+
+    links.forEach((link) => {
+      link.addEventListener("mouseenter", () => {
+        activeTarget = link;
+        moveGliderTo(link, true);
+      });
+      link.addEventListener("focus", () => {
+        activeTarget = link;
+        moveGliderTo(link, true);
+      });
+    });
+
+    navLinks.addEventListener("mouseleave", () => {
+      activeTarget = currentLink();
+      moveGliderTo(activeTarget, true);
+    });
+
+    addEventListener("resize", () => {
+      moveGliderTo(activeTarget || currentLink(), false);
+    }, { passive: true });
+  };
+
+  initNavGlider();
+
+  // 1.8 iOS 18 全局触控弹簧按压引擎 (Tactile Press Squish & Spring Release)
+  if (!reducedMotion.matches) {
+    const pressSelector = [
+      ".button",
+      ".nav-links a",
+      ".brand",
+      ".search-link",
+      ".theme-toggle",
+      ".theme-option",
+      ".home-topic-links a",
+      ".filter-list button",
+      ".project-mini-card",
+      ".article-item",
+      ".feed-item",
+      ".aside-tools-list a",
+      ".explore-links a",
+      ".daily-links a",
+      ".skills-arch-card",
+      ".tools-tab-btn",
+      ".tool-btn",
+      ".load-more-btn",
+      ".back-to-top",
+      ".scope-pause",
+      ".copy-button",
+      ".toc a",
+      ".article-navigation a"
+    ].join(", ");
+
+    const pressTimestamps = new WeakMap();
+
+    document.addEventListener("pointerdown", (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      const target = e.target.closest(pressSelector);
+      if (!target) return;
+      target.classList.add("is-pressing");
+      pressTimestamps.set(target, performance.now());
+    }, { passive: true });
+
+    const releasePress = (e) => {
+      const target = e.target && e.target.closest ? e.target.closest(pressSelector) : null;
+      const candidates = target ? [target] : [...document.querySelectorAll(".is-pressing")];
+      candidates.forEach((el) => {
+        if (!el.classList.contains("is-pressing")) return;
+        const start = pressTimestamps.get(el) || 0;
+        const elapsed = performance.now() - start;
+        const remain = Math.max(0, 105 - elapsed);
+        setTimeout(() => {
+          el.classList.remove("is-pressing");
+        }, remain);
+      });
+    };
+
+    document.addEventListener("pointerup", releasePress, { passive: true });
+    document.addEventListener("pointercancel", releasePress, { passive: true });
+    document.addEventListener("dragstart", releasePress, { passive: true });
   }
 
   // 2. 回到顶部按钮
@@ -152,60 +310,90 @@
     }
   });
 
-  // 6. 立体 3D 视差微倾斜（基于元素原生边界，彻底杜绝冒泡抖动）
+  // 6. iOS 18 毛玻璃动态追光 (Specular Spotlight) 与 3D 视差微倾斜
   if (finePointer.matches && !reducedMotion.matches) {
-    const tiltSelector = ".project-feature";
-    const bindTilt = () => {
-      const cards = document.querySelectorAll(tiltSelector);
+    const spotlightSelector = [
+      ".workbench-console",
+      ".project-mini-card",
+      ".project-feature",
+      ".aside-card",
+      ".skills-arch-card",
+      ".explore-links a",
+      ".tool-card",
+      ".daily-links a"
+    ].join(", ");
+
+    const tiltSet = new Set([".project-feature", ".project-mini-card", ".explore-links a", ".skills-arch-card"]);
+
+    const bindInteractiveCards = () => {
+      const cards = document.querySelectorAll(spotlightSelector);
       cards.forEach((card) => {
         if (card.dataset.tiltBound) return;
         card.dataset.tiltBound = "true";
 
+        if (!card.querySelector(":scope > .ios-specular")) {
+          const specular = document.createElement("span");
+          specular.className = "ios-specular";
+          specular.setAttribute("aria-hidden", "true");
+          card.append(specular);
+        }
+
+        const canTilt = [...tiltSet].some((sel) => card.matches(sel));
+        const maxDeg = card.matches(".project-feature") ? 7 : 4.5;
+
         let rafId = null;
+        let spotX = 0;
+        let spotY = 0;
         let targetX = 0;
         let targetY = 0;
 
-        const updateTransform = () => {
-          const rotateX = (-targetY * 11).toFixed(2);
-          const rotateY = (targetX * 11).toFixed(2);
-          const shadowX = (-targetX * 14).toFixed(1);
-          const shadowY = (-targetY * 14 + 6).toFixed(1);
+        const updateCard = () => {
+          card.style.setProperty("--spot-x", `${spotX.toFixed(0)}px`);
+          card.style.setProperty("--spot-y", `${spotY.toFixed(0)}px`);
 
-          card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-          card.style.boxShadow = `${shadowX}px ${shadowY}px 24px rgba(0, 0, 0, 0.1)`;
+          if (canTilt && !card.classList.contains("is-pressing")) {
+            const rotateX = (-targetY * maxDeg).toFixed(2);
+            const rotateY = (targetX * maxDeg).toFixed(2);
+            card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+          }
           rafId = null;
         };
 
         card.addEventListener("mouseenter", () => {
-          card.style.transition = "transform 0.12s ease-out, box-shadow 0.12s ease-out";
+          if (canTilt) {
+            card.style.transition = "transform 0.16s ease-out, box-shadow 0.24s ease, border-color 0.2s ease";
+          }
         });
 
         card.addEventListener("mousemove", (e) => {
           const rect = card.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) return;
-          targetX = (e.clientX - rect.left) / rect.width - 0.5;
-          targetY = (e.clientY - rect.top) / rect.height - 0.5;
+          spotX = e.clientX - rect.left;
+          spotY = e.clientY - rect.top;
+          targetX = spotX / rect.width - 0.5;
+          targetY = spotY / rect.height - 0.5;
 
           if (!rafId) {
-            rafId = requestAnimationFrame(updateTransform);
+            rafId = requestAnimationFrame(updateCard);
           }
-        });
+        }, { passive: true });
 
         card.addEventListener("mouseleave", () => {
           if (rafId) {
             cancelAnimationFrame(rafId);
             rafId = null;
           }
-          card.style.transition = "transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.45s ease";
-          card.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg)";
-          card.style.boxShadow = "";
+          if (canTilt) {
+            card.style.transition = "transform 0.52s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.38s ease, border-color 0.24s ease";
+            card.style.transform = "";
+          }
         });
       });
     };
 
-    bindTilt();
+    bindInteractiveCards();
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", bindTilt);
+      document.addEventListener("DOMContentLoaded", bindInteractiveCards);
     }
   }
 })();

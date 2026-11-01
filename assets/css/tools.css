@@ -572,9 +572,50 @@
 
 .kb-tool-entry,
 .tool-card {
+  position: relative;
+  overflow: hidden;
   background: var(--raised-bg);
   border-color: var(--glass-edge);
   -webkit-backdrop-filter: var(--glass);
   backdrop-filter: var(--glass);
   box-shadow: var(--panel-bevel), var(--shadow-small);
+  transition:
+    transform 0.38s var(--ease-spring),
+    border-color 0.24s ease,
+    box-shadow 0.28s var(--ease-spring);
+}
+
+@media (hover: hover) {
+  .tool-card:hover,
+  .kb-tool-entry:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--panel-bevel), var(--shadow);
+  }
+}
+
+.tools-tab-btn,
+.tool-btn,
+.bit-cell {
+  transition:
+    transform 0.36s var(--ease-spring-bounce),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.22s var(--ease-spring);
+}
+
+@media (hover: hover) {
+  .tools-tab-btn:hover,
+  .tool-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+}
+
+.tools-tab-btn:active,
+.tools-tab-btn.is-pressing,
+.tool-btn:active,
+.tool-btn.is-pressing,
+.bit-cell:active {
+  transform: scale(0.92) !important;
+  transition-duration: 80ms !important;
 }
