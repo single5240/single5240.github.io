@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-01",
+  "sentence": "No man is an island, entire of itself; every man is a piece of the continent, a part of the main.",
+  "source": {
+    "author": "John Donne",
+    "work": "Devotions upon Emergent Occasions",
+    "year": "1624",
+    "detail": "Meditation XVII（第十七篇默想），此处为现代拼写版；原文拼作 \"No man is an Iland, intire of it selfe\"。同一篇里还有名句 \"never send to know for whom the bell tolls; it tolls for thee\"。"
+  },
+  "translation": "没有人是一座孤岛，可以自全；每个人都是大陆的一片，是整体的一部分。",
+  "grammar": [
+    "两个并列分句用分号连接：No man is an island … ; every man is a piece …。分号把两个意思紧密相关的完整句子并在一起，前面否定“孤立”，后面肯定“相连”，正反对照，比用 and 更有力度。",
+    "否定主语 No man = 没有任何人，相当于 Nobody / Not a single person，是对整个群体的全称否定。注意它不是“不是男人”，man 在这里是旧式用法，泛指“人”。",
+    "entire of itself 是形容词短语作后置修饰（也可理解为省略了 which is 的定语），补充说明 island：一座“自身完整、无需依赖他者”的岛。形容词短语较长时常放在名词后面。",
+    "后半句 a piece of the continent, a part of the main 是同位并列结构：两个名词短语意思相近、层层递进，第二个是对第一个的重申和加强，这是英文演讲和散文中常见的修辞手法。"
+  ],
+  "vocab": [
+    {
+      "word": "entire",
+      "phonetic": "/ɪnˈtaɪə(r)/",
+      "pos": "adj.",
+      "meaning": "完整的，整个的；句中指“自身完整、自给自足”",
+      "collocation": "the entire day / the entire world / entire of itself（古雅用法）",
+      "example": "I spent the entire weekend debugging one interrupt handler."
+    },
+    {
+      "word": "continent",
+      "phonetic": "/ˈkɒntɪnənt/",
+      "pos": "n.",
+      "meaning": "大陆，洲；句中与 island 对照，象征人类整体",
+      "collocation": "the African continent / on the Continent（英式，指欧洲大陆）",
+      "example": "Asia is the largest continent on Earth."
+    },
+    {
+      "word": "the main",
+      "phonetic": "/meɪn/",
+      "pos": "n.",
+      "meaning": "古义：大陆（mainland），也可指大海；句中等于 the mainland。现代常用作形容词“主要的”",
+      "collocation": "the main reason / main function / in the main（总的来说）",
+      "example": "In the main, the new firmware works well."
+    },
+    {
+      "word": "a piece of",
+      "phonetic": "/ə piːs ɒv/",
+      "pos": "phrase",
+      "meaning": "……的一部分、一块",
+      "collocation": "a piece of advice / a piece of code / a piece of the puzzle",
+      "example": "Every module is a piece of the whole system."
+    }
+  ],
+  "note": "今天是万圣节后的诸圣节，正好读 Donne 这段关于“人与人相连”的名句。小练习：模仿“No X is an island; every X is a piece of …”造一个句子，比如 No function is an island; every function is a piece of the system."
+}
