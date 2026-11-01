@@ -330,25 +330,31 @@ html {
 
 .motion-reveal {
   opacity: 0;
-  transform: translateY(22px) scale(0.975);
-  filter: blur(4px);
+  transform: translate3d(0, 20px, 0) scale(0.978);
   transition:
-    opacity 560ms var(--ease-spring),
-    transform 640ms var(--ease-spring),
-    filter 480ms var(--ease-spring);
-  transition-delay: calc(var(--stagger-idx, 0) * 52ms);
+    opacity 520ms var(--ease-spring),
+    transform 600ms var(--ease-spring);
+  transition-delay: calc(var(--stagger-idx, 0) * 48ms);
   will-change: opacity, transform;
 }
 
 .motion-reveal.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0px);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .motion-reveal.is-settled {
+  transform: none;
   transition-delay: 0ms;
   will-change: auto;
+}
+
+@media (max-width: 620px) {
+  .motion-reveal {
+    transform: translate3d(0, 12px, 0) scale(0.986);
+    transition-duration: 380ms, 420ms;
+    transition-delay: calc(var(--stagger-idx, 0) * 32ms);
+  }
 }
 
 .back-to-top {
@@ -465,18 +471,29 @@ body {
   transition: transform 0.36s var(--ease-spring-bounce), border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.24s var(--ease-spring);
 }
 
-.theme-toggle:hover,
 .theme-toggle[aria-expanded="true"] {
   border-color: var(--accent);
   background: var(--soft);
   color: var(--accent);
-  transform: scale(1.06);
   box-shadow: var(--shadow);
 }
 
-.theme-toggle:hover [data-theme-current-icon],
 .theme-toggle[aria-expanded="true"] [data-theme-current-icon] {
   transform: rotate(18deg) scale(1.08);
+}
+
+@media (hover: hover) {
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    background: var(--soft);
+    color: var(--accent);
+    transform: scale(1.06);
+    box-shadow: var(--shadow);
+  }
+
+  .theme-toggle:hover [data-theme-current-icon] {
+    transform: rotate(18deg) scale(1.08);
+  }
 }
 
 .theme-toggle:active,
@@ -573,18 +590,21 @@ body {
   transition: transform 0.28s var(--ease-spring-bounce), background-color 0.18s ease, color 0.18s ease;
 }
 
-.theme-option:hover,
 .theme-option[aria-checked="true"] {
   background: var(--soft);
   color: var(--accent);
 }
 
-.theme-option:hover {
-  transform: translateX(3px);
-}
+@media (hover: hover) {
+  .theme-option:hover {
+    background: var(--soft);
+    color: var(--accent);
+    transform: translateX(3px);
+  }
 
-.theme-option:hover svg {
-  transform: scale(1.14) rotate(-6deg);
+  .theme-option:hover svg {
+    transform: scale(1.14) rotate(-6deg);
+  }
 }
 
 .theme-option:active,
@@ -632,6 +652,10 @@ body {
   }
 
   .theme-toggle-label {
+    display: none;
+  }
+
+  .search-kbd {
     display: none;
   }
 }

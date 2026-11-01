@@ -211,14 +211,30 @@
 .kb-app [hidden] { display: none !important; }
 .kb-app :is(button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
 @media (max-width: 620px) {
-  .kb-column { flex-basis: min(300px, calc(100vw - 64px)); }
+  .kb-column { flex-basis: min(300px, calc(100vw - 48px)); }
   .kb-toolbar { gap: 8px; padding: 12px; }
   .kb-board-picker { width: 100%; }
-  .kb-board-picker select { flex: 1; max-width: none; }
+  .kb-board-picker select { flex: 1; max-width: none; font-size: 16px; }
   .kb-search { flex-basis: 100%; }
+  .kb-search input { font-size: 16px; }
   .kb-summary { flex-basis: 100%; }
   .kb-btn { min-height: 42px; }
-  .kb-dialog { padding: 20px; border-radius: 20px; }
+  .kb-dialog { padding: 20px 16px; border-radius: 20px; }
+  .kb-form-grid { grid-template-columns: 1fr; }
+}
+.kb-btn,
+.kb-card {
+  transition: transform 0.34s var(--ease-spring-bounce), box-shadow 0.24s var(--ease-spring), border-color 0.2s ease, background-color 0.2s ease;
+}
+.kb-btn:active,
+.kb-btn.is-pressing {
+  transform: scale(0.93) !important;
+  transition-duration: 80ms !important;
+}
+.kb-card:active,
+.kb-card.is-pressing {
+  transform: scale(0.98) !important;
+  transition-duration: 85ms !important;
 }
 @media (prefers-reduced-motion: reduce) { .kb-app *, .kb-app *::before { scroll-behavior: auto; transition: none; } }
 .kb-workspace,
