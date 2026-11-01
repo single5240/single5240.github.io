@@ -1866,3 +1866,99 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
     transform: translateY(0) scale(1);
   }
 }
+
+/* ==========================================================================
+   7. 全站胶囊、按钮、徽章与图标几何/视觉居中校准 (Optical & Flex Text Centering)
+   ========================================================================== */
+.nav-links a,
+.button,
+.load-more-btn,
+.home-topic-links a,
+.filter-list button,
+.project-mini-cta,
+.scope-pause {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.load-more-btn {
+  display: flex;
+}
+
+.workbench-status-badge,
+.workbench-eyebrow,
+.workbench-meta-tags .chip,
+.project-mini-chip,
+.aside-badge,
+.skill-badge,
+.item-tags span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.home-topic-links span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  line-height: 1;
+  text-align: center;
+}
+
+.item-arrow,
+.project-mini-arrow,
+.search-link,
+.back-to-top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .workbench-header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .workbench-hud-grid .hud-item {
+    align-items: center;
+    text-align: center;
+    padding-right: 0;
+  }
+
+  .workbench-hud-grid .hud-num {
+    transform-origin: center;
+  }
+
+  .workbench-actions > .text-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+  }
+
+  .workbench-summary {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .site-footer {
+    align-items: center;
+    text-align: center;
+  }
+
+  .site-footer nav {
+    justify-content: center;
+  }
+}

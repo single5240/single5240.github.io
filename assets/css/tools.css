@@ -594,6 +594,15 @@
 }
 
 .tools-tab-btn,
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.tools-tab-btn,
 .tool-btn,
 .bit-cell {
   transition:
