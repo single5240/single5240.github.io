@@ -26,14 +26,16 @@
 
 /* iOS 18 Segmented Pill Nav Bar */
 .tools-nav {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 6px;
   padding: 6px 8px;
   border: 1px solid var(--glass-edge);
   border-radius: 9999px;
-  margin-bottom: 32px;
+  width: fit-content;
+  margin: 0 auto 32px;
   position: sticky;
   top: 76px;
   z-index: 30;
@@ -75,8 +77,11 @@
 }
 
 .tools-tab-num {
+  display: inline-flex;
+  align-items: center;
   font-family: var(--font-mono);
   font-size: 11px;
+  line-height: 1;
   opacity: 0.8;
 }
 
@@ -440,10 +445,15 @@
 }
 
 .fault-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 2px 8px;
   border-radius: 9999px;
   font-size: 10.5px;
   font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
   background: var(--soft);
   color: var(--accent-dark);
 }
@@ -518,11 +528,14 @@
 .status-pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 3px 10px;
   border-radius: 9999px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 650;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .status-pill.ok {
@@ -558,7 +571,7 @@
   .tool-card h3 { flex-wrap: wrap; }
   .tool-input, .tool-select, .tool-textarea { font-size: 16px; }
   .tools-tab-btn, .tool-btn { min-height: 44px; }
-  .tools-nav { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; }
+  .tools-nav { justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; }
   .tools-tab-btn { flex-shrink: 0; }
   .bit-grid-wrap,
   .swatch-grid {

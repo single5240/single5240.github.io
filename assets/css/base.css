@@ -777,10 +777,12 @@ time {
   bottom: 9px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 10.5px;
   font-weight: 600;
+  line-height: 1.2;
   letter-spacing: 0.04em;
   color: var(--muted);
   opacity: 0.78;
@@ -1346,10 +1348,14 @@ time {
 
 .spectrum-tooltip {
   position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1;
   letter-spacing: 0.05em;
   color: #faf9f6;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
@@ -1367,14 +1373,18 @@ time {
 }
 
 .spectrum-tooltip small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: ui-monospace, monospace;
   font-weight: 500;
+  line-height: 1;
   opacity: 0.9;
   margin-left: 5px;
   font-size: 10px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 1px 5px;
+  padding: 2px 5px;
   border-radius: 4px;
 }
 
@@ -1650,14 +1660,17 @@ time {
 .system-status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 5px 12px;
+  min-height: 32px;
+  padding: 4px 12px;
   border-radius: 9999px;
   border: 1px solid var(--line);
   background: var(--panel);
   font-family: ui-monospace, Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 11.5px;
   font-weight: 600;
+  line-height: 1;
   color: var(--muted);
   user-select: none;
   white-space: nowrap;
