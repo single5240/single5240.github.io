@@ -27,20 +27,21 @@
 
 ## 3. iOS 18 色彩系统与层次 (Color System & Tokens)
 
-### 3.1 iOS 18 默认浅色主题 (iOS 18 Light — Inset Grouped 灰底托白盘)
+### 3.1 iOS 18 默认浅色主题 (iOS 18 Light — 高透磨砂毛玻璃 + 灰底浮岛)
 ```css
---paper: #e8e8ee;          /* 60% 苹果原生分组底色冷调中性灰 (Inset Grouped Canvas) */
---panel: #fbfbfd;          /* 苹果珍珠软白卡片表面，避免 100% 激光纯白刺眼 */
---raised-bg: rgba(252, 252, 255, 0.85); /* 厚磨砂毛玻璃材质 */
---glass-edge: rgba(60, 60, 67, 0.13);   /* 浅色卡片外轮廓精密收束线（配合内侧白高光） */
---alt-bg: #eff0f5;         /* 卡片内部次级凹槽底色 (Recessed Well) */
---subtle-bg: #ffffff;      /* 悬浮激活抬升高亮 (Pure Lift) */
+--paper: #e3e6f0;          /* 60% 苹果冷调中性灰壁纸基底，衬托多点极光漫反射 */
+--panel: rgba(255, 255, 255, 0.56); /* 次级透明磨砂表面（按钮、胶囊、小组件） */
+--raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0.38) 100%); /* 主卡片 135° 斜向高透水晶磨砂毛玻璃 */
+--glass: blur(32px) saturate(210%); /* 深度磨砂模糊与高饱和色彩折射 */
+--glass-edge: rgba(255, 255, 255, 0.76); /* 切割玻璃白亮内缘（配合外侧 1px 暗影轮廓环） */
+--alt-bg: rgba(60, 60, 67, 0.06); /* 卡片内部半透明烟熏凹槽 (Translucent Well) */
+--subtle-bg: rgba(255, 255, 255, 0.72); /* 悬浮激活高透抬升 (Pure Glass Lift) */
 --ink: #1d1d1f;            /* Apple 核心深色主字 (Charcoal Label) */
---body-copy: #333336;      /* 正文次级舒适灰 (Secondary Label) */
---muted: #6e6e73;          /* 辅助文字与微标注 (System Gray 2) */
---line: rgba(60, 60, 67, 0.14); /* 苹果发丝分割线 (Separator) */
+--body-copy: #2c2c2e;      /* 正文次级舒适灰 (Secondary Label) */
+--muted: #636368;          /* 辅助文字与微标注 (System Gray 2) */
+--line: rgba(60, 60, 67, 0.12); /* 苹果发丝分割线 (Separator) */
 --accent: #007aff;         /* 10% 苹果系统亮蓝 (System Blue) */
---accent-dark: #0062cc;    /* 交互深蓝 */
+--accent-dark: #0055b3;    /* 交互深蓝 */
 --warm: #ff9500;           /* 系统暖橙 (System Orange) */
 --note: #ff3b30;           /* 系统警示红 (System Red) */
 --success: #34c759;        /* 动态绿 (System Green) */

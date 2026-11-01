@@ -328,8 +328,10 @@
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
-  background: var(--panel);
-  border: 1px solid var(--line);
+  background: var(--raised-bg);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
+  border: 1px solid var(--glass-edge);
   border-radius: 18px;
   padding: 18px 22px;
   box-shadow: var(--panel-bevel), var(--shadow-small);
@@ -429,7 +431,9 @@
   margin: 36px 0;
   border: 1px solid var(--glass-edge);
   border-radius: 20px;
-  background: var(--panel);
+  background: var(--raised-bg);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   box-shadow: var(--panel-bevel), var(--shadow);
   overflow: hidden;
   font-family: inherit;
