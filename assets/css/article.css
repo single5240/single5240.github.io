@@ -409,7 +409,7 @@
   .content { max-width: 760px; }
 }
 @media(max-width:620px) {
-  .reading-layout { width: calc(100% - 32px); padding-top: 28px; }
+  .reading-layout { width: calc(100% - 24px); padding-top: 28px; }
   .article-header { padding: 24px 20px; border-radius: 20px; }
   .article-header h1 { font-size: 28px; }
   .description { font-size: 15px; }
@@ -3173,7 +3173,7 @@
   .layout-article .reading-sidebar > .article-robot-card { display: none; }
 }
 @media (max-width: 620px) {
-  .reading-layout { width: calc(100% - 32px); }
+  .reading-layout { width: calc(100% - 24px); }
   .article-header { padding: 0 0 22px; }
   .reading-main { padding: 0; }
   .article-header h1 { font-size: 28px; }

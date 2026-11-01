@@ -63,6 +63,7 @@
 html {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  overflow-x: clip;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -395,6 +396,7 @@ body {
   color: var(--ink);
   line-height: 1.7;
   line-break: strict;
+  overflow-x: clip;
 }
 
 .nav-actions {
@@ -557,22 +559,8 @@ body {
 }
 
 @media (max-width: 860px) {
-  .nav {
-    position: relative;
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 14px 0;
-  }
-
-  .nav-actions {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .nav .theme-picker {
-    position: absolute;
-    top: 14px;
-    right: 0;
+  .topbar-actions {
+    gap: 10px;
   }
 }
 
