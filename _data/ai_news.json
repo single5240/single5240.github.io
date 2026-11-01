@@ -39,6 +39,12 @@
           "weekday": "周六",
           "title": "AI 资讯日报 · 10月31日（周六）",
           "summary": "Lead: Cursor 扩展市场出现恶意 Claude Code 扩展，请升级到 2.1.314。Codex 第 26 天截至发稿未公布。Claude 套餐改名，Ultra 取消 5 小时限额。"
+        },
+        {
+          "date": "2026-11-01",
+          "weekday": "周日",
+          "title": "AI 资讯日报 · 11月1日（周日）",
+          "summary": "Lead: 12 月起 ChatGPT 与 Codex 共用一个按 token 计的额度池（转述帮助页）。Codex 第 26 天上线多账号切换，最后两天预告为 banked reset。Cursor 恶意扩展：只升级可能不够，要查 SSH 密钥。"
         }
       ]
     },
