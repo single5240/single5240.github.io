@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-02",
+  "sentence": "My name is Ozymandias, King of Kings; / Look on my Works, ye Mighty, and despair! / Nothing beside remains.",
+  "source": {
+    "author": "Percy Bysshe Shelley",
+    "work": "Ozymandias",
+    "year": "1818",
+    "detail": "十四行诗第 10–12 行：旅人描述沙漠中倒塌的巨像，基座上刻着法老的自夸铭文，下一句诗人只冷冷补了一句“别的什么都没留下”。"
+  },
+  "translation": "吾乃奥兹曼迪亚斯，万王之王；看看我的功业吧，强者们，然后绝望！——除此之外，什么也没有留下。",
+  "grammar": [
+    "祈使句 + 呼语：Look on my Works, ye Mighty, and despair! 主语 you 省略，是命令语气；ye Mighty 是插入的呼语（称呼对象），ye 是古英语中 you 的复数主格，the Mighty 用“the + 形容词”表示“强大的人们”，这里省了 the。两个祈使动词 look on 和 despair 用 and 并列：先看，再绝望。",
+    "反讽的关键在最后一句 Nothing beside remains. 主谓结构极短：主语 Nothing + 谓语 remains，beside 在这里是副词，意为“除此之外”（= besides）。前面国王的狂言越宏大，这句平淡的陈述就越有力——原本让人“绝望”的是他的伟业，如今让人感慨的却是一切都已化为沙土。"
+  ],
+  "vocab": [
+    {
+      "word": "despair",
+      "phonetic": "/dɪˈspeə(r)/",
+      "pos": "v. / n.",
+      "meaning": "绝望；（句中为动词）感到绝望",
+      "collocation": "despair of sth（对……绝望）; in despair（绝望地）",
+      "example": "Don't despair—every bug has a cause."
+    },
+    {
+      "word": "mighty",
+      "phonetic": "/ˈmaɪti/",
+      "pos": "adj.",
+      "meaning": "强大的，有权势的；句中 the Mighty 指“有权势的人们”",
+      "collocation": "the mighty（强者）; high and mighty（趾高气扬的）",
+      "example": "Even mighty empires eventually fall."
+    },
+    {
+      "word": "look on",
+      "phonetic": "/lʊk ɒn/",
+      "pos": "phr. v.",
+      "meaning": "注视，观看（文学用法，= look at）；也可指旁观",
+      "collocation": "look on sth with pride（自豪地看着）; look on as（旁观……发生）",
+      "example": "The crowd looked on as the rocket lifted off."
+    },
+    {
+      "word": "remain",
+      "phonetic": "/rɪˈmeɪn/",
+      "pos": "v.",
+      "meaning": "留下，剩下；保持（某种状态）",
+      "collocation": "remain calm（保持冷静）; the remains（遗迹，残骸）",
+      "example": "Only a few lines of the old code remain."
+    },
+    {
+      "word": "beside",
+      "phonetic": "/bɪˈsaɪd/",
+      "pos": "adv. / prep.",
+      "meaning": "（句中为副词，古雅用法）此外，除此之外；常见义为介词“在……旁边”",
+      "collocation": "beside the point（离题）; beside oneself（发狂）",
+      "example": "Your comment is interesting but beside the point."
+    }
+  ],
+  "note": "小结：这首诗用“自吹自擂的铭文”对照“空荡荡的沙漠”，讲的是权力与荣耀终会被时间抹平。小练习：用 Nothing ... remains 造一句，比如描述系统迁移完成后：After the migration, nothing of the old system remains."
+}
