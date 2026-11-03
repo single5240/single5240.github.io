@@ -155,6 +155,8 @@
     let count = 0;
     let stepCount = 0;
     let runCount = 0;
+    let peakHoldCount = 0;
+    let alarmCount = 0;
     let timer = null;
 
     const elState = root.querySelector('#fsm-stat-state');
@@ -189,11 +191,11 @@
         const slot = document.createElement('div');
         slot.className = `fsm-slot ${queue[i] ? 'has-item' : ''}`;
         const isHead = (i === head);
-        const isTail = (i === tail && count > 0);
+        const isTail = (i === tail);
         let ptrText = '';
-        if (isHead && isTail) ptrText = 'H/T';
+        if (isHead && (isTail || count === 0)) ptrText = 'H/T';
         else if (isHead) ptrText = 'H';
-        else if (isTail) ptrText = 'T';
+        else if (isTail && count > 0) ptrText = 'T';
         if (ptrText) {
           const ptr = document.createElement('span');
           ptr.className = 'fsm-slot-ptr';
@@ -222,9 +224,6 @@
 
       tableRows.forEach((row, idx) => {
         row.classList.toggle('is-matched', idx === matchedIdx);
-        if (idx === matchedIdx) {
-          row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }
       });
     }
 
@@ -278,14 +277,34 @@
       const match = TRANSITIONS[matchedIdx];
       const oldState = currentState;
 
-      // 动作在状态切换前执行 (语义对齐 C99 内核)
+      // 动作在状态切换前执行 (语义对齐 C99 内核，并自动推进完整测试生命周期)
       if (match.action === 'Demo_Start') {
         runCount = 0;
+        peakHoldCount = 0;
+        alarmCount = 0;
       } else if (match.action === 'Demo_RunningLoop') {
         runCount++;
         if (runCount >= 4) {
           log(`[ACTION] 测量计数达 4 次，Demo_RunningLoop 自动投递 EVENT_PEAK 模拟自动检出峰值`, 'event');
           postEvent('EVENT_PEAK');
+        }
+      } else if (match.action === 'Demo_PeakHold') {
+        peakHoldCount = 0;
+      } else if (match.action === 'Demo_PeakLoop') {
+        peakHoldCount++;
+        if (peakHoldCount >= 3) {
+          log(`[ACTION] 峰值保持达 3 周期，Demo_PeakLoop 自动投递 EVENT_STOP 归零切回 IDLE`, 'event');
+          postEvent('EVENT_STOP');
+          peakHoldCount = 0;
+        }
+      } else if (match.action === 'Demo_Alarm') {
+        alarmCount = 0;
+      } else if (match.action === 'Demo_AlarmLoop') {
+        alarmCount++;
+        if (alarmCount >= 5) {
+          log(`[ACTION] 报警声光持续 5 周期，Demo_AlarmLoop 自动投递 EVENT_RESET 故障复位回 IDLE`, 'event');
+          postEvent('EVENT_RESET');
+          alarmCount = 0;
         }
       }
 
@@ -432,7 +451,8 @@
 
         let label = 'ERASED';
         if (idx === 0) label = 'HEADER';
-        else if (s.status === 'valid') label = s.gen === generation ? (s.lifecycle === 0x0000 ? 'TOMB' : 'VALID') : 'OLD_GEN';
+        else if (s.status === 'tombstone' || s.lifecycle === 0x0000) label = 'TOMB';
+        else if (s.status === 'valid') label = s.gen === generation ? 'VALID' : 'OLD_GEN';
         else if (s.status === 'pending') label = 'P1_WAIT';
         else if (s.status === 'dirty') label = 'DIRTY';
 
@@ -638,10 +658,12 @@
       renderSlots();
     }
 
+    let scanTimer = null;
     function bootScan() {
+      if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
       log('[BOOT SCAN] 模拟系统复位上电，扫描扇区 0xFDC000 中所有 64B 槽位...', 'event');
       let i = 0;
-      const scanTimer = setInterval(() => {
+      scanTimer = setInterval(() => {
         if (i >= SLOT_COUNT) {
           clearInterval(scanTimer);
           const nextIdx = computeStats();
@@ -759,11 +781,11 @@
         const slot = document.createElement('div');
         slot.className = `sched-ring-slot ${ringItems[i] ? 'has-item' : ''}`;
         const isHead = (i === rHead);
-        const isTail = (i === rTail && rCount > 0);
+        const isTail = (i === rTail);
         let ptr = '';
-        if (isHead && isTail) ptr = 'H/T';
+        if (isHead && (isTail || rCount === 0)) ptr = 'H/T';
         else if (isHead) ptr = 'Head';
-        else if (isTail) ptr = 'Tail';
+        else if (isTail && rCount > 0) ptr = 'Tail';
         if (ptr) {
           const ptrEl = document.createElement('span');
           ptrEl.className = 'fsm-slot-ptr';
@@ -800,61 +822,71 @@
     }
 
     function tickStep(msToAdd = 1) {
+      let anyL0 = false;
+      let anyL1 = false;
+      let anyL2 = false;
+
       for (let step = 0; step < msToAdd; step++) {
         currentTick += 1;
-        let l0Fired = false;
-        let l1Fired = false;
-        let l2Fired = false;
 
         // Level 0: 1 ms 高频输入与消抖
         if ((currentTick - lastTick1ms) >= 1) {
           lastTick1ms = currentTick;
           countL0++;
-          l0Fired = true;
+          anyL0 = true;
         }
 
         // Level 1: 10 ms 测控与算法
         if ((currentTick - lastTick10ms) >= 10) {
           lastTick10ms = currentTick;
           countL1++;
-          l1Fired = true;
+          anyL1 = true;
         }
 
         // Level 2: 100 ms 低频状态量
         if ((currentTick - lastTick100ms) >= 100) {
           lastTick100ms = currentTick;
           countL2++;
-          l2Fired = true;
+          anyL2 = true;
         }
 
-        // Level 3: 空闲分片任务 (每圈推进 1 个条带 + 消费 1 个环形事件)
+        // Level 3: 空闲分片任务 (推进条带，空闲时适度消费队列)
         stripIndex = (stripIndex + 1) % 40;
         totalStrips++;
 
         let consumedEvent = null;
-        if (rCount > 0) {
+        if (rCount > 0 && (step === 0 || step === Math.floor(msToAdd / 2))) {
           consumedEvent = ringItems[rTail];
           ringItems[rTail] = null;
           rTail = (rTail + 1) % RING_CAP;
           rCount--;
         }
 
-        // 仅在关键事件或整 10ms 节点记录日志，避免刷屏
         if (consumedEvent) {
           log(`[CONSUME] UI空闲轮询消费事件: ${consumedEvent} (Tail➔[${rTail}])`, 'success');
         }
-        if (l2Fired) {
-          log(`[LEVEL 2] 100ms周期到达: 检查电池电量与重力方向 (当前耗时预算 < 300μs)`, 'normal');
-        } else if (l1Fired && currentTick % 50 === 0) {
-          log(`[LEVEL 1] 10ms周期到达: AD7190力值解算与峰值检测 (耗时预算 < 200μs)`, 'normal');
-        }
-
-        // 触发闪烁动画
-        if (cardL0) cardL0.classList.toggle('is-firing', l0Fired);
-        if (cardL1) cardL1.classList.toggle('is-firing', l1Fired);
-        if (cardL2) cardL2.classList.toggle('is-firing', l2Fired);
-        if (cardL3) cardL3.classList.toggle('is-firing', true);
       }
+
+      if (anyL2) {
+        log(`[LEVEL 2] 100ms周期到达: 检查电池电量与重力方向 (耗时预算 < 300μs)`, 'normal');
+      }
+      if (anyL1) {
+        log(`[LEVEL 1] 10ms周期到达: AD7190力值解算与峰值检测 (耗时预算 < 200μs)`, 'normal');
+      }
+
+      // 触发多级协调激活指示高亮脉冲
+      if (cardL0) cardL0.classList.add('is-firing');
+      if (cardL1 && anyL1) cardL1.classList.add('is-firing');
+      if (cardL2 && anyL2) cardL2.classList.add('is-firing');
+      if (cardL3) cardL3.classList.add('is-firing');
+
+      setTimeout(() => {
+        if (cardL0) cardL0.classList.remove('is-firing');
+        if (cardL1) cardL1.classList.remove('is-firing');
+        if (cardL2) cardL2.classList.remove('is-firing');
+        if (cardL3) cardL3.classList.remove('is-firing');
+      }, 180);
+
       renderUI();
     }
 
@@ -988,10 +1020,17 @@
       const page = Math.floor(selectedAddr / 16);
       const val = eeprom[selectedAddr].toString(16).padStart(2, '0').toUpperCase();
 
-      if (elStatAddr) elStatAddr.textContent = `0x${selectedAddr.toString(16).padStart(2, '0').toUpperCase()} (值: 0x${val})`;
+      const activeStart = activeSlot === 'A' ? 0 : 128;
+      const activeEnd = activeSlot === 'A' ? 128 : 256;
+      let activeCorrupted = false;
+      for (let a = activeStart; a < activeEnd; a++) {
+        if (corruptedAddrs.has(a)) { activeCorrupted = true; break; }
+      }
+
+      if (elStatAddr) elStatAddr.textContent = `0x${selectedAddr.toString(16).padStart(2, '0').toUpperCase()} (值: 0x${val}, ${isSlotA ? 'Slot A' : 'Slot B'})`;
       if (elStatPage) elStatPage.textContent = `Page ${page} (页首: 0x${(page*16).toString(16).padStart(2, '0').toUpperCase()})`;
       if (elStatSlot) elStatSlot.textContent = `当前活动: Slot ${activeSlot} (${activeSlot === 'A' ? '0x00..0x7F' : '0x80..0xFF'})`;
-      if (elStatCrc) elStatCrc.textContent = corruptedAddrs.size > 0 ? '损坏 (校验失败)' : '0x4A1B (合法)';
+      if (elStatCrc) elStatCrc.textContent = activeCorrupted ? '损坏 (校验失败)' : '0x4A1B (合法通过)';
 
       if (elSlotBadgeA) elSlotBadgeA.classList.toggle('active-indicator', activeSlot === 'A');
       if (elSlotBadgeB) elSlotBadgeB.classList.toggle('active-indicator', activeSlot === 'B');
@@ -1398,12 +1437,16 @@
       if (stripIdx === 0) {
         snapshotVal = realTimeVal;
         isTorn = false;
-        log(`[FRAME START] Strip 0 开始：锁定新帧不可变快照 (数值: ${snapshotVal.toFixed(2)} N)，消除中途数据跳变！`, 'success');
+        log(`[FRAME START] Strip 0 开始：${snapshotEnabled ? '锁定新帧不可变快照 (' + snapshotVal.toFixed(2) + ' N)' : '直读全局变量 (未加帧快照锁)'}`, 'success');
       }
 
-      if (!snapshotEnabled && stripIdx > 12 && stripIdx < 25 && realTimeVal !== snapshotVal) {
+      // 未开启帧快照时：模拟高频传感器在条带绘制中途跳变产生撕裂
+      if (!snapshotEnabled && stripIdx === 15) {
+        realTimeVal = realTimeVal === 45.20 ? 89.60 : 45.20;
         isTorn = true;
-        log(`[TEARING DETECTED] Strip ${stripIdx} 处于大数字 Y=100..140 跨度内！因关闭了帧快照，新到达力值 (${realTimeVal}N) 覆盖了旧力值 (${snapshotVal}N)，屏幕上下半截断裂！`, 'error');
+        log(`[TEARING DETECTED] Strip ${stripIdx} 处于大数字物理行！传感器数据在中途跳变为 ${realTimeVal.toFixed(2)} N，由于未加快照保护，上半截与下半截撕裂断层！`, 'error');
+      } else if (!snapshotEnabled && stripIdx > 15 && stripIdx < 25) {
+        isTorn = true;
       }
 
       renderUI();
@@ -1834,9 +1877,20 @@
       searchInput.addEventListener('input', () => {
         const val = searchInput.value.trim();
         if (!val) return;
-        const code = val.charCodeAt(0);
-        bTarget = code;
-        resetBsearch();
+        let code = 0;
+        if (/^0x[0-9a-fA-F]+$/i.test(val)) {
+          code = parseInt(val.slice(2), 16);
+        } else if (/^U\+[0-9a-fA-F]+$/i.test(val)) {
+          code = parseInt(val.slice(2), 16);
+        } else if (/^[0-9a-fA-F]{4}$/i.test(val)) {
+          code = parseInt(val, 16);
+        } else {
+          code = val.charCodeAt(0);
+        }
+        if (!isNaN(code) && code > 0) {
+          bTarget = code;
+          resetBsearch();
+        }
       });
     }
 
@@ -1955,6 +2009,10 @@
     }
 
     function gotoPreOp() {
+      if (currentState !== 'INIT' && currentState !== 'SAFEOP') {
+        log('[REJECT 0x0011] 状态机跳转违规：仅允许从 INIT 升至 PREOP，或从 SAFEOP 降至 PREOP！当前为 ' + currentState, 'warn');
+        return;
+      }
       log('[TRANSITION] 主站写 AL Control (0x0120) = 0x02 (PREOP 请求)...', 'info');
       if (faultMbxSize) {
         hasError = true;
@@ -1972,6 +2030,10 @@
     }
 
     function gotoSafeOp() {
+      if (currentState !== 'PREOP' && currentState !== 'OP') {
+        log('[REJECT 0x0011] 状态机跳转违规：仅允许从 PREOP 升至 SAFEOP，或从 OP 降至 SAFEOP！当前为 ' + currentState, 'warn');
+        return;
+      }
       log('[TRANSITION] 主站写 AL Control (0x0120) = 0x04 (SAFEOP 请求)...', 'info');
       const { rxBytes, txBytes } = calcPdoSizes();
       log('[APPL_GenerateMapping] 从站计算当前生效 PDO 长度：RxPDO (SM2)=' + rxBytes + ' 字节, TxPDO (SM3)=' + txBytes + ' 字节', 'info');
@@ -1997,6 +2059,10 @@
     }
 
     function gotoOp() {
+      if (currentState !== 'SAFEOP') {
+        log('[REJECT 0x0011] 状态机跳转违规：必须先进入 SAFEOP 验证过程数据后，方可请求 OP！当前为 ' + currentState, 'warn');
+        return;
+      }
       log('[TRANSITION] 主站写 AL Control (0x0120) = 0x08 (OP 请求)...', 'info');
       if (faultDcSync) {
         hasError = true;
@@ -2153,6 +2219,12 @@
       opProgress = 0;
 
       log('[START] 发送 0x06 (Write Enable) ➔ 校验 WEL=1 ➔ 下发指令 ' + desc, 'info');
+
+      if (type !== 'MULTI_PAGE') {
+        if (seg0) seg0.classList.remove('active');
+        if (seg1) seg1.classList.remove('active');
+        if (seg2) seg2.classList.remove('active');
+      }
 
       if (!isNonBlocking) {
         log('[BLOCKING] 主循环调用阻塞函数，原地死等 while(BUSY == 1)... 耗时约 ' + durationMs + ' ms！', 'warn');
@@ -2423,17 +2495,15 @@
       let slotCode = 'IDLE';
 
       // Hardware arbiter priority: Very High (CH4) > High (CH5) > Medium (CH2/CH1)
-      if (channels.ch4.cndtr > 0) {
+      // AD7190 为 SPI 全双工模式：TX(CH5) 与 RX(CH4) 同步触发
+      if (channels.ch4.cndtr > 0 || channels.ch5.cndtr > 0) {
         winner = channels.ch4;
         slotCode = 'CH4';
         channels.ch4.cndtr = Math.max(0, channels.ch4.cndtr - 1);
-        if (channels.ch4.cndtr === 0) {
-          log('[DMA1_CH4 TC] AD7190 24-bit 连续采样帧接收完毕！触发 DMA1_Channel4_IRQHandler 并压入环形队列', 'success');
-        }
-      } else if (channels.ch5.cndtr > 0) {
-        winner = channels.ch5;
-        slotCode = 'CH5';
         channels.ch5.cndtr = Math.max(0, channels.ch5.cndtr - 1);
+        if (channels.ch4.cndtr === 0) {
+          log('[DMA1_CH4 TC] AD7190 24-bit 采样全双工完成！触发 DMA1_Channel4_IRQHandler 并压入环形队列', 'success');
+        }
       } else if (channels.ch2.cndtr > 0) {
         winner = channels.ch2;
         slotCode = 'CH2';
@@ -2488,6 +2558,13 @@
         dmaTimer = null;
         autoBtn.textContent = '连续运行';
       } else {
+        // 如果当前总线空闲，默认启动一次 LCD 传输以供观察
+        if (channels.ch2.cndtr === 0 && channels.ch4.cndtr === 0) {
+          channels.ch1.cndtr = 1920;
+          channels.ch2.cndtr = 1920;
+          updateChannelUI();
+          log('[LCD DMA] 启动 240x8 像素条带传输 (1920 像素 / 16-bit) -> 映射至 DMA1_CH1/CH2', 'normal');
+        }
         autoBtn.textContent = '暂停运行';
         dmaTimer = setInterval(() => {
           const hasWork = stepDmaBus();
@@ -2598,9 +2675,13 @@
         pitfallTimer = null;
         runPitfallBtn.textContent = '自动演练';
       } else {
+        const maxSteps = scenarios[currentScenario].length;
+        if (pitfallStep >= maxSteps - 1) {
+          pitfallStep = 0;
+          renderPitfall();
+        }
         runPitfallBtn.textContent = '暂停演练';
         pitfallTimer = setInterval(() => {
-          const maxSteps = scenarios[currentScenario].length;
           pitfallStep++;
           if (pitfallStep >= maxSteps) {
             clearInterval(pitfallTimer);
