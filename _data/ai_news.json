@@ -9,6 +9,12 @@
           "weekday": "周一",
           "title": "AI 资讯日报 · 11月2日（周一，含周末）",
           "summary": "Lead: Codex 28 天承诺收官，最后两天都是 banked reset，附 28 天总结。12 月共享额度池在周末持续发酵。GPT-6.2 Astra 疑似临近（未官宣）。"
+        },
+        {
+          "date": "2026-11-03",
+          "weekday": "周二",
+          "title": "AI 资讯日报 · 11月3日（周二）",
+          "summary": "Lead: OpenAI 官方确认 Chat 与 Work 合并、ChatGPT 和 Codex 共用额度。ChatGPT Classic 2027-01-30 停用。Genie 4 与 DeepSeek Super-Agent 发布。"
         }
       ]
     },
