@@ -19,8 +19,21 @@
   line-height: 1.15;
 }
 
-.board-card[data-state="online"] .aside-badge {
+.board-card[data-state="online"] .aside-badge,
+[data-board-status][data-state="online"] .aside-badge {
   color: var(--accent-dark);
+}
+
+.board-card[data-state="offline"] .aside-badge,
+[data-board-status][data-state="offline"] .aside-badge,
+[data-board-status][data-state="offline"] [data-field="presence"] {
+  color: var(--note, #e63329);
+}
+
+[data-board-status][data-state="offline"] strong[data-field],
+[data-board-status][data-state="offline"] .board-live-metrics strong,
+[data-board-status][data-state="offline"] .status strong {
+  color: var(--muted);
 }
 
 .board-live-line {
