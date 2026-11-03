@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-03",
+  "sentence": "It is not the critic who counts; not the man who points out how the strong man stumbles, or where the doer of deeds could have done them better. The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood;",
+  "source": {
+    "author": "Theodore Roosevelt",
+    "work": "Citizenship in a Republic",
+    "year": "1910",
+    "detail": "1910 年 4 月 23 日在巴黎索邦大学的演讲，这一段后来被称为 “The Man in the Arena（竞技场中的人）”"
+  },
+  "translation": "真正重要的不是那些评论者，不是那些指出强者如何跌倒、或者实干者哪里本可以做得更好的人。荣誉属于真正站在竞技场里的人，他的脸上沾满了尘土、汗水和鲜血；",
+  "grammar": [
+    "强调句 It is not ... who counts：结构是 It is + 被强调部分 + who/that + 其余部分，还原成普通句就是 The critic does not count。用强调句把“评论者”推到聚光灯下再否定它，语气比普通否定强得多。count 在这里是不及物动词，意思是“重要、有分量”。",
+    "省略与并列：分号后的 not the man who ... 前面省略了 it is，和前半句平行；man 后面的 who 定语从句里，points out 带了两个宾语从句 how the strong man stumbles 和 where the doer of deeds could have done them better，用 or 连接。could have done 是“本可以做却没做”的虚拟语气，正好写出旁观者事后指点的口吻。",
+    "定语从句叠加：the man who is actually in the arena 用 who 修饰人，紧接着 whose face is marred by ... 用 whose 表示“他的”，是被动语态 be marred by。两个从句修饰同一个 man，层层把形象写具体。"
+  ],
+  "vocab": [
+    {
+      "word": "count",
+      "phonetic": "/kaʊnt/",
+      "pos": "v.",
+      "meaning": "重要，有价值（不及物）",
+      "collocation": "what really counts; every second counts",
+      "example": "In debugging, every clue counts."
+    },
+    {
+      "word": "stumble",
+      "phonetic": "/ˈstʌmbl/",
+      "pos": "v.",
+      "meaning": "绊倒，跌跌撞撞；比喻犯错、受挫",
+      "collocation": "stumble over sth; stumble upon/across sth（偶然发现）",
+      "example": "I stumbled upon a bug while reading the old driver code."
+    },
+    {
+      "word": "the doer of deeds",
+      "phonetic": "/ˈduːər əv diːdz/",
+      "pos": "n. phr.",
+      "meaning": "做实事的人，实干者",
+      "collocation": "a man of deeds, not words; words and deeds",
+      "example": "Be a doer of deeds, not just a talker."
+    },
+    {
+      "word": "credit",
+      "phonetic": "/ˈkredɪt/",
+      "pos": "n.",
+      "meaning": "功劳，荣誉",
+      "collocation": "take credit for sth; give sb credit for sth; the credit belongs to sb",
+      "example": "She deserves the credit for fixing the boot issue."
+    },
+    {
+      "word": "mar",
+      "phonetic": "/mɑːr/",
+      "pos": "v.",
+      "meaning": "损坏，玷污，使留下痕迹",
+      "collocation": "be marred by sth; mar the beauty/occasion",
+      "example": "The launch was marred by a last-minute firmware crash."
+    }
+  ],
+  "note": "小练习：用强调句 It is not ... that/who counts 造一个句子，比如 “It is not the number of lines that counts, but whether the code works.” 也可以想想自己最近在哪个“竞技场”里流过汗。"
+}
