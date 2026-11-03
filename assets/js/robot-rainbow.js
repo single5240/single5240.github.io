@@ -332,13 +332,58 @@
   const isArticlePage = Boolean(document.querySelector("#articleRobotCard"));
   let isFloating = false;
 
-  // 有条理的三层对话系统（告别杂乱报文）
+  // 初次打招呼台词池
+  const GREETINGS = [
+    () => `嘀！工作台已就绪，背后正在采样【${WAVEFORMS[currentWaveIndex].name}】~`,
+    () => "欢迎来到硬核工坊！示波器通道已校准，0 Warning 0 Error ⚡",
+    () => "电源上电复位（POR）完成，系统时钟就绪，今天想研读哪一篇？",
+    () => "滴滴！今日 CPU 负载率平稳，小机器人正在为你保驾护航 🤖",
+    () =>
+      isArticlePage
+        ? "已进入专属伴读模式，目录、代码与示波器随时待命 📖"
+        : "工坊信号巡检中，点击波形通道可实时切换观测信号 📡",
+  ];
+
+  // 丰富的情境对话系统（涵盖文章精读、示波器波形、固件底层与趣味互动）
   const NORMAL_DIALOGUES = [
+    // 示波器当前波形硬核科普
     () => WAVEFORMS[currentWaveIndex].comment,
+
+    // 文章专属伴读/常驻指引（智能感知当前是否为文章页面）
     () =>
       isArticlePage
         ? "正在侧边栏陪你精读文章，目录随时可快速跳转 ↘"
         : "戳我干嘛，正在跑 while(1) 主循环呢 (*/ω＼*)",
+    () =>
+      isArticlePage
+        ? "提示：遇到长文不用慌，右侧目录已高亮当前段落，随时带你起飞 ~"
+        : "刚才抓了帧 I2C 通信，ACK 响应迅速，时钟拉伸无异常 ⏱️",
+    () =>
+      isArticlePage
+        ? "这篇笔记里的代码段支持一键复制，别忘了带回工程跑跑看 🚀"
+        : "正在把所有的 switch-case 重构成 C99 表驱动状态机，优雅永不过时！",
+    () =>
+      isArticlePage
+        ? "读累了可以点我切换示波器波形，或者去顶栏换换主题放松眼睛 ✨"
+        : "别看我个头小，片内也是塞了 Cortex-M4 内核与 FPU 浮点单元的！",
+    () =>
+      isArticlePage
+        ? "正在监测阅读进度，建议阅读长篇技术文档时搭配一杯温水或咖啡 ☕"
+        : "今日建议：布板时记得把晶振地包好，去耦电容紧贴芯片供电引脚 ~",
+    () =>
+      isArticlePage
+        ? "好记性不如烂笔头，发现实用设计模式随时记入自己的技术备忘 📝"
+        : "示波器探头记得打到 10X 档位，不然输入电容会把高频边沿吃掉哦 ⚡",
+    () =>
+      isArticlePage
+        ? "正在实时巡检：排版整洁，语法高亮正常，代码缩进工整！"
+        : "电源纹波 < 15mVpp，24-bit ADC 底噪纯净，信噪比极佳！",
+    () =>
+      isArticlePage
+        ? "点击顶部面包屑随时可以返回文章归档，还有更多硬核专栏等你探索 📖"
+        : "刚才有只电磁干扰（EMI）小飞虫掠过，已被共模电感滤除 🛡️",
+
+    // 经典硬核固件与底层工程台词
     () => "刚帮你喂过看门狗（IWDG）啦，0 Warning 0 Error，放心看笔记！",
     () =>
       isFloating
@@ -347,11 +392,29 @@
         ? "提示：点左上角 CH1 可切换波形，滑动文章我一直都在侧栏！"
         : "提示：点下方色卡可按专题筛文章，点左侧 CH1 可切换示波器波形 ↗",
     () => "汇报：栈水位安全，DMA 双缓冲就绪，无野指针出没！",
+    () => "人生苦短，不要在 ISR 中断服务函数里写 delay_ms() 呀 ⏰",
+    () => "EEPROM 写入一定要等 5ms 或者查 ACK 轮询，不然掉电丢参可就头大啦！",
+    () => "如果单片机无故进 HardFault，80% 是数组越界踩栈或者野指针解引用 🕵️",
+    () => "SPI DMA 异步刷屏中……条带渐进刷新无撕裂，帧率拉满 60fps！",
+    () => "RGB565 颜色发紫？快检查一下是不是 SPI 发送时高低字节拼反了 🎨",
+    () => "NOR Flash 扇区擦除要 40ms，千万别在实时控制循环里同步擦除哦 ⚠️",
+    () => "看门狗超时倒计时：999ms……喂狗成功！🐶 汪汪！",
+    () => "CPU 温度 36.5℃，运行平稳，今日宜编译通过，忌空指针解引用 ☀️",
+    () => "嘀！收到外部按键中断，我的胸前微安表针跳得好看吗？",
+    () => "正在跑四级时间片协作调度器，消除 while(1) 周期抖动，系统稳如泰山 ⛰️",
+    () => "1-bit 点阵字库管线就绪，字符清晰锐利，超低 Flash 占用 💡",
+    () => "后台示波器支持 18 种经典波形切换，心电、方波、SPWM 应有尽有 📈",
+    () => "示波器通道已调谐完毕，底噪已通过卡尔曼滤波平滑消除 ~",
   ];
 
   const COMBO_DIALOGUES = [
     "⚠️ EXTI 外部中断触发太快，按键消抖状态机要冒烟啦！",
     "⚡ 进 HardFault_Handler 啦……骗你的，已自动软复位 😄",
+    "别戳啦别戳啦！CPU 已经 100% 满载，看门狗要咬人啦 汪！",
+    "触发高频连续中断！已开启 DMA 循环搬运模式，休想让我死机 🦾",
+    "微安表指针被你戳得快要超量程啦！快换个大档位 💥",
+    "恭喜触发隐藏彩蛋！正在向你的大脑烧录一段 0xAA55 引导扇区 🛸",
+    "滴滴滴！电容放电中……深呼吸一下，继续快乐写代码吧 🍵",
   ];
 
   let width = 0;
@@ -388,7 +451,7 @@
 
   // 对话状态机
   let hasGreeted = false;
-  let dialogueCursor = 0;
+  let dialogueCursor = Math.floor(Math.random() * NORMAL_DIALOGUES.length);
   let comboCursor = 0;
   let clickTimestamps = [];
   let speechTimer = null;
@@ -726,7 +789,8 @@
     let text;
     if (!hasGreeted) {
       hasGreeted = true;
-      text = `嘀！工作台已就绪，背后正在采样【${WAVEFORMS[currentWaveIndex].name}】~`;
+      const greetFn = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+      text = greetFn();
     } else if (clickTimestamps.length >= 4) {
       text = COMBO_DIALOGUES[comboCursor % COMBO_DIALOGUES.length];
       comboCursor += 1;

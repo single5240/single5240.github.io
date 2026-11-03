@@ -14,6 +14,8 @@
   --header-line: rgba(255, 255, 255, 0.65);
   --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0.38) 100%);
   --popover-bg: linear-gradient(165deg, rgba(252, 253, 255, 0.96) 0%, rgba(241, 244, 251, 0.93) 100%);
+  --speech-bg: rgba(255, 255, 255, 0.52);
+  --speech-border: rgba(255, 255, 255, 0.72);
   --glass: blur(32px) saturate(210%);
   --glass-edge: rgba(255, 255, 255, 0.76);
   --raised-border: rgba(0, 122, 255, 0.25);
@@ -87,6 +89,8 @@ html {
     --header-line: rgba(255, 255, 255, 0.12);
     --raised-bg: linear-gradient(135deg, rgba(42, 45, 56, 0.58) 0%, rgba(22, 24, 32, 0.40) 100%);
     --popover-bg: linear-gradient(165deg, rgba(38, 41, 52, 0.96) 0%, rgba(24, 26, 35, 0.94) 100%);
+    --speech-bg: rgba(26, 31, 42, 0.55);
+    --speech-border: rgba(255, 255, 255, 0.18);
     --glass: blur(32px) saturate(200%);
     --glass-edge: rgba(255, 255, 255, 0.18);
     --raised-border: rgba(10, 132, 255, 0.28);
@@ -141,6 +145,8 @@ html {
   --header-line: rgba(255, 255, 255, 0.12);
   --raised-bg: linear-gradient(135deg, rgba(42, 45, 56, 0.58) 0%, rgba(22, 24, 32, 0.40) 100%);
   --popover-bg: linear-gradient(165deg, rgba(38, 41, 52, 0.96) 0%, rgba(24, 26, 35, 0.94) 100%);
+  --speech-bg: rgba(26, 31, 42, 0.55);
+  --speech-border: rgba(255, 255, 255, 0.18);
   --glass: blur(32px) saturate(200%);
   --glass-edge: rgba(255, 255, 255, 0.18);
   --raised-border: rgba(10, 132, 255, 0.28);
@@ -198,6 +204,8 @@ html {
   --header-line: rgba(255, 255, 255, 0.65);
   --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.42) 100%);
   --popover-bg: linear-gradient(165deg, rgba(252, 251, 248, 0.96) 0%, rgba(242, 240, 234, 0.94) 100%);
+  --speech-bg: rgba(255, 255, 255, 0.58);
+  --speech-border: rgba(230, 51, 41, 0.28);
   --glass-edge: rgba(255, 255, 255, 0.78);
   --raised-border: rgba(230, 51, 41, 0.28);
   --alt-bg: rgba(17, 17, 17, 0.055);
@@ -249,6 +257,8 @@ html {
   --header-line: rgba(82, 216, 232, 0.22);
   --raised-bg: linear-gradient(135deg, rgba(10, 28, 50, 0.62) 0%, rgba(5, 15, 28, 0.42) 100%);
   --popover-bg: linear-gradient(165deg, rgba(10, 26, 46, 0.97) 0%, rgba(5, 14, 26, 0.95) 100%);
+  --speech-bg: rgba(6, 20, 36, 0.58);
+  --speech-border: rgba(82, 216, 232, 0.38);
   --glass-edge: rgba(82, 216, 232, 0.32);
   --raised-border: rgba(82, 216, 232, 0.38);
   --alt-bg: rgba(82, 216, 232, 0.07);
@@ -300,6 +310,8 @@ html {
   --header-line: rgba(255, 255, 255, 0.65);
   --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.40) 100%);
   --popover-bg: linear-gradient(165deg, rgba(252, 251, 248, 0.96) 0%, rgba(240, 238, 232, 0.94) 100%);
+  --speech-bg: rgba(252, 252, 252, 0.58);
+  --speech-border: rgba(20, 20, 20, 0.22);
   --glass-edge: rgba(255, 255, 255, 0.78);
   --raised-border: rgba(20, 20, 20, 0.22);
   --alt-bg: rgba(20, 20, 20, 0.055);
@@ -854,7 +866,11 @@ time {
   border-radius: 10px;
   padding: 6px 10px 2px;
   box-shadow: var(--panel-bevel), var(--shadow-small);
-  overflow: hidden;
+  overflow: visible;
+}
+
+.article-robot-card .scope-canvas {
+  border-radius: 9px;
 }
 
 .robot-stage-article {
@@ -1195,11 +1211,11 @@ time {
 /* 机器人状态对话气泡（语义清晰，受控弹出） */
 .robot-speech {
   position: absolute;
-  bottom: calc(100% + 2px);
+  bottom: calc(100% + 6px);
   left: 50%;
   transform: translate(-50%, 6px);
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   width: max-content;
   max-width: min(380px, 88vw);
@@ -1207,13 +1223,13 @@ time {
   font-weight: 600;
   line-height: 1.45;
   color: var(--ink);
-  background: var(--popover-bg);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid var(--raised-border);
+  background: var(--speech-bg, rgba(255, 255, 255, 0.55));
+  backdrop-filter: blur(16px) saturate(190%);
+  -webkit-backdrop-filter: blur(16px) saturate(190%);
+  border: 1px solid var(--speech-border, var(--glass-edge));
   border-radius: 8px;
   padding: 5px 11px;
-  box-shadow: var(--shadow-small);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1225,6 +1241,7 @@ time {
   color: var(--accent-dark);
   font-weight: 800;
   flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .robot-speech.is-active {
@@ -1240,7 +1257,7 @@ time {
   transform: translateX(-50%);
   border-width: 5px 5px 0 5px;
   border-style: solid;
-  border-color: var(--raised-border) transparent transparent transparent;
+  border-color: var(--speech-border, var(--glass-edge)) transparent transparent transparent;
 }
 
 /* 机器人微动动画 */
@@ -1806,11 +1823,14 @@ time {
   :root[data-theme="swiss"],
   :root[data-theme="mono"] {
     --raised-bg: rgba(255, 255, 255, 0.98);
+    --speech-bg: rgba(255, 255, 255, 0.96);
   }
   :root[data-theme="dark"] {
     --raised-bg: rgba(24, 35, 41, 0.98);
+    --speech-bg: rgba(24, 35, 41, 0.96);
   }
   :root[data-theme="hud"] {
     --raised-bg: rgba(7, 21, 38, 0.98);
+    --speech-bg: rgba(7, 21, 38, 0.96);
   }
 }

@@ -3380,19 +3380,19 @@
 .toc { max-height: calc(100vh - 180px); box-shadow: none; font-size: 13px; }
 .toc .toc-sub { font-size: 12px; }
 .toc summary { font-size: 14px; }
-.reading-sidebar > .article-robot-card { flex: 0 0 auto; box-shadow: none; }
-.robot-stage-article { height: 104px; }
+.reading-sidebar > .article-robot-card { flex: 0 0 auto; box-shadow: none; overflow: visible; }
+.robot-stage-article { height: 104px; overflow: visible; }
 .robot-stage-article .robot-speech {
   top: auto;
-  bottom: 4px;
+  bottom: calc(100% + 6px);
   left: 50%;
   width: max-content;
-  max-width: 280px;
+  max-width: 250px;
   transform: translate(-50%, 4px);
   white-space: normal;
 }
 .robot-stage-article .robot-speech.is-active { transform: translate(-50%, 0); }
-.robot-stage-article .robot-speech::after { display: none; }
+.robot-stage-article .robot-speech::after { display: block; }
 @media (min-width: 1001px) {
   .reading-sidebar:has(> .article-robot-card) > .toc { max-height: calc(100vh - 240px); }
 }

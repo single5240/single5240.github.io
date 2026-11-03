@@ -1469,12 +1469,18 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   backdrop-filter: var(--glass);
 }
 
-.theme-menu,
-.robot-speech {
+.theme-menu {
   background: var(--popover-bg);
   border-color: var(--glass-edge);
   -webkit-backdrop-filter: blur(36px) saturate(210%);
   backdrop-filter: blur(36px) saturate(210%);
+}
+
+.robot-speech {
+  background: var(--speech-bg, rgba(255, 255, 255, 0.55));
+  border-color: var(--speech-border, var(--glass-edge));
+  -webkit-backdrop-filter: blur(16px) saturate(190%);
+  backdrop-filter: blur(16px) saturate(190%);
 }
 
 .button:not(.primary),
