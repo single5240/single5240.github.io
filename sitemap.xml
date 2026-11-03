@@ -28,6 +28,9 @@ layout: null
   </url>
   {% endfor %}
   <url>
+    <loc>{{ '/boards/index.html' | absolute_url }}</loc>
+  </url>
+  <url>
     <loc>{{ '/projects/index.html' | absolute_url }}</loc>
   </url>
   <url>

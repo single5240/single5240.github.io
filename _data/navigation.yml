@@ -8,7 +8,7 @@
   url: /projects/index.html
   section: projects
 - label: 板子
-  url: /boards/
+  url: /boards/index.html
   section: boards
 - label: 工具
   url: /tools/index.html
