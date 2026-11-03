@@ -7,6 +7,9 @@
 - label: 项目
   url: /projects/index.html
   section: projects
+- label: 板子
+  url: /boards/
+  section: boards
 - label: 工具
   url: /tools/index.html
   section: tools

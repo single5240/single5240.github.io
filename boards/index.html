@@ -1,0 +1,33 @@
+---
+layout: frame
+title: 板子
+description: 实验室开发板的实时状态。每块板一张卡片。
+section: boards
+wide: true
+permalink: /boards/
+---
+<header class="page-heading">
+  <p class="eyebrow">LAB BOARDS</p>
+  <h1>板子</h1>
+  <p class="lede">实验室里正在运行的开发板。每块板一张卡片，后面加板子就再放一张。</p>
+</header>
+<section class="board-grid" aria-label="板子列表">
+  <article class="board-card" data-board-status data-board-id="ATK-IMX6U" aria-live="polite">
+    <div class="aside-card-head">
+      <span class="aside-badge" data-field="presence">正在读取</span>
+      <span class="aside-label" data-field="time"></span>
+    </div>
+    <h2 data-field="host">ATK-IMX6U</h2>
+    <ul class="board-live-metrics">
+      <li><span>温度</span><strong data-field="temp">--</strong></li>
+      <li><span>CPU</span><strong data-field="cpu">--</strong></li>
+      <li><span>内存</span><strong data-field="mem">--</strong></li>
+      <li><span>运行</span><strong data-field="uptime">--</strong></li>
+      <li><span>磁盘</span><strong data-field="disk">--</strong></li>
+      <li><span>负载</span><strong data-field="load">--</strong></li>
+      <li><span>eth0</span><strong data-field="eth0">--</strong></li>
+      <li><span>eth1</span><strong data-field="eth1">--</strong></li>
+    </ul>
+    <a class="board-live-link" href="{{ '/board.html' | relative_url }}">项目说明 →</a>
+  </article>
+</section>

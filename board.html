@@ -30,6 +30,7 @@ permalink: /board.html
   <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
   <script src="{{ '/assets/js/theme.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
   <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}?v={{ site.time | date: '%s' }}">
+  <link rel="stylesheet" href="{{ '/assets/css/board-live.css' | relative_url }}?v={{ site.time | date: '%s' }}">
   <style>
     a {
       color: inherit;
@@ -228,8 +229,15 @@ permalink: /board.html
       color: var(--content-copy);
     }
 
+    [data-board-status="full"] .status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 28px;
+    }
+
     @media (max-width: 780px) {
-      .grid {
+      .grid,
+      [data-board-status="full"] .status {
         grid-template-columns: 1fr;
       }
     }
@@ -258,6 +266,30 @@ permalink: /board.html
       </section>
 
       <section class="grid" aria-label="板子访问入口">
+        <article class="panel wide" data-board-status="full" aria-live="polite">
+          <h2>实时状态</h2>
+          <p class="board-live-line"><span data-field="presence">正在读取</span><span data-field="time"></span></p>
+          <ul class="status">
+            <li><span>主机</span><strong data-field="host">--</strong></li>
+            <li><span>运行时间</span><strong data-field="uptime">--</strong></li>
+            <li><span>CPU</span><strong data-field="cpu">--</strong></li>
+            <li><span>温度</span><strong data-field="temp">--</strong></li>
+            <li><span>内存</span><strong data-field="mem">--</strong></li>
+            <li><span>磁盘</span><strong data-field="disk">--</strong></li>
+            <li><span>负载</span><strong data-field="load">--</strong></li>
+            <li><span>eth0</span><strong data-field="eth0">--</strong></li>
+            <li><span>eth1</span><strong data-field="eth1">--</strong></li>
+            <li><span>按键</span><strong data-field="key">--</strong></li>
+            <li><span>环境光</span><strong data-field="als">--</strong></li>
+            <li><span>红外</span><strong data-field="ir">--</strong></li>
+            <li><span>接近值</span><strong data-field="ps">--</strong></li>
+            <li><span>接近检测</span><strong data-field="proximity">--</strong></li>
+            <li><span>RTC 偏差</span><strong data-field="rtc">--</strong></li>
+            <li><span>sys-led</span><strong data-field="sys_led">--</strong></li>
+            <li><span>beep</span><strong data-field="beep">--</strong></li>
+          </ul>
+        </article>
+
         <article class="panel">
           <h2>私有维护通道</h2>
           <p class="panel-copy">设备调试、SSH 登录和 IO 控制台仅通过私有网络访问，具体地址与凭据保存在本地运维文档中。</p>
@@ -305,6 +337,7 @@ permalink: /board.html
       </section>
     </main>
   </div>
+  <script src="{{ '/assets/js/board-status.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
   <script src="{{ '/assets/js/motion.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 </body>
 </html>
