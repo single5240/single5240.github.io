@@ -314,51 +314,91 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
       </div>
     </div>
 
+    <!-- 运行寄存器与数据流诊断板 -->
+    <div class="strip-reg-stats">
+      <div class="strip-reg-item">
+        <span class="strip-reg-label">传感器实时采样</span>
+        <span class="strip-reg-value" id="strip-stat-live">45.20 N</span>
+      </div>
+      <div class="strip-reg-item">
+        <span class="strip-reg-label">渲染帧锁定量 (Snapshot)</span>
+        <span class="strip-reg-value accent" id="strip-stat-snap">45.20 N (锁定)</span>
+      </div>
+      <div class="strip-reg-item">
+        <span class="strip-reg-label">换帧标记 (Pending Dirty)</span>
+        <span class="strip-reg-value" id="strip-stat-pending">CLEAN (就绪)</span>
+      </div>
+      <div class="strip-reg-item">
+        <span class="strip-reg-label">接缝物理坐标诊断</span>
+        <span class="strip-reg-value" id="strip-stat-seam">无接缝断层</span>
+      </div>
+    </div>
+
     <div class="strip-sim-container">
-      <div>
-        <div class="strip-screen" id="strip-screen">
-          <div class="strip-band" id="strip-band" style="top: 0px;"></div>
-          <div class="strip-screen-ui">
-            <div class="strip-screen-top">
-              <span>BAT: 88%</span>
-              <span>240×320 ST7789</span>
-              <span>PEAK: 92.4N</span>
+      <div class="strip-hardware-col">
+        <div class="strip-bezel-header">
+          <span class="strip-bezel-title">ST7789 240×320 IPS 硬件显存</span>
+          <span class="strip-dma-badge" id="strip-dma-badge">DMA1_CH2 IDLE</span>
+        </div>
+
+        <div class="strip-screen-bezel">
+          <div class="strip-screen-viewport">
+            <canvas id="strip-screen-canvas" width="240" height="320" class="strip-screen-canvas" aria-label="ST7789 屏幕画布"></canvas>
+            <div class="strip-scan-line" id="strip-band" style="top: 0px;">
+              <span class="strip-scan-pill" id="strip-scan-tag">STRIP 0 · ROW 0..7</span>
             </div>
-            <div class="strip-screen-main">
-              <div>
-                <span class="strip-screen-val" id="strip-screen-val">45.20</span>
-                <span class="strip-screen-unit">N</span>
-              </div>
-              <small style="color: var(--muted); font-size: 9px; margin-top: 2px;">实时拉力测量读数</small>
+            <div class="strip-tear-seam" id="strip-tear-seam" style="display: none; top: 120px;">
+              <span class="strip-tear-badge" id="strip-tear-badge">⚡ 画面撕裂接缝 (Row 120 错位)</span>
             </div>
-            <canvas class="strip-screen-waveform" id="strip-canvas" width="220" height="70"></canvas>
-            <div class="strip-screen-bot">
-              <span>[F1: 清零]</span>
-              <span>[F2: 峰值]</span>
-              <span>[F3: 存盘]</span>
-            </div>
+          </div>
+        </div>
+
+        <div class="strip-sram-box">
+          <div class="strip-sram-header">
+            <span class="strip-sram-title">MCU 内部局部条带显存 (SRAM Buffer)</span>
+            <span class="strip-sram-tag">3.84 KiB · 240×8 px</span>
+          </div>
+          <div class="strip-sram-viewport">
+            <canvas id="strip-sram-canvas" width="240" height="8" class="strip-sram-canvas" aria-label="3.84 KiB 条带局部显存"></canvas>
+          </div>
+          <div class="strip-sram-desc">
+            <span>当前在片内 SRAM 的 1,920 像素切片，经 DMA1_CH2 灌入 ST7789 对应窗口后，复用供下个条带光栅化。</span>
           </div>
         </div>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 14px;">
-        <div>
+      <div class="strip-controls-col">
+        <div class="strip-card-panel">
           <div class="aiw-section-title">
             <span>帧快照机制开关 (AppUiRenderer Snapshot)</span>
             <span class="aiw-hint">对比有无快照时的画面防撕裂效果</span>
           </div>
           <label class="rgb-toggle-label">
             <input type="checkbox" id="strip-chk-snapshot" checked>
-            <span><strong>开启帧快照机制</strong>：条带 0 开始时锁定当前数据快照，整帧 40 个条带绘制完成前保持快照不变，避免上下半屏数据不一致。</span>
+            <span><strong>开启帧快照机制</strong>：条带 0 启动时锁定当前数据快照，整帧 40 个条带绘制完成前保持快照不变；中途数据变动仅置位 pending 标记，待下一帧原子换帧，杜绝数字被截断撕裂。</span>
+          </label>
+          <label class="rgb-toggle-label" style="margin-top: 8px;">
+            <input type="checkbox" id="strip-chk-auto-jump">
+            <span><strong>模拟拉力机高频数据流</strong>：每 320ms 注入动态力值扰动，真实复现高速采样时无锁直读产生的偶发横向断层。</span>
           </label>
         </div>
 
-        <div>
+        <div class="strip-card-panel">
           <div class="aiw-section-title">
             <span>渲染与故障测试控制台</span>
             <span class="aiw-hint">测试在刷屏中途注入突发力值跳变</span>
           </div>
-          <div class="aiw-controls">
+          <div class="strip-ctrl-row">
+            <div class="strip-speed-wrap">
+              <label for="strip-speed-select" class="strip-speed-label">步进速率：</label>
+              <select id="strip-speed-select" class="aiw-select">
+                <option value="120">慢速单步观察 (120ms / 条带)</option>
+                <option value="45" selected>标准步进 (45ms / 条带)</option>
+                <option value="16">真实全速 DMA (16ms / 条带 · 60Hz)</option>
+              </select>
+            </div>
+          </div>
+          <div class="aiw-controls" style="margin-top: 10px;">
             <button type="button" class="aiw-btn primary" id="strip-btn-step">单步推进 1 条带 (8 行)</button>
             <button type="button" class="aiw-btn" id="strip-btn-run">连续刷屏</button>
             <button type="button" class="aiw-btn warn" id="strip-btn-jump">模拟传感器力值跳变 (45.20N ➔ 89.60N)</button>
@@ -368,8 +408,8 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 
         <div class="aiw-log-panel">
           <div class="aiw-section-title">
-            <span>渲染条带流转与裁剪日志</span>
-            <span class="aiw-hint">观察 Strip 0 快照锁定与撕裂捕获</span>
+            <span>渲染条带流水与 DMA 日志</span>
+            <span class="aiw-hint">观察 Strip 0 快照锁定、SPI DMA 窗口配置与撕裂断层</span>
           </div>
           <div class="aiw-log" id="strip-log" aria-live="polite"></div>
         </div>

@@ -1358,21 +1358,58 @@
 
     let stripIdx = 0;
     let snapshotEnabled = true;
+    let autoJumpEnabled = false;
     let realTimeVal = 45.20;
     let snapshotVal = 45.20;
+    let peakVal = 92.40;
     let isTorn = false;
+    let tearRow = 120;
+    let pendingRedraw = false;
     let isRunning = false;
     let timer = null;
+    let autoJumpTimer = null;
+    let stepInterval = 45;
 
-    const elBand = root.querySelector('#strip-band');
-    const elVal = root.querySelector('#strip-screen-val');
+    // Viewport & Canvases
+    const screenCanvas = root.querySelector('#strip-screen-canvas');
+    const sramCanvas = root.querySelector('#strip-sram-canvas');
+    const legacyCanvas = root.querySelector('#strip-canvas');
+    const elScanLine = root.querySelector('#strip-band');
+    const elScanTag = root.querySelector('#strip-scan-tag');
+    const elTearSeam = root.querySelector('#strip-tear-seam');
+    const elTearBadge = root.querySelector('#strip-tear-badge');
+    const elDmaBadge = root.querySelector('#strip-dma-badge');
+
+    // Diagnostic stat elements
     const elStatStrip = root.querySelector('#strip-stat-strip');
     const elStatY = root.querySelector('#strip-stat-y');
     const elStatTear = root.querySelector('#strip-stat-tear');
+    const elStatLive = root.querySelector('#strip-stat-live');
+    const elStatSnap = root.querySelector('#strip-stat-snap');
+    const elStatPending = root.querySelector('#strip-stat-pending');
+    const elStatSeam = root.querySelector('#strip-stat-seam');
     const elLog = root.querySelector('#strip-log');
+
+    // Controls
     const chkSnapshot = root.querySelector('#strip-chk-snapshot');
-    const elRunBtn = root.querySelector('#strip-btn-run');
-    const canvas = root.querySelector('#strip-canvas');
+    const chkAutoJump = root.querySelector('#strip-chk-auto-jump');
+    const speedSelect = root.querySelector('#strip-speed-select');
+    const elBtnStep = root.querySelector('#strip-btn-step');
+    const elBtnRun = root.querySelector('#strip-btn-run');
+    const elBtnJump = root.querySelector('#strip-btn-jump');
+    const elBtnReset = root.querySelector('#strip-btn-reset');
+
+    // Legacy DOM text readout compatibility
+    const elVal = root.querySelector('#strip-screen-val');
+
+    // Offscreen 240x320 canvas for rendering target UI
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = 240;
+    offscreenCanvas.height = 320;
+    const offscreenCtx = offscreenCanvas.getContext('2d');
+
+    const screenCtx = screenCanvas ? screenCanvas.getContext('2d') : null;
+    const sramCtx = sramCanvas ? sramCanvas.getContext('2d') : null;
 
     function log(msg, type = 'normal') {
       if (!elLog) return;
@@ -1389,121 +1426,415 @@
       elLog.scrollTop = elLog.scrollHeight;
     }
 
-    function drawWave() {
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = '#0f818d';
-      ctx.lineWidth = 1.5;
+    // High-fidelity ST7789 UI rasterizer (240x320)
+    function drawUiFrame(ctx, val, peak, batPct) {
+      // 1. OLED deep black background
+      ctx.fillStyle = '#060b10';
+      ctx.fillRect(0, 0, 240, 320);
+
+      // 2. Top status bar (y = 0..24)
+      ctx.fillStyle = '#0a141e';
+      ctx.fillRect(0, 0, 240, 24);
+      ctx.strokeStyle = '#182534';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      for (let x = 0; x < canvas.width; x += 4) {
-        const y = canvas.height / 2 + Math.sin(x * 0.08 + stripIdx * 0.2) * 16;
-        if (x === 0) ctx.moveTo(x, y);
+      ctx.moveTo(0, 24.5);
+      ctx.lineTo(240, 24.5);
+      ctx.stroke();
+
+      // Battery icon
+      ctx.strokeStyle = '#64748b';
+      ctx.strokeRect(8, 7, 18, 10);
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(26, 10, 2, 4);
+      ctx.fillStyle = batPct > 20 ? '#4cd137' : '#e84118';
+      ctx.fillRect(10, 9, Math.round(14 * (batPct / 100)), 6);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '9px "JetBrains Mono", Consolas, monospace';
+      ctx.fillText(`${batPct}%`, 32, 15);
+
+      // Instrument model
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = 'bold 9.5px "JetBrains Mono", Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('N32G455 · ST7789', 120, 15);
+
+      // Run status pill
+      ctx.fillStyle = 'rgba(76, 209, 55, 0.2)';
+      ctx.strokeStyle = '#4cd137';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(196, 6, 36, 12, 3);
+      else ctx.rect(196, 6, 36, 12);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#4cd137';
+      ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+      ctx.fillText('RUN', 214, 15);
+      ctx.textAlign = 'left';
+
+      // 3. Sub-header peak / rate card (y = 28..52)
+      ctx.fillStyle = '#08121a';
+      ctx.strokeStyle = '#152433';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(8, 28, 224, 24, 4);
+      else ctx.rect(8, 28, 224, 24);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.font = '10px "JetBrains Mono", Consolas, monospace';
+      ctx.fillStyle = '#00e5ff';
+      ctx.fillText(`PEAK: ${peak.toFixed(2)} N`, 14, 44);
+      ctx.fillStyle = '#64748b';
+      ctx.textAlign = 'right';
+      ctx.fillText('RATE: 1.0 kHz', 226, 44);
+      ctx.textAlign = 'left';
+
+      // 4. Main tensile force readout card (y = 56..155)
+      ctx.fillStyle = '#091522';
+      ctx.strokeStyle = '#1d3246';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(8, 56, 224, 98, 6);
+      else ctx.rect(8, 56, 224, 98);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '8px "JetBrains Mono", Consolas, monospace';
+      ctx.fillText('REALTIME TENSILE FORCE', 14, 70);
+
+      // Large digits (Row 120 runs directly across the middle of these 42px numbers!)
+      ctx.fillStyle = '#00f5d4';
+      ctx.font = 'bold 42px "JetBrains Mono", "SF Mono", Consolas, monospace';
+      const numStr = val.toFixed(2);
+      ctx.fillText(numStr, 14, 120);
+
+      // Unit 'N'
+      ctx.fillStyle = '#00bbf9';
+      ctx.font = 'bold 18px "JetBrains Mono", Consolas, monospace';
+      ctx.fillText('N', 172, 120);
+
+      // Sensor metadata
+      ctx.fillStyle = '#475569';
+      ctx.font = '8px "JetBrains Mono", Consolas, monospace';
+      ctx.fillText('CH1: S-TYPE LOADCELL · FILTER: FIR-32', 14, 142);
+
+      // 5. Oscilloscope waveform box (y = 158..280)
+      ctx.fillStyle = '#04080c';
+      ctx.strokeStyle = '#182838';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(8, 158, 224, 122, 6);
+      else ctx.rect(8, 158, 224, 122);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '8px "JetBrains Mono", Consolas, monospace';
+      ctx.fillText('OSCILLOSCOPE (200 ms/div)', 14, 172);
+
+      // Oscilloscope grid ticks
+      ctx.strokeStyle = '#0e1d2a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let gy = 190; gy <= 265; gy += 25) {
+        ctx.moveTo(12, gy);
+        ctx.lineTo(228, gy);
+      }
+      for (let gx = 36; gx <= 210; gx += 32) {
+        ctx.moveTo(gx, 178);
+        ctx.lineTo(gx, 274);
+      }
+      ctx.stroke();
+
+      // Tensile dynamic curve
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      const waveBaseY = 245;
+      const waveAmp = (val / 100) * 48;
+      for (let x = 12; x <= 228; x += 2) {
+        const t = (x - 12) / 216;
+        const y = waveBaseY - Math.sin(t * Math.PI * 4 + (stripIdx * 0.15)) * (waveAmp * 0.4) - Math.min(waveAmp, 42);
+        if (x === 12) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
       ctx.stroke();
+
+      // 6. Bottom softkeys (y = 286..314)
+      ctx.fillStyle = '#09131c';
+      ctx.strokeStyle = '#182634';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(8, 286, 224, 26, 4);
+      else ctx.rect(8, 286, 224, 26);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.font = '9.5px "PingFang SC", "Microsoft YaHei", sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('[F1 清零]', 45, 303);
+      ctx.fillText('[F2 峰值]', 120, 303);
+      ctx.fillText('[F3 存盘]', 195, 303);
+      ctx.textAlign = 'left';
     }
 
-    function renderUI() {
+    // Update UI controls & diagnostics
+    function updateStats() {
       const topY = stripIdx * 8;
-      if (elBand) elBand.style.top = `${topY}px`;
-      if (elStatStrip) elStatStrip.textContent = `条带 ${stripIdx} / 39 (总计 40 条带)`;
+      if (elScanLine) elScanLine.style.top = `${topY}px`;
+      if (elScanTag) elScanTag.textContent = `STRIP ${stripIdx} · ROW ${topY}..${topY + 7}`;
+
+      if (elStatStrip) elStatStrip.textContent = `条带 ${stripIdx} / 39 (进度 ${((stripIdx + 1) / 40 * 100).toFixed(1)}%)`;
       if (elStatY) elStatY.textContent = `y = ${topY} .. ${topY + 7} px`;
 
-      if (elVal) {
-        if (isTorn) {
-          elVal.textContent = '45.89';
-          elVal.classList.add('is-torn');
-          if (elStatTear) {
-            elStatTear.textContent = '检测到画面撕裂 (Torn!)';
-            elStatTear.className = 'aiw-stat-value warn';
-          }
+      if (elStatLive) elStatLive.textContent = `${realTimeVal.toFixed(2)} N`;
+      if (elStatSnap) {
+        if (snapshotEnabled) {
+          elStatSnap.textContent = `${snapshotVal.toFixed(2)} N (锁定)`;
+          elStatSnap.className = 'strip-reg-value accent';
         } else {
-          elVal.textContent = (snapshotEnabled ? snapshotVal : realTimeVal).toFixed(2);
-          elVal.classList.remove('is-torn');
-          if (elStatTear) {
-            elStatTear.textContent = '画面原子一致 (无撕裂)';
-            elStatTear.className = 'aiw-stat-value accent';
-          }
+          elStatSnap.textContent = `未锁定 (直读 ${realTimeVal.toFixed(2)} N)`;
+          elStatSnap.className = 'strip-reg-value warn';
         }
       }
 
-      drawWave();
+      if (elStatPending) {
+        if (pendingRedraw) {
+          elStatPending.textContent = 'PENDING (待下一帧换帧)';
+          elStatPending.className = 'strip-reg-value pending';
+        } else {
+          elStatPending.textContent = 'CLEAN (就绪)';
+          elStatPending.className = 'strip-reg-value';
+        }
+      }
+
+      if (isTorn) {
+        if (elStatTear) {
+          elStatTear.textContent = `⚠️ 物理撕裂 (Row ${tearRow} 处错位)`;
+          elStatTear.className = 'aiw-stat-value warn';
+        }
+        if (elStatSeam) {
+          elStatSeam.textContent = `错位断层 @ Row ${tearRow}`;
+          elStatSeam.className = 'strip-reg-value warn';
+        }
+        if (elTearSeam) {
+          elTearSeam.style.display = 'block';
+          elTearSeam.style.top = `${tearRow}px`;
+        }
+        if (elTearBadge) {
+          elTearBadge.textContent = `⚡ 画面撕裂接缝 (Row ${tearRow}: 45.20N / 89.60N 错位)`;
+        }
+      } else {
+        if (elStatTear) {
+          elStatTear.textContent = '画面原子一致 (无撕裂)';
+          elStatTear.className = 'aiw-stat-value accent';
+        }
+        if (elStatSeam) {
+          elStatSeam.textContent = '无接缝断层';
+          elStatSeam.className = 'strip-reg-value accent';
+        }
+        if (elTearSeam) {
+          elTearSeam.style.display = 'none';
+        }
+      }
+
+      if (elDmaBadge) {
+        elDmaBadge.textContent = isRunning ? `DMA1_CH2 传输中 (Strip ${stripIdx})` : 'DMA1_CH2 IDLE';
+        elDmaBadge.className = isRunning ? 'strip-dma-badge active' : 'strip-dma-badge';
+      }
+
+      if (elVal) {
+        elVal.textContent = (snapshotEnabled ? snapshotVal : realTimeVal).toFixed(2);
+      }
     }
 
+    // Step a single 8-line strip
     function stepStrip() {
-      stripIdx = (stripIdx + 1) % 40;
+      const topY = stripIdx * 8;
 
       if (stripIdx === 0) {
         snapshotVal = realTimeVal;
+        pendingRedraw = false;
         isTorn = false;
-        log(`[FRAME START] Strip 0 开始：${snapshotEnabled ? '锁定新帧不可变快照 (' + snapshotVal.toFixed(2) + ' N)' : '直读全局变量 (未加帧快照锁)'}`, 'success');
+        log(`[FRAME START] Strip 0 启动：${snapshotEnabled ? '锁定新帧快照 (' + snapshotVal.toFixed(2) + ' N)' : '直读全局变量 (无快照保护)'}`, 'success');
       }
 
-      // 未开启帧快照时：模拟高频传感器在条带绘制中途跳变产生撕裂
+      // Determine active render value
+      const activeVal = snapshotEnabled ? snapshotVal : realTimeVal;
+
+      // Draw full UI to offscreen canvas
+      drawUiFrame(offscreenCtx, activeVal, peakVal, 88);
+
+      // Copy 8-line slice from offscreen to screenCanvas
+      if (screenCtx) {
+        screenCtx.drawImage(offscreenCanvas, 0, topY, 240, 8, 0, topY, 240, 8);
+      }
+
+      // Copy exact 8-line slice to 3.84 KiB SRAM strip buffer visualizer
+      if (sramCtx) {
+        sramCtx.drawImage(offscreenCanvas, 0, topY, 240, 8, 0, 0, 240, 8);
+      }
+
+      // In no-snapshot mode, simulate mid-frame sensor jump at strip 15 (Row 120, right through digits)
       if (!snapshotEnabled && stripIdx === 15) {
         realTimeVal = realTimeVal === 45.20 ? 89.60 : 45.20;
         isTorn = true;
-        log(`[TEARING DETECTED] Strip ${stripIdx} 处于大数字物理行！传感器数据在中途跳变为 ${realTimeVal.toFixed(2)} N，由于未加快照保护，上半截与下半截撕裂断层！`, 'error');
-      } else if (!snapshotEnabled && stripIdx > 15 && stripIdx < 25) {
-        isTorn = true;
+        tearRow = 120;
+        log(`[TEARING] Strip 15 (Row 120): 传感器数据中途跳变至 ${realTimeVal.toFixed(2)} N！无快照保护，上下半截切片数值错位！`, 'error');
       }
 
-      renderUI();
+      updateStats();
+
+      // Advance strip index
+      stripIdx = (stripIdx + 1) % 40;
+      if (stripIdx === 0) {
+        if (elDmaBadge && !isRunning) elDmaBadge.textContent = 'DMA1_CH2 完成一帧';
+      }
     }
 
+    // Trigger manual jump
     function triggerJump() {
       realTimeVal = realTimeVal === 45.20 ? 89.60 : 45.20;
-      log(`[SENSOR EVENT] 传感器高频中断到达新采样：力值瞬时跳变为 ${realTimeVal.toFixed(2)} N (当前刷新处于 Strip ${stripIdx})`, 'event');
-      if (!snapshotEnabled && stripIdx >= 10 && stripIdx <= 22) {
-        isTorn = true;
+      if (realTimeVal > peakVal) peakVal = realTimeVal;
+
+      log(`[SENSOR EVENT] 传感器到达新采样：${realTimeVal.toFixed(2)} N (当前渲染处在 Strip ${stripIdx})`, 'event');
+
+      if (snapshotEnabled) {
+        pendingRedraw = true;
+        log(`[SNAPSHOT HOLD] 帧快照锁定中：当前帧继续渲染 ${snapshotVal.toFixed(2)} N，新数据标记为 pending，待 Strip 39 完成后原子换帧。`, 'normal');
+      } else {
+        log(`[UNLOCKED DIRECT READ] 无帧快照：全局变量已被修改，Strip ${stripIdx} 及后续条带将直接以 ${realTimeVal.toFixed(2)} N 光栅化！`, 'warn');
+        if (stripIdx > 2 && stripIdx < 38) {
+          isTorn = true;
+          tearRow = stripIdx * 8;
+        }
       }
-      renderUI();
+      updateStats();
     }
 
+    // Toggle snapshot
     chkSnapshot?.addEventListener('change', (e) => {
       snapshotEnabled = e.target.checked;
-      log(`[SNAPSHOT MODE] 帧快照已${snapshotEnabled ? '开启 (AppUiRenderer 冻结一帧数据)' : '关闭 (直读全局变量，存在撕裂风险)'}`, 'normal');
-      renderUI();
+      log(`[SNAPSHOT CONFIG] 帧快照已${snapshotEnabled ? '开启 (AppUiRenderer 冻结一帧数据)' : '关闭 (直读全局变量，易产生横向撕裂)'}`, 'normal');
+      updateStats();
     });
 
-    root.querySelector('#strip-btn-step')?.addEventListener('click', stepStrip);
-    root.querySelector('#strip-btn-jump')?.addEventListener('click', triggerJump);
+    // Auto data stream
+    chkAutoJump?.addEventListener('change', (e) => {
+      autoJumpEnabled = e.target.checked;
+      if (autoJumpEnabled) {
+        log('[AUTO STREAM] 已启动高频数据流模拟：每 320ms 注入动态扰动', 'event');
+        autoJumpTimer = setInterval(() => {
+          realTimeVal = 40 + Math.random() * 55;
+          if (realTimeVal > peakVal) peakVal = realTimeVal;
+          if (snapshotEnabled) {
+            pendingRedraw = true;
+          } else {
+            if (stripIdx > 4 && stripIdx < 36) {
+              isTorn = true;
+              tearRow = stripIdx * 8;
+            }
+          }
+          updateStats();
+        }, 320);
+      } else {
+        if (autoJumpTimer) {
+          clearInterval(autoJumpTimer);
+          autoJumpTimer = null;
+        }
+        log('[AUTO STREAM] 高频数据流已停止', 'normal');
+      }
+    });
 
-    if (elRunBtn) {
-      elRunBtn.addEventListener('click', () => {
+    // Speed selector
+    speedSelect?.addEventListener('change', (e) => {
+      stepInterval = parseInt(e.target.value, 10) || 45;
+      log(`[SPEED] 渲染步进间隔更新为 ${stepInterval} ms / 条带`, 'normal');
+      if (isRunning) {
+        clearInterval(timer);
+        timer = setInterval(stepStrip, stepInterval);
+      }
+    });
+
+    // Run / Pause
+    if (elBtnRun) {
+      elBtnRun.addEventListener('click', () => {
         isRunning = !isRunning;
         if (isRunning) {
-          elRunBtn.textContent = '暂停刷屏';
-          timer = setInterval(stepStrip, 60);
-          log('[RUN] 启动连续 40 条带逐行异步刷新', 'normal');
+          elBtnRun.textContent = '暂停刷屏';
+          timer = setInterval(stepStrip, stepInterval);
+          log('[RUN] 启动连续 40 条带逐行 DMA 异步刷新', 'normal');
         } else {
-          elRunBtn.textContent = '连续刷屏';
+          elBtnRun.textContent = '连续刷屏';
           clearInterval(timer);
           timer = null;
           log('[PAUSE] 异步刷屏已暂停', 'normal');
         }
+        updateStats();
       });
     }
 
-    root.querySelector('#strip-btn-reset')?.addEventListener('click', () => {
+    // Step button
+    elBtnStep?.addEventListener('click', () => {
+      if (isRunning) {
+        isRunning = false;
+        clearInterval(timer);
+        timer = null;
+        if (elBtnRun) elBtnRun.textContent = '连续刷屏';
+      }
+      stepStrip();
+    });
+
+    // Force jump
+    elBtnJump?.addEventListener('click', triggerJump);
+
+    // Reset button
+    elBtnReset?.addEventListener('click', () => {
       if (timer) {
         clearInterval(timer);
         timer = null;
-        isRunning = false;
-        if (elRunBtn) elRunBtn.textContent = '连续刷屏';
       }
+      if (autoJumpTimer) {
+        clearInterval(autoJumpTimer);
+        autoJumpTimer = null;
+      }
+      isRunning = false;
+      autoJumpEnabled = false;
+      if (chkAutoJump) chkAutoJump.checked = false;
+      if (elBtnRun) elBtnRun.textContent = '连续刷屏';
+
       stripIdx = 0;
       realTimeVal = 45.20;
       snapshotVal = 45.20;
+      peakVal = 92.40;
+      pendingRedraw = false;
       isTorn = false;
+      tearRow = 120;
+
+      // Redraw initial full frame
+      drawUiFrame(offscreenCtx, snapshotVal, peakVal, 88);
+      if (screenCtx) {
+        screenCtx.drawImage(offscreenCanvas, 0, 0);
+      }
+      if (sramCtx) {
+        sramCtx.drawImage(offscreenCanvas, 0, 0, 240, 8, 0, 0, 240, 8);
+      }
+
       if (elLog) elLog.innerHTML = '';
-      log('[RESET] 条带渲染引擎复位：回到 Strip 0，局部画布 3.84 KB 就绪', 'normal');
-      renderUI();
+      log('[RESET] 条带渲染引擎复位：回到 Strip 0，局部显存 3.84 KB 就绪', 'normal');
+      updateStats();
     });
 
-    renderUI();
-    log('[INIT] 240×8 条带渲染引擎初始化完成：40 条带覆盖 320 行，RAM 占用仅 3.84 KB', 'normal');
+    // Initial draw
+    drawUiFrame(offscreenCtx, snapshotVal, peakVal, 88);
+    if (screenCtx) {
+      screenCtx.drawImage(offscreenCanvas, 0, 0);
+    }
+    if (sramCtx) {
+      sramCtx.drawImage(offscreenCanvas, 0, 0, 240, 8, 0, 0, 240, 8);
+    }
+    updateStats();
+    log('[INIT] 240×8 条带渲染引擎初始化完成：40 条带覆盖 320 行，SRAM 占用仅 3.84 KB', 'normal');
   }
 
 
