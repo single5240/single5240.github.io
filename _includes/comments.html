@@ -1,0 +1,40 @@
+{% if site.waline.server_url and site.waline.server_url != "" and page.comments != false %}
+<section class="article-comments" id="article-comments" aria-label="评论与讨论区">
+  <div class="comments-header">
+    <h2 id="comments-title">讨论交流</h2>
+    <span class="comments-hint">支持免注册访客评论，填写真实邮箱可接收回复提醒</span>
+  </div>
+  <div id="waline"></div>
+  <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
+  <script type="module">
+    import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+
+    const walineInstance = init({
+      el: '#waline',
+      serverURL: '{{ site.waline.server_url }}',
+      path: window.location.pathname,
+      dark: 'html[data-theme="dark"], html[data-theme="hud"]',
+      search: false,
+      {% if site.waline.emoji %}
+      emoji: {{ site.waline.emoji | jsonify }},
+      {% endif %}
+      locale: {
+        placeholder: '欢迎交流讨论，留下你的见解（支持 Markdown、访客留言）...',
+      },
+    });
+
+    const observer = new MutationObserver(() => {
+      if (walineInstance && typeof walineInstance.update === 'function') {
+        walineInstance.update({
+          dark: 'html[data-theme="dark"], html[data-theme="hud"]'
+        });
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+  </script>
+</section>
+{% endif %}

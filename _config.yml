@@ -55,3 +55,17 @@ exclude:
   - scripts
   - vendor
   - docs
+
+# 评论系统 (Waline: 轻量级、免注册访客评论、邮件提醒与反垃圾)
+waline:
+  server_url: "http://47.107.131.210:8360"
+  emoji:
+    - https://unpkg.com/@waline/emojis@1.2.0/weibo
+    - https://unpkg.com/@waline/emojis@1.2.0/bilibili
+
+# 隐私统计系统 (Umami: 极轻量、无 Cookie、GDPR 合规、防 AdBlock 误杀)
+umami:
+  website_id: "17647b5b-ae66-4697-b0bc-168c6c7f2d11"
+  script_url: "http://47.107.131.210:3000/script.js"
+  host_url: ""
+  domains: "single5240.github.io"

@@ -1,0 +1,9 @@
+{% if site.umami.website_id and site.umami.website_id != "" %}
+<!-- Umami 隐私友好无侵入式统计 -->
+<script defer
+  src="{{ site.umami.script_url | default: 'https://cloud.umami.is/script.js' }}"
+  data-website-id="{{ site.umami.website_id }}"
+  {% if site.umami.host_url and site.umami.host_url != "" %}data-host-url="{{ site.umami.host_url }}"{% endif %}
+  {% if site.umami.domains and site.umami.domains != "" %}data-domains="{{ site.umami.domains }}"{% endif %}>
+</script>
+{% endif %}

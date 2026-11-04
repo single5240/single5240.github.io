@@ -3487,3 +3487,44 @@
   transform: scale(0.975) !important;
   transition-duration: 85ms !important;
 }
+
+/* Waline 评论区适配 */
+.article-comments {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.comments-header {
+  margin-bottom: 24px;
+}
+
+.comments-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  border: 0;
+  padding: 0;
+  color: var(--ink);
+}
+
+.comments-hint {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#waline {
+  --waline-theme-color: var(--accent);
+  --waline-active-color: var(--accent-dark);
+  --waline-badge-color: var(--accent);
+  --waline-color: var(--body-copy);
+  --waline-bg-color: var(--surface, rgba(255, 255, 255, 0.6));
+  --waline-bg-color-light: var(--alt-bg);
+  --waline-border-color: var(--line);
+  --waline-disable-bg-color: var(--soft);
+  --waline-info-bg-color: var(--soft);
+  --waline-info-color: var(--muted);
+  --waline-font-size: 14.5px;
+  --waline-border: 1px solid var(--line);
+  --waline-avatar-radius: 50%;
+}
