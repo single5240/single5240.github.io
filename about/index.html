@@ -13,12 +13,29 @@ permalink: /about/index.html
 
 <section class="about-guestbook" aria-labelledby="guestbook-title">
   <div class="eyebrow">GUESTBOOK</div>
-  <h2 id="guestbook-title">留言板</h2>
-  <p>有什么想交流的，欢迎在这里留言。技术问题、文章建议，或只是打个招呼，都可以。</p>
-  <p class="guestbook-note">使用 GitHub 账号登录后即可留言，留言会公开保存在本站仓库的 Issues 中。请勿填写联系方式、密码等私人信息。</p>
-  <p class="guestbook-note">如果下方留言框无法加载，可以<a href="https://github.com/single5240/single5240.github.io/issues?q=is%3Aissue%20in%3Atitle%20about-guestbook" target="_blank" rel="noopener noreferrer">前往 GitHub 查看留言 ↗</a>。</p>
-  <p id="guestbook-status" class="guestbook-note" role="status" hidden></p>
-  <div id="guestbook-comments" aria-label="GitHub 留言区"></div>
-  <noscript><p>启用 JavaScript 后即可在此查看和发表留言，也可以通过上方链接访问 GitHub。</p></noscript>
+  <h2 id="guestbook-title">私密留言板</h2>
+  <p>有什么想交流的，欢迎在这里给我留言。技术探讨、文章建议、项目合作或只是打个招呼都可以。</p>
+  <p class="guestbook-note">💡 这里的留言为<strong>非公开私信</strong>：无需注册任何账号，提交后直接加密送达博主后台（仅博主可见），不会在网页上公开展示，保障您的个人隐私。</p>
+  <form class="private-message-form" id="private-message-form" data-server-url="{{ site.waline.server_url }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="msg-nick">您的称呼 / 昵称 <span class="required">*</span></label>
+        <input type="text" id="msg-nick" name="nick" required placeholder="例如：嵌入式同好" maxlength="50" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="msg-mail">电子邮箱（用于回复提醒） <span class="required">*</span></label>
+        <input type="email" id="msg-mail" name="mail" required placeholder="your-email@example.com" autocomplete="email">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="msg-content">留言内容 <span class="required">*</span></label>
+      <textarea id="msg-content" name="comment" rows="5" required placeholder="想说的话、探讨的问题或建议...（私密直达博主后台）" maxlength="1000"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="submit-btn" id="msg-submit">发送私密留言</button>
+      <span class="form-status" id="msg-status" role="status" aria-live="polite"></span>
+    </div>
+  </form>
+  <noscript><p>启用 JavaScript 后即可在此直接向博主发送私密留言，或者直接通过上方邮箱联系。</p></noscript>
 </section>
 <script src="{{ '/assets/js/guestbook.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
