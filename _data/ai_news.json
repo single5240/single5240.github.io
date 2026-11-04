@@ -15,6 +15,12 @@
           "weekday": "周二",
           "title": "AI 资讯日报 · 11月3日（周二）",
           "summary": "Lead: OpenAI 官方确认 Chat 与 Work 合并、ChatGPT 和 Codex 共用额度。ChatGPT Classic 2027-01-30 停用。Genie 4 与 DeepSeek Super-Agent 发布。"
+        },
+        {
+          "date": "2026-11-04",
+          "weekday": "周三",
+          "title": "AI 资讯日报 · 11月4日（周三）",
+          "summary": "Lead: ChatGPT 周活 12 亿、搜索量约为 Google 的 20%。OpenAI 用 GPT-6 Astra 从零设计硬件（外壳、PCB、固件）。Nordic 发布带 Axon NPU 的 nRF71。"
         }
       ]
     },
