@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-04",
+  "sentence": "Adding manpower to a late software project makes it later.",
+  "source": {
+    "author": "Frederick P. Brooks Jr.",
+    "work": "The Mythical Man-Month: Essays on Software Engineering",
+    "year": "1975",
+    "detail": "第二章 The Mythical Man-Month，即著名的“布鲁克斯定律”（Brooks's Law）"
+  },
+  "translation": "给一个已经延期的软件项目加人，只会让它延期得更厉害。",
+  "grammar": [
+    "主干是“主语 + makes + 宾语 + 宾补”：主语是动名词短语 Adding manpower to a late software project，谓语 makes，宾语 it（指 the project），宾补 later。动名词短语作主语时视为单数，所以谓语用 makes 而不是 make。",
+    "make + 宾语 + 形容词（比较级）表示“使……变得更……”：makes it later = 让它更晚。用比较级 later 呼应前面的 late，形成“晚→更晚”的对照，这正是这句话又短又有讽刺力的原因，类似 make things worse、make it easier。"
+  ],
+  "vocab": [
+    {
+      "word": "manpower",
+      "phonetic": "/ˈmænpaʊər/",
+      "pos": "n.（不可数）",
+      "meaning": "人力，可用的人手",
+      "collocation": "add manpower; a shortage of manpower; manpower costs",
+      "example": "The factory is facing a shortage of manpower this winter."
+    },
+    {
+      "word": "late",
+      "phonetic": "/leɪt/",
+      "pos": "adj.",
+      "meaning": "延误的，晚于计划的",
+      "collocation": "be late for sth; run late; a late delivery",
+      "example": "The firmware release is two weeks late."
+    },
+    {
+      "word": "add ... to ...",
+      "phonetic": "",
+      "pos": "短语",
+      "meaning": "把……加到……上",
+      "collocation": "add features to a product; add value to sth",
+      "example": "Don't add new features to the build the night before release."
+    },
+    {
+      "word": "project",
+      "phonetic": "/ˈprɒdʒekt/",
+      "pos": "n.",
+      "meaning": "项目，工程",
+      "collocation": "launch a project; a project deadline; be behind on a project",
+      "example": "Our MCU project is behind schedule because of a hardware bug."
+    }
+  ],
+  "note": "Brooks 的理由是：新人要培训、沟通成本随人数快速增长，任务也不一定能拆分。小练习：用 make + 宾语 + 比较级 造个句，比如 “Rushing the code review makes the bugs harder to find.” 试着写一句你自己工作里的。"
+}
