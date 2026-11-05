@@ -21,6 +21,12 @@
           "weekday": "周三",
           "title": "AI 资讯日报 · 11月4日（周三）",
           "summary": "Lead: ChatGPT 周活 12 亿、搜索量约为 Google 的 20%。OpenAI 用 GPT-6 Astra 从零设计硬件（外壳、PCB、固件）。Nordic 发布带 Axon NPU 的 nRF71。"
+        },
+        {
+          "date": "2026-11-05",
+          "weekday": "周四",
+          "title": "AI 资讯日报 · 11月5日（周四）",
+          "summary": "Lead: Images 2.6 上线，出图快 50%、能做 GIF。OpenAI 收购 Pierre。Chat 与 Work 合并后共用额度池。"
         }
       ]
     },
