@@ -25,6 +25,7 @@
     - atk-imx6u-systemui-autostart
     - linux-basic-commands-atk-imx6u
     - atk-imx6u-remote-io-control
+    - aliyun-nginx-github-actions-dual-deploy
 - id: qt
   title: Qt / QML
   description: 声明式界面、C++ 集成与设备端部署。
