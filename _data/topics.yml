@@ -25,7 +25,6 @@
     - atk-imx6u-systemui-autostart
     - linux-basic-commands-atk-imx6u
     - atk-imx6u-remote-io-control
-    - aliyun-nginx-github-actions-dual-deploy
 - id: qt
   title: Qt / QML
   description: 声明式界面、C++ 集成与设备端部署。
@@ -41,3 +40,10 @@
   color_end: "#c7382d"
   articles:
     - ecat-porting-basic
+- id: devops
+  title: 云服务与 DevOps
+  description: 云服务器加固、Nginx 调优与 CI/CD 自动化流水线。
+  color: "#8b5cf6"
+  color_end: "#6d28d9"
+  articles:
+    - aliyun-nginx-github-actions-dual-deploy

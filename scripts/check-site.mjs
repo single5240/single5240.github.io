@@ -311,7 +311,7 @@ try {
   }
 } catch (error) { failures.push(`search.json: ${error.message}`); }
 
-for (const name of ["mcu", "linux", "qt", "industrial"]) {
+for (const name of ["mcu", "linux", "qt", "industrial", "devops"]) {
   const file = join(root, "topics", `${name}.html`);
   if (!existsSync(file) || !readFileSync(file, "utf8").includes('class="article-item"')) failures.push(`topics/${name}.html: must contain published articles`);
 }

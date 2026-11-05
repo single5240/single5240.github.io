@@ -3,7 +3,7 @@ layout: article
 title: "从零到一：阿里云服务器 + Nginx + GitHub Actions 自动化双发与回滚实战"
 description: "记录个人站点从轻量云服务器搭建、WSL 本地构建，到 GitHub Actions 自动化双发（Pages + 阿里云）与基于符号链接原子回滚的完整生产级实战与故障复盘。"
 date: 2026-11-05
-category: 嵌入式 Linux
+category: 云服务与 DevOps
 tags:
   - GitHub Actions
   - Nginx
