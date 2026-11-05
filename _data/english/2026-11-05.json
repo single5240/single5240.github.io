@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-05",
+  "sentence": "Do not go gentle into that good night, / Old age should burn and rave at close of day; / Rage, rage against the dying of the light.",
+  "source": {
+    "author": "Dylan Thomas",
+    "work": "Do not go gentle into that good night",
+    "year": "1951",
+    "detail": "维拉内拉体（villanelle）诗歌首节，诗人写给病重的父亲，1951 年首次发表"
+  },
+  "translation": "不要温和地走进那个良夜，\n老年人应当在日暮时燃烧、咆哮；\n怒斥吧，怒斥那光明的消逝。",
+  "grammar": [
+    "全句由三个分句组成：第一、三行是祈使句（Do not go… / Rage…），省略主语 you，语气是直接的劝告和呼喊；第二行是陈述句，主干是 Old age（主语）+ should burn and rave（谓语，两个并列动词共用情态动词 should）。",
+    "go gentle 是诗意用法：按常规语法应写成副词 go gently，但诗人用形容词 gentle，类似 go mad、go quiet 这种“go + 形容词”表示“以某种状态走向/变成”，读起来更简洁有力，也更像在描述人的状态而不只是动作方式。",
+    "the dying of the light 是“the + 动名词 + of + 名词”结构，把动作 die 名词化，意思是“光的消逝”；类似的还有 the coming of spring（春天的到来）。good night 和 the light 都在比喻死亡与生命。"
+  ],
+  "vocab": [
+    {
+      "word": "gentle",
+      "phonetic": "/ˈdʒentl/",
+      "pos": "adj.",
+      "meaning": "温和的、柔和的；句中指顺从、不反抗地",
+      "collocation": "a gentle voice / be gentle with sb.",
+      "example": "Be gentle with the board; the connector is fragile."
+    },
+    {
+      "word": "rave",
+      "phonetic": "/reɪv/",
+      "pos": "v.",
+      "meaning": "咆哮、激动地大喊；口语中也指“极力称赞”",
+      "collocation": "rave about sth.（对……赞不绝口）",
+      "example": "Everyone is raving about the new debugger."
+    },
+    {
+      "word": "rage",
+      "phonetic": "/reɪdʒ/",
+      "pos": "v. / n.",
+      "meaning": "动词：发怒、怒斥；名词：狂怒",
+      "collocation": "rage against sth. / in a rage / road rage",
+      "example": "He raged against the unfair decision."
+    },
+    {
+      "word": "at close of day",
+      "phonetic": "/ət kləʊz əv deɪ/",
+      "pos": "phrase",
+      "meaning": "在一天结束时、日暮时；句中比喻人生的晚年",
+      "collocation": "at the close of the meeting / at the close of business",
+      "example": "At the close of day, I review what I learned."
+    }
+  ],
+  "note": "这首诗每节结尾都在重复 “Do not go gentle into that good night” 和 “Rage, rage against the dying of the light”，是维拉内拉体的特色。小练习：模仿 go + 形容词 的结构，用 go quiet、go wrong、go silent 各造一个句子，比如 “The serial port went silent after reset.”"
+}
