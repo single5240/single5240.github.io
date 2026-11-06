@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-06",
+  "sentence": "Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?",
+  "source": {
+    "author": "Brian W. Kernighan",
+    "work": "The Elements of Programming Style",
+    "year": "1978",
+    "detail": "与 P. J. Plauger 合著，第 2 版第 2 章；常称 Kernighan's Law。Wikiquote 收录此原句"
+  },
+  "translation": "谁都知道，调试要比当初把程序写出来难上一倍。所以，如果你写代码时已经把聪明劲儿用到了极限，那你以后还怎么调试得了它？",
+  "grammar": [
+    "第一句主干：Everyone（主语）knows（谓语）+ that 引导的宾语从句。从句里 debugging（动名词作主语）is（系动词）twice as hard as writing…（表语，比较结构）。in the first place 是固定短语，意思是「起初、当初」。",
+    "第二句是 So 引出的推论，核心是 if 条件句 + 特殊疑问句：if you're as clever as you can be…（条件）how will you ever debug it?（结果）。as + 形容词 + as one can be 表示「尽可能地……」；ever 加强语气，带点「究竟/到底」的意味。",
+    "writing a program / when you write it：前半用动名词短语作比较对象，后半用时间状语从句，同一件事换两种结构，读起来更自然。"
+  ],
+  "vocab": [
+    {
+      "word": "debugging",
+      "phonetic": "/ˌdiːˈbʌɡɪŋ/",
+      "pos": "n. (动名词)",
+      "meaning": "调试、排错；句中指找出并修正程序缺陷的过程",
+      "collocation": "debugging tools / remote debugging / spend hours debugging",
+      "example": "Remote debugging saved us a trip to the lab."
+    },
+    {
+      "word": "twice as hard as",
+      "phonetic": "/twaɪs əz hɑːrd əz/",
+      "pos": "phrase",
+      "meaning": "比……难一倍；倍数比较的常见说法",
+      "collocation": "twice as + adj. + as / twice as many/much + n. + as",
+      "example": "This MCU is twice as fast as the old one."
+    },
+    {
+      "word": "in the first place",
+      "phonetic": "/ɪn ðə ˈfɜːrst pleɪs/",
+      "pos": "phrase",
+      "meaning": "起初、当初；也常用来补充理由「首先」",
+      "collocation": "Why … in the first place? / shouldn't have … in the first place",
+      "example": "We shouldn't have skipped the unit tests in the first place."
+    },
+    {
+      "word": "clever",
+      "phonetic": "/ˈklevər/",
+      "pos": "adj.",
+      "meaning": "聪明的；句中偏「耍小聪明、写得过于机巧」",
+      "collocation": "a clever trick / too clever by half / as clever as you can be",
+      "example": "That bit-twiddling trick is clever, but hard to maintain."
+    }
+  ],
+  "note": "写嵌入式代码时也一样：能读懂、能单步跟完的写法，往往比「一行炫技」更值钱。今天试着把你最近一段「自己都觉得巧」的代码，改成同事一眼能看懂的版本。"
+}
