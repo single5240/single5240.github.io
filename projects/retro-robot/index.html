@@ -232,9 +232,12 @@ permalink: /projects/retro-robot/index.html
     <div class="integration-code-block">
       <div class="code-header">
         <span>Jekyll Liquid 引入语法</span>
-        <button type="button" class="copy-btn" id="btnCopySnippet">复制片段</button>
+        <div class="code-header-actions">
+          <button type="button" class="copy-btn" id="btnToggleSnippet" aria-expanded="true" aria-label="收起代码">收起</button>
+          <button type="button" class="copy-btn" id="btnCopySnippet">复制片段</button>
+        </div>
       </div>
-      <pre><code>{% raw %}<!-- 方式 1：在技术文章或文档侧边栏作为伴读卡片引入 -->
+      <pre id="retro-snippet-code"><code>{% raw %}<!-- 方式 1：在技术文章或文档侧边栏作为伴读卡片引入 -->
 <aside class="reading-sidebar" id="reading-sidebar">
   {% include article-robot.html %}
   <details class="toc" id="article-toc"><summary>本页目录</summary><ol></ol></details>
@@ -923,6 +926,21 @@ permalink: /projects/retro-robot/index.html
 .copy-btn:hover {
   background: var(--accent);
   color: var(--on-accent);
+}
+
+.code-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.integration-code-block.is-collapsed .code-header {
+  border-bottom: none;
+  cursor: pointer;
+}
+
+.integration-code-block.is-collapsed pre {
+  display: none !important;
 }
 
 .integration-code-block pre {
@@ -1641,8 +1659,30 @@ permalink: /projects/retro-robot/index.html
     labRobotBtn.addEventListener("click", () => speak("random"));
   }
 
-  // 复制代码功能
+  // 收起展开与复制代码功能
+  const btnToggle = document.getElementById("btnToggleSnippet");
   const btnCopy = document.getElementById("btnCopySnippet");
+  const snippetPre = document.getElementById("retro-snippet-code");
+  const robotCodeBlock = snippetPre?.closest(".integration-code-block");
+
+  if (btnToggle && snippetPre && robotCodeBlock) {
+    const toggleRobotCode = () => {
+      const isCollapsed = robotCodeBlock.classList.toggle("is-collapsed");
+      snippetPre.hidden = isCollapsed;
+      btnToggle.textContent = isCollapsed ? "展开" : "收起";
+      btnToggle.setAttribute("aria-expanded", String(!isCollapsed));
+      btnToggle.setAttribute("aria-label", isCollapsed ? "展开代码" : "收起代码");
+    };
+    btnToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleRobotCode();
+    });
+    robotCodeBlock.querySelector(".code-header")?.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      if (robotCodeBlock.classList.contains("is-collapsed")) toggleRobotCode();
+    });
+  }
+
   if (btnCopy) {
     btnCopy.addEventListener("click", async () => {
       const code = document.querySelector(".integration-code-block code").textContent;

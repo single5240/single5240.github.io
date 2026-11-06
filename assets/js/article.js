@@ -77,30 +77,90 @@
     table.replaceWith(wrap);
     wrap.append(table);
   });
-  content.querySelectorAll('pre').forEach((pre) => {
+  content.querySelectorAll('pre').forEach((pre, index) => {
+    if (pre.closest('.font-c-export, .article-interactive-widget')) return;
+
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block';
     const toolbar = document.createElement('div');
     toolbar.className = 'code-toolbar';
+
     const language = document.createElement('span');
-    language.textContent = pre.closest('[class*="language-"]')?.className.match(/language-([\w+-]+)/)?.[1] || 'text';
+    const langName = pre.closest('[class*="language-"]')?.className.match(/language-([\w+-]+)/)?.[1] || 'text';
+    language.textContent = langName;
+
+    const preId = pre.id || `code-block-${index + 1}`;
+    pre.id = preId;
+
+    const actions = document.createElement('div');
+    actions.className = 'code-actions';
+
+    const toggleButton = document.createElement('button');
+    toggleButton.type = 'button';
+    toggleButton.className = 'code-toggle';
+    toggleButton.setAttribute('aria-expanded', 'true');
+    toggleButton.setAttribute('aria-controls', preId);
+    toggleButton.setAttribute('aria-label', '收起代码');
+
+    const toggleIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    toggleIcon.setAttribute('class', 'code-toggle-icon');
+    toggleIcon.setAttribute('width', '12');
+    toggleIcon.setAttribute('height', '12');
+    toggleIcon.setAttribute('viewBox', '0 0 12 12');
+    toggleIcon.setAttribute('fill', 'none');
+    toggleIcon.setAttribute('stroke', 'currentColor');
+    toggleIcon.setAttribute('stroke-width', '1.75');
+    toggleIcon.setAttribute('stroke-linecap', 'round');
+    toggleIcon.setAttribute('stroke-linejoin', 'round');
+    toggleIcon.setAttribute('aria-hidden', 'true');
+    const togglePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    togglePath.setAttribute('d', 'M2.5 7.5L6 4L9.5 7.5');
+    toggleIcon.append(togglePath);
+
+    const toggleText = document.createElement('span');
+    toggleText.textContent = '收起';
+    toggleButton.append(toggleIcon, toggleText);
+
+    const toggleCollapse = () => {
+      const isCollapsed = wrapper.classList.toggle('is-collapsed');
+      toggleButton.setAttribute('aria-expanded', String(!isCollapsed));
+      toggleButton.setAttribute('aria-label', isCollapsed ? '展开代码' : '收起代码');
+      toggleText.textContent = isCollapsed ? '展开' : '收起';
+      pre.hidden = isCollapsed;
+    };
+
+    toggleButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleCollapse();
+    });
+
+    toolbar.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      if (wrapper.classList.contains('is-collapsed')) {
+        toggleCollapse();
+      }
+    });
+
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'copy-code';
     button.textContent = '复制';
     button.setAttribute('aria-label', '复制代码');
     button.setAttribute('aria-live', 'polite');
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', async (event) => {
+      event.stopPropagation();
       const text = pre.querySelector('code')?.textContent || pre.textContent;
       const ok = await copyText(text);
       button.textContent = ok ? '已复制' : '复制失败';
       setTimeout(() => { button.textContent = '复制'; }, 1800);
     });
-    toolbar.append(language, button);
+
+    actions.append(toggleButton, button);
+    toolbar.append(language, actions);
     pre.replaceWith(wrapper);
     wrapper.append(toolbar, pre);
     pre.tabIndex = 0;
-    pre.setAttribute('aria-label', `${language.textContent} 代码，可横向滚动`);
+    pre.setAttribute('aria-label', `${langName} 代码，可横向滚动`);
   });
   const progress = document.querySelector('#reading-progress');
   let ticking = false;

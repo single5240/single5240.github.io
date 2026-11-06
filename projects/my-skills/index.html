@@ -247,5 +247,84 @@ cmd /c mklink /J "$linkPath" "$sourcePath" | Out-Null</code></pre>
       applyFilter();
     });
   }
+
+  // 为各架构卡片代码块添加收起展开与复制功能
+  const langLabels = ['text 目录树', 'json 规则挂载', 'markdown 标准模板', 'powershell 联接同步'];
+  document.querySelectorAll('.skills-arch-card pre').forEach((pre, index) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'skills-code-block';
+
+    const header = document.createElement('div');
+    header.className = 'skills-code-header';
+
+    const label = document.createElement('span');
+    label.textContent = langLabels[index] || 'code';
+
+    const actions = document.createElement('div');
+    actions.className = 'skills-code-actions';
+
+    const preId = `skills-arch-code-${index + 1}`;
+    pre.id = preId;
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'skills-code-btn skills-code-toggle';
+    toggleBtn.setAttribute('aria-expanded', 'true');
+    toggleBtn.setAttribute('aria-controls', preId);
+    toggleBtn.setAttribute('aria-label', '收起代码');
+    toggleBtn.textContent = '收起';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'skills-code-btn skills-code-copy';
+    copyBtn.setAttribute('aria-label', '复制代码');
+    copyBtn.textContent = '复制';
+
+    const toggleCollapse = () => {
+      const isCollapsed = wrap.classList.toggle('is-collapsed');
+      toggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
+      toggleBtn.setAttribute('aria-label', isCollapsed ? '展开代码' : '收起代码');
+      toggleBtn.textContent = isCollapsed ? '展开' : '收起';
+      pre.hidden = isCollapsed;
+    };
+
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCollapse();
+    });
+
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      if (wrap.classList.contains('is-collapsed')) toggleCollapse();
+    });
+
+    copyBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const text = pre.querySelector('code')?.textContent || pre.textContent;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const area = document.createElement('textarea');
+          area.value = text;
+          area.style.position = 'fixed';
+          area.style.opacity = '0';
+          document.body.append(area);
+          area.select();
+          document.execCommand('copy');
+          area.remove();
+        }
+        copyBtn.textContent = '已复制';
+        setTimeout(() => { copyBtn.textContent = '复制'; }, 1800);
+      } catch {
+        copyBtn.textContent = '复制失败';
+      }
+    });
+
+    actions.append(toggleBtn, copyBtn);
+    header.append(label, actions);
+    pre.replaceWith(wrap);
+    wrap.append(header, pre);
+  });
 })();
 </script>
