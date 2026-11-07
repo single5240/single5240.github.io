@@ -287,22 +287,30 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
   <div class="aiw-body">
     <div class="strip-memory-compare">
       <div class="strip-mem-card bad">
-        <span class="aiw-stat-label">方案一：传统整屏全帧缓冲 (Full Framebuffer)</span>
-        <div class="strip-mem-val">153.60 KiB</div>
-        <small style="color: #d32f2f; font-size: 11px;">240×320×2 字节，超过 N32G455 144 KiB 总 SRAM 上限。</small>
+        <div class="strip-mem-top">
+          <span class="aiw-stat-label">方案一：传统整屏全帧缓冲 (Full Framebuffer)</span>
+          <span class="strip-mem-pill bad">溢出 106.7% SRAM</span>
+        </div>
+        <div class="strip-mem-val">153.6 KB <small>(150.0 KiB)</small></div>
+        <div class="strip-mem-bar"><div class="strip-mem-fill bad" style="width: 100%;"></div></div>
+        <small class="strip-mem-note bad">240×320×2 = 153,600 字节，直接超过 N32G455 144 KB 总 SRAM 上限，无法链接分配。</small>
       </div>
 
       <div class="strip-mem-card good">
-        <span class="aiw-stat-label">方案二：8 行局部条带画布 (Strip Canvas)</span>
-        <div class="strip-mem-val">3.84 KiB</div>
-        <small style="color: var(--accent-dark); font-size: 11px;">240×8×2 字节，约占 SRAM 2.67%，为采集队列与协议栈预留内存。</small>
+        <div class="strip-mem-top">
+          <span class="aiw-stat-label">方案二：8 行局部条带画布 (Strip Canvas)</span>
+          <span class="strip-mem-pill good">仅占 2.67% SRAM</span>
+        </div>
+        <div class="strip-mem-val">3.84 KB <small>(3.75 KiB)</small></div>
+        <div class="strip-mem-bar"><div class="strip-mem-fill good" style="width: 6%;"></div></div>
+        <small class="strip-mem-note good">240×8×2 = 3,840 字节（整屏的 1/40），为 AD7190 采集队列与协议栈留出充足内存。</small>
       </div>
     </div>
 
     <div class="aiw-stats" aria-label="当前条带状态">
       <div class="aiw-stat-item">
         <span class="aiw-stat-label">当前渲染条带 (Strip Index)</span>
-        <span class="aiw-stat-value accent" id="strip-stat-strip">条带 0 / 39 (总计 40 条带)</span>
+        <span class="aiw-stat-value accent" id="strip-stat-strip">条带 0 / 39 (整帧就绪)</span>
       </div>
       <div class="aiw-stat-item">
         <span class="aiw-stat-label">条带物理行坐标跨度</span>
@@ -317,52 +325,55 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
     <!-- 运行寄存器与数据流诊断板 -->
     <div class="strip-reg-stats">
       <div class="strip-reg-item">
-        <span class="strip-reg-label">传感器实时采样</span>
+        <span class="strip-reg-label">传感器实时采样 (Runtime)</span>
         <span class="strip-reg-value" id="strip-stat-live">45.20 N</span>
       </div>
       <div class="strip-reg-item">
         <span class="strip-reg-label">渲染帧锁定量 (Snapshot)</span>
-        <span class="strip-reg-value accent" id="strip-stat-snap">45.20 N (锁定)</span>
+        <span class="strip-reg-value accent" id="strip-stat-snap">45.20 N (已锁定)</span>
       </div>
       <div class="strip-reg-item">
         <span class="strip-reg-label">换帧标记 (Pending Dirty)</span>
-        <span class="strip-reg-value" id="strip-stat-pending">CLEAN (就绪)</span>
+        <span class="strip-reg-value" id="strip-stat-pending">0 · CLEAN (就绪)</span>
       </div>
       <div class="strip-reg-item">
         <span class="strip-reg-label">接缝物理坐标诊断</span>
-        <span class="strip-reg-value" id="strip-stat-seam">无接缝断层</span>
+        <span class="strip-reg-value accent" id="strip-stat-seam">无接缝断层</span>
       </div>
     </div>
 
     <div class="strip-sim-container">
       <div class="strip-hardware-col">
         <div class="strip-bezel-header">
-          <span class="strip-bezel-title">ST7789 240×320 IPS 硬件显存</span>
+          <span class="strip-bezel-title">ST7789 240×320 硬件 GRAM</span>
           <span class="strip-dma-badge" id="strip-dma-badge">DMA1_CH2 IDLE</span>
         </div>
 
         <div class="strip-screen-bezel">
-          <div class="strip-screen-viewport">
-            <canvas id="strip-screen-canvas" width="240" height="320" class="strip-screen-canvas" aria-label="ST7789 屏幕画布"></canvas>
+          <div class="strip-screen-viewport" id="strip-screen-viewport" title="点击屏幕任意行可定位并检视对应 8 行条带">
+            <canvas id="strip-screen-canvas" width="240" height="320" class="strip-screen-canvas" aria-label="ST7789 屏幕画布，点击任意位置可定位对应条带"></canvas>
             <div class="strip-scan-line" id="strip-band" style="top: 0px;">
-              <span class="strip-scan-pill" id="strip-scan-tag">STRIP 0 · ROW 0..7</span>
+              <span class="strip-scan-pill flip-below" id="strip-scan-tag">STRIP 0 · ROW 0..7</span>
             </div>
-            <div class="strip-tear-seam" id="strip-tear-seam" style="display: none; top: 120px;">
-              <span class="strip-tear-badge" id="strip-tear-badge">⚡ 画面撕裂接缝 (Row 120 错位)</span>
+            <div class="strip-tear-seam" id="strip-tear-seam" style="display: none; top: 104px;">
+              <span class="strip-tear-badge" id="strip-tear-badge">⚡ 撕裂接缝 Row 104 (45.20N / 89.60N)</span>
             </div>
           </div>
         </div>
 
         <div class="strip-sram-box">
           <div class="strip-sram-header">
-            <span class="strip-sram-title">MCU 内部局部条带显存 (SRAM Buffer)</span>
-            <span class="strip-sram-tag">3.84 KiB · 240×8 px</span>
+            <span class="strip-sram-title">MCU 片内条带缓冲 (SRAM `pixels[240×8]`)</span>
+            <span class="strip-sram-tag">3.84 KB · localY 0..7</span>
           </div>
           <div class="strip-sram-viewport">
-            <canvas id="strip-sram-canvas" width="240" height="8" class="strip-sram-canvas" aria-label="3.84 KiB 条带局部显存"></canvas>
+            <canvas id="strip-sram-canvas" width="240" height="8" class="strip-sram-canvas" aria-label="3.84 KB 条带局部显存放大视图"></canvas>
+          </div>
+          <div class="strip-clip-diag" id="strip-clip-info">
+            <code>Canvas_FillRect</code> 裁剪：<code>stripY = 0..7</code> ➔ 命中【顶部状态栏】，写入 <code>localY[0..7]</code>
           </div>
           <div class="strip-sram-desc">
-            <span>当前在片内 SRAM 的 1,920 像素切片，经 DMA1_CH2 灌入 ST7789 对应窗口后，复用供下个条带光栅化。</span>
+            <span>提示：可直接<strong>点击上方屏幕任意位置</strong>或下方 40 条带进度格，观察全屏坐标如何被裁剪进这 8 行 SRAM 缓冲区。</span>
           </div>
         </div>
       </div>
@@ -370,31 +381,50 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
       <div class="strip-controls-col">
         <div class="strip-card-panel">
           <div class="aiw-section-title">
-            <span>帧快照机制开关 (AppUiRenderer Snapshot)</span>
-            <span class="aiw-hint">对比有无快照时的画面防撕裂效果</span>
+            <span>一键实验场景对比 (Quick Scenarios)</span>
+            <span class="aiw-hint">直观对比有无快照时的刷屏中途跳变表现</span>
           </div>
-          <label class="rgb-toggle-label">
+          <div class="strip-preset-row">
+            <button type="button" class="aiw-btn primary" id="strip-preset-safe">🛡️ 演示帧快照防撕裂 (Row 104 跳变)</button>
+            <button type="button" class="aiw-btn danger" id="strip-preset-tear">⚡ 演示无快照数字腰部撕裂 (Row 104 断层)</button>
+            <button type="button" class="aiw-btn" id="strip-preset-inspect">🔍 检视大号字模切片 (Strip 12)</button>
+          </div>
+        </div>
+
+        <div class="strip-card-panel">
+          <div class="aiw-section-title">
+            <span>帧快照机制开关 (AppUiRenderer Snapshot)</span>
+            <span class="aiw-hint">切换开关可实时重绘对比当前帧画面</span>
+          </div>
+          <label class="strip-toggle-label">
             <input type="checkbox" id="strip-chk-snapshot" checked>
-            <span><strong>开启帧快照机制</strong>：条带 0 启动时锁定当前数据快照，整帧 40 个条带绘制完成前保持快照不变；中途数据变动仅置位 pending 标记，待下一帧原子换帧，杜绝数字被截断撕裂。</span>
+            <span><strong>开启帧快照机制 (推荐)</strong>：在 <code>Strip 0</code> 启动时将待显示力值与曲线坐标复制到不可变快照 <code>AppUiRenderer</code>，40 个条带发完前保持不变；中途新采样仅置位 <code>pending = 1</code>，杜绝同一帧上下半截自相矛盾。</span>
           </label>
-          <label class="rgb-toggle-label" style="margin-top: 8px;">
+          <label class="strip-toggle-label" style="margin-top: 8px;">
             <input type="checkbox" id="strip-chk-auto-jump">
-            <span><strong>模拟拉力机高频数据流</strong>：每 320ms 注入动态力值扰动，真实复现高速采样时无锁直读产生的偶发横向断层。</span>
+            <span><strong>模拟拉力机高频采样流</strong>：每 320 ms 产生一次动态力值跳变，复现高速采样下无锁直读造成的横向撕裂。</span>
           </label>
         </div>
 
         <div class="strip-card-panel">
           <div class="aiw-section-title">
-            <span>渲染与故障测试控制台</span>
-            <span class="aiw-hint">测试在刷屏中途注入突发力值跳变</span>
+            <span>分批渲染与 DMA 调度控制台 (40 条带帧进度)</span>
+            <span class="aiw-hint" id="strip-frame-counter">Frame #1 · 点击色块可跳转条带</span>
           </div>
-          <div class="strip-ctrl-row">
+          <div class="strip-progress-grid" id="strip-progress-grid" role="group" aria-label="40 个条带进度矩阵"></div>
+          <div class="strip-pipeline-bar" id="strip-pipeline-bar" aria-label="单条带 4 阶段硬件时序">
+            <span class="strip-stage is-active" id="strip-st-clip">① 局部裁剪绘制</span>
+            <span class="strip-stage" id="strip-st-win">② 8-bit 窗口命令</span>
+            <span class="strip-stage" id="strip-st-dma">③ 16-bit 全双工 DMA</span>
+            <span class="strip-stage" id="strip-st-wait">④ 等 BUSY=0 拉高 CS</span>
+          </div>
+          <div class="strip-ctrl-row" style="margin-top: 10px;">
             <div class="strip-speed-wrap">
               <label for="strip-speed-select" class="strip-speed-label">步进速率：</label>
               <select id="strip-speed-select" class="aiw-select">
                 <option value="120">慢速单步观察 (120ms / 条带)</option>
                 <option value="45" selected>标准步进 (45ms / 条带)</option>
-                <option value="16">真实全速 DMA (16ms / 条带 · 60Hz)</option>
+                <option value="16">真实高速刷屏 (16ms / 条带)</option>
               </select>
             </div>
           </div>
@@ -408,8 +438,8 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 
         <div class="aiw-log-panel">
           <div class="aiw-section-title">
-            <span>渲染条带流水与 DMA 日志</span>
-            <span class="aiw-hint">观察 Strip 0 快照锁定、SPI DMA 窗口配置与撕裂断层</span>
+            <span>渲染条带流水与 SPI1 DMA 状态机日志</span>
+            <span class="aiw-hint">记录 Strip 0 快照锁定、CASET/RASET 窗口与撕裂位置</span>
           </div>
           <div class="aiw-log" id="strip-log" aria-live="polite"></div>
         </div>
