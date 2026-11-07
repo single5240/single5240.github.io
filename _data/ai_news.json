@@ -33,6 +33,12 @@
           "weekday": "周五",
           "title": "AI 资讯日报 · 11月6日（周五）",
           "summary": "Lead: Cursor 上线 Live Apps 一键发布；OpenAI 发布 GPT-6 Cyber；Google Omni 1.2 Flash 最长 15 秒视频并降价 30%。"
+        },
+        {
+          "date": "2026-11-07",
+          "weekday": "周六",
+          "title": "AI 资讯日报 · 11月7日",
+          "summary": "Lead: Cursor 上线与 agent 的实时语音通话；OpenAI 写明 12 月起 ChatGPT 与 Codex 共用额度；Claude 向美国付费用户开放只读理财接入。"
         }
       ]
     },
