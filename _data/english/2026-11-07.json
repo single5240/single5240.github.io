@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-07",
+  "sentence": "The first principle is that you must not fool yourself—and you are the easiest person to fool.",
+  "source": {
+    "author": "Richard P. Feynman",
+    "work": "Cargo Cult Science",
+    "year": "1974",
+    "detail": "Caltech 毕业典礼演讲；后收入 Surely You're Joking, Mr. Feynman!；Caltech Engineering and Science 杂志收录原文"
+  },
+  "translation": "第一条原则是：你绝不能欺骗自己——而你自己，恰恰是最好骗的那个人。",
+  "grammar": [
+    "主干：The first principle（主语）is（系动词）that…（表语从句）。that 从句说明「原则」的内容：you must not fool yourself。",
+    "破折号后是补充说明：and you are the easiest person to fool。the easiest person to fool 里用不定式 to fool 作后置定语，修饰 person，意思是「最容易被骗的人」；主动形式表被动意味，英语里很常见（如 a hard problem to solve）。",
+    "must not 表禁止/强烈告诫（「绝不可」），语气比 don't 更重，适合讲原则。"
+  ],
+  "vocab": [
+    {
+      "word": "principle",
+      "phonetic": "/ˈprɪnsəpl/",
+      "pos": "n.",
+      "meaning": "原则、原理；句中指做事应遵守的第一条准则",
+      "collocation": "first principle / in principle / guiding principle",
+      "example": "In embedded work, fail-safe design is a first principle."
+    },
+    {
+      "word": "fool",
+      "phonetic": "/fuːl/",
+      "pos": "v.",
+      "meaning": "欺骗、愚弄；句中 fool yourself = 自欺",
+      "collocation": "fool yourself / fool someone into doing / you can't fool me",
+      "example": "Don't fool yourself into thinking the bug will fix itself."
+    },
+    {
+      "word": "the easiest … to …",
+      "phonetic": "/ði ˈiːziɪst … tə …/",
+      "pos": "phrase",
+      "meaning": "最容易被……的……；形容词最高级 + 名词 + 不定式",
+      "collocation": "the easiest person/thing to + v. / the hardest … to …",
+      "example": "This register is the easiest one to misconfigure."
+    },
+    {
+      "word": "must not",
+      "phonetic": "/mʌst nɒt/",
+      "pos": "modal",
+      "meaning": "绝不可、禁止；语气强于 don't",
+      "collocation": "you must not / one must not",
+      "example": "You must not ignore the watchdog reset flags."
+    }
+  ],
+  "note": "写驱动、看示波器、读别人代码时，最容易骗自己的往往是「我大概对了」。今天试着用英文对自己说一句：Don't fool yourself—check it again. 把怀疑留给自己的假设，把证据留给电路和日志。"
+}
