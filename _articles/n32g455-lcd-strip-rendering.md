@@ -385,9 +385,9 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
             <span class="aiw-hint">直观对比有无快照时的刷屏中途跳变表现</span>
           </div>
           <div class="strip-preset-row">
-            <button type="button" class="aiw-btn primary" id="strip-preset-safe">🛡️ 演示帧快照防撕裂 (Row 104 跳变)</button>
-            <button type="button" class="aiw-btn danger" id="strip-preset-tear">⚡ 演示无快照数字腰部撕裂 (Row 104 断层)</button>
-            <button type="button" class="aiw-btn" id="strip-preset-inspect">🔍 检视大号字模切片 (Strip 12)</button>
+            <button type="button" class="aiw-btn primary" id="strip-preset-safe">🛡️ 演示开启帧快照 (原子保护不割裂)</button>
+            <button type="button" class="aiw-btn danger" id="strip-preset-tear">⚡ 演示无快照中途跳变 (力值上下割裂)</button>
+            <button type="button" class="aiw-btn" id="strip-preset-inspect">🔍 检视 3.84KB SRAM 字模切片 (Strip 12)</button>
           </div>
         </div>
 

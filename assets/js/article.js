@@ -1592,7 +1592,7 @@
 
     // High-fidelity ST7789 UI rasterizer (240x320)
     // Note: wavePhase is passed explicitly so all strips of a locked snapshot share the exact same phase!
-    function drawUiFrame(ctx, val, peak, batPct, wavePhase = 0, isTornSlice = false) {
+    function drawUiFrame(ctx, val, peak, batPct, wavePhase = 0) {
       ctx.save();
       // 1. IPS deep black background
       ctx.fillStyle = '#060b10';
@@ -1657,8 +1657,8 @@
       ctx.textAlign = 'left';
 
       // 4. Main tensile force readout card (y = 56..152)
-      ctx.fillStyle = isTornSlice ? '#160d14' : '#091522';
-      ctx.strokeStyle = isTornSlice ? '#ff4757' : '#1d3246';
+      ctx.fillStyle = '#091522';
+      ctx.strokeStyle = '#1d3246';
       ctx.beginPath();
       if (ctx.roundRect) ctx.roundRect(8, 56, 224, 96, 6);
       else ctx.rect(8, 56, 224, 96);
@@ -1675,27 +1675,26 @@
       ctx.fillText(snapshotEnabled ? 'SNAP: LOCKED' : 'SNAP: OFF (DIRECT)', 224, 70);
       ctx.textAlign = 'left';
 
-      // Large 44px digits centered vertically at y = 104 (spanning y = 88..119, Strips 11..14)
-      // Strip 12 (y = 96..103) holds the top half; Strip 13 (y = 104..111) holds the bottom half!
+      // Large 44px digits: Alphabetic baseline at y = 118
+      // Digits span y = 87..118; Strip 11..12 (y=88..103) is top half, Strip 13..14 (y=104..119) is bottom half
+      // Exactly bisected at row 104!
       ctx.save();
-      ctx.textBaseline = 'middle';
-      ctx.font = 'bold 44px "JetBrains Mono", "SF Mono", Consolas, monospace';
-      ctx.fillStyle = isTornSlice ? '#ff7675' : '#00f5d4';
-      const numStr = val.toFixed(2);
-      const xOffset = isTornSlice ? 17 : 14;
-      ctx.fillText(numStr, xOffset, 104);
+      ctx.font = 'bold 44px ui-monospace, SFMono-Regular, "JetBrains Mono", Consolas, monospace';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#00f5d4';
+      ctx.fillText(val.toFixed(2), 14, 118);
 
       // Unit 'N'
-      ctx.fillStyle = isTornSlice ? '#ff9f43' : '#00bbf9';
-      ctx.font = 'bold 20px "JetBrains Mono", Consolas, monospace';
-      ctx.fillText('N', 178, 108);
+      ctx.fillStyle = '#00bbf9';
+      ctx.font = 'bold 20px ui-monospace, SFMono-Regular, "JetBrains Mono", Consolas, monospace';
+      ctx.fillText('N', 178, 118);
       ctx.restore();
 
       // Horizontal Force Load Bar (y = 126..132, Strip 15..16)
       ctx.fillStyle = '#050c14';
       ctx.fillRect(14, 125, 210, 6);
       const loadPct = Math.max(0.05, Math.min(1, val / 100));
-      ctx.fillStyle = isTornSlice ? '#ff6b6b' : '#00e5ff';
+      ctx.fillStyle = '#00e5ff';
       ctx.fillRect(14, 125, Math.round(210 * loadPct), 6);
 
       // Sensor metadata (y = 143, Strip 17..18)
@@ -1716,7 +1715,7 @@
       ctx.font = '8px "JetBrains Mono", Consolas, monospace';
       ctx.fillText('OSCILLOSCOPE (200 ms/div)', 14, 172);
       ctx.textAlign = 'right';
-      ctx.fillStyle = isTornSlice ? '#ff7675' : '#38bdf8';
+      ctx.fillStyle = '#38bdf8';
       ctx.fillText(`${val.toFixed(1)} N`, 224, 172);
       ctx.textAlign = 'left';
 
@@ -1747,7 +1746,7 @@
         if (x === 12) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = isTornSlice ? '#ff6b6b' : '#00e5ff';
+      ctx.strokeStyle = '#00e5ff';
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -1755,7 +1754,7 @@
       ctx.lineTo(228, 273);
       ctx.lineTo(12, 273);
       ctx.closePath();
-      ctx.fillStyle = isTornSlice ? 'rgba(255, 107, 107, 0.14)' : 'rgba(0, 229, 255, 0.10)';
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.10)';
       ctx.fill();
 
       // 6. Bottom softkeys (y = 286..314, Strips 35..39)
@@ -1781,15 +1780,12 @@
     function getEffectiveStripData(s) {
       if (s <= currentStrip) {
         if (snapshotEnabled) {
-          return { val: snapshotVal, phase: frameWavePhase, isScanned: true, isTornAfter: false };
+          return { val: snapshotVal, phase: frameWavePhase, isScanned: true };
         }
-        const rawVal = stripRawValues[s];
-        const baseVal = stripRawValues[0];
-        const isTornAfter = Math.abs(rawVal - baseVal) > 0.01;
-        return { val: rawVal, phase: stripRawPhases[s], isScanned: true, isTornAfter };
+        return { val: stripRawValues[s], phase: stripRawPhases[s], isScanned: true };
       }
       // Strips below currentStrip still hold previous frame in ST7789 GRAM
-      return { val: prevFrameVal, phase: prevFramePhase, isScanned: false, isTornAfter: false };
+      return { val: prevFrameVal, phase: prevFramePhase, isScanned: false };
     }
 
     // Detect any mid-frame tear seam among strips 0..currentStrip
@@ -1814,16 +1810,9 @@
 
       for (let s = 0; s < 40; s++) {
         const topY = s * 8;
-        const { val, phase, isScanned, isTornAfter } = getEffectiveStripData(s);
-        drawUiFrame(offscreenCtx, val, peakVal, 88, phase, isTornAfter);
+        const { val, phase } = getEffectiveStripData(s);
+        drawUiFrame(offscreenCtx, val, peakVal, 88, phase);
         screenCtx.drawImage(offscreenCanvas, 0, topY, 240, 8, 0, topY, 240, 8);
-
-        // Slightly dim un-scanned GRAM rows below currentStrip during an active scan
-        // so the user can visibly see each 8-row strip lighting up the GRAM
-        if (!frameComplete && !isScanned) {
-          screenCtx.fillStyle = 'rgba(2, 6, 12, 0.34)';
-          screenCtx.fillRect(0, topY, 240, 8);
-        }
 
         // Copy currentStrip's 8-line slice into the 3.84 KB SRAM buffer canvas
         if (s === currentStrip && sramCtx) {
@@ -1841,7 +1830,6 @@
       if (elScanLine) elScanLine.style.top = `${topY}px`;
       if (elScanTag) {
         elScanTag.textContent = `STRIP ${currentStrip} · ROW ${topY}..${topY + 7}`;
-        // Prevent clipping by overflow:hidden when near top of screen (Strip 0..2)
         elScanTag.classList.toggle('flip-below', currentStrip <= 2);
       }
 
@@ -1880,11 +1868,11 @@
 
       if (tearInfo) {
         if (elStatTear) {
-          elStatTear.textContent = `⚠️ 画面撕裂 (Row ${tearInfo.seamRow} 上下错位)`;
+          elStatTear.textContent = `⚠️ 画面割裂 (Row ${tearInfo.seamRow} 上下错位)`;
           elStatTear.className = 'aiw-stat-value warn';
         }
         if (elStatSeam) {
-          elStatSeam.textContent = `Row ${tearInfo.seamRow} (${tearInfo.upperVal.toFixed(1)}N ≠ ${tearInfo.lowerVal.toFixed(1)}N)`;
+          elStatSeam.textContent = `Row ${tearInfo.seamRow} (上 ${tearInfo.upperVal.toFixed(2)}N ≠ 下 ${tearInfo.lowerVal.toFixed(2)}N)`;
           elStatSeam.className = 'strip-reg-value warn';
         }
         if (elTearSeam) {
@@ -1892,12 +1880,12 @@
           elTearSeam.style.top = `${tearInfo.seamRow}px`;
         }
         if (elTearBadge) {
-          elTearBadge.textContent = `⚡ 撕裂接缝 Row ${tearInfo.seamRow}: 上半 ${tearInfo.upperVal.toFixed(2)}N / 下半 ${tearInfo.lowerVal.toFixed(2)}N`;
+          elTearBadge.textContent = `⚡ 接缝 Row ${tearInfo.seamRow}: 上半 ${tearInfo.upperVal.toFixed(2)}N / 下半 ${tearInfo.lowerVal.toFixed(2)}N`;
           elTearBadge.classList.toggle('flip-below', tearInfo.seamRow < 24);
         }
       } else {
         if (elStatTear) {
-          elStatTear.textContent = '画面原子一致 (无撕裂)';
+          elStatTear.textContent = snapshotEnabled && hasPending ? '原子一致 (快照保护中)' : '画面原子一致 (无割裂)';
           elStatTear.className = 'aiw-stat-value accent';
         }
         if (elStatSeam) {
@@ -1993,7 +1981,7 @@
         if (realTimeVal > peakVal) peakVal = realTimeVal;
         midFrameJumpHappened = true;
         log(
-          `[TEARING @ ROW 104] 扫描至 Strip 13 (大号数字腰部 y=104) 时传感器采样跳变：${oldVal.toFixed(2)} N ➔ ${realTimeVal.toFixed(2)} N！因无帧快照保护，数字上下半截发生严重横向错位撕裂！`,
+          `[TEARING @ ROW 104] 扫描至 Strip 13 (大号数字腰部 y=104) 时传感器采样跳变：${oldVal.toFixed(2)} N ➔ ${realTimeVal.toFixed(2)} N！因无帧快照保护，数字上下半截发生割裂错位！`,
           'error',
           13
         );
@@ -2062,12 +2050,12 @@
         stripRawValues[s] = baseVal;
         stripRawPhases[s] = frameWavePhase;
       }
-      // At Strip 13 (y = 104, middle of 44px digits), sensor jumped to 89.60 N; scan advanced to Strip 17
+      // At Strip 13 (y = 104, waist of 44px digits), sensor jumped to 89.60 N; scan advanced to Strip 20
       for (let s = 13; s < 40; s++) {
         stripRawValues[s] = jumpedVal;
         stripRawPhases[s] = liveWavePhase;
       }
-      currentStrip = 17; // y = 136..143, just past the digits & load bar so the full digit area is visible!
+      currentStrip = 20; // y = 160, past the digits card so the entire digit area is drawn!
 
       pulsePipelineStages();
       renderScreenFromState();
@@ -2075,13 +2063,13 @@
 
       if (enableSnapshot) {
         log(
-          `[SCENARIO: SNAPSHOT ON] Strip 0 锁定快照 45.20 N ➔ 刷至 Strip 13 (Row 104) 时传感器突变为 89.60 N ➔ 快照机制生效：当前帧继续绘制 45.20 N (数字完好无损)，仅置位 pending = 1 待下一帧原子更新！`,
+          `[SCENARIO: SNAPSHOT ON] Strip 0 锁定快照 45.20 N ➔ 刷至 Strip 13 (Row 104) 传感器突变为 89.60 N ➔ 快照机制生效：当前帧继续保持 45.20 N (数字完好无损不割裂)，仅标记 pending = 1 待下一帧原子生效！`,
           'success',
           13
         );
       } else {
         log(
-          `[SCENARIO: SNAPSHOT OFF] 未开启帧快照 ➔ Strip 0..12 绘制上半截 45.20 N ➔ Strip 13 (Row 104) 传感器突变为 89.60 N ➔ Strip 13..17 直接绘制下半截 89.60 N，大号数字在 Row 104 处被横向腰斩撕裂！`,
+          `[SCENARIO: SNAPSHOT OFF] 未开启帧快照 ➔ Strip 0..12 绘制上半截 45.20 N ➔ Strip 13 (Row 104) 传感器突变为 89.60 N ➔ Strip 13..20 直接绘制下半截 89.60 N，大号数字在 Row 104 处呈现清晰的上下割裂断层！`,
           'error',
           13
         );
@@ -2093,10 +2081,10 @@
       const oldVal = realTimeVal;
       const newVal = nextForceValue(oldVal);
 
-      // If currently idle at frame boundary or outside the main digit rows while paused,
-      // automatically position the scan across the big digits (Strip 0..12 -> jump at Strip 13 -> Strip 17)
-      // so the user immediately sees the visual effect on the ST7789 screen!
-      if (!isRunning && (frameComplete || currentStrip < 11 || currentStrip > 32)) {
+      // If currently idle or paused:
+      // Position the jump right at Strip 13 (Row 104, waist of 44px digits) and advance to Strip 20 (y=160)
+      // so the user immediately and clearly observes the effect!
+      if (!isRunning && (frameComplete || currentStrip < 11 || currentStrip > 30)) {
         prevFrameVal = oldVal;
         prevFramePhase = frameWavePhase;
         snapshotVal = oldVal;
@@ -2115,22 +2103,21 @@
           stripRawValues[s] = newVal;
           stripRawPhases[s] = liveWavePhase;
         }
-        currentStrip = 17;
+        currentStrip = 20; // y = 160, past the big digits card
 
         pulsePipelineStages();
         renderScreenFromState();
         updateStats();
 
-        log(`[SENSOR EVENT] 刷屏中途 (Strip 13 · Row 104 数字腰部) 传感器力值跳变：${oldVal.toFixed(2)} N ➔ ${newVal.toFixed(2)} N`, 'event', 13);
         if (snapshotEnabled) {
-          log(`[SNAPSHOT HOLD] 帧快照锁定中 (${snapshotVal.toFixed(2)} N)：大号数字保持完整一致，新数据已标记 pending = 1，将在 Strip 39 结束后换帧。`, 'success', 17);
+          log(`[SNAPSHOT HOLD] 刷屏中途 (Strip 13 · Row 104) 传感器跳变：${oldVal.toFixed(2)} N ➔ ${newVal.toFixed(2)} N。帧快照锁定中 (${snapshotVal.toFixed(2)} N)：大号数字原子一致毫无割裂，新数据标记 pending = 1。待下一帧原子换帧。`, 'success', 13);
         } else {
-          log(`[TEARING DETECTED] 无帧快照保护：Row 104 上半截为 ${oldVal.toFixed(2)} N，下半截突变为 ${newVal.toFixed(2)} N，画面产生明显断层！`, 'error', 17);
+          log(`[TEARING OBSERVED] 刷屏中途 (Strip 13 · Row 104) 传感器跳变：${oldVal.toFixed(2)} N ➔ ${newVal.toFixed(2)} N。无帧快照保护：上半截为 ${oldVal.toFixed(2)} N，下半截突变为 ${newVal.toFixed(2)} N，大号数字发生明显的上下割裂断层！`, 'error', 13);
         }
         return;
       }
 
-      // Otherwise (when running or already mid-frame in Strip 11..32), inject at next strip
+      // Otherwise (when running or already mid-frame in Strip 11..30):
       realTimeVal = newVal;
       liveWavePhase = (liveWavePhase + 1.2) % (Math.PI * 2);
       if (realTimeVal > peakVal) peakVal = realTimeVal;
@@ -2139,7 +2126,6 @@
       log(`[SENSOR EVENT] 传感器新采样到达：${oldVal.toFixed(2)} N ➔ ${realTimeVal.toFixed(2)} N (当前处在 Strip ${currentStrip})`, 'event');
 
       if (!isRunning) {
-        // Advance 3 strips immediately so the new value is visibly rasterized onto screenCanvas
         const stepsToAdvance = Math.min(3, 39 - currentStrip);
         for (let i = 0; i < stepsToAdvance; i++) {
           currentStrip++;
@@ -2151,9 +2137,9 @@
       }
 
       if (snapshotEnabled) {
-        log(`[SNAPSHOT HOLD] 帧快照已锁定 (${snapshotVal.toFixed(2)} N)：当前帧不受影响，pending 置 1。`, 'normal');
+        log(`[SNAPSHOT HOLD] 帧快照已锁定 (${snapshotVal.toFixed(2)} N)：当前帧不受影响，pending 置 1。待 Strip 39 完成后换帧。`, 'normal');
       } else {
-        log(`[UNLOCKED DIRECT READ] 无帧快照：Strip ${currentStrip} 起直接以新值 ${realTimeVal.toFixed(2)} N 光栅化，产生画面撕裂！`, 'warn');
+        log(`[UNLOCKED DIRECT READ] 无帧快照：Strip ${currentStrip} 起直接以新值 ${realTimeVal.toFixed(2)} N 光栅化，出现割裂！`, 'warn');
       }
 
       renderScreenFromState();
@@ -2163,19 +2149,13 @@
     // Toggle snapshot checkbox: immediately re-render current frame to compare!
     chkSnapshot?.addEventListener('change', (e) => {
       snapshotEnabled = e.target.checked;
-      // If user unchecks Snapshot while at initial idle state (no mid-frame jump yet),
-      // automatically demonstrate the Row 104 mid-frame jump so they immediately see the difference!
-      if (!snapshotEnabled && !midFrameJumpHappened && !isRunning) {
-        runRow104MidFrameScenario(false);
-        return;
-      }
       renderScreenFromState();
       updateStats();
       log(
         `[SNAPSHOT CONFIG] 帧快照机制已${
           snapshotEnabled
-            ? `开启：当前帧恢复使用锁定量 ${snapshotVal.toFixed(2)} N，画面撕裂立即消除`
-            : '关闭：当前帧直接暴露中途跳变数据，出现横向撕裂接缝'
+            ? `开启：当前帧恢复使用锁定量 ${snapshotVal.toFixed(2)} N，画面割裂立即消除`
+            : '关闭：当前帧直接暴露中途跳变数据，力值呈现上下割裂断层'
         }`,
         snapshotEnabled ? 'success' : 'warn'
       );
@@ -2192,7 +2172,7 @@
         if (elBtnRun) elBtnRun.textContent = '连续刷屏';
       }
       frameComplete = false;
-      jumpToStrip(12); // Strip 12: y = 96..103 (middle of 44px digits)
+      jumpToStrip(12); // Strip 12: y = 96..103 (waist of 44px digits)
       log('[INSPECT] 已定位至 Strip 12 (y = 96..103)：可在左侧下方 3.84 KB SRAM 缓冲视图中检视被裁剪出的 8 行数字字模切片。', 'normal', 12);
     });
 
