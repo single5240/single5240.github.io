@@ -39,6 +39,12 @@
           "weekday": "周六",
           "title": "AI 资讯日报 · 11月7日",
           "summary": "Lead: Cursor 上线与 agent 的实时语音通话；OpenAI 写明 12 月起 ChatGPT 与 Codex 共用额度；Claude 向美国付费用户开放只读理财接入。"
+        },
+        {
+          "date": "2026-11-08",
+          "weekday": "周日",
+          "title": "AI 资讯日报 · 11月8日",
+          "summary": "Lead: OpenAI 据报完成约 110 亿美元融资、估值 1.25 万亿美元；ChatGPT Remix 向商务和企业套餐推送；Claude Code 的「不再询问」已在公开仓库泄露密钥。"
         }
       ]
     },
