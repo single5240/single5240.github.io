@@ -577,6 +577,10 @@
   font-weight: 700;
   color: var(--ink);
   font-family: ui-monospace, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .aiw-stat-value.accent { color: var(--accent-dark); }
@@ -698,7 +702,9 @@
 
 .aiw-log-line {
   margin-bottom: 2px;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .aiw-log-time {
@@ -1409,6 +1415,7 @@
 
 .strip-reg-item {
   padding: 8px 10px;
+  min-width: 0;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1427,7 +1434,11 @@
   font-size: 12.5px;
   font-weight: 700;
   font-family: ui-monospace, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .strip-reg-value.accent { color: var(--accent-dark); }
@@ -1650,7 +1661,9 @@
 .strip-clip-diag {
   margin-top: 7px;
   padding: 5px 8px;
-  min-height: 36px;
+  height: 42px;
+  box-sizing: border-box;
+  overflow: hidden;
   border-radius: 5px;
   background: var(--subtle-bg);
   border: 1px solid var(--line);
@@ -1658,7 +1671,7 @@
   line-height: 1.45;
   color: var(--ink);
   font-family: ui-monospace, Consolas, monospace;
-  contain: content;
+  contain: strict;
 }
 
 .strip-sram-desc {

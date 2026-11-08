@@ -2025,7 +2025,7 @@
 
       if (elStatPending) {
         if (hasPending) {
-          setText(elStatPending, `1 · PENDING (待下一帧换为 ${realTimeVal.toFixed(2)}N)`);
+          setText(elStatPending, `1 · PENDING (${realTimeVal.toFixed(2)}N)`);
           setClass(elStatPending, 'strip-reg-value pending');
         } else {
           setText(elStatPending, '0 · CLEAN (就绪)');
@@ -2039,7 +2039,7 @@
           setClass(elStatTear, 'aiw-stat-value warn');
         }
         if (elStatSeam) {
-          setText(elStatSeam, `Row ${tearInfo.seamRow} (上 ${tearInfo.upperVal.toFixed(2)}N ≠ 下 ${tearInfo.lowerVal.toFixed(2)}N)`);
+          setText(elStatSeam, `Row ${tearInfo.seamRow} (${tearInfo.upperVal.toFixed(1)}≠${tearInfo.lowerVal.toFixed(1)}N)`);
           setClass(elStatSeam, 'strip-reg-value warn');
         }
         if (elTearSeam) {
