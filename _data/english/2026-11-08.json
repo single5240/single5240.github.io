@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-08",
+  "sentence": "Tomorrow, and tomorrow, and tomorrow, / Creeps in this petty pace from day to day, / To the last syllable of recorded time;",
+  "source": {
+    "author": "William Shakespeare",
+    "work": "Macbeth",
+    "year": "c.1606",
+    "detail": "第五幕第五场，麦克白听到妻子死讯后的独白开头三行"
+  },
+  "translation": "明天，又一个明天，再一个明天，一天接着一天地踏着细碎的步子悄悄爬行，直到时间记录的最后一个音节。",
+  "grammar": [
+    "主干是“Tomorrow ... creeps”：三个 tomorrow 其实说的是同一种东西——“一个接一个的明天”，被当成一个整体，所以谓语用单数 creeps。重复 and 连接（连词叠用，polysyndeton）故意放慢节奏，读起来就像日子拖沓地一天天挪过去。",
+    "后面全是状语，层层修饰 creeps：in this petty pace 说明“以怎样的步子爬”（in ... pace 表方式）；from day to day 说明“怎么推进”（一天天）；to the last syllable of recorded time 说明“爬到哪里为止”。recorded 是过去分词作定语，表被动——“被记录下来的时间”，也就是人类历史的尽头。"
+  ],
+  "vocab": [
+    {
+      "word": "creep",
+      "phonetic": "/kriːp/",
+      "pos": "v.（过去式 crept）",
+      "meaning": "悄悄地、缓慢地爬行或移动；句中指时间不知不觉地慢慢挪过",
+      "collocation": "creep in / creep up on sb. / creep into",
+      "example": "A few bugs crept into the code during the late-night refactor."
+    },
+    {
+      "word": "petty",
+      "phonetic": "/ˈpeti/",
+      "pos": "adj.",
+      "meaning": "琐碎的、微不足道的；句中形容日子的步子细碎无意义",
+      "collocation": "petty details / petty cash / petty argument",
+      "example": "Don't let petty arguments ruin the project."
+    },
+    {
+      "word": "pace",
+      "phonetic": "/peɪs/",
+      "pos": "n. / v.",
+      "meaning": "步调、节奏、速度",
+      "collocation": "at a steady pace / keep pace with / set the pace",
+      "example": "It's hard to keep pace with the new AI tools."
+    },
+    {
+      "word": "syllable",
+      "phonetic": "/ˈsɪləbl/",
+      "pos": "n.",
+      "meaning": "音节；句中比喻时间的最后一丁点",
+      "collocation": "stress the second syllable / in words of one syllable（用最浅白的话）",
+      "example": "In \"computer\", the stress falls on the second syllable."
+    }
+  ],
+  "note": "这几行接下来就是著名的 \"Life's but a walking shadow... a tale told by an idiot, full of sound and fury, signifying nothing.\"（福克纳的《喧哗与骚动》书名就出自这里）。小练习：用 creep 和 pace 各造一个句子，比如描述项目进度或学习节奏。"
+}
