@@ -29,7 +29,7 @@ function pagePath(file) {
 }
 
 function urlPath(value) {
-  const url = new URL(value, "https://single5240.github.io");
+  const url = new URL(value, "https://single5240.cn");
   let path = decodeURIComponent(url.pathname);
   if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
   return path || "/";

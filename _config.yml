@@ -1,6 +1,6 @@
 title: single5240 笔记分享
 description: 记录嵌入式开发、Linux 与 Qt 实践中的思考、方法和踩坑经验。
-url: https://single5240.github.io
+url: https://single5240.cn
 lang: zh-CN
 timezone: Asia/Shanghai
 defaults:
@@ -68,4 +68,4 @@ umami:
   website_id: "17647b5b-ae66-4697-b0bc-168c6c7f2d11"
   script_url: "https://visiting-tips-suppose-prepare.trycloudflare.com/script.js"
   host_url: ""
-  domains: "single5240.github.io"
+  domains: "single5240.cn"
