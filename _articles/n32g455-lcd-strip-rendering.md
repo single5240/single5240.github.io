@@ -441,7 +441,7 @@ void Canvas_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
             <span>渲染条带流水与 SPI1 DMA 状态机日志</span>
             <span class="aiw-hint">记录 Strip 0 快照锁定、CASET/RASET 窗口与撕裂位置</span>
           </div>
-          <div class="aiw-log" id="strip-log" aria-live="polite"></div>
+          <div class="aiw-log" id="strip-log" role="log" aria-live="off"></div>
         </div>
       </div>
     </div>

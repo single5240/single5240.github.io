@@ -394,7 +394,8 @@
       stepCount = 0;
       runCount = 0;
       queue.fill(null);
-      if (elLog) elLog.innerHTML = '';
+      logHistory.length = 0;
+      logDirty = true;
       if (elAction) elAction.textContent = '无';
       if (elEvent) elEvent.textContent = '就绪';
       log('[INIT] 状态机复位完成，初始状态置为 IDLE，事件队列已清空', 'success');
@@ -1001,7 +1002,8 @@
       rTail = 0;
       rCount = 0;
       ringItems.fill(null);
-      if (elLog) elLog.innerHTML = '';
+      pendingLogs.length = 0;
+      if (elLog) elLog.textContent = '';
       log('[RESET] 调度器与环形缓冲区已复位，时钟重归 0ms', 'normal');
       renderUI();
     });
@@ -1440,10 +1442,20 @@
     let midFrameJumpHappened = false;
 
     let isRunning = false;
-    let timer = null;
     let autoJumpTimer = null;
-    let pipelineTimer = null;
     let stepInterval = 45;
+
+    // requestAnimationFrame scheduler: state changes only mark the view dirty,
+    // and canvas / DOM are refreshed at most once per display frame.
+    let rafId = 0;
+    let lastTs = 0;
+    let stepAccum = 0;
+    let renderDirty = false;
+    let pulseStart = -1; // >= 0 while a manual-step pipeline pulse is animating
+    let activeStage = -1;
+    const LOG_MAX_LINES = 120;
+    const FRAME_CACHE_MAX = 8;
+    const frameCache = new Map(); // key -> pre-rendered 240x320 canvas
 
     // Viewport & Canvases
     const screenViewport = root.querySelector('#strip-screen-viewport');
@@ -1473,6 +1485,7 @@
     const elStatPending = root.querySelector('#strip-stat-pending');
     const elStatSeam = root.querySelector('#strip-stat-seam');
     const elLog = root.querySelector('#strip-log');
+    if (elLog) elLog.setAttribute('aria-live', 'off');
 
     // Controls
     const chkSnapshot = root.querySelector('#strip-chk-snapshot');
@@ -1488,12 +1501,6 @@
 
     // Legacy DOM text readout compatibility
     const elVal = root.querySelector('#strip-screen-val');
-
-    // Offscreen 240x320 canvas for rendering target UI
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = 240;
-    offscreenCanvas.height = 320;
-    const offscreenCtx = offscreenCanvas.getContext('2d');
 
     const screenCtx = screenCanvas ? screenCanvas.getContext('2d') : null;
     const sramCtx = sramCanvas ? sramCanvas.getContext('2d') : null;
@@ -1514,19 +1521,61 @@
       }
     }
 
+    const LOG_VISIBLE = 6; // 135px viewport fits ~5-6 lines; keep a pre-allocated ring of 6 rows (zero scrollHeight layout!)
+    const logHistory = [];
+    let logDirty = false;
+    const logPool = [];
+    if (elLog) {
+      elLog.textContent = '';
+      for (let i = 0; i < LOG_VISIBLE; i++) {
+        const line = document.createElement('div');
+        line.className = 'aiw-log-line';
+        line.style.display = 'none';
+        const tSpan = document.createElement('span');
+        tSpan.className = 'aiw-log-time';
+        const mSpan = document.createElement('span');
+        line.append(tSpan, ' ', mSpan);
+        elLog.appendChild(line);
+        logPool.push({ line, tSpan, mSpan, time: '', msg: '', cls: '' });
+      }
+    }
+
+    function flushLogs() {
+      if (!elLog || !logDirty) return;
+      logDirty = false;
+      const startIdx = Math.max(0, logHistory.length - LOG_VISIBLE);
+      const count = logHistory.length - startIdx;
+      for (let i = 0; i < LOG_VISIBLE; i++) {
+        const slot = logPool[i];
+        if (i < count) {
+          const item = logHistory[startIdx + i];
+          if (slot.line.style.display === 'none') slot.line.style.display = '';
+          if (slot.time !== item.time) {
+            slot.tSpan.textContent = item.time;
+            slot.time = item.time;
+          }
+          const cls = item.type !== 'normal' ? `aiw-log-${item.type}` : '';
+          if (slot.cls !== cls) {
+            slot.mSpan.className = cls;
+            slot.cls = cls;
+          }
+          if (slot.msg !== item.msg) {
+            slot.mSpan.textContent = item.msg;
+            slot.msg = item.msg;
+          }
+        } else if (slot.line.style.display !== 'none') {
+          slot.line.style.display = 'none';
+        }
+      }
+    }
+
     function log(msg, type = 'normal', stripOverride = currentStrip) {
       if (!elLog) return;
-      const line = document.createElement('div');
-      line.className = 'aiw-log-line';
       const time = `[F${frameNumber}·S${String(stripOverride).padStart(2, '0')}]`;
-      let styledMsg = msg;
-      if (type === 'event') styledMsg = `<span class="aiw-log-event">${msg}</span>`;
-      else if (type === 'success') styledMsg = `<span class="aiw-log-success">${msg}</span>`;
-      else if (type === 'warn') styledMsg = `<span class="aiw-log-warn">${msg}</span>`;
-      else if (type === 'error') styledMsg = `<span class="aiw-log-error">${msg}</span>`;
-      line.innerHTML = `<span class="aiw-log-time">${time}</span> ${styledMsg}`;
-      elLog.appendChild(line);
-      elLog.scrollTop = elLog.scrollHeight;
+      logHistory.push({ time, msg, type });
+      if (logHistory.length > LOG_MAX_LINES) logHistory.shift();
+      logDirty = true;
+      requestRender();
     }
 
     function nextForceValue(baseVal) {
@@ -1543,51 +1592,119 @@
     function updateJumpBtnLabel() {
       if (!elBtnJump) return;
       const nextTarget = realTimeVal === 45.20 ? 89.60 : 45.20;
-      elBtnJump.textContent = `模拟传感器力值跳变 (${realTimeVal.toFixed(2)}N ➔ ${nextTarget.toFixed(2)}N)`;
+      setText(elBtnJump, `模拟传感器力值跳变 (${realTimeVal.toFixed(2)}N ➔ ${nextTarget.toFixed(2)}N)`);
     }
 
+    const pipelineStages = [stClip, stWin, stDma, stWait];
+
+    function setActiveStage(idx) {
+      if (idx === activeStage) return;
+      activeStage = idx;
+      pipelineStages.forEach((s, i) => s?.classList.toggle('is-active', i === idx));
+    }
+
+    function scheduleTick() {
+      if (!rafId) rafId = requestAnimationFrame(tick);
+    }
+
+    function requestRender() {
+      renderDirty = true;
+      scheduleTick();
+    }
+
+    // Manual step / jump: play the 4 pipeline stages once (rAF-driven)
     function pulsePipelineStages() {
-      const stages = [stClip, stWin, stDma, stWait].filter(Boolean);
-      if (stages.length === 0) return;
-      if (pipelineTimer) clearInterval(pipelineTimer);
-      let idx = 0;
-      stages.forEach((s, i) => s.classList.toggle('is-active', i === 0));
-      const stepMs = Math.max(12, Math.min(35, Math.floor(stepInterval / 4)));
-      pipelineTimer = setInterval(() => {
-        idx++;
-        if (idx >= stages.length) {
-          clearInterval(pipelineTimer);
-          pipelineTimer = null;
-          return;
-        }
-        stages.forEach((s, i) => s.classList.toggle('is-active', i === idx));
-      }, stepMs);
+      pulseStart = performance.now();
+      setActiveStage(0);
+      scheduleTick();
     }
 
-    // Explain which UI elements intersect strip s (y = topY..topY+7)
-    function describeClipRegion(s) {
+    function tick(ts) {
+      rafId = 0;
+      if (isRunning) {
+        if (!lastTs) lastTs = ts;
+        stepAccum += Math.min(ts - lastTs, 250); // clamp after tab switches / long stalls
+        lastTs = ts;
+        let steps = 0;
+        while (stepAccum >= stepInterval && steps < 8) {
+          advanceStrip();
+          stepAccum -= stepInterval;
+          steps++;
+        }
+        if (stepAccum >= stepInterval) stepAccum = 0;
+        if (steps > 0) renderDirty = true;
+        setActiveStage(Math.min(3, Math.floor((stepAccum / stepInterval) * 4)));
+      } else if (pulseStart >= 0) {
+        const pulseMs = Math.max(12, Math.min(35, stepInterval / 4));
+        const idx = Math.floor((ts - pulseStart) / pulseMs);
+        if (idx >= 4) pulseStart = -1;
+        setActiveStage(Math.max(0, Math.min(3, idx)));
+      }
+
+      if (renderDirty) {
+        renderDirty = false;
+        renderScreenFromState(); updateStats(); flushLogs();
+      }
+
+      if (isRunning || pulseStart >= 0) scheduleTick();
+    }
+
+    function startRun() {
+      if (isRunning) return;
+      isRunning = true;
+      lastTs = 0;
+      stepAccum = stepInterval; // advance the first strip immediately
+      pulseStart = -1;
+      if (elBtnRun) elBtnRun.textContent = '暂停刷屏';
+      requestRender();
+    }
+
+    function stopRun() {
+      if (!isRunning) return;
+      isRunning = false;
+      if (elBtnRun) elBtnRun.textContent = '连续刷屏';
+      requestRender();
+    }
+
+    // Pre-build structured spans inside #strip-clip-info so updates only touch textContent
+    let clipFnEl = null;
+    let clipYEl = null;
+    let clipHitEl = null;
+    if (elClipInfo) {
+      elClipInfo.innerHTML = '<code></code> 裁剪：全局 <code></code> ➔ 命中<span></span>，写入 <code>localY[0..7]</code>';
+      const codes = elClipInfo.querySelectorAll('code');
+      clipFnEl = codes[0];
+      clipYEl = codes[1];
+      clipHitEl = elClipInfo.querySelector('span');
+    }
+
+    function updateClipRegion(s) {
+      if (!clipFnEl || !clipYEl || !clipHitEl) return;
       const y0 = s * 8;
       const y1 = y0 + 7;
+      setText(clipYEl, `y=${y0}..${y1}`);
       if (s <= 2) {
-        return `<code>Canvas_FillRect</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【顶部状态栏 (0..24)】，写入 <code>localY[0..7]</code>`;
+        setText(clipFnEl, 'Canvas_FillRect');
+        setText(clipHitEl, '【顶部状态栏 (0..24)】');
+      } else if (s <= 6) {
+        setText(clipFnEl, 'Canvas_FillRect');
+        setText(clipHitEl, '【峰值/采样率栏 (28..52)】');
+      } else if (s <= 10) {
+        setText(clipFnEl, 'Canvas_FillRect');
+        setText(clipHitEl, '【主读数卡片标题区 (56..87)】');
+      } else if (s <= 14) {
+        setText(clipFnEl, 'DrawGlyphBits');
+        setText(clipHitEl, `【44px 大号力值数字 (${s <= 12 ? '上半截字模' : '下半截字模'} y=88..119)】`);
+      } else if (s <= 18) {
+        setText(clipFnEl, 'Canvas_FillRect');
+        setText(clipHitEl, '【载荷进度条与通道信息 (120..152)】');
+      } else if (s <= 35) {
+        setText(clipFnEl, 'DrawWaveform');
+        setText(clipHitEl, '【示波器实时力值曲线 (156..283)】');
+      } else {
+        setText(clipFnEl, 'Canvas_FillRect');
+        setText(clipHitEl, '【底部功能键栏 F1/F2/F3 (286..314)】');
       }
-      if (s <= 6) {
-        return `<code>Canvas_FillRect</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【峰值/采样率栏 (28..52)】，写入 <code>localY[0..7]</code>`;
-      }
-      if (s >= 7 && s <= 10) {
-        return `<code>Canvas_FillRect</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【主读数卡片标题区 (56..87)】，写入 <code>localY[0..7]</code>`;
-      }
-      if (s >= 11 && s <= 14) {
-        const part = s <= 12 ? '上半截字模' : '下半截字模';
-        return `<code>DrawGlyphBits</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【44px 大号力值数字 (${part} y=88..119)】，写入 <code>localY[0..7]</code>`;
-      }
-      if (s >= 15 && s <= 18) {
-        return `<code>Canvas_FillRect</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【载荷进度条与通道信息 (120..152)】，写入 <code>localY[0..7]</code>`;
-      }
-      if (s >= 19 && s <= 35) {
-        return `<code>DrawWaveform</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【示波器实时力值曲线 (156..283)】，写入 <code>localY[0..7]</code>`;
-      }
-      return `<code>Canvas_FillRect</code> 裁剪：全局 <code>y=${y0}..${y1}</code> ➔ 命中【底部功能键栏 F1/F2/F3 (286..314)】，写入 <code>localY[0..7]</code>`;
     }
 
     // High-fidelity ST7789 UI rasterizer (240x320)
@@ -1805,19 +1922,68 @@
     }
 
     // Reconstruct the entire 240x320 ST7789 GRAM and 240x8 SRAM strip buffer from state
+    // Rasterizing the full UI is expensive (text + paths), so each distinct frame
+    // state is drawn once and cached; strips only blit 8-row slices from it.
+    function getFrameCanvas(val, phase) {
+      const key = `${val.toFixed(2)}|${phase.toFixed(4)}|${peakVal.toFixed(2)}|${snapshotEnabled ? 1 : 0}`;
+      let canvas = frameCache.get(key);
+      if (canvas) {
+        frameCache.delete(key);
+        frameCache.set(key, canvas); // refresh LRU order
+        return canvas;
+      }
+      if (frameCache.size >= FRAME_CACHE_MAX) {
+        canvas = frameCache.values().next().value;
+        frameCache.delete(frameCache.keys().next().value);
+      } else {
+        canvas = document.createElement('canvas');
+        canvas.width = 240;
+        canvas.height = 320;
+      }
+      drawUiFrame(canvas.getContext('2d'), val, peakVal, 88, phase);
+      frameCache.set(key, canvas);
+      return canvas;
+    }
+
     function renderScreenFromState() {
       if (!screenCtx) return;
 
-      for (let s = 0; s < 40; s++) {
-        const topY = s * 8;
-        const { val, phase } = getEffectiveStripData(s);
-        drawUiFrame(offscreenCtx, val, peakVal, 88, phase);
-        screenCtx.drawImage(offscreenCanvas, 0, topY, 240, 8, 0, topY, 240, 8);
-
-        // Copy currentStrip's 8-line slice into the 3.84 KB SRAM buffer canvas
-        if (s === currentStrip && sramCtx) {
-          sramCtx.drawImage(offscreenCanvas, 0, topY, 240, 8, 0, 0, 240, 8);
+      let runStart = 0;
+      let runCanvas = null;
+      for (let s = 0; s <= 40; s++) {
+        const canvas = s < 40 ? (() => {
+          const { val, phase } = getEffectiveStripData(s);
+          return getFrameCanvas(val, phase);
+        })() : null;
+        if (canvas !== runCanvas) {
+          if (runCanvas) {
+            const y = runStart * 8;
+            const h = (s - runStart) * 8;
+            screenCtx.drawImage(runCanvas, 0, y, 240, h, 0, y, 240, h);
+          }
+          runCanvas = canvas;
+          runStart = s;
         }
+        // Copy currentStrip's 8-line slice into the 3.84 KB SRAM buffer canvas
+        if (s === currentStrip && sramCtx && canvas) {
+          sramCtx.drawImage(canvas, 0, s * 8, 240, 8, 0, 0, 240, 8);
+        }
+      }
+    }
+
+    // Cache last written text & className in JS to avoid even DOM getter overhead
+    const textMemo = new WeakMap();
+    const classMemo = new WeakMap();
+    function setText(el, text) {
+      if (el && textMemo.get(el) !== text) {
+        textMemo.set(el, text);
+        el.textContent = text;
+      }
+    }
+    function setClass(el, cls) {
+      if (el && classMemo.get(el) !== cls) {
+        classMemo.set(el, cls);
+        el.className = cls;
       }
     }
 
@@ -1827,9 +1993,12 @@
       const tearInfo = detectCurrentFrameTear();
       const hasPending = snapshotEnabled && Math.abs(realTimeVal - snapshotVal) > 0.01;
 
-      if (elScanLine) elScanLine.style.top = `${topY}px`;
+      if (elScanLine) {
+        const tf = `translateY(${topY}px)`;
+        if (elScanLine.style.transform !== tf) elScanLine.style.transform = tf;
+      }
       if (elScanTag) {
-        elScanTag.textContent = `STRIP ${currentStrip} · ROW ${topY}..${topY + 7}`;
+        setText(elScanTag, `STRIP ${currentStrip} · ROW ${topY}..${topY + 7}`);
         elScanTag.classList.toggle('flip-below', currentStrip <= 2);
       }
 
@@ -1837,95 +2006,95 @@
         const statusSuffix = frameComplete && currentStrip === 39
           ? '整帧 40 条带已完成'
           : `进度 ${(((currentStrip + 1) / 40) * 100).toFixed(1)}%`;
-        elStatStrip.textContent = `条带 ${currentStrip} / 39 (${statusSuffix})`;
+        setText(elStatStrip, `条带 ${currentStrip} / 39 (${statusSuffix})`);
       }
-      if (elStatY) elStatY.textContent = `y = ${topY} .. ${topY + 7} px`;
-      if (elClipInfo) elClipInfo.innerHTML = describeClipRegion(currentStrip);
-      if (elFrameCounter) {
-        elFrameCounter.textContent = `Frame #${frameNumber} · 已刷 ${currentStrip + 1}/40 条带 (点击色块或屏幕可定位)`;
-      }
+      setText(elStatY, `y = ${topY} .. ${topY + 7} px`);
+      updateClipRegion(currentStrip);
+      setText(elFrameCounter, `Frame #${frameNumber} · 已刷 ${currentStrip + 1}/40 条带 (点击色块或屏幕可定位)`);
 
-      if (elStatLive) elStatLive.textContent = `${realTimeVal.toFixed(2)} N`;
+      setText(elStatLive, `${realTimeVal.toFixed(2)} N`);
       if (elStatSnap) {
         if (snapshotEnabled) {
-          elStatSnap.textContent = `${snapshotVal.toFixed(2)} N (已锁定)`;
-          elStatSnap.className = 'strip-reg-value accent';
+          setText(elStatSnap, `${snapshotVal.toFixed(2)} N (已锁定)`);
+          setClass(elStatSnap, 'strip-reg-value accent');
         } else {
-          elStatSnap.textContent = `未锁定 (直读 ${realTimeVal.toFixed(2)} N)`;
-          elStatSnap.className = 'strip-reg-value warn';
+          setText(elStatSnap, `未锁定 (直读 ${realTimeVal.toFixed(2)} N)`);
+          setClass(elStatSnap, 'strip-reg-value warn');
         }
       }
 
       if (elStatPending) {
         if (hasPending) {
-          elStatPending.textContent = `1 · PENDING (待下一帧换为 ${realTimeVal.toFixed(2)}N)`;
-          elStatPending.className = 'strip-reg-value pending';
+          setText(elStatPending, `1 · PENDING (待下一帧换为 ${realTimeVal.toFixed(2)}N)`);
+          setClass(elStatPending, 'strip-reg-value pending');
         } else {
-          elStatPending.textContent = '0 · CLEAN (就绪)';
-          elStatPending.className = 'strip-reg-value';
+          setText(elStatPending, '0 · CLEAN (就绪)');
+          setClass(elStatPending, 'strip-reg-value');
         }
       }
 
       if (tearInfo) {
         if (elStatTear) {
-          elStatTear.textContent = `⚠️ 画面割裂 (Row ${tearInfo.seamRow} 上下错位)`;
-          elStatTear.className = 'aiw-stat-value warn';
+          setText(elStatTear, `⚠️ 画面割裂 (Row ${tearInfo.seamRow} 上下错位)`);
+          setClass(elStatTear, 'aiw-stat-value warn');
         }
         if (elStatSeam) {
-          elStatSeam.textContent = `Row ${tearInfo.seamRow} (上 ${tearInfo.upperVal.toFixed(2)}N ≠ 下 ${tearInfo.lowerVal.toFixed(2)}N)`;
-          elStatSeam.className = 'strip-reg-value warn';
+          setText(elStatSeam, `Row ${tearInfo.seamRow} (上 ${tearInfo.upperVal.toFixed(2)}N ≠ 下 ${tearInfo.lowerVal.toFixed(2)}N)`);
+          setClass(elStatSeam, 'strip-reg-value warn');
         }
         if (elTearSeam) {
-          elTearSeam.style.display = 'block';
-          elTearSeam.style.top = `${tearInfo.seamRow}px`;
+          if (elTearSeam.style.display !== 'block') elTearSeam.style.display = 'block';
+          const seamTop = `${tearInfo.seamRow}px`;
+          if (elTearSeam.style.top !== seamTop) elTearSeam.style.top = seamTop;
         }
         if (elTearBadge) {
-          elTearBadge.textContent = `⚡ 接缝 Row ${tearInfo.seamRow}: 上半 ${tearInfo.upperVal.toFixed(2)}N / 下半 ${tearInfo.lowerVal.toFixed(2)}N`;
+          setText(elTearBadge, `⚡ 接缝 Row ${tearInfo.seamRow}: 上半 ${tearInfo.upperVal.toFixed(2)}N / 下半 ${tearInfo.lowerVal.toFixed(2)}N`);
           elTearBadge.classList.toggle('flip-below', tearInfo.seamRow < 24);
         }
       } else {
         if (elStatTear) {
-          elStatTear.textContent = snapshotEnabled && hasPending ? '原子一致 (快照保护中)' : '画面原子一致 (无割裂)';
-          elStatTear.className = 'aiw-stat-value accent';
+          setText(elStatTear, snapshotEnabled && hasPending ? '原子一致 (快照保护中)' : '画面原子一致 (无割裂)');
+          setClass(elStatTear, 'aiw-stat-value accent');
         }
         if (elStatSeam) {
-          elStatSeam.textContent = '无接缝断层';
-          elStatSeam.className = 'strip-reg-value accent';
+          setText(elStatSeam, '无接缝断层');
+          setClass(elStatSeam, 'strip-reg-value accent');
         }
         if (elTearSeam) {
-          elTearSeam.style.display = 'none';
+          if (elTearSeam.style.display !== 'none') elTearSeam.style.display = 'none';
         }
       }
 
       // Update 40-strip progress cells
       progCells.forEach((cell, idx) => {
-        cell.className = 'strip-prog-cell';
+        let cls = 'strip-prog-cell';
         if (idx === currentStrip) {
-          cell.classList.add('is-current');
+          cls += ' is-current';
         } else if (tearInfo && idx === tearInfo.seamStrip) {
-          cell.classList.add('is-tear-seam');
+          cls += ' is-tear-seam';
         } else if (tearInfo && idx > tearInfo.seamStrip && idx <= currentStrip) {
-          cell.classList.add('is-torn-after');
+          cls += ' is-torn-after';
         } else if (idx <= currentStrip) {
-          cell.classList.add('is-scanned');
+          cls += ' is-scanned';
         }
+        setClass(cell, cls);
       });
 
       if (elDmaBadge) {
         if (isRunning) {
-          elDmaBadge.textContent = `DMA1_CH2 传输中 (Strip ${currentStrip})`;
-          elDmaBadge.className = 'strip-dma-badge active';
+          setText(elDmaBadge, `DMA1_CH2 传输中 (Strip ${currentStrip})`);
+          setClass(elDmaBadge, 'strip-dma-badge active');
         } else if (frameComplete && currentStrip === 39) {
-          elDmaBadge.textContent = 'DMA1_CH2 完成整帧';
-          elDmaBadge.className = 'strip-dma-badge';
+          setText(elDmaBadge, 'DMA1_CH2 完成整帧');
+          setClass(elDmaBadge, 'strip-dma-badge');
         } else {
-          elDmaBadge.textContent = `DMA1_CH2 就绪 (Strip ${currentStrip})`;
-          elDmaBadge.className = 'strip-dma-badge';
+          setText(elDmaBadge, `DMA1_CH2 就绪 (Strip ${currentStrip})`);
+          setClass(elDmaBadge, 'strip-dma-badge');
         }
       }
 
       if (elVal) {
-        elVal.textContent = (snapshotEnabled ? snapshotVal : realTimeVal).toFixed(2);
+        setText(elVal, (snapshotEnabled ? snapshotVal : realTimeVal).toFixed(2));
       }
       updateJumpBtnLabel();
     }
@@ -1960,8 +2129,8 @@
       );
     }
 
-    // Step a single 8-line strip forward
-    function stepStrip() {
+    // Advance a single 8-line strip (state only; rendering is batched per display frame)
+    function advanceStrip() {
       if (frameComplete) {
         frameNumber++;
         startNewFrame();
@@ -1993,10 +2162,13 @@
       if (currentStrip === 39) {
         frameComplete = true;
       }
+    }
 
+    // Manual single step
+    function stepStrip() {
+      advanceStrip();
       pulsePipelineStages();
-      renderScreenFromState();
-      updateStats();
+      requestRender();
     }
 
     // Jump to inspect any specific strip (0..39) on click
@@ -2014,18 +2186,12 @@
       currentStrip = clamped;
       if (currentStrip === 39) frameComplete = true;
       pulsePipelineStages();
-      renderScreenFromState();
-      updateStats();
+      requestRender();
     }
 
     // Execute a controlled mid-frame jump at Row 104 (Strip 13, bisecting the 44px digits)
     function runRow104MidFrameScenario(enableSnapshot) {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-        isRunning = false;
-        if (elBtnRun) elBtnRun.textContent = '连续刷屏';
-      }
+      stopRun();
 
       snapshotEnabled = enableSnapshot;
       if (chkSnapshot) chkSnapshot.checked = enableSnapshot;
@@ -2058,8 +2224,7 @@
       currentStrip = 20; // y = 160, past the digits card so the entire digit area is drawn!
 
       pulsePipelineStages();
-      renderScreenFromState();
-      updateStats();
+      requestRender();
 
       if (enableSnapshot) {
         log(
@@ -2106,8 +2271,7 @@
         currentStrip = 20; // y = 160, past the big digits card
 
         pulsePipelineStages();
-        renderScreenFromState();
-        updateStats();
+        requestRender();
 
         if (snapshotEnabled) {
           log(`[SNAPSHOT HOLD] 刷屏中途 (Strip 13 · Row 104) 传感器跳变：${oldVal.toFixed(2)} N ➔ ${newVal.toFixed(2)} N。帧快照锁定中 (${snapshotVal.toFixed(2)} N)：大号数字原子一致毫无割裂，新数据标记 pending = 1。待下一帧原子换帧。`, 'success', 13);
@@ -2142,15 +2306,13 @@
         log(`[UNLOCKED DIRECT READ] 无帧快照：Strip ${currentStrip} 起直接以新值 ${realTimeVal.toFixed(2)} N 光栅化，出现割裂！`, 'warn');
       }
 
-      renderScreenFromState();
-      updateStats();
+      requestRender();
     }
 
     // Toggle snapshot checkbox: immediately re-render current frame to compare!
     chkSnapshot?.addEventListener('change', (e) => {
       snapshotEnabled = e.target.checked;
-      renderScreenFromState();
-      updateStats();
+      requestRender();
       log(
         `[SNAPSHOT CONFIG] 帧快照机制已${
           snapshotEnabled
@@ -2165,12 +2327,7 @@
     elPresetSafe?.addEventListener('click', () => runRow104MidFrameScenario(true));
     elPresetTear?.addEventListener('click', () => runRow104MidFrameScenario(false));
     elPresetInspect?.addEventListener('click', () => {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-        isRunning = false;
-        if (elBtnRun) elBtnRun.textContent = '连续刷屏';
-      }
+      stopRun();
       frameComplete = false;
       jumpToStrip(12); // Strip 12: y = 96..103 (waist of 44px digits)
       log('[INSPECT] 已定位至 Strip 12 (y = 96..103)：可在左侧下方 3.84 KB SRAM 缓冲视图中检视被裁剪出的 8 行数字字模切片。', 'normal', 12);
@@ -2182,12 +2339,7 @@
       const clickY = e.clientY - rect.top;
       const ratioY = Math.max(0, Math.min(319, (clickY / rect.height) * 320));
       const targetStrip = Math.floor(ratioY / 8);
-      if (isRunning) {
-        clearInterval(timer);
-        timer = null;
-        isRunning = false;
-        if (elBtnRun) elBtnRun.textContent = '连续刷屏';
-      }
+      stopRun();
       jumpToStrip(targetStrip);
       log(`[INSPECT] 屏幕点击定位至 Strip ${targetStrip} (y = ${targetStrip * 8}..${targetStrip * 8 + 7})`, 'normal', targetStrip);
     });
@@ -2197,16 +2349,16 @@
       autoJumpEnabled = e.target.checked;
       if (autoJumpEnabled) {
         log('[AUTO STREAM] 已启动高频采样流：每 320ms 注入一次动态力值变化', 'event');
-        if (!isRunning && elBtnRun) {
-          elBtnRun.click();
+        if (!isRunning) {
+          startRun();
+          log('[RUN] 启动 40 条带循环 SPI1 DMA 异步刷屏', 'normal');
         }
         autoJumpTimer = setInterval(() => {
           realTimeVal = Math.round((35 + Math.random() * 60) * 100) / 100;
           liveWavePhase = (liveWavePhase + 0.9) % (Math.PI * 2);
           if (realTimeVal > peakVal) peakVal = realTimeVal;
           midFrameJumpHappened = true;
-          renderScreenFromState();
-          updateStats();
+          requestRender();
         }, 320);
       } else {
         if (autoJumpTimer) {
@@ -2221,38 +2373,24 @@
     speedSelect?.addEventListener('change', (e) => {
       stepInterval = parseInt(e.target.value, 10) || 45;
       log(`[SPEED] 条带推进间隔已设为 ${stepInterval} ms / 条带`, 'normal');
-      if (isRunning) {
-        clearInterval(timer);
-        timer = setInterval(stepStrip, stepInterval);
-      }
     });
 
     // Run / Pause
     if (elBtnRun) {
       elBtnRun.addEventListener('click', () => {
-        isRunning = !isRunning;
-        if (isRunning) {
-          elBtnRun.textContent = '暂停刷屏';
-          timer = setInterval(stepStrip, stepInterval);
+        if (!isRunning) {
+          startRun();
           log('[RUN] 启动 40 条带循环 SPI1 DMA 异步刷屏', 'normal');
         } else {
-          elBtnRun.textContent = '连续刷屏';
-          clearInterval(timer);
-          timer = null;
+          stopRun();
           log('[PAUSE] 连续刷屏已暂停', 'normal');
         }
-        updateStats();
       });
     }
 
     // Step button
     elBtnStep?.addEventListener('click', () => {
-      if (isRunning) {
-        isRunning = false;
-        clearInterval(timer);
-        timer = null;
-        if (elBtnRun) elBtnRun.textContent = '连续刷屏';
-      }
+      stopRun();
       stepStrip();
     });
 
@@ -2261,24 +2399,17 @@
 
     // Reset button
     elBtnReset?.addEventListener('click', () => {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
+      stopRun();
       if (autoJumpTimer) {
         clearInterval(autoJumpTimer);
         autoJumpTimer = null;
       }
-      if (pipelineTimer) {
-        clearInterval(pipelineTimer);
-        pipelineTimer = null;
-      }
-      isRunning = false;
+      pulseStart = -1;
+      frameCache.clear();
       autoJumpEnabled = false;
       snapshotEnabled = true;
       if (chkSnapshot) chkSnapshot.checked = true;
       if (chkAutoJump) chkAutoJump.checked = false;
-      if (elBtnRun) elBtnRun.textContent = '连续刷屏';
 
       forceSeqIdx = 0;
       currentStrip = 0;
@@ -2296,21 +2427,33 @@
       stripRawValues.fill(realTimeVal);
       stripRawPhases.fill(0);
 
-      renderScreenFromState();
-      updateStats();
+      requestRender();
 
       if (elLog) elLog.innerHTML = '';
       log('[RESET] 条带渲染引擎已复位：Frame #1 就绪，片内 3.84 KB 条带缓冲指向 Strip 0 (y=0..7)', 'normal', 0);
     });
+
+    // Pause when scrolled offscreen or tab is hidden to save CPU/battery
+    if ('IntersectionObserver' in window) {
+      const visObserver = new IntersectionObserver((entries) => {
+        const visible = Boolean(entries[0]?.isIntersecting);
+        if (!visible && isRunning) {
+          stopRun();
+        }
+      }, { threshold: 0.02 });
+      visObserver.observe(root);
+    }
 
     // Initial draw (Strip 0 ready, frame beginning)
     currentStrip = 0;
     frameComplete = false;
     stripRawValues.fill(realTimeVal);
     stripRawPhases.fill(0);
+    log('[INIT] 240×8 条带渲染引擎初始化完成：40 条带覆盖 320 行，可点击【一键实验场景】或【模拟传感器力值跳变】观察防撕裂机制', 'normal', 0);
+    renderDirty = false;
     renderScreenFromState();
     updateStats();
-    log('[INIT] 240×8 条带渲染引擎初始化完成：40 条带覆盖 320 行，可点击【一键实验场景】或【模拟传感器力值跳变】观察防撕裂机制', 'normal', 0);
+    flushLogs();
   }
 
 

@@ -459,6 +459,13 @@
   let inView = true;
   let rafId = null;
   let autoSwitchTimer = null;
+  let cachedPaperColor = "";
+
+  const refreshPaperColor = () => {
+    cachedPaperColor =
+      getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#11191d";
+  };
+  refreshPaperColor();
 
   const getScopePalette = () => {
     const attr = document.documentElement.getAttribute("data-theme");
@@ -608,8 +615,7 @@
     // 4. 两端图纸测试焊盘圆环
     const startY = centerY - sampleBlended(-phase) * baseAmp;
     const endY = centerY - sampleBlended(Math.PI * 2 * cycles - phase) * baseAmp;
-    const paperColor =
-      getComputedStyle(document.documentElement).getPropertyValue("--paper").trim() || "#11191d";
+    const paperColor = cachedPaperColor || "#11191d";
 
     ctx.save();
     ctx.lineWidth = 1.4;
@@ -902,6 +908,7 @@
   }
 
   const themeObserver = new MutationObserver(() => {
+    refreshPaperColor();
     drawScope();
   });
   themeObserver.observe(document.documentElement, {
@@ -909,7 +916,10 @@
     attributeFilter: ["data-theme", "data-skin"],
   });
 
-  darkMedia.addEventListener("change", () => drawScope());
+  darkMedia.addEventListener("change", () => {
+    refreshPaperColor();
+    drawScope();
+  });
 
   reducedMotion.addEventListener("change", () => {
     if (reducedMotion.matches) {

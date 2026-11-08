@@ -498,6 +498,7 @@
   box-shadow: var(--panel-bevel), var(--shadow);
   overflow: hidden;
   font-family: inherit;
+  contain: layout paint;
 }
 
 .aiw-header {
@@ -561,6 +562,7 @@
   flex-direction: column;
   min-width: 100px;
   flex: 1 1 0;
+  contain: layout paint;
 }
 
 .aiw-stat-label {
@@ -691,8 +693,7 @@
   font-family: ui-monospace, Consolas, monospace;
   font-size: 11.5px;
   line-height: 1.6;
-  scroll-behavior: smooth;
-  border: 1px solid var(--line);
+  contain: strict;
 }
 
 .aiw-log-line {
@@ -1414,6 +1415,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  contain: layout paint;
 }
 
 .strip-reg-label {
@@ -1454,6 +1456,7 @@
   align-items: center;
   margin-bottom: 8px;
   padding: 0 2px;
+  contain: layout paint;
 }
 
 .strip-bezel-title {
@@ -1471,7 +1474,6 @@
   color: var(--accent-dark);
   border: 1px solid var(--raised-border);
   font-weight: 650;
-  transition: all 150ms ease;
 }
 
 .strip-dma-badge.active {
@@ -1520,7 +1522,9 @@
   pointer-events: none;
   box-shadow: 0 0 12px rgba(0, 229, 255, 0.7);
   z-index: 10;
-  transition: top 28ms linear;
+  top: 0;
+  will-change: transform;
+  transition: transform 28ms linear;
 }
 
 .strip-scan-pill {
@@ -1646,6 +1650,7 @@
 .strip-clip-diag {
   margin-top: 7px;
   padding: 5px 8px;
+  min-height: 36px;
   border-radius: 5px;
   background: var(--subtle-bg);
   border: 1px solid var(--line);
@@ -1653,6 +1658,7 @@
   line-height: 1.45;
   color: var(--ink);
   font-family: ui-monospace, Consolas, monospace;
+  contain: content;
 }
 
 .strip-sram-desc {
@@ -1722,7 +1728,6 @@
   border: 1px solid var(--line);
   cursor: pointer;
   padding: 0;
-  transition: transform 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
 }
 
 .strip-prog-cell:hover {
@@ -1774,7 +1779,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: all 0.15s ease;
 }
 
 .strip-stage.is-active {
@@ -3789,4 +3793,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .code-toggle-icon { transition: none !important; }
+  .strip-scan-line,
+  .strip-prog-cell,
+  .strip-stage { transition: none !important; }
 }
