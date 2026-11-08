@@ -37,17 +37,20 @@
 - id: embedded-tools
   kind: 在线工具
   title: 嵌入式开发在线工具箱
-  subtitle: 进制、CRC、寄存器、ADC 与字模计算
-  description: 提供进制和字节序转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 解码、ADC 换算、定时器分频及 RGB565 字模工具。
+  subtitle: 进制、CRC、寄存器、模拟电源、Flash 存储与总线滤波十合一
+  description: 提供进制浮点转换、CRC 与 Modbus 帧检查、寄存器与 HardFault 异常栈回溯、ADC 与定时器/CAN 分频、RGB565 字模、NTC 查表与电池续航、Flash/EEPROM 跨页拆分、RC/IIR 滤波与 Keil 内存水位分析。
   url: /tools/index.html
   image: /assets/images/tools-preview.svg
-  image_alt: 嵌入式开发在线工具箱五合一模块示意图
+  image_alt: 嵌入式开发在线工具箱十合一模块示意图
   cta: 打开工具箱
-  tags: [在线工具, Modbus / CRC, HardFault, RGB565 / 字模]
+  tags: [在线工具, Modbus / CAN, HardFault / Map, Flash / NTC]
   articles:
     - lcd-rgb565-color-troubleshooting
     - embedded-1bit-bitmap-font-pipeline
     - n32g455-spi-dma-guide
+    - nor-flash-powerfail-record-store
+    - m24c02-eeprom-driver-guide
+    - battery-management-portable-design
   boundary: 计算在浏览器本地完成，可复制生成的 C99 代码。
 - id: retro-robot
   kind: 交互实验

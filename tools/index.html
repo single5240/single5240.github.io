@@ -1,15 +1,15 @@
 ---
 layout: frame
 title: 嵌入式开发在线工具箱
-description: 嵌入式开发常用计算工具：进制转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 解码、ADC 与分频计算、RGB565 调色及字模预览。
+description: 嵌入式开发常用计算工具：进制与浮点转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 栈回溯、ADC 与定时器/CAN 分频、RGB565 字模、NTC 查表与电池续航、Flash/EEPROM 页对齐与固件内存分析。
 section: tools
 wide: true
 permalink: /tools/index.html
 ---
 <header class="page-heading">
-  <p class="eyebrow">EMBEDDED WORKBENCH · OFFLINE-READY</p>
+  <p class="eyebrow">EMBEDDED WORKBENCH · 10-IN-1 OFFLINE SUITE</p>
   <h1>嵌入式开发在线工具箱</h1>
-  <p class="lede">输入数值或报文即可计算，结果可复制为 C99 宏或数组。计算在浏览器本地完成，不上传输入内容。</p>
+  <p class="lede">涵盖数值协议、寄存器故障、模拟采样、总线时序、存储寿命与 DSP 滤波十大高频模块，计算结果可一键复制为 C99 宏、结构体或查找表数组。所有计算均在浏览器本地完成。</p>
 </header>
 
 <a class="kb-tool-entry" href="{{ '/tools/kanban.html' | relative_url }}"><span><strong>临时看板</strong><small>快速记任务 · 拖拽分组 · 每人独立 · 默认保留 1 天</small></span><span aria-hidden="true">打开看板 →</span></a>
@@ -20,6 +20,11 @@ permalink: /tools/index.html
   <button type="button" class="tools-tab-btn" data-tool-jump="register-fault"><span class="tools-tab-num">03</span>寄存器位域 &amp; HardFault</button>
   <button type="button" class="tools-tab-btn" data-tool-jump="adc-timer"><span class="tools-tab-num">04</span>ADC 换算 &amp; 定时器分频</button>
   <button type="button" class="tools-tab-btn" data-tool-jump="display-font"><span class="tools-tab-num">05</span>RGB565 色彩 &amp; 点阵字模</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="analog-power"><span class="tools-tab-num">06</span>分压 / NTC 查表 &amp; 续航</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="storage-layout"><span class="tools-tab-num">07</span>Flash 映射 &amp; EEPROM 跨页</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="bus-timing"><span class="tools-tab-num">08</span>CAN 采样点 &amp; I2C 上拉</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="dsp-lut"><span class="tools-tab-num">09</span>RC / IIR 滤波 &amp; 波形表</button>
+  <button type="button" class="tools-tab-btn" data-tool-jump="stack-map"><span class="tools-tab-num">10</span>异常栈回溯 &amp; 内存水位</button>
 </nav>
 
 <!-- 01. 进制、字节序与 IEEE-754 浮点转换 -->
@@ -545,6 +550,529 @@ permalink: /tools/index.html
   </div>
 </section>
 
-<p class="end-note">相关笔记：<a class="text-link" href="{{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }}">ST7789 RGB565 色彩异常与字节序排查</a> · <a class="text-link" href="{{ '/articles/embedded-1bit-bitmap-font-pipeline.html' | relative_url }}">嵌入式 1-bit 点阵字库生成与基线对齐管线</a> · <a class="text-link" href="{{ '/articles/n32g455-spi-dma-guide.html' | relative_url }}">N32G455 SPI + DMA 采集与刷屏工程指南</a></p>
+<!-- 06. 电阻分压、NTC 热敏电阻查表生成与低功耗电池续航计算器 -->
+<section class="tool-section" id="analog-power" aria-labelledby="title-analog">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">06 · VOLTAGE DIVIDER, NTC LUT &amp; BATTERY LIFE ESTIMATOR</p>
+      <h2 id="title-analog">电阻分压 / E24 配对、NTC 热敏电阻查表 &amp; 低功耗电池续航预算</h2>
+      <p>支持电池分压采样与 E24 标准阻值自动配对、NTC 热敏电阻 B 值模型换算及 12-bit ADC C99 查表生成，右侧提供多工况平均电流与便携设备续航评估。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>分压采样计算 &amp; NTC 热敏电阻 ADC 查表生成</span>
+        <span class="tool-hint">E24 / NTC B-Model</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="vdiv-vin">输入电压 Vin (V)</label>
+          <input type="number" id="vdiv-vin" class="tool-input" value="4.20" step="0.05" min="0.1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="vdiv-r1">上端电阻 R1 (kΩ)</label>
+          <input type="number" id="vdiv-r1" class="tool-input" value="100" step="1" min="0.01">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="vdiv-r2">下端电阻 R2 (kΩ)</label>
+          <input type="number" id="vdiv-r2" class="tool-input" value="100" step="1" min="0.01">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="vdiv-target">目标输出 Vout (V, 求 E24)</label>
+          <input type="number" id="vdiv-target" class="tool-input" value="2.10" step="0.05" min="0.05">
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="电阻分压与 E24 配对结果">
+        <tbody id="vdiv-summary"></tbody>
+      </table>
+
+      <div class="tool-subdivider"></div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="ntc-r25">NTC 标称阻值 R25 (kΩ)</label>
+          <input type="number" id="ntc-r25" class="tool-input" value="10" step="1" min="0.1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="ntc-b">B25/85 常数 (K)</label>
+          <input type="number" id="ntc-b" class="tool-input" value="3950" step="10" min="1000">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="ntc-rpull">上拉电阻 Rpull (kΩ)</label>
+          <input type="number" id="ntc-rpull" class="tool-input" value="10" step="1" min="0.1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="ntc-temp">当前温度 T (℃)</label>
+          <input type="number" id="ntc-temp" class="tool-input" value="25" step="1" min="-40" max="150">
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="NTC 热敏电阻换算结果">
+        <tbody id="ntc-summary"></tbody>
+      </table>
+
+      <div class="tool-field" style="margin-top: 12px;">
+        <div class="tool-label-row">
+          <span class="tool-label">C99 12-bit ADC 温度查表数组 (-20℃ ~ +105℃, 步进 5℃, NTC 下端接地)</span>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="ntc-c-lut">复制查表代码</button>
+        </div>
+        <pre id="ntc-c-lut" class="code-output"></pre>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>低功耗电流预算 &amp; 电池续航评估器</span>
+        <span class="tool-hint">Sleep / Active Duty</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="bat-cap">电池标称容量 (mAh)</label>
+          <input type="number" id="bat-cap" class="tool-input" value="1200" step="50" min="10">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="bat-eff">有效放电系数 (%)</label>
+          <input type="number" id="bat-eff" class="tool-input" value="85" step="1" min="30" max="100">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="bat-period">唤醒周期 T_cycle (秒)</label>
+          <input type="number" id="bat-period" class="tool-input" value="10" step="1" min="0.1">
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="bat-i-run">MCU 唤醒电流 (mA)</label>
+          <input type="number" id="bat-i-run" class="tool-input" value="18" step="0.5" min="0">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="bat-t-run">MCU 唤醒耗时 (ms)</label>
+          <input type="number" id="bat-t-run" class="tool-input" value="40" step="5" min="0">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="bat-i-tx">采集/通信峰值 (mA)</label>
+          <input type="number" id="bat-i-tx" class="tool-input" value="65" step="1" min="0">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="bat-t-tx">采集/通信耗时 (ms)</label>
+          <input type="number" id="bat-t-tx" class="tool-input" value="15" step="5" min="0">
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="bat-i-sleep">深度休眠底电流 I_sleep (μA)</label>
+          <input type="number" id="bat-i-sleep" class="tool-input" value="12" step="1" min="0.1">
+        </div>
+      </div>
+
+      <div class="tool-btn-row" style="margin-bottom: 14px;">
+        <button type="button" class="tool-btn" data-bat-preset="handheld">预设: 手持拉力计 (亮屏工作)</button>
+        <button type="button" class="tool-btn" data-bat-preset="sensor">预设: 无线传感器 (10s 周期)</button>
+        <button type="button" class="tool-btn" data-bat-preset="meter">预设: 超低功耗表计 (60s 周期)</button>
+      </div>
+
+      <table class="kv-table" aria-label="电池续航与功耗占比">
+        <tbody id="bat-summary"></tbody>
+      </table>
+
+      <div id="bat-bars" class="usage-bars-wrap" aria-label="各阶段电荷消耗占比"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07. SPI NOR Flash 扇区映射、EEPROM 跨页拆分与磨损均衡寿命计算 -->
+<section class="tool-section" id="storage-layout" aria-labelledby="title-storage">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">07 · NOR FLASH ADDRESS MAP, EEPROM PAGE SPLITTER &amp; WEAR LEVELING</p>
+      <h2 id="title-storage">W25Qxx Flash 地址拆解、EEPROM 跨页写入拆分 &amp; 环形记录寿命计算</h2>
+      <p>将 24-bit/32-bit 物理地址拆解为 Block / Sector / Page 索引，可视化演示 M24C02/AT24Cxx 跨页边界写入切分，右侧评估掉电安全环形记录区的 Flash 擦写寿命。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>W25Qxx 地址映射 &amp; EEPROM 跨页写入拆分器</span>
+        <span class="tool-hint">W25Q128 / M24C02</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="flash-addr">NOR Flash 字节地址 (HEX / DEC)</label>
+          <input type="text" id="flash-addr" class="tool-input" value="0x00023580" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="eeprom-page-size">EEPROM / Flash 页大小 (Bytes)</label>
+          <select id="eeprom-page-size" class="tool-select">
+            <option value="8">8 Bytes (AT24C01/02 标准)</option>
+            <option value="16" selected>16 Bytes (M24C02 / AT24C04/08/16)</option>
+            <option value="32">32 Bytes (AT24C32/64)</option>
+            <option value="64">64 Bytes (AT24C128/256)</option>
+            <option value="256">256 Bytes (W25Qxx NOR Flash Page)</option>
+          </select>
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="W25Qxx 地址结构拆解">
+        <tbody id="flash-map-summary"></tbody>
+      </table>
+
+      <div class="tool-subdivider"></div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="eeprom-start">写入起始地址 (HEX / DEC)</label>
+          <input type="text" id="eeprom-start" class="tool-input" value="0x001A" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="eeprom-len">写入总字节数 (Length)</label>
+          <input type="number" id="eeprom-len" class="tool-input" value="28" min="1" max="2048">
+        </div>
+      </div>
+
+      <p class="tool-label" style="margin: 4px 0 8px;">防页回卷 (Page-Rollover) 分段写入事务序列：</p>
+      <div id="eeprom-chunks" class="chunk-list" aria-live="polite"></div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>环形日志存储容量 &amp; Flash 磨损均衡寿命评估</span>
+        <span class="tool-hint">NOR Flash Record Store</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="wl-sectors">分配扇区数 (4KB/扇区)</label>
+          <input type="number" id="wl-sectors" class="tool-input" value="16" min="2" max="4096">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="wl-hdr-size">扇区头开销 (Bytes)</label>
+          <input type="number" id="wl-hdr-size" class="tool-input" value="16" min="0" max="512">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="wl-rec-size">单条记录字节数 (Bytes)</label>
+          <input type="number" id="wl-rec-size" class="tool-input" value="32" min="4" max="1024">
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="wl-writes-day">每日写入记录条数 (条/天)</label>
+          <input type="number" id="wl-writes-day" class="tool-input" value="500" min="1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="wl-endurance">Flash 标称擦写寿命 (次)</label>
+          <select id="wl-endurance" class="tool-select">
+            <option value="10000">10,000 次 (片内 Flash 典型)</option>
+            <option value="100000" selected>100,000 次 (W25Q128 SPI NOR)</option>
+            <option value="1000000">1,000,000 次 (M24C02 EEPROM)</option>
+          </select>
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="磨损均衡与容量评估结果">
+        <tbody id="wl-summary"></tbody>
+      </table>
+
+      <div class="tool-field" style="margin-top: 12px;">
+        <div class="tool-label-row">
+          <span class="tool-label">C99 掉电安全定长记录结构体与布局宏模板</span>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="wl-c-code">复制结构体</button>
+        </div>
+        <pre id="wl-c-code" class="code-output"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08. CAN / CAN-FD 波特率采样点搜索与 I2C 总线上拉电阻计算器 -->
+<section class="tool-section" id="bus-timing" aria-labelledby="title-bus">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">08 · CAN BIT-TIMING SAMPLE POINT &amp; I2C PULL-UP RESISTOR CALCULATOR</p>
+      <h2 id="title-bus">CAN 位时序采样点搜索器 &amp; I2C 上拉电阻 / 上升时间计算器</h2>
+      <p>根据外设时钟与目标波特率自动搜索符合 CiA 推荐采样点（75%~87.5%）的 CAN <code>BRP/TS1/TS2</code> 组合；右侧按总线电容计算 I2C 合法上拉阻值区间。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>CAN / CAN-FD 位时序分频与采样点计算</span>
+        <span class="tool-hint">CiA 301 / STM32 / N32G455</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="can-clk-mhz">CAN 外设时钟 f_can (MHz)</label>
+          <input type="number" id="can-clk-mhz" class="tool-input" value="36" step="1" min="1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="can-baud-kbps">目标波特率 (kbps)</label>
+          <select id="can-baud-kbps" class="tool-select">
+            <option value="125">125 kbps (工业远距离)</option>
+            <option value="250">250 kbps (J1939 / 工程机械)</option>
+            <option value="500" selected>500 kbps (车载/工业标准)</option>
+            <option value="1000">1000 kbps (1 Mbps 高速 CANopen/ECAT)</option>
+            <option value="2000">2000 kbps (2 Mbps CAN-FD 数据段)</option>
+          </select>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="can-sp-target">期望采样点 (%)</label>
+          <input type="number" id="can-sp-target" class="tool-input" value="87.5" step="0.5" min="50" max="95">
+        </div>
+      </div>
+
+      <div class="tool-btn-row" style="margin-bottom: 12px;">
+        <button type="button" class="tool-btn" data-can-preset="36,500,87.5">APB1=36MHz / 500k</button>
+        <button type="button" class="tool-btn" data-can-preset="42,500,85.7">APB1=42MHz / 500k</button>
+        <button type="button" class="tool-btn" data-can-preset="36,1000,83.3">APB1=36MHz / 1Mbps</button>
+        <button type="button" class="tool-btn" data-can-preset="80,2000,80.0">FD=80MHz / 2Mbps</button>
+      </div>
+
+      <table class="kv-table" aria-label="CAN 位时序候选分频表">
+        <tbody id="can-results-body"></tbody>
+      </table>
+
+      <div class="tool-field" style="margin-top: 12px;">
+        <div class="tool-label-row">
+          <span class="tool-label">最优解 C99 初始化宏 (1 + TS1 + TS2 = Tq)</span>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="can-c-code">复制配置</button>
+        </div>
+        <pre id="can-c-code" class="code-output"></pre>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>I2C 总线上拉电阻 (Rp) 范围 &amp; 上升时间计算</span>
+        <span class="tool-hint">UM10204 I2C Spec</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="i2c-vdd">总线电压 VDD (V)</label>
+          <input type="number" id="i2c-vdd" class="tool-input" value="3.3" step="0.1" min="1.2">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="i2c-speed">I2C 速率模式</label>
+          <select id="i2c-speed" class="tool-select">
+            <option value="100">Standard Mode (100 kHz, tr ≤ 1000ns)</option>
+            <option value="400" selected>Fast Mode (400 kHz, tr ≤ 300ns)</option>
+            <option value="1000">Fast Mode Plus (1 MHz, tr ≤ 120ns)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="i2c-cbus">总线寄生电容 Cbus (pF)</label>
+          <input type="number" id="i2c-cbus" class="tool-input" value="100" step="10" min="10" max="1000">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="i2c-rp-sel">实装上拉电阻 Rp (kΩ)</label>
+          <input type="number" id="i2c-rp-sel" class="tool-input" value="2.2" step="0.1" min="0.2">
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="I2C 上拉电阻与上升时间评估">
+        <tbody id="i2c-summary"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 09. RC 滤波器、一阶 IIR 数字滤波与 C99 波形/伽马查找表生成器 -->
+<section class="tool-section" id="dsp-lut" aria-labelledby="title-dsp">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">09 · RC / IIR DIGITAL FILTER &amp; C99 WAVEFORM / GAMMA LUT GENERATOR</p>
+      <h2 id="title-dsp">硬件 RC / 一阶 IIR 数字低通滤波器 &amp; C99 波形/伽马查找表生成器</h2>
+      <p>计算硬件 RC 截止频率与阶跃稳定时间，生成免浮点 Q15 定点一阶 IIR 低通滤波 C99 函数；右侧支持生成 DAC 正弦波、三角波与 LED PWM Gamma 2.2 调光表。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>硬件 RC 低通 &amp; 一阶 IIR 定点数字滤波器生成</span>
+        <span class="tool-hint">Q15 Fixed-Point IIR</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="rc-r">串联电阻 R (kΩ)</label>
+          <input type="number" id="rc-r" class="tool-input" value="10" step="0.5" min="0.01">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="rc-c">滤波电容 C (nF)</label>
+          <input type="number" id="rc-c" class="tool-input" value="100" step="10" min="0.01">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="iir-fs">数字采样率 fs (Hz)</label>
+          <input type="number" id="iir-fs" class="tool-input" value="1000" step="50" min="1">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="iir-fc">IIR 截止频率 fc (Hz)</label>
+          <input type="number" id="iir-fc" class="tool-input" value="15" step="1" min="0.05">
+        </div>
+      </div>
+
+      <table class="kv-table" aria-label="RC 与 IIR 滤波器参数结果">
+        <tbody id="dsp-summary"></tbody>
+      </table>
+
+      <div class="tool-field" style="margin-top: 12px;">
+        <div class="tool-label-row">
+          <span class="tool-label">C99 免浮点 Q15 一阶 IIR 低通滤波实现代码</span>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="iir-c-code">复制函数</button>
+        </div>
+        <pre id="iir-c-code" class="code-output"></pre>
+      </div>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>C99 波形 / LED PWM Gamma 查找表 (LUT) 生成器</span>
+        <span class="tool-hint">DAC / TIM CCR LUT</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="lut-type">查找表类型</label>
+          <select id="lut-type" class="tool-select">
+            <option value="gamma22" selected>LED PWM 视觉线性 Gamma (γ=2.2)</option>
+            <option value="sine">满周期正弦波 (Sine 0..2π)</option>
+            <option value="halfsine">半波正弦包络 (Half-Sine 0..π)</option>
+            <option value="triangle">对称三角波 (Triangle)</option>
+            <option value="breathing">呼吸灯平滑指数曲线 (Exp-Sine)</option>
+          </select>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="lut-len">采样点数 N</label>
+          <select id="lut-len" class="tool-select">
+            <option value="16">16 点</option>
+            <option value="32" selected>32 点</option>
+            <option value="64">64 点</option>
+            <option value="100">100 点 (0..99%)</option>
+            <option value="128">128 点</option>
+            <option value="256">256 点</option>
+          </select>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="lut-max">最大满量程值 (Max)</label>
+          <input type="number" id="lut-max" class="tool-input" value="999" min="1" max="65535">
+        </div>
+      </div>
+
+      <div id="lut-preview-bars" class="lut-bars" aria-label="查找表波形预览"></div>
+
+      <div class="tool-field" style="margin-top: 12px;">
+        <div class="tool-label-row">
+          <label class="tool-label" for="lut-c-output">生成的 C99 const 数组</label>
+          <button type="button" class="tool-btn copy-mini" data-copy-target="lut-c-output">复制数组</button>
+        </div>
+        <textarea id="lut-c-output" class="tool-textarea" style="min-height: 170px;" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. Cortex-M 异常压栈栈帧回溯与 Keil / GCC 固件内存水位分析 -->
+<section class="tool-section" id="stack-map" aria-labelledby="title-stack">
+  <div class="tool-header">
+    <div>
+      <p class="eyebrow">10 · CORTEX-M EXCEPTION STACK FRAME &amp; KEIL / GCC MEMORY ANALYZER</p>
+      <h2 id="title-stack">Cortex-M 异常栈帧 (MSP/PSP) 回溯 &amp; Keil / GCC 内存水位分析器</h2>
+      <p>粘贴 HardFault 异常触发时 SP 指向的 8 个 32-bit 压栈字与 <code>EXC_RETURN</code>，一键提取崩溃 PC/LR 地址与中断号；右侧解析 Keil <code>Code/RO/RW/ZI</code> 固件 Flash/RAM 占用水位。</p>
+    </div>
+  </div>
+
+  <div class="tool-grid">
+    <div class="tool-card">
+      <h3>
+        <span>Cortex-M 异常压栈栈帧 (R0..xPSR) &amp; EXC_RETURN 解码</span>
+        <span class="tool-hint">MSP / PSP Dump</span>
+      </h3>
+      <div class="tool-row">
+        <div class="tool-field" style="grid-column: span 2;">
+          <label class="tool-label" for="stk-dump">粘贴 SP 指向的 8 个 32-bit 字 (依次为 R0, R1, R2, R3, R12, LR, PC, xPSR)</label>
+          <textarea id="stk-dump" class="tool-textarea" style="min-height: 68px;" spellcheck="false">0x00000000 0x20000418 0x00000001 0x40013800 0x00000000 0x08003A15 0x08003B42 0x61000000</textarea>
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="stk-exc-return">异常进入时 LR (EXC_RETURN)</label>
+          <input type="text" id="stk-exc-return" class="tool-input" value="0xFFFFFFF9" spellcheck="false">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="stk-sp-addr">当前栈指针 SP 地址 (可选)</label>
+          <input type="text" id="stk-sp-addr" class="tool-input" value="0x20003F80" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="tool-btn-row" style="margin-bottom: 12px;">
+        <button type="button" class="tool-btn" data-stk-preset="thread_msp">示例 1: 裸机主循环崩溃 (0xFFFFFFF9)</button>
+        <button type="button" class="tool-btn" data-stk-preset="rtos_psp">示例 2: RTOS 任务栈 + FPU 崩溃 (0xFFFFFFED)</button>
+        <button type="button" class="tool-btn" data-stk-preset="isr_nest">示例 3: DMA1_CH2 中断内偶地址跳转</button>
+      </div>
+
+      <table class="kv-table" aria-label="异常栈帧寄存器解析">
+        <tbody id="stk-summary"></tbody>
+      </table>
+    </div>
+
+    <div class="tool-card">
+      <h3>
+        <span>Keil MDK (Code/RO/RW/ZI) &amp; GCC 内存占用水位分析</span>
+        <span class="tool-hint">.build_log / .map</span>
+      </h3>
+      <div class="tool-field">
+        <label class="tool-label" for="mem-paste">粘贴 Keil 编译日志行（或直接修改下方数值）：</label>
+        <input type="text" id="mem-paste" class="tool-input" value="Program Size: Code=38420 RO-data=6240 RW-data=416 ZI-data=12840" spellcheck="false">
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="mem-code">Code / .text (Bytes)</label>
+          <input type="number" id="mem-code" class="tool-input" value="38420" min="0">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="mem-ro">RO-data / .rodata (B)</label>
+          <input type="number" id="mem-ro" class="tool-input" value="6240" min="0">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="mem-rw">RW-data / .data (B)</label>
+          <input type="number" id="mem-rw" class="tool-input" value="416" min="0">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="mem-zi">ZI-data / .bss (B)</label>
+          <input type="number" id="mem-zi" class="tool-input" value="12840" min="0">
+        </div>
+      </div>
+
+      <div class="tool-row">
+        <div class="tool-field">
+          <label class="tool-label" for="mem-chip">目标 MCU 容量预设</label>
+          <select id="mem-chip" class="tool-select">
+            <option value="512,144" selected>N32G455REL7 / STM32F4 (512KB Flash / 144KB RAM)</option>
+            <option value="256,64">N32G455CCL7 / GD32F303 (256KB Flash / 64KB RAM)</option>
+            <option value="128,20">STM32F103RB (128KB Flash / 20KB RAM)</option>
+            <option value="64,20">STM32F103C8T6 (64KB Flash / 20KB RAM)</option>
+            <option value="32,4">STM32F030F4 / G030 (32KB Flash / 4KB RAM)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="mem-bars" class="usage-bars-wrap" aria-label="Flash 与 SRAM 占用进度条"></div>
+
+      <table class="kv-table" aria-label="固件 Flash 与 SRAM 占用详情">
+        <tbody id="mem-summary"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<p class="end-note">相关笔记：<a class="text-link" href="{{ '/articles/lcd-rgb565-color-troubleshooting.html' | relative_url }}">ST7789 RGB565 色彩异常与字节序排查</a> · <a class="text-link" href="{{ '/articles/embedded-1bit-bitmap-font-pipeline.html' | relative_url }}">嵌入式 1-bit 点阵字库生成与基线对齐管线</a> · <a class="text-link" href="{{ '/articles/n32g455-spi-dma-guide.html' | relative_url }}">N32G455 SPI + DMA 采集与刷屏工程指南</a> · <a class="text-link" href="{{ '/articles/nor-flash-powerfail-record-store.html' | relative_url }}">NOR Flash 掉电安全定长记录存储</a> · <a class="text-link" href="{{ '/articles/m24c02-eeprom-driver-guide.html' | relative_url }}">M24C02 EEPROM 跨页写入与掉电保护</a> · <a class="text-link" href="{{ '/articles/battery-management-portable-design.html' | relative_url }}">便携式仪表电池管理与低功耗设计</a></p>
 
 <script src="{{ '/assets/js/embedded-tools.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>

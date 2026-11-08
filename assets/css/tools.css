@@ -31,9 +31,9 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   border: 1px solid var(--glass-edge);
-  border-radius: 9999px;
+  border-radius: 24px;
   width: fit-content;
   margin: 0 auto 32px;
   position: sticky;
@@ -49,14 +49,14 @@
 .tools-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 6px 16px;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 13px;
   border: 1px solid transparent;
   border-radius: 9999px;
   background: transparent;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s var(--ease-spring);
@@ -551,6 +551,108 @@
 .status-pill.err {
   background: rgba(188, 88, 39, 0.16);
   color: var(--note);
+}
+
+/* Sub-divider, Usage Progress Bars, EEPROM Page Chunks & LUT Waveform Bars */
+.tool-subdivider {
+  height: 1px;
+  background: var(--line);
+  margin: 16px 0;
+}
+
+.usage-bars-wrap {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.usage-bar-item {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.usage-bar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.usage-bar-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.usage-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--accent);
+  transition: width 0.25s ease;
+}
+
+.usage-bar-fill.ok {
+  background: var(--accent-dark);
+}
+
+.usage-bar-fill.warn {
+  background: var(--warm);
+}
+
+.usage-bar-fill.err {
+  background: var(--note);
+}
+
+.chunk-list {
+  display: grid;
+  gap: 8px;
+}
+
+.chunk-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-dark);
+  border-radius: 10px;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.lut-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 68px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.lut-bar {
+  flex: 1;
+  min-width: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent-dark);
+  opacity: 0.85;
+  transition: height 0.2s ease;
+}
+
+.lut-bar:hover {
+  opacity: 1;
+  background: var(--accent);
 }
 
 @media (max-width: 920px) {

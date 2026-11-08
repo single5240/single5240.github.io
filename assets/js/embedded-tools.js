@@ -1207,10 +1207,727 @@
     syncTextareaFromGrid();
   }
 
+  // =========================================================================
+  // 06. Voltage Divider / E24, NTC Thermistor LUT & Battery Life Estimator
+  // =========================================================================
+  function initAnalogPowerTool() {
+    const vinInput = $("#vdiv-vin");
+    const r1Input = $("#vdiv-r1");
+    const r2Input = $("#vdiv-r2");
+    const targetInput = $("#vdiv-target");
+    const vdivSummary = $("#vdiv-summary");
+
+    if (!vinInput) return;
+
+    const E24_BASE = [
+      1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0,
+      3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1,
+    ];
+    const E24_POOL = [];
+    for (const dec of [1, 10, 100]) {
+      for (const b of E24_BASE) E24_POOL.push(Number((b * dec).toFixed(1)));
+    }
+
+    function updateVdiv() {
+      const vin = Math.max(0.01, Number(vinInput.value) || 4.2);
+      const r1 = Math.max(0.001, Number(r1Input.value) || 100);
+      const r2 = Math.max(0.001, Number(r2Input.value) || 100);
+      const targetV = Math.max(0.01, Math.min(vin - 0.01, Number(targetInput.value) || vin / 2));
+
+      const ratio = r2 / (r1 + r2);
+      const vout = vin * ratio;
+      const iDivUa = (vin / (r1 + r2)) * 1000; // R in kOhm -> mA * 1000 = uA
+      const pMw = (vin * iDivUa) / 1000;
+      const reqImpedance = (r1 * r2) / (r1 + r2);
+      const adc3v3 = Math.min(4095, Math.max(0, Math.round((vout / 3.3) * 4095)));
+
+      // Find best E24 pair in 10k..470k range for targetV
+      let bestPair = { r1: 100, r2: 100, v: vin * 0.5, errPct: 100 };
+      for (const c1 of E24_POOL) {
+        if (c1 < 4.7 || c1 > 470) continue;
+        for (const c2 of E24_POOL) {
+          if (c2 < 4.7 || c2 > 470) continue;
+          const v = vin * (c2 / (c1 + c2));
+          const errPct = ((v - targetV) / targetV) * 100;
+          if (Math.abs(errPct) < Math.abs(bestPair.errPct)) {
+            bestPair = { r1: c1, r2: c2, v, errPct };
+          }
+        }
+      }
+
+      vdivSummary.innerHTML =
+        `<tr><th>分压输出 Vout</th><td><strong>${vout.toFixed(4)} V</strong> (分压比 ${(ratio * 100).toFixed(2)}%, 3.3V 12-bit ADC ≈ <code>${adc3v3}</code>)</td></tr>` +
+        `<tr><th>支路漏电流 &amp; 等效源阻抗</th><td>I_div = <strong>${iDivUa.toFixed(2)} μA</strong> (${pMw.toFixed(3)} mW) · R_eq = ${reqImpedance.toFixed(2)} kΩ ${reqImpedance > 50 ? '<span class="status-pill warn">建议并联 100nF 采样电容</span>' : '<span class="status-pill ok">SAR 直采友好</span>'}</td></tr>` +
+        `<tr><th>目标 ${targetV.toFixed(2)}V 最优 E24 配对</th><td><code>R1 = ${bestPair.r1} kΩ</code> + <code>R2 = ${bestPair.r2} kΩ</code> → 实出 <strong>${bestPair.v.toFixed(4)} V</strong> (误差 ${bestPair.errPct >= 0 ? "+" : ""}${bestPair.errPct.toFixed(2)}%)</td></tr>`;
+    }
+
+    [vinInput, r1Input, r2Input, targetInput].forEach((el) => el.addEventListener("input", updateVdiv));
+
+    // NTC B-Model & Lookup Table
+    const ntcR25Input = $("#ntc-r25");
+    const ntcBInput = $("#ntc-b");
+    const ntcRpullInput = $("#ntc-rpull");
+    const ntcTempInput = $("#ntc-temp");
+    const ntcSummary = $("#ntc-summary");
+    const ntcLutOut = $("#ntc-c-lut");
+
+    function calcNtcKohm(r25, bVal, tempC) {
+      const tK = tempC + 273.15;
+      const t25 = 298.15;
+      return r25 * Math.exp(bVal * (1 / tK - 1 / t25));
+    }
+
+    function updateNtc() {
+      const r25 = Math.max(0.1, Number(ntcR25Input.value) || 10);
+      const bVal = Math.max(1000, Number(ntcBInput.value) || 3950);
+      const rPull = Math.max(0.1, Number(ntcRpullInput.value) || 10);
+      const tempC = Number(ntcTempInput.value);
+      const validTemp = Number.isFinite(tempC) ? tempC : 25;
+
+      const rNtc = calcNtcKohm(r25, bVal, validTemp);
+      const ratio = rNtc / (rPull + rNtc);
+      const adc12 = Math.round(ratio * 4095);
+      const vSense = ratio * 3.3;
+
+      ntcSummary.innerHTML =
+        `<tr><th>当前温度 (${validTemp}℃) NTC 阻值</th><td><strong>${rNtc >= 1 ? `${rNtc.toFixed(3)} kΩ` : `${(rNtc * 1000).toFixed(1)} Ω`}</strong> (R25=${r25}kΩ, B=${bVal}K)</td></tr>` +
+        `<tr><th>分压比与 12-bit ADC 码值</th><td><code>ADC = ${adc12}</code> (0x${toHex(adc12, 3)}) · V_ntc = ${vSense.toFixed(3)} V (@3.3V)</td></tr>`;
+
+      const temps = [];
+      const codes = [];
+      for (let t = -20; t <= 105; t += 5) {
+        const rt = calcNtcKohm(r25, bVal, t);
+        const c = Math.round((rt / (rPull + rt)) * 4095);
+        temps.push(t);
+        codes.push(c);
+      }
+
+      const rows = [];
+      for (let i = 0; i < codes.length; i += 6) {
+        const slice = codes.slice(i, i + 6).map((c) => String(c).padStart(4, " "));
+        const tStart = temps[i];
+        const tEnd = temps[Math.min(temps.length - 1, i + 5)];
+        rows.push(`  ${slice.join(", ")}, /* ${String(tStart).padStart(3, " ")}℃ .. ${String(tEnd).padStart(3, " ")}℃ */`);
+      }
+
+      ntcLutOut.textContent =
+        `/* NTC R25=${r25}k, B=${bVal}K, Rpull=${rPull}k, 12-bit ADC (0..4095), Step=5℃ */\n` +
+        `#define NTC_LUT_MIN_TEMP  (-20)\n` +
+        `#define NTC_LUT_STEP      (5)\n` +
+        `#define NTC_LUT_LEN       (${codes.length}U)\n` +
+        `static const uint16_t g_ntc_adc_lut[NTC_LUT_LEN] = {\n${rows.join("\n")}\n};`;
+    }
+
+    [ntcR25Input, ntcBInput, ntcRpullInput, ntcTempInput].forEach((el) => el.addEventListener("input", updateNtc));
+
+    // Battery Life Estimator
+    const batCapInput = $("#bat-cap");
+    const batEffInput = $("#bat-eff");
+    const batPeriodInput = $("#bat-period");
+    const batIRunInput = $("#bat-i-run");
+    const batTRunInput = $("#bat-t-run");
+    const batITxInput = $("#bat-i-tx");
+    const batTTxInput = $("#bat-t-tx");
+    const batISleepInput = $("#bat-i-sleep");
+    const batSummary = $("#bat-summary");
+    const batBars = $("#bat-bars");
+
+    const BAT_PRESETS = {
+      handheld: { cap: 1500, eff: 85, period: 1, iRun: 28, tRun: 900, iTx: 45, tTx: 100, iSleep: 15 },
+      sensor: { cap: 1200, eff: 85, period: 10, iRun: 18, tRun: 40, iTx: 65, tTx: 15, iSleep: 12 },
+      meter: { cap: 2400, eff: 80, period: 60, iRun: 8, tRun: 25, iTx: 85, tTx: 40, iSleep: 3.5 },
+    };
+
+    function updateBattery() {
+      const capMah = Math.max(1, Number(batCapInput.value) || 1200);
+      const effPct = Math.min(100, Math.max(10, Number(batEffInput.value) || 85));
+      const periodS = Math.max(0.05, Number(batPeriodInput.value) || 10);
+      const iRunMa = Math.max(0, Number(batIRunInput.value) || 0);
+      const tRunMs = Math.max(0, Number(batTRunInput.value) || 0);
+      const iTxMa = Math.max(0, Number(batITxInput.value) || 0);
+      const tTxMs = Math.max(0, Number(batTTxInput.value) || 0);
+      const iSleepUa = Math.max(0.05, Number(batISleepInput.value) || 10);
+
+      const tRunS = Math.min(periodS, tRunMs / 1000);
+      const tTxS = Math.min(Math.max(0, periodS - tRunS), tTxMs / 1000);
+      const tSleepS = Math.max(0, periodS - tRunS - tTxS);
+
+      const qRunMc = iRunMa * tRunS;
+      const qTxMc = iTxMa * tTxS;
+      const qSleepMc = (iSleepUa / 1000) * tSleepS;
+      const qTotalMc = Math.max(1e-9, qRunMc + qTxMc + qSleepMc);
+
+      const iAvgMa = qTotalMc / periodS;
+      const iAvgUa = iAvgMa * 1000;
+      const effCapMah = capMah * (effPct / 100);
+      const hours = effCapMah / iAvgMa;
+      const days = hours / 24;
+      const years = days / 365;
+
+      const pctRun = (qRunMc / qTotalMc) * 100;
+      const pctTx = (qTxMc / qTotalMc) * 100;
+      const pctSleep = (qSleepMc / qTotalMc) * 100;
+
+      const dutyPct = ((tRunS + tTxS) / periodS) * 100;
+
+      batSummary.innerHTML =
+        `<tr><th>周期平均电流 I_avg</th><td><strong>${iAvgMa >= 1 ? `${iAvgMa.toFixed(3)} mA` : `${iAvgUa.toFixed(2)} μA`}</strong> (唤醒占空比 ${dutyPct.toFixed(2)}%)</td></tr>` +
+        `<tr><th>有效可用容量</th><td><strong>${effCapMah.toFixed(0)} mAh</strong> (标称 ${capMah} mAh × ${effPct}%)</td></tr>` +
+        `<tr><th>预计连续续航时间</th><td><strong>${days >= 365 ? `${years.toFixed(2)} 年 (${days.toFixed(0)} 天)` : days >= 2 ? `${days.toFixed(1)} 天 (${hours.toFixed(0)} 小时)` : `${hours.toFixed(1)} 小时`}</strong></td></tr>`;
+
+      batBars.innerHTML =
+        `<div class="usage-bar-item"><div class="usage-bar-head"><span>MCU 唤醒阶段 (${tRunMs}ms @ ${iRunMa}mA)</span><span>${pctRun.toFixed(1)}%</span></div><div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pctRun.toFixed(1)}%"></div></div></div>` +
+        `<div class="usage-bar-item"><div class="usage-bar-head"><span>采集/通信脉冲 (${tTxMs}ms @ ${iTxMa}mA)</span><span>${pctTx.toFixed(1)}%</span></div><div class="usage-bar-track"><div class="usage-bar-fill warn" style="width:${pctTx.toFixed(1)}%"></div></div></div>` +
+        `<div class="usage-bar-item"><div class="usage-bar-head"><span>深度休眠底流 (${tSleepS.toFixed(2)}s @ ${iSleepUa}μA)</span><span>${pctSleep.toFixed(1)}%</span></div><div class="usage-bar-track"><div class="usage-bar-fill ok" style="width:${pctSleep.toFixed(1)}%"></div></div></div>`;
+    }
+
+    [batCapInput, batEffInput, batPeriodInput, batIRunInput, batTRunInput, batITxInput, batTTxInput, batISleepInput].forEach((el) =>
+      el.addEventListener("input", updateBattery)
+    );
+
+    $$("[data-bat-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const p = BAT_PRESETS[btn.getAttribute("data-bat-preset")];
+        if (!p) return;
+        batCapInput.value = p.cap;
+        batEffInput.value = p.eff;
+        batPeriodInput.value = p.period;
+        batIRunInput.value = p.iRun;
+        batTRunInput.value = p.tRun;
+        batITxInput.value = p.iTx;
+        batTTxInput.value = p.tTx;
+        batISleepInput.value = p.iSleep;
+        updateBattery();
+      });
+    });
+
+    updateVdiv();
+    updateNtc();
+    updateBattery();
+  }
+
+  // =========================================================================
+  // 07. SPI NOR Flash Map, EEPROM Page-Write Splitter & Wear-Leveling
+  // =========================================================================
+  function initStorageLayoutTool() {
+    const flashAddrInput = $("#flash-addr");
+    const pageSizeSel = $("#eeprom-page-size");
+    const flashSummary = $("#flash-map-summary");
+    const eepromStartInput = $("#eeprom-start");
+    const eepromLenInput = $("#eeprom-len");
+    const eepromChunks = $("#eeprom-chunks");
+
+    if (!flashAddrInput) return;
+
+    function parseAddr(str) {
+      const s = str.trim();
+      const n = s.startsWith("0x") || s.startsWith("0X") ? parseInt(s, 16) : Number(s);
+      return Number.isFinite(n) && n >= 0 ? n >>> 0 : 0;
+    }
+
+    function updateFlashAndEeprom() {
+      const addr = parseAddr(flashAddrInput.value);
+      const block64 = addr >>> 16;
+      const sector4k = addr >>> 12;
+      const page256 = addr >>> 8;
+      const secBase = (sector4k * 4096) >>> 0;
+      const secEnd = (secBase + 4095) >>> 0;
+      const secOffset = addr & 0xfff;
+      const pageOffset = addr & 0xff;
+      const a23_16 = (addr >>> 16) & 0xff;
+      const a15_8 = (addr >>> 8) & 0xff;
+      const a7_0 = addr & 0xff;
+
+      flashSummary.innerHTML =
+        `<tr><th>64KB Block / 4KB Sector</th><td><code>Block #${block64}</code> · <code>Sector #${sector4k}</code> (扇区内偏移 <code>+0x${toHex(secOffset, 3)}</code> / ${secOffset} B)</td></tr>` +
+        `<tr><th>所属 4KB 扇区物理边界</th><td><code>0x${toHex(secBase, 6)} ~ 0x${toHex(secEnd, 6)}</code> (擦除指令: <code>20 ${toHex(a23_16, 2)} ${toHex(a15_8 & 0xf0, 2)} 00</code>)</td></tr>` +
+        `<tr><th>256B Page 索引与页内偏移</th><td><code>Page #${page256}</code> · 页内偏移 <code>+0x${toHex(pageOffset, 2)}</code> (本页剩余可写 ${256 - pageOffset} B)</td></tr>`;
+
+      // EEPROM / Flash Page Splitter
+      const pageSize = Number(pageSizeSel.value) || 16;
+      const startAddr = parseAddr(eepromStartInput.value);
+      const totalLen = Math.min(4096, Math.max(1, Number(eepromLenInput.value) || 1));
+
+      const chunks = [];
+      let cur = startAddr;
+      let rem = totalLen;
+      while (rem > 0) {
+        const pageIdx = Math.floor(cur / pageSize);
+        const offsetInPage = cur % pageSize;
+        const canWrite = Math.min(rem, pageSize - offsetInPage);
+        chunks.push({
+          idx: chunks.length + 1,
+          start: cur,
+          end: cur + canWrite - 1,
+          len: canWrite,
+          pageIdx,
+          offsetInPage,
+        });
+        cur += canWrite;
+        rem -= canWrite;
+      }
+
+      eepromChunks.innerHTML = chunks
+        .map(
+          (c) => `<div class="chunk-item">
+            <span class="fault-tag">事务 #${c.idx}</span>
+            <span>Page ${c.pageIdx} (页内偏移 +${c.offsetInPage})</span>
+            <code>Addr: 0x${toHex(c.start, 4)}..0x${toHex(c.end, 4)}</code>
+            <strong>写入 ${c.len} Bytes</strong>
+          </div>`
+        )
+        .join("");
+    }
+
+    [flashAddrInput, pageSizeSel, eepromStartInput, eepromLenInput].forEach((el) =>
+      el.addEventListener("input", updateFlashAndEeprom)
+    );
+
+    // Wear-Leveling Estimator
+    const wlSectorsInput = $("#wl-sectors");
+    const wlHdrInput = $("#wl-hdr-size");
+    const wlRecInput = $("#wl-rec-size");
+    const wlWritesInput = $("#wl-writes-day");
+    const wlEnduranceSel = $("#wl-endurance");
+    const wlSummary = $("#wl-summary");
+    const wlCodeOut = $("#wl-c-code");
+
+    function updateWearLeveling() {
+      const sectors = Math.max(2, Number(wlSectorsInput.value) || 16);
+      const hdrSize = Math.min(512, Math.max(0, Number(wlHdrInput.value) || 16));
+      const recSize = Math.max(4, Number(wlRecInput.value) || 32);
+      const writesPerDay = Math.max(1, Number(wlWritesInput.value) || 500);
+      const endurance = Number(wlEnduranceSel.value) || 100000;
+
+      const recsPerSector = Math.max(1, Math.floor((4096 - hdrSize) / recSize));
+      const wasteBytes = 4096 - hdrSize - recsPerSector * recSize;
+      const totalRecs = sectors * recsPerSector;
+      const activeRecs = (sectors - 1) * recsPerSector; // 1 spare sector for GC
+      const totalLifetimeWrites = totalRecs * endurance;
+      const lifeDays = totalLifetimeWrites / writesPerDay;
+      const lifeYears = lifeDays / 365;
+
+      wlSummary.innerHTML =
+        `<tr><th>单扇区可存记录数</th><td><strong>${recsPerSector} 条/扇区</strong> (扇区头 ${hdrSize}B + 记录区 ${recsPerSector * recSize}B，尾部空闲 ${wasteBytes}B)</td></tr>` +
+        `<tr><th>环形区总容量 (${sectors}×4KB = ${sectors * 4}KB)</th><td>总槽位 <strong>${totalRecs} 条</strong> · 有效留存 <strong>${activeRecs} 条</strong> (预留 1 扇区用于非阻塞擦除回收)</td></tr>` +
+        `<tr><th>全区轮转 1 圈写入量</th><td>每写入 <strong>${totalRecs.toLocaleString()} 条</strong> 记录，各扇区仅发生 1 次擦除</td></tr>` +
+        `<tr><th>预计存储介质寿命</th><td><span class="status-pill ok">约 ${lifeYears >= 100 ? `${Math.round(lifeYears)} 年` : `${lifeYears.toFixed(1)} 年`}</span> (累计可写 ${(totalLifetimeWrites / 1e6).toFixed(1)}M 条记录)</td></tr>`;
+
+      const payloadBytes = Math.max(1, recSize - 8);
+      wlCodeOut.textContent =
+        `#define LOG_SECTOR_COUNT      (${sectors}U)\n` +
+        `#define LOG_SECTOR_HDR_SIZE   (${hdrSize}U)\n` +
+        `#define LOG_RECORD_SIZE       (${recSize}U)\n` +
+        `#define LOG_RECS_PER_SECTOR   (${recsPerSector}U) /* (4096 - ${hdrSize}) / ${recSize} */\n\n` +
+        `typedef struct {\n` +
+        `  uint8_t  stage_flag;              /* 0xFF:Free, 0xFE:Writing, 0xFC:Committed, 0x00:Tombstone */\n` +
+        `  uint8_t  version;\n` +
+        `  uint16_t crc16_modbus;            /* 覆盖 seq + payload */\n` +
+        `  uint32_t seq_id;                  /* 单调递增世代序号 */\n` +
+        `  uint8_t  payload[${payloadBytes}];             /* 业务负载 (${payloadBytes}B)，总长严格对齐 ${recSize}B */\n` +
+        `} __attribute__((packed)) flash_record_t;`;
+    }
+
+    [wlSectorsInput, wlHdrInput, wlRecInput, wlWritesInput, wlEnduranceSel].forEach((el) =>
+      el.addEventListener("input", updateWearLeveling)
+    );
+
+    updateFlashAndEeprom();
+    updateWearLeveling();
+  }
+
+  // =========================================================================
+  // 08. CAN / CAN-FD Bit-Timing Sample Point & I2C Pull-Up Calculator
+  // =========================================================================
+  function initBusTimingTool() {
+    const canClkInput = $("#can-clk-mhz");
+    const canBaudSel = $("#can-baud-kbps");
+    const canSpInput = $("#can-sp-target");
+    const canResultsBody = $("#can-results-body");
+    const canCodeOut = $("#can-c-code");
+
+    if (!canClkInput) return;
+
+    function updateCanTiming() {
+      const fCanMhz = Math.max(1, Number(canClkInput.value) || 36);
+      const baudKbps = Number(canBaudSel.value) || 500;
+      const targetSp = Math.min(95, Math.max(50, Number(canSpInput.value) || 87.5));
+
+      const fCanHz = fCanMhz * 1e6;
+      const targetBaud = baudKbps * 1000;
+      const candidates = [];
+
+      for (let tq = 8; tq <= 25; tq += 1) {
+        const brp = Math.round(fCanHz / (targetBaud * tq));
+        if (brp < 1 || brp > 1024) continue;
+        const actualBaud = fCanHz / (brp * tq);
+        const baudErrPct = ((actualBaud - targetBaud) / targetBaud) * 100;
+        if (Math.abs(baudErrPct) > 1.5) continue;
+
+        for (let ts1 = 1; ts1 <= 16; ts1 += 1) {
+          const ts2 = tq - 1 - ts1;
+          if (ts2 < 1 || ts2 > 8) continue;
+          const sp = ((1 + ts1) / tq) * 100;
+          const spDiff = Math.abs(sp - targetSp);
+          const tqPenalty = Math.abs(tq - 16) * 0.08;
+          const score = Math.abs(baudErrPct) * 50 + spDiff + tqPenalty;
+          candidates.push({
+            brp,
+            tq,
+            ts1,
+            ts2,
+            sjw: Math.min(4, ts2),
+            sp,
+            actualBaud,
+            baudErrPct,
+            score,
+          });
+        }
+      }
+
+      candidates.sort((a, b) => a.score - b.score);
+      const top = candidates.slice(0, 4);
+
+      if (!top.length) {
+        canResultsBody.innerHTML = `<tr><td colspan="4">当前外设时钟 (${fCanMhz} MHz) 无法分频出误差 &lt;1.5% 的 ${baudKbps} kbps 波特率，请调整 APB1/CAN 时钟频率。</td></tr>`;
+        canCodeOut.textContent = "/* 无可用分频解 */";
+        return;
+      }
+
+      canResultsBody.innerHTML = top
+        .map(
+          (c, idx) => `<tr>
+            <td>${idx === 0 ? "<strong>★ 推荐</strong> " : ""}<code>BRP = ${c.brp}</code> (${c.tq} Tq)</td>
+            <td><code>TS1 = ${c.ts1}</code>, <code>TS2 = ${c.ts2}</code>, <code>SJW = ${c.sjw}</code></td>
+            <td>采样点 <strong>${c.sp.toFixed(1)}%</strong></td>
+            <td><span class="status-pill ${Math.abs(c.baudErrPct) < 0.05 ? "ok" : "warn"}">${Math.abs(c.baudErrPct) < 0.01 ? "0.00% (精确)" : `${c.baudErrPct >= 0 ? "+" : ""}${c.baudErrPct.toFixed(2)}%`}</span></td>
+          </tr>`
+        )
+        .join("");
+
+      const best = top[0];
+      canCodeOut.textContent =
+        `/* CAN Clock = ${fCanMhz} MHz, Target = ${baudKbps} kbps, Sample Point = ${best.sp.toFixed(1)}% (${best.tq} Tq) */\n` +
+        `CAN_InitStructure.BaudRatePrescaler = ${best.brp};          /* BRP (寄存器值 = ${best.brp - 1}) */\n` +
+        `CAN_InitStructure.BitSegment1       = CAN_BS1_${best.ts1}tq;  /* Prop_Seg + Phase_Seg1 = ${best.ts1} Tq */\n` +
+        `CAN_InitStructure.BitSegment2       = CAN_BS2_${best.ts2}tq;  /* Phase_Seg2 = ${best.ts2} Tq */\n` +
+        `CAN_InitStructure.SJW               = CAN_SJW_${best.sjw}tq;  /* Resync Jump Width */`;
+    }
+
+    [canClkInput, canBaudSel, canSpInput].forEach((el) => el.addEventListener("input", updateCanTiming));
+
+    $$("[data-can-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const [clk, baud, sp] = btn.getAttribute("data-can-preset").split(",");
+        canClkInput.value = clk;
+        canBaudSel.value = baud;
+        canSpInput.value = sp;
+        updateCanTiming();
+      });
+    });
+
+    // I2C Pull-Up Resistor Calculator
+    const i2cVddInput = $("#i2c-vdd");
+    const i2cSpeedSel = $("#i2c-speed");
+    const i2cCbusInput = $("#i2c-cbus");
+    const i2cRpInput = $("#i2c-rp-sel");
+    const i2cSummary = $("#i2c-summary");
+
+    function updateI2c() {
+      const vdd = Math.max(1.2, Number(i2cVddInput.value) || 3.3);
+      const speedK = Number(i2cSpeedSel.value) || 400;
+      const cbusPf = Math.max(5, Number(i2cCbusInput.value) || 100);
+      const rpKohm = Math.max(0.1, Number(i2cRpInput.value) || 4.7);
+
+      const volMax = vdd > 2.0 ? 0.4 : 0.2 * vdd;
+      const iolMaxMa = speedK === 1000 ? 20.0 : 3.0;
+      const trMaxNs = speedK === 100 ? 1000 : speedK === 400 ? 300 : 120;
+
+      const rpMinK = (vdd - volMax) / iolMaxMa;
+      const rpMaxK = trMaxNs / (0.8473 * cbusPf); // tr(ns) / (0.8473 * C(pF)) = kOhm
+      const actualTrNs = 0.8473 * rpKohm * cbusPf;
+      const iSinkMa = vdd / rpKohm;
+
+      const trOk = actualTrNs <= trMaxNs;
+      const iolOk = rpKohm >= rpMinK;
+
+      i2cSummary.innerHTML =
+        `<tr><th>允许上拉阻值区间 [Rp_min .. Rp_max]</th><td><strong>${rpMinK.toFixed(2)} kΩ ~ ${rpMaxK.toFixed(2)} kΩ</strong> (I_OL ≤ ${iolMaxMa}mA, t_r ≤ ${trMaxNs}ns)</td></tr>` +
+        `<tr><th>当前 Rp=${rpKohm}kΩ 实际上升时间 t_r</th><td><strong>${actualTrNs.toFixed(1)} ns</strong> (0.3VDD → 0.7VDD) <span class="status-pill ${trOk ? "ok" : "err"}">${trOk ? `满足 ≤ ${trMaxNs}ns` : `超标！边沿过缓易丢 ACK`}</span></td></tr>` +
+        `<tr><th>低电平灌电流与静态功耗</th><td>I_sink = <strong>${iSinkMa.toFixed(2)} mA</strong> (${(vdd * iSinkMa).toFixed(2)} mW/线) <span class="status-pill ${iolOk ? "ok" : "err"}">${iolOk ? "灌电流安全" : "阻值过小，VOL 将被抬高"}</span></td></tr>` +
+        `<tr><th>工程推荐标准阻值</th><td><code>${speedK === 100 ? "4.7 kΩ" : speedK === 400 ? (cbusPf > 150 ? "1.8 kΩ ~ 2.2 kΩ" : "2.2 kΩ ~ 3.3 kΩ") : "1.0 kΩ ~ 1.5 kΩ"}</code></td></tr>`;
+    }
+
+    [i2cVddInput, i2cSpeedSel, i2cCbusInput, i2cRpInput].forEach((el) => el.addEventListener("input", updateI2c));
+
+    updateCanTiming();
+    updateI2c();
+  }
+
+  // =========================================================================
+  // 09. Hardware RC / 1st-Order Digital IIR Filter & C99 LUT Generator
+  // =========================================================================
+  function initDspLutTool() {
+    const rcRInput = $("#rc-r");
+    const rcCInput = $("#rc-c");
+    const iirFsInput = $("#iir-fs");
+    const iirFcInput = $("#iir-fc");
+    const dspSummary = $("#dsp-summary");
+    const iirCodeOut = $("#iir-c-code");
+
+    if (!rcRInput) return;
+
+    function updateDspFilter() {
+      const rKohm = Math.max(0.001, Number(rcRInput.value) || 10);
+      const cNf = Math.max(0.001, Number(rcCInput.value) || 100);
+      const fs = Math.max(1, Number(iirFsInput.value) || 1000);
+      const fcIir = Math.min(fs * 0.49, Math.max(0.01, Number(iirFcInput.value) || 15));
+
+      const tauUs = rKohm * cNf; // kOhm * nF = us
+      const tauMs = tauUs / 1000;
+      const fcRc = 1e6 / (2 * Math.PI * tauUs);
+      const t90Ms = 2.3026 * tauMs;
+      const t99Ms = 4.6052 * tauMs;
+
+      const dt = 1 / fs;
+      const rcDigital = 1 / (2 * Math.PI * fcIir);
+      const alpha = dt / (rcDigital + dt);
+      const alphaQ15 = Math.min(32767, Math.max(1, Math.round(alpha * 32768)));
+      const shiftK = Math.max(1, Math.min(12, Math.round(-Math.log2(alpha))));
+      const shiftFc = (fs / (2 * Math.PI)) * (1 / ((1 << shiftK) - 1));
+
+      dspSummary.innerHTML =
+        `<tr><th>硬件 RC 截止频率 (-3dB)</th><td><strong>${fcRc >= 1000 ? `${(fcRc / 1000).toFixed(2)} kHz` : `${fcRc.toFixed(2)} Hz`}</strong> (时间常数 τ = ${tauMs >= 1 ? `${tauMs.toFixed(2)} ms` : `${tauUs.toFixed(1)} μs`})</td></tr>` +
+        `<tr><th>RC 阶跃响应稳定时间</th><td>90% 稳定: <strong>${t90Ms.toFixed(2)} ms</strong> · 99% 稳定 (≈5τ): <strong>${t99Ms.toFixed(2)} ms</strong></td></tr>` +
+        `<tr><th>数字 IIR 系数 α (fs=${fs}Hz, fc=${fcIir}Hz)</th><td><code>α = ${alpha.toFixed(5)}</code> → 定点 <code>ALPHA_Q15 = ${alphaQ15}</code> (0x${toHex(alphaQ15, 4)})</td></tr>` +
+        `<tr><th>免乘法移位近似 (1/2^${shiftK})</th><td><code>y += (x - y) &gt;&gt; ${shiftK}</code> (等效截止频率 ≈ ${shiftFc.toFixed(2)} Hz)</td></tr>`;
+
+      iirCodeOut.textContent =
+        `/* 一阶低通 IIR: fs = ${fs} Hz, fc = ${fcIir} Hz, alpha = ${alpha.toFixed(5)} (Q15 = ${alphaQ15}) */\n` +
+        `#define IIR_ALPHA_Q15  (${alphaQ15}L)\n\n` +
+        `static inline int32_t iir_lowpass_q15(int32_t x, int32_t *state_q15)\n` +
+        `{\n` +
+        `  int32_t x_q15 = x << 8; /* 保留 8-bit 小数余量防截断死区 */\n` +
+        `  *state_q15 += (int32_t)(((int64_t)(x_q15 - *state_q15) * IIR_ALPHA_Q15) >> 15);\n` +
+        `  return (*state_q15 + 128) >> 8;\n` +
+        `}`;
+    }
+
+    [rcRInput, rcCInput, iirFsInput, iirFcInput].forEach((el) => el.addEventListener("input", updateDspFilter));
+
+    // C99 Waveform / Gamma LUT Generator
+    const lutTypeSel = $("#lut-type");
+    const lutLenSel = $("#lut-len");
+    const lutMaxInput = $("#lut-max");
+    const lutPreviewBars = $("#lut-preview-bars");
+    const lutOut = $("#lut-c-output");
+
+    function updateLut() {
+      const type = lutTypeSel.value;
+      const n = Number(lutLenSel.value) || 32;
+      const maxVal = Math.min(65535, Math.max(1, Number(lutMaxInput.value) || 999));
+
+      const values = [];
+      for (let i = 0; i < n; i += 1) {
+        let norm = 0;
+        if (type === "gamma22") {
+          norm = Math.pow(i / Math.max(1, n - 1), 2.2);
+        } else if (type === "sine") {
+          norm = 0.5 * (1 + Math.sin((2 * Math.PI * i) / n));
+        } else if (type === "halfsine") {
+          norm = Math.sin((Math.PI * i) / Math.max(1, n - 1));
+        } else if (type === "triangle") {
+          const phase = i / n;
+          norm = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
+        } else if (type === "breathing") {
+          norm = (Math.exp(Math.sin((2 * Math.PI * i) / n)) - 1 / Math.E) / (Math.E - 1 / Math.E);
+        }
+        values.push(Math.round(norm * maxVal));
+      }
+
+      const previewStep = Math.max(1, Math.floor(n / 32));
+      const sampled = [];
+      for (let i = 0; i < n; i += previewStep) sampled.push(values[i]);
+
+      lutPreviewBars.innerHTML = sampled
+        .map((v) => {
+          const hPct = Math.max(6, Math.round((v / maxVal) * 100));
+          return `<span class="lut-bar" style="height:${hPct}%" title="${v}"></span>`;
+        })
+        .join("");
+
+      const cType = maxVal <= 255 ? "uint8_t" : "uint16_t";
+      const rows = [];
+      for (let i = 0; i < values.length; i += 8) {
+        rows.push("  " + values.slice(i, i + 8).map((v) => String(v).padStart(4, " ")).join(", "));
+      }
+
+      lutOut.value =
+        `/* ${lutTypeSel.options[lutTypeSel.selectedIndex].text}, N=${n}, Max=${maxVal} */\n` +
+        `const ${cType} g_${type}_lut[${n}] = {\n${rows.join(",\n")}\n};`;
+    }
+
+    [lutTypeSel, lutLenSel, lutMaxInput].forEach((el) => el.addEventListener("input", updateLut));
+
+    updateDspFilter();
+    updateLut();
+  }
+
+  // =========================================================================
+  // 10. Cortex-M Exception Stack Frame & Keil / GCC Memory Analyzer
+  // =========================================================================
+  function initStackMapTool() {
+    const stkDumpInput = $("#stk-dump");
+    const stkExcInput = $("#stk-exc-return");
+    const stkSpInput = $("#stk-sp-addr");
+    const stkSummary = $("#stk-summary");
+
+    if (!stkDumpInput) return;
+
+    const STK_PRESETS = {
+      thread_msp: {
+        dump: "0x00000000 0x20000418 0x00000001 0x40013800 0x00000000 0x08003A15 0x08003B42 0x61000000",
+        exc: "0xFFFFFFF9",
+        sp: "0x20003F80",
+      },
+      rtos_psp: {
+        dump: "0x200018A0 0x00000000 0x00000010 0x08009120 0x00000004 0x08004C2B 0x08004C58 0x21000000",
+        exc: "0xFFFFFFED",
+        sp: "0x20001740",
+      },
+      isr_nest: {
+        dump: "0x40020000 0x00000002 0x20000100 0x00000000 0x08001234 0x08002109 0x08002180 0x6000001C",
+        exc: "0xFFFFFFF1",
+        sp: "0x20003EC0",
+      },
+    };
+
+    function decodeStackFrame() {
+      const tokens = stkDumpInput.value
+        .replace(/[,;[\]{}()]/g, " ")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+      const words = [];
+      for (let i = 0; i < 8; i += 1) {
+        const tok = tokens[i] || "0";
+        const clean = tok.replace(/^0x/i, "");
+        words.push(/^[0-9a-fA-F]{1,8}$/.test(clean) ? parseInt(clean, 16) >>> 0 : 0);
+      }
+
+      const [r0, r1, r2, r3, r12, lr, pc, xpsr] = words;
+      const excRet = parseInt(stkExcInput.value.trim().replace(/^0x/i, "") || "FFFFFFF9", 16) >>> 0;
+      const spBase = parseInt(stkSpInput.value.trim().replace(/^0x/i, "") || "20000000", 16) >>> 0;
+
+      const thumbBit = (xpsr >>> 24) & 1;
+      const isrNum = xpsr & 0x1ff;
+      const lrAligned = (lr & ~1) >>> 0;
+
+      let isrDesc = "Thread Mode (主循环或 RTOS 任务上下文)";
+      if (isrNum === 3) isrDesc = "HardFault_Handler (#3)";
+      else if (isrNum === 11) isrDesc = "SVCall_Handler (#11)";
+      else if (isrNum === 14) isrDesc = "PendSV_Handler (#14)";
+      else if (isrNum === 15) isrDesc = "SysTick_Handler (#15)";
+      else if (isrNum >= 16) isrDesc = `外部外设中断 IRQ #${isrNum - 16} (Vector #${isrNum})`;
+
+      const fpuExtended = ((excRet >>> 4) & 1) === 0;
+      const isThreadMode = ((excRet >>> 3) & 1) === 1;
+      const usePsp = ((excRet >>> 2) & 1) === 1;
+      const frameBytes = fpuExtended ? 104 : 32;
+      const origSp = (spBase + frameBytes) >>> 0;
+
+      stkSummary.innerHTML =
+        `<tr><th>故障指令地址 PC (+0x18)</th><td><strong><code>0x${toHex(pc, 8)}</code></strong> <span class="status-pill ${pc >= 0x08000000 && pc < 0x08200000 ? "ok" : "err"}">${pc >= 0x08000000 && pc < 0x08200000 ? "位于 Flash 代码区" : "非法 PC 地址 (疑似野函数指针/毁栈)"}</span></td></tr>` +
+        `<tr><th>调用者返回地址 LR (+0x14)</th><td><code>0x${toHex(lr, 8)}</code> → 反汇编定位地址: <strong><code>0x${toHex(lrAligned, 8)}</code></strong> (调用指令位于其前 2~4 字节)</td></tr>` +
+        `<tr><th>xPSR 状态 (+0x1C)</th><td><code>0x${toHex(xpsr, 8)}</code> · Thumb 位 T=${thumbBit} ${thumbBit ? '<span class="status-pill ok">正常 (T=1)</span>' : '<span class="status-pill err">T=0 触发 INVSTATE!</span>'} · ${isrDesc}</td></tr>` +
+        `<tr><th>EXC_RETURN (<code>0x${toHex(excRet, 8)}</code>)</th><td>异常发生于 <strong>${isThreadMode ? "Thread 线程模式" : "Handler 中断嵌套模式"}</strong> · 使用 <strong>${usePsp ? "PSP (进程栈)" : "MSP (主栈)"}</strong> · ${fpuExtended ? "含 FPU 扩展栈帧 (104B)" : "标准 8 字基础栈帧 (32B)"} · 压栈前 SP = <code>0x${toHex(origSp, 8)}</code></td></tr>` +
+        `<tr><th>R0..R3, R12 现场</th><td><code>R0=0x${toHex(r0, 8)}</code>, <code>R1=0x${toHex(r1, 8)}</code>, <code>R2=0x${toHex(r2, 8)}</code>, <code>R3=0x${toHex(r3, 8)}</code>, <code>R12=0x${toHex(r12, 8)}</code></td></tr>` +
+        `<tr><th>一键 addr2line 定位命令</th><td><code>arm-none-eabi-addr2line -e build/firmware.elf -f -C 0x${toHex(pc, 8)} 0x${toHex(lrAligned, 8)}</code></td></tr>`;
+    }
+
+    [stkDumpInput, stkExcInput, stkSpInput].forEach((el) => el.addEventListener("input", decodeStackFrame));
+
+    $$("[data-stk-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const p = STK_PRESETS[btn.getAttribute("data-stk-preset")];
+        if (!p) return;
+        stkDumpInput.value = p.dump;
+        stkExcInput.value = p.exc;
+        stkSpInput.value = p.sp;
+        decodeStackFrame();
+      });
+    });
+
+    // Keil MDK / GCC Memory Analyzer
+    const memPasteInput = $("#mem-paste");
+    const memCodeInput = $("#mem-code");
+    const memRoInput = $("#mem-ro");
+    const memRwInput = $("#mem-rw");
+    const memZiInput = $("#mem-zi");
+    const memChipSel = $("#mem-chip");
+    const memBars = $("#mem-bars");
+    const memSummary = $("#mem-summary");
+
+    function updateMemoryMap() {
+      const code = Math.max(0, Number(memCodeInput.value) || 0);
+      const ro = Math.max(0, Number(memRoInput.value) || 0);
+      const rw = Math.max(0, Number(memRwInput.value) || 0);
+      const zi = Math.max(0, Number(memZiInput.value) || 0);
+      const [flashKb, ramKb] = memChipSel.value.split(",").map(Number);
+
+      const flashTotal = flashKb * 1024;
+      const ramTotal = ramKb * 1024;
+
+      const flashUsed = code + ro + rw;
+      const ramUsed = rw + zi;
+      const flashFree = flashTotal - flashUsed;
+      const ramFree = ramTotal - ramUsed;
+
+      const flashPct = (flashUsed / flashTotal) * 100;
+      const ramPct = (ramUsed / ramTotal) * 100;
+
+      memBars.innerHTML =
+        `<div class="usage-bar-item"><div class="usage-bar-head"><span>Flash 占用: ${(flashUsed / 1024).toFixed(2)} KB / ${flashKb} KB (Code + RO + RW)</span><strong>${flashPct.toFixed(1)}%</strong></div><div class="usage-bar-track"><div class="usage-bar-fill ${flashPct > 90 ? "err" : flashPct > 75 ? "warn" : "ok"}" style="width:${Math.min(100, flashPct).toFixed(1)}%"></div></div></div>` +
+        `<div class="usage-bar-item"><div class="usage-bar-head"><span>SRAM 静态占用: ${(ramUsed / 1024).toFixed(2)} KB / ${ramKb} KB (RW + ZI)</span><strong>${ramPct.toFixed(1)}%</strong></div><div class="usage-bar-track"><div class="usage-bar-fill ${ramPct > 85 ? "err" : ramPct > 70 ? "warn" : "ok"}" style="width:${Math.min(100, ramPct).toFixed(1)}%"></div></div></div>`;
+
+      memSummary.innerHTML =
+        `<tr><th>Flash 烧录镜像体积</th><td><strong>${flashUsed.toLocaleString()} Bytes</strong> (${(flashUsed / 1024).toFixed(2)} KB · <code>0x${toHex(flashUsed, 6)}</code>)</td></tr>` +
+        `<tr><th>Flash 剩余可用空间</th><td>${flashFree >= 0 ? `<strong>${(flashFree / 1024).toFixed(2)} KB</strong> (${flashFree.toLocaleString()} B)` : `<span class="status-pill err">超出 Flash 容量 ${(-flashFree).toLocaleString()} B!</span>`}</td></tr>` +
+        `<tr><th>SRAM 静态占用 (含栈/堆段)</th><td><strong>${ramUsed.toLocaleString()} Bytes</strong> (${(ramUsed / 1024).toFixed(2)} KB · <code>0x${toHex(ramUsed, 5)}</code>)</td></tr>` +
+        `<tr><th>SRAM 剩余未分配裕量</th><td>${ramFree >= 0 ? `<strong>${(ramFree / 1024).toFixed(2)} KB</strong> (${ramFree.toLocaleString()} B)` : `<span class="status-pill err">超出 SRAM 容量 ${(-ramFree).toLocaleString()} B!</span>`}</td></tr>`;
+    }
+
+    memPasteInput.addEventListener("input", () => {
+      const s = memPasteInput.value;
+      const mCode = s.match(/Code\s*=\s*(\d+)/i);
+      const mRo = s.match(/RO-data\s*=\s*(\d+)/i);
+      const mRw = s.match(/RW-data\s*=\s*(\d+)/i);
+      const mZi = s.match(/ZI-data\s*=\s*(\d+)/i);
+      if (mCode) memCodeInput.value = mCode[1];
+      if (mRo) memRoInput.value = mRo[1];
+      if (mRw) memRwInput.value = mRw[1];
+      if (mZi) memZiInput.value = mZi[1];
+      updateMemoryMap();
+    });
+
+    [memCodeInput, memRoInput, memRwInput, memZiInput, memChipSel].forEach((el) =>
+      el.addEventListener("input", updateMemoryMap)
+    );
+
+    decodeStackFrame();
+    updateMemoryMap();
+  }
+
   initToolTabs();
   initRadixTool();
   initCrcModbusTool();
   initRegisterFaultTool();
   initAdcTimerTool();
   initDisplayFontTool();
+  initAnalogPowerTool();
+  initStorageLayoutTool();
+  initBusTimingTool();
+  initDspLutTool();
+  initStackMapTool();
 })();
