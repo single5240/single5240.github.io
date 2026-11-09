@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-09",
+  "sentence": "Ever tried. Ever failed. No matter. Try again. Fail again. Fail better.",
+  "source": {
+    "author": "Samuel Beckett",
+    "work": "Worstward Ho",
+    "year": "1983",
+    "detail": "中篇散文作品开篇段落；常被创业者和运动员引用，Stan Wawrinka 把它文在了手臂上"
+  },
+  "translation": "试过了。失败了。没关系。再试一次。再失败一次。失败得更好一点。",
+  "grammar": [
+    "省略句：前两句是省略了主语和助动词的现在完成时，补全是 (You have) ever tried. (You have) ever failed. 这里的 tried、failed 是过去分词，不是一般过去时。去掉主语后，句子像一个人在自言自语，读起来短促有力。",
+    "祈使句：Try again. Fail again. Fail better. 都用动词原形开头，没有主语，是对自己（或对读者）下的命令。'No matter.' 是 It is no matter 的省略，意思是“不要紧”。",
+    "better 在这里是副词 well 的比较级，修饰动词 fail，说的是“以更好的方式失败”，不是形容词。Beckett 故意把“失败”和“更好”放在一起，这种看似矛盾的搭配叫矛盾修辞（oxymoron），正是这句话的力量所在。"
+  ],
+  "vocab": [
+    {
+      "word": "ever",
+      "phonetic": "/ˈevə(r)/",
+      "pos": "adv.",
+      "meaning": "曾经；在任何时候（常用于完成时、疑问句和否定句）",
+      "collocation": "Have you ever...? / never ever / ever since",
+      "example": "Have you ever debugged a hard fault at 2 a.m.?"
+    },
+    {
+      "word": "no matter",
+      "phonetic": "/nəʊ ˈmætə(r)/",
+      "pos": "phrase",
+      "meaning": "没关系；不要紧（单独用时）；无论（后接 what/how/who 等）",
+      "collocation": "no matter what / no matter how hard / It's no matter.",
+      "example": "No matter how many times the build fails, keep reading the log."
+    },
+    {
+      "word": "fail",
+      "phonetic": "/feɪl/",
+      "pos": "v.",
+      "meaning": "失败；未能做到",
+      "collocation": "fail to do sth / fail an exam / fail miserably / without fail（必定）",
+      "example": "The firmware failed to boot after the update."
+    },
+    {
+      "word": "better",
+      "phonetic": "/ˈbetə(r)/",
+      "pos": "adv.",
+      "meaning": "更好地（well 的比较级），句中修饰 fail",
+      "collocation": "do better / know better（明白事理，不至于犯傻） / had better do",
+      "example": "You'll do better next time if you write the test first."
+    }
+  ],
+  "note": "小练习：模仿这个节奏，用 3～6 个超短句写写你最近卡住的一件事，比如 \"Ever flashed. Ever bricked. No matter. ...\"。写好可以发给我帮你看看。"
+}
