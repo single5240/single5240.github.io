@@ -9,6 +9,12 @@
           "weekday": "周一",
           "title": "AI 资讯日报 · 11月9日",
           "summary": "Lead: 周末没有大模型发布，三款在用产品都没有新动作。xAI 给 Grok API 默认加水印，Amazon 推短信购物 agent，Claude Code 把长任务挪到后台。"
+        },
+        {
+          "date": "2026-11-10",
+          "weekday": "周二",
+          "title": "AI 资讯日报 · 11月10日",
+          "summary": "Lead: Anthropic 发布 Fable 5.2 并降价，英伟达调查黄仁勋事件，Gemini 推出记忆摘要。ChatGPT 和 Cursor 本窗口没有新功能。"
         }
       ]
     },
