@@ -1001,12 +1001,289 @@
     const orderSelect = $("#font-order-select");
     const pixelGrid = $("#font-pixel-grid");
     const hexTextarea = $("#font-hex-textarea");
+    const charInput = $("#font-char-input");
+    const fontSelect = $("#font-family-select");
+    const scaleInput = $("#font-scale-range");
+    const scaleValue = $("#font-scale-value");
+    const thresholdInput = $("#font-threshold-range");
+    const thresholdValue = $("#font-threshold-value");
+    const captureBtn = $("#font-capture-btn");
+    const captureStatus = $("#font-capture-status");
 
     let width = 8;
     let height = 16;
     let pixels = new Uint8Array(width * height);
     let isDrawing = false;
     let drawVal = 1;
+    let glyphMeta = null;
+
+    const GENERIC_FAMILIES = new Set([
+      "serif", "sans-serif", "monospace", "system-ui", "cursive", "fantasy",
+      "ui-serif", "ui-sans-serif", "ui-monospace",
+    ]);
+    const FONT_GROUPS = [
+      {
+        label: "简体",
+        options: [
+          { label: "黑体", chain: ["PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", "sans-serif"], requireNamed: true },
+          { label: "宋体", chain: ["Songti SC", "SimSun", "Noto Serif CJK SC", "serif"], requireNamed: true },
+          { label: "楷体", chain: ["Kaiti SC", "KaiTi", "serif"], requireNamed: true },
+          { label: "仿宋", chain: ["STFangsong", "FangSong", "serif"], requireNamed: true },
+          { label: "系统无衬线", chain: ["sans-serif"], requireNamed: false },
+        ],
+      },
+      {
+        label: "繁体",
+        options: [
+          { label: "黑体", chain: ["PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", "sans-serif"], requireNamed: true },
+          { label: "宋体/明体", chain: ["Songti TC", "PMingLiU", "MingLiU", "Noto Serif CJK TC", "serif"], requireNamed: true },
+          { label: "楷体", chain: ["Kaiti TC", "DFKai-SB", "BiauKai", "serif"], requireNamed: true },
+          { label: "系统无衬线", chain: ["sans-serif"], requireNamed: false },
+        ],
+      },
+      {
+        label: "西文",
+        options: [
+          { label: "无衬线", chain: ["system-ui", "Arial", "Helvetica", "sans-serif"], requireNamed: false },
+          { label: "衬线", chain: ["Georgia", "Times New Roman", "serif"], requireNamed: false },
+          { label: "等宽", chain: ["Consolas", "Menlo", "Courier New", "monospace"], requireNamed: false },
+        ],
+      },
+    ];
+
+    function isGenericFamily(name) {
+      return GENERIC_FAMILIES.has(String(name).toLowerCase());
+    }
+
+    function quoteFamily(name) {
+      return isGenericFamily(name) ? name : `"${String(name).replace(/["\\]/g, "")}"`;
+    }
+
+    const fontProbeCanvas = document.createElement("canvas");
+    const fontProbeCtx = fontProbeCanvas.getContext("2d");
+
+    // Width probe against generic families. document.fonts.check() is not used:
+    // some engines return true for a missing family once any fallback can draw.
+    function fontFaceAvailable(name) {
+      if (isGenericFamily(name)) return true;
+      if (!fontProbeCtx) return false;
+      const sample = "mmmmmmmmmmlliWWWW汉字體網拉＠";
+      const quoted = quoteFamily(name);
+      return ["monospace", "serif", "sans-serif"].some((base) => {
+        fontProbeCtx.font = `72px ${base}`;
+        const baseWidth = fontProbeCtx.measureText(sample).width;
+        fontProbeCtx.font = `72px ${quoted}, ${base}`;
+        return Math.abs(fontProbeCtx.measureText(sample).width - baseWidth) > 0.5;
+      });
+    }
+
+    function buildFontOption(entry) {
+      const available = [];
+      const seen = new Set();
+      let namedCount = 0;
+      entry.chain.forEach((name) => {
+        const key = name.toLowerCase();
+        if (seen.has(key) || !fontFaceAvailable(name)) return;
+        seen.add(key);
+        available.push(name);
+        if (!isGenericFamily(name)) namedCount += 1;
+      });
+      if (!available.length) return null;
+      if (entry.requireNamed && namedCount === 0) return null;
+      const namedBefore = (index) => available.slice(0, index).some((item) => !isGenericFamily(item));
+      const shown = available.filter((name, index) => !isGenericFamily(name) || index === 0 || !namedBefore(index));
+      return {
+        label: `${entry.label} · ${shown.join(" / ")}`,
+        family: available.map(quoteFamily).join(", "),
+      };
+    }
+
+    function populateFontSelect() {
+      if (!fontSelect) return;
+      fontSelect.replaceChildren();
+      FONT_GROUPS.forEach((group) => {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = group.label;
+        group.options.forEach((entry) => {
+          const built = buildFontOption(entry);
+          if (!built) return;
+          const option = document.createElement("option");
+          option.value = built.family;
+          option.textContent = built.label;
+          option.title = built.family;
+          option.style.fontFamily = built.family;
+          optgroup.append(option);
+        });
+        if (optgroup.childElementCount) fontSelect.append(optgroup);
+      });
+      if (!fontSelect.options.length) {
+        const option = document.createElement("option");
+        option.value = "sans-serif";
+        option.textContent = "系统无衬线 · sans-serif";
+        fontSelect.append(option);
+      }
+      fontSelect.style.fontFamily = fontSelect.value || "sans-serif";
+    }
+
+    function firstCharacter(text) {
+      const chars = Array.from(String(text).trim());
+      return chars[0] || "";
+    }
+
+    function safeNote(text) {
+      return String(text)
+        .replace(/[\u0000-\u001f\u007f]/g, " ")
+        .replace(/0x/gi, "U+")
+        .replace(/\*\//g, "* /");
+    }
+
+    function updatePixelCellSize() {
+      const wrap = pixelGrid.parentElement;
+      const gap = 1;
+      const chrome = 4;
+      const available = wrap ? wrap.clientWidth : 0;
+      const preferred = width <= 16 ? 15 : width <= 24 ? 13 : 11;
+      let size = preferred;
+      if (available > 0) {
+        const fitted = Math.floor((available - chrome - (width - 1) * gap - 2) / width);
+        size = Math.max(6, Math.min(preferred, fitted));
+      }
+      pixelGrid.style.setProperty("--pixel-cell", `${size}px`);
+    }
+
+    const rasterCanvas = document.createElement("canvas");
+    const rasterCtx = rasterCanvas.getContext("2d", { willReadFrequently: true });
+    const RASTER_SAMPLE = 4;
+
+    function splitFontFamily(family) {
+      const names = [];
+      let current = "";
+      let quote = "";
+      for (const char of String(family)) {
+        if (quote) {
+          if (char === quote) quote = "";
+          else current += char;
+          continue;
+        }
+        if (char === "\"" || char === "'") {
+          quote = char;
+          continue;
+        }
+        if (char === ",") {
+          if (current.trim()) names.push(current.trim());
+          current = "";
+          continue;
+        }
+        current += char;
+      }
+      if (current.trim()) names.push(current.trim());
+      return names;
+    }
+
+    function glyphInkBox(metrics, fontSize) {
+      const ascent = metrics.actualBoundingBoxAscent;
+      const descent = metrics.actualBoundingBoxDescent;
+      const left = metrics.actualBoundingBoxLeft || 0;
+      const right = metrics.actualBoundingBoxRight || 0;
+      if (Number.isFinite(ascent) && Number.isFinite(descent) && ascent + descent > 0.5 && Math.abs(left) + right > 0.5) {
+        return { left, right, ascent, descent };
+      }
+      const widthGuess = metrics.width || fontSize;
+      return { left: 0, right: widthGuess, ascent: fontSize * 0.8, descent: fontSize * 0.2 };
+    }
+
+    function paintGlyph(ch, family, targetW, targetH, scale, threshold) {
+      const out = new Uint8Array(targetW * targetH);
+      if (!rasterCtx || !ch) return out;
+      const sw = targetW * RASTER_SAMPLE;
+      const sh = targetH * RASTER_SAMPLE;
+      const probe = 100;
+      rasterCtx.font = `${probe}px ${family}`;
+      const probeBox = glyphInkBox(rasterCtx.measureText(ch), probe);
+      const boxW = Math.max(1, probeBox.left + probeBox.right);
+      const boxH = Math.max(1, probeBox.ascent + probeBox.descent);
+      const fit = Math.min(sw / boxW, sh / boxH);
+      const fontSize = Math.max(1, probe * fit * scale);
+
+      rasterCanvas.width = sw;
+      rasterCanvas.height = sh;
+      rasterCtx.fillStyle = "#ffffff";
+      rasterCtx.fillRect(0, 0, sw, sh);
+      rasterCtx.fillStyle = "#000000";
+      rasterCtx.textAlign = "left";
+      rasterCtx.textBaseline = "alphabetic";
+      rasterCtx.font = `${fontSize}px ${family}`;
+      const box = glyphInkBox(rasterCtx.measureText(ch), fontSize);
+      const inkW = Math.max(1, box.left + box.right);
+      const inkH = Math.max(1, box.ascent + box.descent);
+      const drawX = (sw - inkW) / 2 + box.left;
+      const drawY = (sh - inkH) / 2 + box.ascent;
+      rasterCtx.fillText(ch, drawX, drawY);
+
+      const src = rasterCtx.getImageData(0, 0, sw, sh).data;
+      const area = RASTER_SAMPLE * RASTER_SAMPLE;
+      for (let y = 0; y < targetH; y += 1) {
+        for (let x = 0; x < targetW; x += 1) {
+          let coverage = 0;
+          for (let sy = 0; sy < RASTER_SAMPLE; sy += 1) {
+            for (let sx = 0; sx < RASTER_SAMPLE; sx += 1) {
+              const sample = ((y * RASTER_SAMPLE + sy) * sw + (x * RASTER_SAMPLE + sx)) * 4;
+              const lum = 0.2126 * src[sample] + 0.7152 * src[sample + 1] + 0.0722 * src[sample + 2];
+              coverage += 255 - lum;
+            }
+          }
+          out[y * targetW + x] = coverage / area >= threshold ? 1 : 0;
+        }
+      }
+      return out;
+    }
+
+    function rasterizeGlyph(ch, family, targetW, targetH, scale, threshold) {
+      const faces = splitFontFamily(family);
+      let painted = paintGlyph(ch, family, targetW, targetH, scale, threshold);
+      if (painted.some(Boolean) || faces.length < 2) return painted;
+      // Some faces map a symbol to an empty outline and block the CSS fallback.
+      for (let index = 1; index < faces.length; index += 1) {
+        const nextFamily = faces.slice(index).map(quoteFamily).join(", ");
+        painted = paintGlyph(ch, nextFamily, targetW, targetH, scale, threshold);
+        if (painted.some(Boolean)) return painted;
+      }
+      return painted;
+    }
+
+    function setCaptureStatus(message, isError) {
+      if (!captureStatus) return;
+      captureStatus.textContent = message || "";
+      captureStatus.classList.toggle("is-error", Boolean(isError));
+    }
+
+    function captureGlyph() {
+      if (!charInput || !fontSelect) return;
+      const ch = firstCharacter(charInput.value);
+      if (!ch) {
+        charInput.setAttribute("aria-invalid", "true");
+        setCaptureStatus("请输入一个字符", true);
+        charInput.focus();
+        return;
+      }
+      charInput.removeAttribute("aria-invalid");
+      const family = fontSelect.value || "sans-serif";
+      const fontLabel = fontSelect.options[fontSelect.selectedIndex]?.text || family;
+      const scale = Math.min(1.6, Math.max(0.4, (Number(scaleInput?.value) || 90) / 100));
+      const threshold = Math.min(255, Math.max(0, Number(thresholdInput?.value) || 128));
+      pixels = rasterizeGlyph(ch, family, width, height, scale, threshold);
+      glyphMeta = { ch, fontLabel };
+      renderPixelGrid();
+      syncTextareaFromGrid();
+      const ink = pixels.reduce((sum, bit) => sum + bit, 0);
+      const cp = ch.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
+      setCaptureStatus(
+        ink
+          ? `已取模「${ch}」U+${cp} · ${fontLabel} · ${width}×${height} · ${encodePixelsToBytes().length} 字节`
+          : `「${ch}」在该字体下没有超过阈值的笔画`,
+        !ink
+      );
+    }
 
     const PRESET_GLYPHS = {
       "8x16_A": {
@@ -1030,12 +1307,13 @@
     };
 
     function renderPixelGrid() {
-      pixelGrid.style.gridTemplateColumns = `repeat(${width}, auto)`;
+      updatePixelCellSize();
+      pixelGrid.style.gridTemplateColumns = `repeat(${width}, var(--pixel-cell))`;
       let html = "";
       for (let i = 0; i < width * height; i += 1) {
         const x = i % width;
         const y = Math.floor(i / width);
-        html += `<button type="button" class="pixel-cell${pixels[i] ? " on" : ""}" data-px="${i}" aria-label="Pixel (${x}, ${y})"></button>`;
+        html += `<button type="button" class="pixel-cell${pixels[i] ? " on" : ""}" data-px="${i}" aria-label="像素 ${x + 1},${y + 1}"></button>`;
       }
       pixelGrid.innerHTML = html;
     }
@@ -1116,7 +1394,13 @@
       for (let i = 0; i < hexList.length; i += 8) {
         lines.push("  " + hexList.slice(i, i + 8).join(", "));
       }
-      hexTextarea.value = `/* ${width}x${height}, ${bytes.length} bytes (${orderSelect.options[orderSelect.selectedIndex].text}) */\nconst uint8_t glyph_${width}x${height}[${bytes.length}] = {\n${lines.join(",\n")}\n};`;
+      const orderText = orderSelect.options[orderSelect.selectedIndex]?.text || "";
+      let note = `${width}x${height}, ${bytes.length} bytes (${orderText})`;
+      if (glyphMeta) {
+        const cp = glyphMeta.ch.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
+        note += `; "${safeNote(glyphMeta.ch)}" U+${cp}; ${safeNote(glyphMeta.fontLabel)}`;
+      }
+      hexTextarea.value = `/* ${note} */\nconst uint8_t glyph_${width}x${height}[${bytes.length}] = {\n${lines.join(",\n")}\n};`;
     }
 
     function applyPixelState(idx, val) {
@@ -1153,6 +1437,8 @@
       width = w;
       height = h;
       pixels = new Uint8Array(width * height);
+      glyphMeta = null;
+      setCaptureStatus("");
       renderPixelGrid();
       syncTextareaFromGrid();
     });
@@ -1160,6 +1446,7 @@
     orderSelect.addEventListener("change", syncTextareaFromGrid);
 
     hexTextarea.addEventListener("input", () => {
+      glyphMeta = null;
       const bodyMatch = hexTextarea.value.match(/\{([\s\S]*?)\}/);
       const raw = bodyMatch ? bodyMatch[1] : hexTextarea.value;
       const matches = [...raw.matchAll(/0x([0-9a-fA-F]{1,2})/g)];
@@ -1177,6 +1464,8 @@
         const key = btn.getAttribute("data-font-preset");
         if (key === "clear") {
           pixels.fill(0);
+          glyphMeta = null;
+          setCaptureStatus("");
           renderPixelGrid();
           syncTextareaFromGrid();
           return;
@@ -1187,6 +1476,8 @@
           syncTextareaFromGrid();
           return;
         }
+        glyphMeta = null;
+        setCaptureStatus("");
         const preset = PRESET_GLYPHS[key];
         if (!preset) return;
         sizeSelect.value = preset.size;
@@ -1200,6 +1491,46 @@
         syncTextareaFromGrid();
       });
     });
+
+    if (charInput && fontSelect && captureBtn) {
+      try {
+        populateFontSelect();
+      } catch {
+        fontSelect.replaceChildren();
+        const option = document.createElement("option");
+        option.value = "sans-serif";
+        option.textContent = "系统无衬线 · sans-serif";
+        fontSelect.append(option);
+      }
+      fontSelect.addEventListener("change", () => {
+        fontSelect.style.fontFamily = fontSelect.value || "sans-serif";
+      });
+      const bindRange = (input, output, format) => {
+        if (!input || !output) return;
+        const sync = () => {
+          const text = format(input.value);
+          output.textContent = text;
+          input.setAttribute("aria-valuenow", input.value);
+          input.setAttribute("aria-valuetext", text);
+        };
+        input.addEventListener("input", sync);
+        sync();
+      };
+      bindRange(scaleInput, scaleValue, (value) => `${value}%`);
+      bindRange(thresholdInput, thresholdValue, (value) => value);
+      captureBtn.addEventListener("click", captureGlyph);
+      charInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.isComposing) {
+          event.preventDefault();
+          captureGlyph();
+        }
+      });
+    }
+
+    if (typeof ResizeObserver === "function" && pixelGrid.parentElement) {
+      const cellSizeObserver = new ResizeObserver(() => updatePixelCellSize());
+      cellSizeObserver.observe(pixelGrid.parentElement);
+    }
 
     // Load default 8x16 'A'
     decodeBytesToPixels(PRESET_GLYPHS["8x16_A"].bytes);
