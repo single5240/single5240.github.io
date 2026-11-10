@@ -38,7 +38,7 @@
   kind: 在线工具
   title: 嵌入式开发在线工具箱
   subtitle: 进制、CRC、寄存器、模拟电源、Flash 存储与总线滤波十合一
-  description: 提供进制浮点转换、CRC 与 Modbus 帧检查、寄存器与 HardFault 异常栈回溯、ADC 与定时器/CAN 分频、RGB565 字模、NTC 查表与电池续航、Flash/EEPROM 跨页拆分、RC/IIR 滤波与 Keil 内存水位分析。
+  description: 提供进制浮点转换、CRC 与 Modbus 帧检查、寄存器与 HardFault 异常栈回溯、ADC 与定时器/CAN 分频、RGB565 与系统字体 1-bit 字模、NTC 查表与电池续航、Flash/EEPROM 跨页拆分、RC/IIR 滤波与 Keil 内存水位分析。
   url: /tools/index.html
   image: /assets/images/tools-preview.svg
   image_alt: 嵌入式开发在线工具箱十合一模块示意图

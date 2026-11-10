@@ -216,6 +216,10 @@
   box-shadow: 0 0 0 3.5px rgba(0, 122, 255, 0.22);
 }
 
+.tool-input[aria-invalid="true"] {
+  border-color: var(--note);
+}
+
 .tool-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
@@ -499,11 +503,90 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.font-stage {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.font-capture {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr) auto;
+  gap: 10px 12px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+
+.font-capture-heading {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.font-capture .tool-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.font-capture .tool-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.font-capture-action .tool-btn {
+  align-self: flex-start;
+}
+
+.font-capture-hint {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.font-capture-status {
+  margin: 0 0 12px;
+  min-height: 0;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.font-capture-status:empty {
+  display: none;
+}
+
+.font-capture-status.is-error {
+  color: var(--note);
+}
+
+.tool-range {
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  accent-color: var(--accent);
+  background: transparent;
+  cursor: pointer;
 }
 
 .pixel-grid {
+  --pixel-cell: 15px;
   display: grid;
   gap: 1px;
+  width: max-content;
   background: var(--line);
   border: 1px solid var(--line);
   padding: 1px;
@@ -513,8 +596,8 @@
 }
 
 .pixel-cell {
-  width: 15px;
-  height: 15px;
+  width: var(--pixel-cell);
+  height: var(--pixel-cell);
   background: var(--paper);
   border: 0;
   padding: 0;
@@ -679,9 +762,15 @@
   .swatch-grid {
     grid-template-columns: 1fr;
   }
-  .pixel-cell {
-    width: 12px;
-    height: 12px;
+  .pixel-grid {
+    --pixel-cell: 12px;
+  }
+  .font-capture {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .font-capture-font,
+  .font-capture-action {
+    grid-column: 1 / -1;
   }
 }
 

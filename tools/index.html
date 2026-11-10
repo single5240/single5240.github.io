@@ -1,7 +1,7 @@
 ---
 layout: frame
 title: 嵌入式开发在线工具箱
-description: 嵌入式开发常用计算工具：进制与浮点转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 栈回溯、ADC 与定时器/CAN 分频、RGB565 字模、NTC 查表与电池续航、Flash/EEPROM 页对齐与固件内存分析。
+description: 嵌入式开发常用计算工具：进制与浮点转换、CRC 与 Modbus 帧检查、寄存器和 HardFault 栈回溯、ADC 与定时器/CAN 分频、RGB565 与系统字体字模、NTC 查表与电池续航、Flash/EEPROM 页对齐与固件内存分析。
 section: tools
 wide: true
 permalink: /tools/index.html
@@ -446,7 +446,7 @@ permalink: /tools/index.html
     <div>
       <p class="eyebrow">05 · RGB565 COLOR &amp; 1-BIT BITMAP FONT INSPECTOR</p>
       <h2 id="title-display">RGB888 ↔ RGB565 调色板（含 DMA 字节序交换）与 1-bit 字模预览器</h2>
-      <p>对比 ST7789、ILI9341 在 8-bit SPI DMA 传输时的高低字节序差异与偏色原因；右侧支持手绘或粘贴 C 数组反查 1-bit 单色点阵字模。</p>
+      <p>对比 ST7789、ILI9341 在 8-bit SPI DMA 传输时的高低字节序差异与偏色原因；右侧可从本机系统字体取字，也可手绘或粘贴 C 数组反查 1-bit 单色点阵字模。</p>
     </div>
   </div>
 
@@ -504,15 +504,20 @@ permalink: /tools/index.html
     <div class="tool-card">
       <h3>
         <span>1-bit 单色点阵字模/图标预览与互转编辑器</span>
-        <span class="tool-hint">支持粘贴 C 数组反查</span>
+        <span class="tool-hint">系统字体取字 / 粘贴反查</span>
       </h3>
       <div class="tool-row">
         <div class="tool-field">
           <label class="tool-label" for="font-size-select">点阵尺寸 (宽 × 高)</label>
-          <select id="font-size-select" class="tool-select">
+          <select id="font-size-select" class="tool-select" aria-describedby="font-capture-hint">
+            <option value="8x8">8 × 8 (超小图标)</option>
             <option value="8x16" selected>8 × 16 (ASCII 半角标准)</option>
             <option value="12x12">12 × 12 (紧凑汉字/符号)</option>
+            <option value="12x24">12 × 24 (半角加高)</option>
             <option value="16x16">16 × 16 (标准汉字/图标)</option>
+            <option value="16x32">16 × 32 (半角加高)</option>
+            <option value="24x24">24 × 24 (清晰汉字)</option>
+            <option value="32x32">32 × 32 (大汉字/图标)</option>
           </select>
         </div>
         <div class="tool-field">
@@ -525,6 +530,34 @@ permalink: /tools/index.html
         </div>
       </div>
 
+      <div class="font-capture" role="group" aria-labelledby="font-capture-heading">
+        <div class="font-capture-heading" id="font-capture-heading">从系统字体取字</div>
+        <div class="tool-field">
+          <label class="tool-label" for="font-char-input">字符</label>
+          <input type="text" id="font-char-input" class="tool-input" value="拉" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入一个字" aria-describedby="font-capture-hint" aria-errormessage="font-capture-status">
+        </div>
+        <div class="tool-field font-capture-font">
+          <label class="tool-label" for="font-family-select">系统字体</label>
+          <select id="font-family-select" class="tool-select" aria-describedby="font-capture-hint">
+            <option value="sans-serif">正在检测本机字体…</option>
+          </select>
+        </div>
+        <div class="tool-field font-capture-action">
+          <span class="tool-label" aria-hidden="true">&nbsp;</span>
+          <button type="button" class="tool-btn primary" id="font-capture-btn" aria-describedby="font-capture-hint">取模</button>
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="font-scale-range"><span>字号微调</span><span id="font-scale-value">90%</span></label>
+          <input type="range" id="font-scale-range" class="tool-range" min="60" max="120" step="1" value="90" aria-valuemin="60" aria-valuemax="120" aria-valuenow="90" aria-valuetext="90%">
+        </div>
+        <div class="tool-field">
+          <label class="tool-label" for="font-threshold-range"><span>阈值</span><span id="font-threshold-value">128</span></label>
+          <input type="range" id="font-threshold-range" class="tool-range" min="16" max="240" step="1" value="128" aria-valuemin="16" aria-valuemax="240" aria-valuenow="128" aria-valuetext="128">
+        </div>
+      </div>
+      <p class="font-capture-hint" id="font-capture-hint">小尺寸下汉字笔画会比较糙，属于取模本身限制。只使用本机已安装的字体，不会下载字库。</p>
+      <p class="font-capture-status" id="font-capture-status" role="status" aria-live="polite"></p>
+
       <div class="tool-btn-row" style="margin-bottom: 12px;">
         <button type="button" class="tool-btn" data-font-preset="8x16_A">示例: 8×16 'A'</button>
         <button type="button" class="tool-btn" data-font-preset="12x12_degC">示例: 12×12 '℃'</button>
@@ -533,7 +566,7 @@ permalink: /tools/index.html
         <button type="button" class="tool-btn" data-font-preset="clear">清空画布</button>
       </div>
 
-      <div class="tool-row" style="align-items: start;">
+      <div class="tool-row font-stage" style="align-items: start;">
         <div class="pixel-canvas-wrap">
           <span class="tool-label">点击或按住拖拽绘制像素：</span>
           <div id="font-pixel-grid" class="pixel-grid" role="group" aria-label="1-bit 点阵像素画布"></div>
