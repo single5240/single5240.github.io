@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-10",
+  "sentence": "I am no bird; and no net ensnares me: I am a free human being with an independent will, which I now exert to leave you.",
+  "source": {
+    "author": "Charlotte Brontë",
+    "work": "Jane Eyre",
+    "year": "1847",
+    "detail": "第 23 章，Jane 在花园里对 Rochester 说的话"
+  },
+  "translation": "我不是鸟，也没有网能困住我：我是一个有独立意志的自由人，而现在我要用这份意志离开你。",
+  "grammar": [
+    "主干是三个并列的短句：I am no bird / no net ensnares me / I am a free human being。分号连接意思紧密的前两句，冒号引出后面的解释，层层推进，语气越来越坚定。",
+    "no + 名词表示彻底否定：I am no bird 比 I am not a bird 语气更强，意思是“我根本不是那种（被关着的）鸟”；no net ensnares me 同理，是“没有任何网能困住我”。",
+    "which I now exert to leave you 是非限制性定语从句，which 指代 an independent will，在从句里作 exert 的宾语；to leave you 是不定式表目的，说明“用这份意志去做什么”。"
+  ],
+  "vocab": [
+    {
+      "word": "ensnare",
+      "phonetic": "/ɪnˈsneə(r)/",
+      "pos": "v.",
+      "meaning": "用网或陷阱困住；引诱、使陷入",
+      "collocation": "be ensnared in / by sth",
+      "example": "Many developers get ensnared in endless refactoring."
+    },
+    {
+      "word": "independent",
+      "phonetic": "/ˌɪndɪˈpendənt/",
+      "pos": "adj.",
+      "meaning": "独立的，不受他人控制的",
+      "collocation": "be independent of sb/sth; an independent module",
+      "example": "Keep the driver layer independent of the application logic."
+    },
+    {
+      "word": "will",
+      "phonetic": "/wɪl/",
+      "pos": "n.",
+      "meaning": "意志，决心（这里是名词，不是助动词）",
+      "collocation": "free will; against one's will; a strong will",
+      "example": "She finished the marathon by sheer force of will."
+    },
+    {
+      "word": "exert",
+      "phonetic": "/ɪɡˈzɜːt/",
+      "pos": "v.",
+      "meaning": "施加、运用（力量、影响、意志等）",
+      "collocation": "exert pressure / influence on sb; exert oneself（努力，尽力）",
+      "example": "The new manager exerted a strong influence on the team."
+    }
+  ],
+  "note": "小练习：仿照 \"I am no bird\" 用 no + 名词 造一句强调否定的话，比如 \"I am no expert, but...\"（我可算不上专家，不过……）。试着写一句关于你自己的。"
+}
