@@ -226,7 +226,7 @@ permalink: /projects/retro-robot/index.html
   <section class="lab-section" aria-label="全站引入与复用指南">
     <div class="section-title-wrap">
       <h2>如何在博客任意页面引入 S5·BOT？</h2>
-      <p>样式放在 <code>base.css</code>，交互逻辑放入 <code>robot-rainbow.js</code>，页面通过 Liquid include 引入。</p>
+      <p><code>_layouts/default.html</code> 已加载 <code>assets/js/robot-rainbow.js</code>。使用 default 的页面都带这份脚本，包括经 <code>frame</code> 继承的 <code>topic</code>、<code>english</code>，以及 <code>article</code>、<code>skill</code>。样式在 <code>base.css</code> 和 <code>site.css</code>，阅读侧栏的补充在 <code>article.css</code>。同一页只放下面一种 include。</p>
     </div>
 
     <div class="integration-code-block">
@@ -237,17 +237,19 @@ permalink: /projects/retro-robot/index.html
           <button type="button" class="copy-btn" id="btnCopySnippet">复制片段</button>
         </div>
       </div>
-      <pre id="retro-snippet-code"><code>{% raw %}<!-- 方式 1：在技术文章或文档侧边栏作为伴读卡片引入 -->
-<aside class="reading-sidebar" id="reading-sidebar">
-  {% include article-robot.html %}
-  <details class="toc" id="article-toc"><summary>本页目录</summary><ol></ol></details>
-</aside>
+      <pre id="retro-snippet-code"><code>{% raw %}&lt;!-- 同一页只保留一种。两者共用 robotStage、scopeCanvas、retroRobot、robotDock 等 id --&gt;
+&lt;!-- 方式 1：自定义布局。_layouts/article.html 与 _layouts/skill.html 的阅读侧栏已包含 --&gt;
+{% include article-robot.html %}
 
-<!-- 方式 2：在任意独立页面头部作为示波器工作台引入 -->
-<div class="theme-spectrum-wrap">
-  {% include theme-spectrum.html %}
-</div>{% endraw %}</code></pre>
+&lt;!-- 方式 2：index.html 与 _layouts/topic.html。根元素已有 theme-spectrum-wrap，色卡读 site.data.topics --&gt;
+{% include theme-spectrum.html %}{% endraw %}</code></pre>
     </div>
+    <ul class="integration-notes">
+      <li>不用 default 的页面自行加入同一段脚本：{% raw %}<code>&lt;script src=&quot;{{ '/assets/js/robot-rainbow.js' | relative_url }}?v={{ site.time | date: '%s' }}&quot; defer&gt;&lt;/script&gt;</code>{% endraw %}</li>
+      <li><code>base.css</code> 写舞台、停靠、色谱和伴读卡片。<code>site.css</code> 里与机器人相关的规则只覆盖首页 <code>.scope-bay-body</code> 的边距和高度，并给 <code>.article-robot-card</code>、<code>.robot-speech</code> 加玻璃拟态。这两份由 <code>_includes/head.html</code> 引入。<code>article.css</code> 仅 <code>article</code> 与 <code>skill</code> 布局加载，负责侧栏卡片高度和气泡位置，窄屏隐藏卡片，打印时隐藏卡片和色谱。</li>
+      <li>方式 1 只给自定义布局。<code>_layouts/article.html</code> 与 <code>_layouts/skill.html</code> 已在 <code>#reading-sidebar</code> 中引入，不要再写。目录 <code>#article-toc</code> 由 <code>assets/js/article.js</code> 填写，片段里不再包含它。</li>
+      <li>方式 2 不要再包 <code>theme-spectrum-wrap</code>，<code>_includes/theme-spectrum.html</code> 的根元素已有这个类。色卡按 <code>site.data.topics</code> 生成。<code>robot-rainbow.js</code> 用 <code>querySelector</code> 只绑定第一个同名 id，所以两种 include 不能放在同一页。</li>
+    </ul>
   </section>
 
   <!-- ========================================================================
@@ -951,6 +953,25 @@ permalink: /projects/retro-robot/index.html
   line-height: 1.6;
   color: var(--code-ink);
   overflow-x: auto;
+}
+
+.integration-notes {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.integration-notes li {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.integration-notes code {
+  overflow-wrap: anywhere;
 }
 
 .related-links-grid {
