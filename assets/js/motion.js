@@ -178,6 +178,7 @@
     const pressTimestamps = new WeakMap();
     let touchTimer = null;
     let pendingTarget = null;
+    let hasPressing = false;
     let startX = 0;
     let startY = 0;
 
@@ -187,6 +188,14 @@
         touchTimer = null;
       }
       pendingTarget = null;
+    };
+
+    const clearAllPressing = () => {
+      if (!hasPressing) return;
+      hasPressing = false;
+      document.querySelectorAll(".is-pressing").forEach((el) => {
+        el.classList.remove("is-pressing");
+      });
     };
 
     document.addEventListener("pointerdown", (e) => {
@@ -204,6 +213,7 @@
         touchTimer = setTimeout(() => {
           if (pendingTarget) {
             pendingTarget.classList.add("is-pressing");
+            hasPressing = true;
             pressTimestamps.set(pendingTarget, performance.now());
             pendingTarget = null;
           }
@@ -211,17 +221,17 @@
         }, 70);
       } else {
         target.classList.add("is-pressing");
+        hasPressing = true;
         pressTimestamps.set(target, performance.now());
       }
     }, { passive: true });
 
     document.addEventListener("pointermove", (e) => {
       if (e.pointerType !== "touch") return;
+      if (!pendingTarget && !hasPressing) return;
       if (Math.hypot(e.clientX - startX, e.clientY - startY) > 7) {
         clearPendingTouch();
-        document.querySelectorAll(".is-pressing").forEach((el) => {
-          el.classList.remove("is-pressing");
-        });
+        clearAllPressing();
       }
     }, { passive: true });
 
@@ -231,12 +241,14 @@
         const tapped = pendingTarget;
         clearPendingTouch();
         tapped.classList.add("is-pressing");
+        hasPressing = true;
         setTimeout(() => {
           tapped.classList.remove("is-pressing");
         }, 105);
         return;
       }
       clearPendingTouch();
+      if (!hasPressing) return;
 
       const target = e && e.target && e.target.closest ? e.target.closest(pressSelector) : null;
       const candidates = target ? [target] : [...document.querySelectorAll(".is-pressing")];
@@ -249,12 +261,13 @@
           el.classList.remove("is-pressing");
         }, remain);
       });
+      if (!target) hasPressing = false;
     };
 
     document.addEventListener("pointerup", releasePress, { passive: true });
     document.addEventListener("pointercancel", () => {
       clearPendingTouch();
-      document.querySelectorAll(".is-pressing").forEach((el) => el.classList.remove("is-pressing"));
+      clearAllPressing();
     }, { passive: true });
     document.addEventListener("dragstart", releasePress, { passive: true });
   }
@@ -405,8 +418,9 @@
         if (card.dataset.tiltBound) return;
         card.dataset.tiltBound = "true";
 
-        if (!card.querySelector(":scope > .ios-specular")) {
-          const specular = document.createElement("span");
+        let specular = card.querySelector(":scope > .ios-specular");
+        if (!specular) {
+          specular = document.createElement("span");
           specular.className = "ios-specular";
           specular.setAttribute("aria-hidden", "true");
           card.append(specular);
@@ -416,14 +430,15 @@
         const maxDeg = card.matches(".project-feature") ? 7 : 4.5;
 
         let rafId = null;
+        let cardRect = null;
         let spotX = 0;
         let spotY = 0;
         let targetX = 0;
         let targetY = 0;
 
         const updateCard = () => {
-          card.style.setProperty("--spot-x", `${spotX.toFixed(0)}px`);
-          card.style.setProperty("--spot-y", `${spotY.toFixed(0)}px`);
+          specular.style.setProperty("--spot-x", `${spotX.toFixed(0)}px`);
+          specular.style.setProperty("--spot-y", `${spotY.toFixed(0)}px`);
 
           if (canTilt && !card.classList.contains("is-pressing")) {
             const rotateX = (-targetY * maxDeg).toFixed(2);
@@ -434,13 +449,14 @@
         };
 
         card.addEventListener("mouseenter", () => {
+          cardRect = card.getBoundingClientRect();
           if (canTilt) {
             card.style.transition = "transform 0.16s ease-out, box-shadow 0.24s ease, border-color 0.2s ease";
           }
-        });
+        }, { passive: true });
 
         card.addEventListener("mousemove", (e) => {
-          const rect = card.getBoundingClientRect();
+          const rect = cardRect || card.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) return;
           spotX = e.clientX - rect.left;
           spotY = e.clientY - rect.top;
@@ -453,6 +469,7 @@
         }, { passive: true });
 
         card.addEventListener("mouseleave", () => {
+          cardRect = null;
           if (rafId) {
             cancelAnimationFrame(rafId);
             rafId = null;
@@ -461,7 +478,7 @@
             card.style.transition = "transform 0.52s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.38s ease, border-color 0.24s ease";
             card.style.transform = "";
           }
-        });
+        }, { passive: true });
       });
     };
 

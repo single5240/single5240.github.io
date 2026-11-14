@@ -500,7 +500,7 @@
     const rect = stage.getBoundingClientRect();
     width = Math.max(280, Math.floor(rect.width));
     height = Math.max(96, Math.floor(rect.height || 114));
-    dpr = window.devicePixelRatio || 1;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(height * dpr);
@@ -573,14 +573,9 @@
     // 3. 主通道示波器波形 (CH1)
     ctx.save();
     ctx.beginPath();
-    ctx.lineWidth = 2.1;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.strokeStyle = palette.trace;
-    if (palette.glow > 0) {
-      ctx.shadowColor = palette.trace;
-      ctx.shadowBlur = palette.glow;
-    }
 
     for (let i = 0; i <= steps; i += 1) {
       const u = i / steps;
@@ -609,6 +604,14 @@
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
+    if (palette.glow > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.lineWidth = 5.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.lineWidth = 2.1;
     ctx.stroke();
     ctx.restore();
 
@@ -633,21 +636,31 @@
     ctx.restore();
   };
 
+  let lastPupilTf = "";
+  let lastHeadTf = "";
+  let lastNeedleTf = "";
+
   const applyRobotTransforms = () => {
     if (robotPupils) {
-      robotPupils.setAttribute(
-        "transform",
-        `translate(${pupilX.toFixed(2)}, ${pupilY.toFixed(2)})`
-      );
+      const tf = `translate(${pupilX.toFixed(2)}, ${pupilY.toFixed(2)})`;
+      if (tf !== lastPupilTf) {
+        lastPupilTf = tf;
+        robotPupils.setAttribute("transform", tf);
+      }
     }
     if (robotHead) {
-      robotHead.setAttribute(
-        "transform",
-        `translate(${headX.toFixed(2)}, ${headY.toFixed(2)}) rotate(${headRot.toFixed(2)}, 80, 62)`
-      );
+      const tf = `translate(${headX.toFixed(2)}, ${headY.toFixed(2)}) rotate(${headRot.toFixed(2)}, 80, 62)`;
+      if (tf !== lastHeadTf) {
+        lastHeadTf = tf;
+        robotHead.setAttribute("transform", tf);
+      }
     }
     if (robotNeedle) {
-      robotNeedle.setAttribute("transform", `rotate(${needleAngle.toFixed(2)}, 67, 111)`);
+      const tf = `rotate(${needleAngle.toFixed(2)}, 67, 111)`;
+      if (tf !== lastNeedleTf) {
+        lastNeedleTf = tf;
+        robotNeedle.setAttribute("transform", tf);
+      }
     }
   };
 
@@ -695,16 +708,30 @@
     }
   };
 
-  // 全页面鼠标移动监听：无论鼠标在哪里划过，机器人眼睛与头颅都灵动跟随
-  const onWindowPointerMove = (e) => {
+  let cachedRobotRect = null;
+  let cachedStageRect = null;
+  let pointerRafId = null;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+
+  const invalidateLayoutCache = () => {
+    cachedRobotRect = null;
+    cachedStageRect = null;
+  };
+
+  const processPointerMove = () => {
+    pointerRafId = null;
     if (reducedMotion.matches || userPaused || !robot) return;
 
-    const rect = robot.getBoundingClientRect();
+    if (!cachedRobotRect) cachedRobotRect = robot.getBoundingClientRect();
+    if (!cachedStageRect) cachedStageRect = stage.getBoundingClientRect();
+
+    const rect = cachedRobotRect;
     const centerX = rect.left + rect.width * 0.5;
     const centerY = rect.top + rect.height * 0.38;
 
-    const dx = e.clientX - centerX;
-    const dy = e.clientY - centerY;
+    const dx = lastPointerX - centerX;
+    const dy = lastPointerY - centerY;
     const dist = Math.hypot(dx, dy);
 
     // 归一化方向向量，近处平滑过渡，远处饱和
@@ -723,22 +750,32 @@
     targetHeadRot = nx * 4.0;
 
     // 判断是否在舞台上方以联动波形与表针
-    const stageRect = stage.getBoundingClientRect();
+    const stageRect = cachedStageRect;
     if (
-      e.clientX >= stageRect.left &&
-      e.clientX <= stageRect.right &&
-      e.clientY >= stageRect.top - 20 &&
-      e.clientY <= stageRect.bottom + 20
+      lastPointerX >= stageRect.left &&
+      lastPointerX <= stageRect.right &&
+      lastPointerY >= stageRect.top - 20 &&
+      lastPointerY <= stageRect.bottom + 20
     ) {
       isStageHovered = true;
       stagePointerRatioX = Math.max(
         0,
-        Math.min(1, (e.clientX - stageRect.left) / Math.max(1, stageRect.width))
+        Math.min(1, (lastPointerX - stageRect.left) / Math.max(1, stageRect.width))
       );
       targetNeedleAngle = -10 + stagePointerRatioX * 26;
     } else {
       isStageHovered = false;
       targetNeedleAngle = 0;
+    }
+  };
+
+  // 全页面鼠标移动监听：无论鼠标在哪里划过，机器人眼睛与头颅都灵动跟随
+  const onWindowPointerMove = (e) => {
+    if (reducedMotion.matches || userPaused || !robot) return;
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+    if (!pointerRafId) {
+      pointerRafId = requestAnimationFrame(processPointerMove);
     }
   };
 
@@ -886,8 +923,18 @@
     });
   }
 
-  window.addEventListener("scroll", updateFloatingDock, { passive: true });
-  window.addEventListener("resize", updateFloatingDock, { passive: true });
+  let dockRafId = null;
+  const scheduleDockUpdate = () => {
+    invalidateLayoutCache();
+    if (dockRafId) return;
+    dockRafId = requestAnimationFrame(() => {
+      dockRafId = null;
+      updateFloatingDock();
+    });
+  };
+
+  window.addEventListener("scroll", scheduleDockUpdate, { passive: true });
+  window.addEventListener("resize", scheduleDockUpdate, { passive: true });
 
   if ("ResizeObserver" in window) {
     const resizeObserver = new ResizeObserver(() => resize());
