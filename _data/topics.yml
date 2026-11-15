@@ -48,3 +48,10 @@
   color_end: "#6d28d9"
   articles:
     - aliyun-nginx-github-actions-dual-deploy
+- id: design
+  title: UI 与设计资源
+  description: 界面动效、组件系统、品牌规范与网页视觉灵感。
+  color: "#ec4899"
+  color_end: "#db2777"
+  articles:
+    - design-inspiration-and-ui-resources-directory
