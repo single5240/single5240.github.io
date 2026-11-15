@@ -226,7 +226,7 @@ permalink: /projects/retro-robot/index.html
   <section class="lab-section" aria-label="全站引入与复用指南">
     <div class="section-title-wrap">
       <h2>如何在博客任意页面引入 S5·BOT？</h2>
-      <p><code>_layouts/default.html</code> 已加载 <code>assets/js/robot-rainbow.js</code>。使用 default 的页面都带这份脚本，包括经 <code>frame</code> 继承的 <code>topic</code>、<code>english</code>，以及 <code>article</code>、<code>skill</code>。样式在 <code>base.css</code> 和 <code>site.css</code>，阅读侧栏的补充在 <code>article.css</code>。同一页只放下面一种 include。</p>
+      <p><code>_layouts/default.html</code> 会按需加载 <code>assets/js/robot-rainbow.js</code>（首页、<code>topic</code>、<code>article</code>、<code>skill</code> 布局，或显式配置 <code>robot: true</code> 的页面）。样式在 <code>base.css</code> 和 <code>site.css</code>，阅读侧栏的补充在 <code>article.css</code>。同一页只放下面一种 include。</p>
     </div>
 
     <div class="integration-code-block">

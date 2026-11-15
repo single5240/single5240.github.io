@@ -7,6 +7,19 @@ import { isRealDate as isNewsDate, mondayOf, weekdayLabel } from "./import-ai-ne
 const root = resolve("_site");
 const failures = [];
 const maxImageBytes = 400 * 1024;
+const widgetAssets = {
+  "fsm-demo-app": "fsm",
+  "flash-demo-app": "flash-2pc",
+  "sched-demo-app": "scheduler",
+  "eeprom-demo-app": "eeprom",
+  "rgb-demo-app": "rgb565",
+  "strip-demo-app": "lcd-strip",
+  "font-demo-app": "bitmap-font",
+  "ecat-esm-demo-app": "ecat-esm",
+  "w25q-demo-app": "w25q128",
+  "spi-dma-demo-app": "spi-dma",
+};
+const navUrls = [...readFileSync(resolve("_data/navigation.yml"), "utf8").matchAll(/^\s+url:\s*(\S+)\s*$/gm)].map((m) => m[1]);
 
 function walk(directory) {
   return readdirSync(directory).flatMap((name) => {
@@ -320,6 +333,9 @@ for (const file of htmlFiles) {
   const html = readFileSync(file, "utf8");
   const label = file.slice(root.length + 1);
   const path = pagePath(file);
+  if (/<\/(?:option|select|button|a|span|div)\s+[^>]+>/i.test(html)) {
+    failures.push(`${label}: malformed closing tag with attributes`);
+  }
   const h1Count = (html.match(/<h1\b/gi) || []).length;
   if (h1Count !== 1) failures.push(`${label}: expected one h1, found ${h1Count}`);
   if (!/<title>[^<]+<\/title>/i.test(html)) failures.push(`${label}: missing title`);
@@ -332,6 +348,7 @@ for (const file of htmlFiles) {
   }
 
   const links = tags(html, "link");
+  const scripts = tags(html, "script");
   const metas = tags(html, "meta");
   const canonical = links.find((tag) => attr(tag, "rel") === "canonical");
   if (!canonical) failures.push(`${label}: missing canonical`);
@@ -404,6 +421,30 @@ for (const file of htmlFiles) {
     if (/^(?:https?:|mailto:|tel:|javascript:|data:|#)/i.test(href)) continue;
     if (!targetExists(file, href)) failures.push(`${label}: broken internal reference ${href}`);
   }
+
+  const stylesheetHrefs = links.filter((tag) => attr(tag, "rel") === "stylesheet").map((tag) => attr(tag, "href"));
+  const scriptSrcs = scripts.map((tag) => attr(tag, "src")).filter(Boolean);
+  const presentWidgets = Object.entries(widgetAssets).filter(([id]) => html.includes(`id="${id}"`));
+  if (presentWidgets.length) {
+    if (!stylesheetHrefs.some((href) => href.includes("/assets/css/article-widgets.css"))) {
+      failures.push(`${label}: missing /assets/css/article-widgets.css for widget`);
+    }
+    for (const [, scriptName] of presentWidgets) {
+      if (!scriptSrcs.some((src) => src.includes(`/assets/js/widgets/${scriptName}.js`))) {
+        failures.push(`${label}: missing /assets/js/widgets/${scriptName}.js`);
+      }
+    }
+  } else if (path.startsWith("/articles/") || path.startsWith("/projects/my-skills/")) {
+    if (
+      stylesheetHrefs.some((href) => href.includes("/assets/css/article-widgets.css"))
+      || scriptSrcs.some((src) => src.includes("/assets/js/widgets/"))
+    ) {
+      failures.push(`${label}: unexpected widget asset loaded on non-widget page`);
+    }
+  }
+  if (scriptSrcs.some((src) => src.includes("/assets/js/robot-rainbow.js")) && !html.includes('id="scopeCanvas"')) {
+    failures.push(`${label}: robot-rainbow.js loaded without #scopeCanvas`);
+  }
 }
 
 for (const path of sitemapPaths) {
@@ -437,6 +478,11 @@ if (existsSync(newsDataPath)) {
       const page = readFileSync(built, "utf8");
       if (!page.includes("s5-news-bar") && !page.includes("ai-news-subbar")) failures.push(`ai-news/${day.date}.html: missing return bar`);
       if (!page.includes(`/ai-news/index.html#week-${week.id}`)) failures.push(`ai-news/${day.date}.html: missing week link`);
+      for (const navUrl of navUrls) {
+        if (!page.includes(`href="${navUrl}"`)) {
+          failures.push(`ai-news/${day.date}.html: missing nav link ${navUrl}`);
+        }
+      }
       if (page.includes("<!-- s5-news-sources:start -->")) {
         const sourceHtml = page.match(/<!-- s5-news-sources:start -->([\s\S]*?)<!-- s5-news-sources:end -->/);
         const hrefs = sourceHtml ? [...sourceHtml[1].matchAll(/href="([^"]+)"/g)].map((match) => match[1]) : [];

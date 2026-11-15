@@ -32,7 +32,7 @@
 --paper: #e3e6f0;          /* 60% 苹果冷调中性灰壁纸基底，衬托多点极光漫反射 */
 --panel: rgba(255, 255, 255, 0.56); /* 次级透明磨砂表面（按钮、胶囊、小组件） */
 --raised-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.64) 0%, rgba(255, 255, 255, 0.38) 100%); /* 主卡片 135° 斜向高透水晶磨砂毛玻璃 */
---glass: blur(32px) saturate(210%); /* 深度磨砂模糊与高饱和色彩折射 */
+--glass: blur(14px) saturate(165%); /* 轻盈高透磨砂模糊与柔和色彩折射 */
 --glass-edge: rgba(255, 255, 255, 0.76); /* 切割玻璃白亮内缘（配合外侧 1px 暗影轮廓环） */
 --alt-bg: rgba(60, 60, 67, 0.06); /* 卡片内部半透明烟熏凹槽 (Translucent Well) */
 --subtle-bg: rgba(255, 255, 255, 0.72); /* 悬浮激活高透抬升 (Pure Glass Lift) */
@@ -43,25 +43,23 @@
 --accent: #007aff;         /* 10% 苹果系统亮蓝 (System Blue) */
 --accent-dark: #0055b3;    /* 交互深蓝 */
 --warm: #ff9500;           /* 系统暖橙 (System Orange) */
---note: #ff3b30;           /* 系统警示红 (System Red) */
---success: #34c759;        /* 动态绿 (System Green) */
+--note: #ff9500;           /* 注意与次级强调橙 */
 ```
 
 ### 3.2 iOS 18 OLED 深色主题 (iOS 18 Dark)
 ```css
---paper: #000000;          /* 60% iOS 18 OLED 纯黑基底 */
---panel: #1c1c1e;          /* 卡片表面深灰 (System Gray 6 Dark) */
---raised-bg: rgba(28, 28, 30, 0.75); /* 深色磨砂毛玻璃 */
---glass-edge: rgba(255, 255, 255, 0.14); /* 深色发丝高光 */
---ink: #f2f2f7;            /* 纯净高亮文字 (Label Light) */
---body-copy: #aeaeb2;      /* 正文阅读次级灰 */
---muted: #8e8e93;          /* 辅助灰阶 */
---line: rgba(84, 84, 88, 0.36); /* 深色精密边线 */
+--paper: #06080f;          /* 60% iOS 18 深邃夜空基底 */
+--panel: rgba(34, 36, 44, 0.52); /* 深色次级磨砂玻璃表面 */
+--raised-bg: linear-gradient(135deg, rgba(42, 45, 56, 0.58) 0%, rgba(22, 24, 32, 0.40) 100%); /* 深色斜向水晶磨砂 */
+--glass-edge: rgba(255, 255, 255, 0.18); /* 深色发丝高光 */
+--ink: #f5f5f7;            /* 纯净高亮文字 (Label Light) */
+--body-copy: #d1d1d6;      /* 正文阅读次级灰 */
+--muted: #98989f;          /* 辅助灰阶 */
+--line: rgba(255, 255, 255, 0.12); /* 深色精密边线 */
 --accent: #0a84ff;         /* 10% 苹果深色荧光蓝 (Neon System Blue) */
 --accent-dark: #409cff;    /* 高亮荧光蓝 */
 --warm: #ff9f0a;           /* 深色暖橙 */
---note: #ff453a;           /* 深色警示红 */
---success: #32d74b;        /* 动态荧光绿 */
+--note: #ff9f0a;           /* 注意与次级强调橙 */
 ```
 
 ---
@@ -88,18 +86,18 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
 
 ```css
 /* iOS 18 浅色毛玻璃与漫反射投影 */
---panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 0 rgba(0, 0, 0, 0.03);
---shadow-small: 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
---shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.06), 0 2px 8px -2px rgba(0, 0, 0, 0.03);
---shadow-heavy: 0 20px 48px -10px rgba(0, 0, 0, 0.12), 0 4px 16px -2px rgba(0, 0, 0, 0.04);
---glass: blur(24px) saturate(190%);
+--panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), inset 1px 0 0 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 0 rgba(255, 255, 255, 0.35);
+--shadow-small: 0 0 0 1px rgba(15, 23, 42, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.03);
+--shadow: 0 0 0 1px rgba(15, 23, 42, 0.06), 0 12px 34px -6px rgba(15, 23, 42, 0.09), 0 3px 10px -2px rgba(15, 23, 42, 0.04);
+--shadow-heavy: 0 0 0 1px rgba(15, 23, 42, 0.08), 0 24px 56px -10px rgba(15, 23, 42, 0.18), 0 6px 18px -2px rgba(15, 23, 42, 0.07);
+--glass: blur(14px) saturate(165%);
 
 /* iOS 18 深色毛玻璃与多层深邃投影 */
---panel-bevel: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 0 rgba(0, 0, 0, 0.6);
---shadow-small: 0 2px 8px -1px rgba(0, 0, 0, 0.45);
---shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.35);
---shadow-heavy: 0 24px 64px -12px rgba(0, 0, 0, 0.85);
---glass: blur(28px) saturate(180%);
+--panel-bevel: inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), inset 1px 0 0 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+--shadow-small: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.4);
+--shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 14px 36px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+--shadow-heavy: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 26px 64px rgba(0, 0, 0, 0.78);
+--glass: blur(14px) saturate(160%);
 ```
 
 ---
@@ -124,6 +122,6 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
 ## 7. 反 AI 模板味与质量准则 (Anti-Slop Checklist)
 
 - [x] **杜绝千篇一律的生硬大圆角**：采用 Apple 标准连续曲率超椭圆（20px–28px）与 9999px 药丸胶囊，严禁随意出现无规律的各种突兀圆角。
-- [x] **杜绝死白与无脑粗黑阴影**：背景使用 `#f2f2f7`，投影采用多层低不透明度漫反射与 1px 细微发丝高光。
+- [x] **杜绝死白与无脑粗黑阴影**：背景使用 `#e3e6f0`（深色模式 `#06080f`），投影采用多层低不透明度漫反射与 1px 细微发丝高光。
 - [x] **杜绝机械生硬动画**：所有交互必须基于 `--ease-spring` 弹簧曲线并配合 `:active` 触感缩放。
 - [x] **无障碍与多主题兼容**：严格保留 `prefers-reduced-motion` 降级、清晰的 `:focus-visible` 焦点环以及所有 5 种预置色彩主题与硬件皮肤。

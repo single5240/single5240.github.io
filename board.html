@@ -1,343 +1,85 @@
 ---
-layout: null
+layout: frame
+title: ATK-IMX6U 项目
+description: ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。
+section: boards
+wide: true
+noindex: true
 permalink: /board.html
 ---
-<!doctype html>
-<html lang="zh-CN" data-theme="light" data-skin="grid">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#f8faf7">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="zh_CN">
-  <meta property="og:title" content="ATK-IMX6U 项目 | single5240">
-  <meta property="og:description" content="ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。">
-  <meta property="og:url" content="{{ '/board.html' | absolute_url }}">
-  <meta property="og:site_name" content="single5240 笔记分享">
-  <meta property="og:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
-  <meta property="og:image:alt" content="工程师操作电脑进行嵌入式开发调试的线稿插画">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ATK-IMX6U 项目 | single5240">
-  <meta name="twitter:description" content="ATK-IMX6U 嵌入式 Linux 板卡项目概览与相关实践文章。">
-  <meta name="twitter:image" content="{{ '/assets/images/engineer-computer-lineart.jpg' | absolute_url }}">
-  <title>ATK-IMX6U 项目 | single5240</title>
-  <link rel="canonical" href="{{ '/board.html' | absolute_url }}">
-  <link rel="alternate" type="application/atom+xml" title="single5240 笔记分享" href="{{ '/feed.xml' | relative_url }}">
-  <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="{{ '/assets/icon-192.png' | relative_url }}">
-  <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
-  <script src="{{ '/assets/js/theme.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
-  <link rel="stylesheet" href="{{ '/assets/css/base.css' | relative_url }}?v={{ site.time | date: '%s' }}">
-  <link rel="stylesheet" href="{{ '/assets/css/board-live.css' | relative_url }}?v={{ site.time | date: '%s' }}">
-  <style>
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+<header class="page-heading">
+  <p class="eyebrow">EMBEDDED LINUX PROJECT</p>
+  <h1>ATK-IMX6U 项目</h1>
+  <p class="lede">记录板卡上的 Linux、Qt/QML、硬件接口与远程调试实践。设备地址、登录方式和临时公网入口仅在受控环境中维护，不在公开站点发布。</p>
+</header>
 
-    .wrap {
-      width: min(1080px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 36px 0 72px;
-    }
+<section class="board-overview-grid" aria-label="板子访问入口">
+  <article class="board-panel board-panel--wide" data-board-status="full" aria-live="polite">
+    <h2>实时状态</h2>
+    <p class="board-live-line"><span data-field="presence">正在读取</span><span data-field="time"></span></p>
+    <ul class="status">
+      <li><span>主机</span><strong data-field="host">--</strong></li>
+      <li><span>运行时间</span><strong data-field="uptime">--</strong></li>
+      <li><span>CPU</span><strong data-field="cpu">--</strong></li>
+      <li><span>温度</span><strong data-field="temp">--</strong></li>
+      <li><span>内存</span><strong data-field="mem">--</strong></li>
+      <li><span>磁盘</span><strong data-field="disk">--</strong></li>
+      <li><span>负载</span><strong data-field="load">--</strong></li>
+      <li><span>eth0</span><strong data-field="eth0">--</strong></li>
+      <li><span>eth1</span><strong data-field="eth1">--</strong></li>
+      <li><span>按键</span><strong data-field="key">--</strong></li>
+      <li><span>环境光</span><strong data-field="als">--</strong></li>
+      <li><span>红外</span><strong data-field="ir">--</strong></li>
+      <li><span>接近值</span><strong data-field="ps">--</strong></li>
+      <li><span>接近检测</span><strong data-field="proximity">--</strong></li>
+      <li><span>RTC 偏差</span><strong data-field="rtc">--</strong></li>
+      <li><span>sys-led</span><strong data-field="sys_led">--</strong></li>
+      <li><span>beep</span><strong data-field="beep">--</strong></li>
+    </ul>
+  </article>
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      min-height: 54px;
-      margin-bottom: 42px;
-    }
+  <article class="board-panel">
+    <h2>私有维护通道</h2>
+    <p class="board-panel-copy">设备调试、SSH 登录和 IO 控制台仅通过私有网络访问，具体地址与凭据保存在本地运维文档中。</p>
+    <ul class="status">
+      <li><span>远程维护</span><strong>私有组网</strong></li>
+      <li><span>本地调试</span><strong>电脑直连</strong></li>
+      <li><span>访问控制</span><strong>仅授权设备</strong></li>
+    </ul>
+    <p class="board-panel-note">公开页面不提供可点击的设备入口，避免临时链接失效或控制面暴露。</p>
+  </article>
 
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 850;
-    }
+  <article class="board-panel">
+    <h2>临时分享原则</h2>
+    <p class="board-panel-copy">确需演示时，使用带身份验证和有效期的临时通道，并通过单独渠道发送入口。</p>
+    <ul class="status">
+      <li><span>身份验证</span><strong>必须启用</strong></li>
+      <li><span>有效时间</span><strong>按需开启</strong></li>
+      <li><span>入口地址</span><strong>不公开留存</strong></li>
+      <li><span>结束演示</span><strong>立即关闭</strong></li>
+    </ul>
+    <p class="board-panel-note">不要在 Git 仓库、公开网页或聊天记录中长期保存有效入口和访问凭据。</p>
+  </article>
 
-    .brand-mark {
-      display: grid;
-      width: 36px;
-      height: 36px;
-      place-items: center;
-      border-radius: 8px;
-      background: var(--accent);
-      color: var(--on-accent);
-      font-size: 14px;
-    }
+  <article class="board-panel board-panel--wide">
+    <h2>控制台功能</h2>
+    <p class="board-panel-copy">板子首页现在是 IO 与系统状态控制台，适合在浏览器里直接观察硬件和运行状态。</p>
+    <ul class="status">
+      <li><span>输出控制</span><strong>sys-led、beep</strong></li>
+      <li><span>输入显示</span><strong>GPIO Key 实时事件</strong></li>
+      <li><span>传感器</span><strong>AP3216C 环境光、红外、接近检测</strong></li>
+      <li><span>RTC 时间</span><strong>rtc0 时间、系统时间、时间偏差</strong></li>
+      <li><span>系统状态</span><strong>CPU、温度、内存、磁盘、运行时间</strong></li>
+      <li><span>网络状态</span><strong>eth0 路由器、eth1 电脑直连</strong></li>
+    </ul>
+  </article>
 
-    .back {
-      color: var(--accent-dark);
-      font-weight: 750;
-    }
-
-    .hero {
-      margin-bottom: 28px;
-    }
-
-    .eyebrow {
-      margin: 0 0 10px;
-      color: var(--accent-dark);
-      font-size: 14px;
-      font-weight: 850;
-    }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin-top: 0;
-    }
-
-    h1 {
-      margin-bottom: 14px;
-      font-size: clamp(38px, 7vw, 68px);
-      line-height: 1.02;
-    }
-
-    .lead {
-      max-width: 760px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 18px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 30px;
-    }
-
-    .panel {
-      min-height: 260px;
-      padding: 24px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--raised-bg);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-      transition: opacity 600ms ease, transform 200ms ease, box-shadow 200ms ease;
-    }
-
-    @media (hover: hover) {
-      .panel:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-hover);
-      }
-    }
-
-    .panel.wide {
-      grid-column: 1 / -1;
-      min-height: 0;
-    }
-
-    .panel h2 {
-      margin: 0 0 10px;
-      font-size: 23px;
-      line-height: 1.2;
-    }
-
-    .panel-copy {
-      margin-bottom: 18px;
-      color: var(--muted);
-    }
-
-    .status {
-      display: grid;
-      gap: 10px;
-      margin: 18px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .status li {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--line);
-      color: var(--muted);
-    }
-
-    .status strong {
-      color: var(--ink);
-      text-align: right;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 22px;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      padding: 0 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      color: var(--ink);
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .button.primary {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: var(--on-accent);
-    }
-
-    .button.share {
-      border-color: var(--note);
-      background: var(--note);
-      color: var(--on-accent);
-    }
-
-    code {
-      display: block;
-      overflow-x: auto;
-      max-width: 100%;
-      margin-top: 14px;
-      padding: 14px;
-      border-radius: 8px;
-      background: var(--code-bg);
-      color: var(--code-ink);
-      font-family: ui-monospace, Consolas, "SFMono-Regular", "Sarasa Mono SC", "Noto Sans Mono CJK SC", "WenQuanYi Micro Hei Mono", monospace;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .note {
-      margin-top: 18px;
-      color: var(--note);
-      font-size: 14px;
-    }
-
-    .steps {
-      margin: 16px 0 0;
-      padding-left: 20px;
-      color: var(--content-copy);
-    }
-
-    [data-board-status="full"] .status {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: 28px;
-    }
-
-    @media (max-width: 780px) {
-      .grid,
-      [data-board-status="full"] .status {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="site-ambience" aria-hidden="true"></div>
-  <a class="skip-link" href="#main-content">跳到主要内容</a>
-  <div class="wrap">
-    <header class="topbar">
-      <a class="brand" href="{{ '/' | relative_url }}">
-        <span class="brand-mark">S5</span>
-        <span>single5240</span>
-      </a>
-      <div class="topbar-actions">
-        <a class="back" href="{{ '/' | relative_url }}">返回主页</a>
-        <div class="theme-picker" data-theme-picker></div>
-      </div>
-    </header>
-
-    <main id="main-content">
-      <section class="hero">
-        <p class="eyebrow">Embedded Linux Project</p>
-        <h1>ATK-IMX6U 项目</h1>
-        <p class="lead">记录板卡上的 Linux、Qt/QML、硬件接口与远程调试实践。设备地址、登录方式和临时公网入口仅在受控环境中维护，不在公开站点发布。</p>
-      </section>
-
-      <section class="grid" aria-label="板子访问入口">
-        <article class="panel wide" data-board-status="full" aria-live="polite">
-          <h2>实时状态</h2>
-          <p class="board-live-line"><span data-field="presence">正在读取</span><span data-field="time"></span></p>
-          <ul class="status">
-            <li><span>主机</span><strong data-field="host">--</strong></li>
-            <li><span>运行时间</span><strong data-field="uptime">--</strong></li>
-            <li><span>CPU</span><strong data-field="cpu">--</strong></li>
-            <li><span>温度</span><strong data-field="temp">--</strong></li>
-            <li><span>内存</span><strong data-field="mem">--</strong></li>
-            <li><span>磁盘</span><strong data-field="disk">--</strong></li>
-            <li><span>负载</span><strong data-field="load">--</strong></li>
-            <li><span>eth0</span><strong data-field="eth0">--</strong></li>
-            <li><span>eth1</span><strong data-field="eth1">--</strong></li>
-            <li><span>按键</span><strong data-field="key">--</strong></li>
-            <li><span>环境光</span><strong data-field="als">--</strong></li>
-            <li><span>红外</span><strong data-field="ir">--</strong></li>
-            <li><span>接近值</span><strong data-field="ps">--</strong></li>
-            <li><span>接近检测</span><strong data-field="proximity">--</strong></li>
-            <li><span>RTC 偏差</span><strong data-field="rtc">--</strong></li>
-            <li><span>sys-led</span><strong data-field="sys_led">--</strong></li>
-            <li><span>beep</span><strong data-field="beep">--</strong></li>
-          </ul>
-        </article>
-
-        <article class="panel">
-          <h2>私有维护通道</h2>
-          <p class="panel-copy">设备调试、SSH 登录和 IO 控制台仅通过私有网络访问，具体地址与凭据保存在本地运维文档中。</p>
-          <ul class="status">
-            <li><span>远程维护</span><strong>私有组网</strong></li>
-            <li><span>本地调试</span><strong>电脑直连</strong></li>
-            <li><span>访问控制</span><strong>仅授权设备</strong></li>
-          </ul>
-          <p class="note">公开页面不提供可点击的设备入口，避免临时链接失效或控制面暴露。</p>
-        </article>
-
-        <article class="panel">
-          <h2>临时分享原则</h2>
-          <p class="panel-copy">确需演示时，使用带身份验证和有效期的临时通道，并通过单独渠道发送入口。</p>
-          <ul class="status">
-            <li><span>身份验证</span><strong>必须启用</strong></li>
-            <li><span>有效时间</span><strong>按需开启</strong></li>
-            <li><span>入口地址</span><strong>不公开留存</strong></li>
-            <li><span>结束演示</span><strong>立即关闭</strong></li>
-          </ul>
-          <p class="note">不要在 Git 仓库、公开网页或聊天记录中长期保存有效入口和访问凭据。</p>
-        </article>
-
-        <article class="panel wide">
-          <h2>控制台功能</h2>
-          <p class="panel-copy">板子首页现在是 IO 与系统状态控制台，适合在浏览器里直接观察硬件和运行状态。</p>
-          <ul class="status">
-            <li><span>输出控制</span><strong>sys-led、beep</strong></li>
-            <li><span>输入显示</span><strong>GPIO Key 实时事件</strong></li>
-            <li><span>传感器</span><strong>AP3216C 环境光、红外、接近检测</strong></li>
-            <li><span>RTC 时间</span><strong>rtc0 时间、系统时间、时间偏差</strong></li>
-            <li><span>系统状态</span><strong>CPU、温度、内存、磁盘、运行时间</strong></li>
-            <li><span>网络状态</span><strong>eth0 路由器、eth1 电脑直连</strong></li>
-          </ul>
-        </article>
-
-        <article class="panel wide">
-          <h2>相关实践文章</h2>
-          <ol class="steps">
-            <li><a href="{{ '/articles/atk-imx6u-remote-io-control.html' | relative_url }}">远程访问与 IO 控制搭建教程</a></li>
-            <li><a href="{{ '/articles/atk-imx6u-qt-ui-deployment-guide.html' | relative_url }}">Qt/QML UI 部署与排障指南</a></li>
-            <li><a href="{{ '/articles/atk-imx6u-systemui-autostart.html' | relative_url }}">开机自启动 LCD UI 配置教程</a></li>
-          </ol>
-        </article>
-      </section>
-    </main>
-  </div>
-  <script src="{{ '/assets/js/board-status.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
-  <script src="{{ '/assets/js/motion.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
-</body>
-</html>
+  <article class="board-panel board-panel--wide">
+    <h2>相关实践文章</h2>
+    <ol class="board-steps">
+      <li><a href="{{ '/articles/atk-imx6u-remote-io-control.html' | relative_url }}">远程访问与 IO 控制搭建教程</a></li>
+      <li><a href="{{ '/articles/atk-imx6u-qt-ui-deployment-guide.html' | relative_url }}">Qt/QML UI 部署与排障指南</a></li>
+      <li><a href="{{ '/articles/atk-imx6u-systemui-autostart.html' | relative_url }}">开机自启动 LCD UI 配置教程</a></li>
+    </ol>
+  </article>
+</section>

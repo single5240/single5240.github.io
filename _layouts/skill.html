@@ -34,5 +34,4 @@ layout: default
     </div>
   </div>
 </main>
-<script src="{{ '/assets/js/article.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":{{ page.title | jsonify }},"description":{{ page.description | default: page.title | jsonify }},"mainEntityOfPage":{{ page.url | absolute_url | jsonify }},"inLanguage":"zh-CN"}</script>

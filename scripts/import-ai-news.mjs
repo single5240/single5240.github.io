@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -58,11 +59,62 @@ function addDays(value, count) {
   return utc.toISOString().slice(0, 10);
 }
 
-function siteOrigin() {
-  const config = readFileSync(join(repoRoot, "_config.yml"), "utf8");
-  const match = config.match(/^url:\s*(\S+)\s*$/m);
-  if (!match) throw new Error("_config.yml: missing url");
-  return match[1].replace(/\/$/, "");
+function stripYamlQuotes(value) {
+  return String(value || "").trim().replace(/^["']|["']$/g, "");
+}
+
+function siteConfig() {
+  const config = readFileSync(join(repoRoot, "_config.yml"), "utf8").replace(/\r\n/g, "\n");
+  const urlMatch = config.match(/^url:\s*(\S+)\s*$/m);
+  if (!urlMatch) throw new Error("_config.yml: missing url");
+  const titleMatch = config.match(/^title:\s*(.+)\s*$/m);
+  const umamiSection = config.match(/^umami:\s*\n((?:[ \t]+.*\n?)*)/m)?.[1] || "";
+  const umamiField = (key) => stripYamlQuotes(umamiSection.match(new RegExp(`^\\s+${key}:\\s*(.*)$`, "m"))?.[1] || "");
+  return {
+    origin: stripYamlQuotes(urlMatch[1]).replace(/\/$/, ""),
+    title: stripYamlQuotes(titleMatch?.[1] || "single5240 笔记分享"),
+    umami: {
+      websiteId: umamiField("website_id"),
+      scriptUrl: umamiField("script_url") || "https://cloud.umami.is/script.js",
+      hostUrl: umamiField("host_url"),
+      domains: umamiField("domains"),
+    },
+  };
+}
+
+function loadNavigation() {
+  const raw = readFileSync(join(repoRoot, "_data", "navigation.yml"), "utf8").replace(/\r\n/g, "\n");
+  const items = [];
+  let current = null;
+  for (const line of raw.split("\n")) {
+    const start = line.match(/^\s*-\s+([a-zA-Z0-9_]+):\s*(.*)$/);
+    if (start) {
+      if (current) items.push(current);
+      current = { [start[1]]: stripYamlQuotes(start[2]) };
+      continue;
+    }
+    const kv = line.match(/^\s+([a-zA-Z0-9_]+):\s*(.*)$/);
+    if (kv && current) current[kv[1]] = stripYamlQuotes(kv[2]);
+  }
+  if (current) items.push(current);
+  if (!items.length) throw new Error("_data/navigation.yml: no navigation items found");
+  return items;
+}
+
+function assetVersion(relPath) {
+  const content = readFileSync(join(repoRoot, relPath));
+  return createHash("sha256").update(content).digest("hex").slice(0, 10);
+}
+
+function analyticsBlock(umami) {
+  if (!umami.websiteId) return "";
+  const attrs = [
+    `  src="${escapeHtml(umami.scriptUrl)}"`,
+    `  data-website-id="${escapeHtml(umami.websiteId)}"`,
+  ];
+  if (umami.hostUrl) attrs.push(`  data-host-url="${escapeHtml(umami.hostUrl)}"`);
+  if (umami.domains) attrs.push(`  data-domains="${escapeHtml(umami.domains)}"`);
+  return `\n<!-- Umami 隐私友好无侵入式统计 -->\n<script defer\n${attrs.join("\n")}>\n</script>`;
 }
 
 function stripMarker(html, name) {
@@ -110,12 +162,39 @@ export function extractSources(markdown) {
   return links;
 }
 
-function chromeBlock({ title, description, canonical }) {
-  const origin = siteOrigin();
-  const image = `${origin}/assets/images/engineer-computer-lineart.jpg`;
+export function extractHtmlSources(html) {
+  const block = html.match(/<!-- s5-news-sources:start -->([\s\S]*?)<!-- s5-news-sources:end -->/i);
+  if (!block) return [];
+  const links = [];
+  const seen = new Set();
+  for (const match of block[1].matchAll(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    const url = unescapeHtml(match[1]).trim();
+    const label = unescapeHtml(match[2].replace(/<[^>]+>/g, "")).replace(/\s*↗\s*$/, "").trim() || url;
+    if (url && !seen.has(url)) {
+      seen.add(url);
+      links.push({ label, url });
+    }
+  }
+  return links;
+}
+
+export function mergeSources(existing, extracted) {
+  const merged = [...existing];
+  const seen = new Set(existing.map((item) => item.url));
+  for (const item of extracted) {
+    if (!seen.has(item.url)) {
+      seen.add(item.url);
+      merged.push(item);
+    }
+  }
+  return merged;
+}
+
+function chromeBlock({ title, description, canonical }, config) {
+  const image = `${config.origin}/assets/images/engineer-computer-lineart.jpg`;
   return `<!-- s5-news-chrome:start -->
 <meta name="description" content="${escapeHtml(description)}">
-<meta name="theme-color" content="#f8faf7">
+<meta name="theme-color" content="#e3e6f0">
 <link rel="canonical" href="${escapeHtml(canonical)}">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
@@ -124,7 +203,7 @@ function chromeBlock({ title, description, canonical }) {
 <meta property="og:url" content="${escapeHtml(canonical)}">
 <meta property="og:image" content="${escapeHtml(image)}">
 <meta property="og:image:alt" content="嵌入式开发工作台插画">
-<meta property="og:site_name" content="single5240 笔记分享">
+<meta property="og:site_name" content="${escapeHtml(config.title)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(title)}">
 <meta name="twitter:description" content="${escapeHtml(description)}">
@@ -133,14 +212,18 @@ function chromeBlock({ title, description, canonical }) {
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="alternate" type="application/atom+xml" title="技术笔记 RSS" href="/feed.xml">
-<script src="/assets/js/theme.js?v=20261018"></script>
-<link rel="stylesheet" href="/assets/css/base.css?v=20261018">
-<link rel="stylesheet" href="/assets/css/site.css?v=20261018">
-<link rel="stylesheet" href="/assets/css/ai-news.css?v=20261018">
+<script src="/assets/js/theme.js?v=${assetVersion("assets/js/theme.js")}"></script>
+<link rel="stylesheet" href="/assets/css/base.css?v=${assetVersion("assets/css/base.css")}">
+<link rel="stylesheet" href="/assets/css/site.css?v=${assetVersion("assets/css/site.css")}">
+<link rel="stylesheet" href="/assets/css/ai-news.css?v=${assetVersion("assets/css/ai-news.css")}">${analyticsBlock(config.umami)}
 <!-- s5-news-chrome:end -->`;
 }
 
-function headerBlock() {
+function headerBlock(navItems) {
+  const navLinks = navItems.map((item) => {
+    const active = item.section === "daily" ? ' aria-current="page"' : "";
+    return `        <a href="${escapeHtml(item.url)}"${active}>${escapeHtml(item.label)}</a>`;
+  }).join("\n");
   return `<!-- s5-news-header:start -->
 <div class="site-ambience" aria-hidden="true"></div>
 <a class="skip-link" href="#main-content">跳到主要内容</a>
@@ -149,14 +232,9 @@ function headerBlock() {
     <a class="brand" href="/" aria-label="single5240 首页"><span class="brand-mark" aria-hidden="true">s5<span>.</span></span><span>single5240<span class="brand-caption"> / 工程笔记</span></span></a>
     <div class="nav-actions">
       <div class="nav-links">
-        <a href="/">首页</a>
-        <a href="/articles/index.html">文章</a>
-        <a href="/projects/index.html">项目</a>
-        <a href="/tools/index.html">工具</a>
-        <a href="/daily/index.html" aria-current="page">日常</a>
-        <a href="/about/index.html">关于</a>
+${navLinks}
       </div>
-      <div class="system-status" aria-label="系统运行状态与北京时间" title="硬件心跳与系统时间">
+      <div class="system-status" aria-label="北京时间" title="当前北京时间">
         <span class="status-pulse" aria-hidden="true"></span>
         <span class="status-time" id="statusClock">--:--</span>
         <span class="status-tag">BJT</span>
@@ -205,9 +283,9 @@ function footerBlock() {
   return `<!-- s5-news-footer:start -->
 <footer class="site-footer" id="contact">
   <div><a class="footer-brand" href="/">single5240</a><p>© 2026 · Jekyll &amp; GitHub Pages</p></div>
-  <nav aria-label="辅助导航"><a href="/about/index.html">关于与联系</a><a href="/feed.xml">RSS</a><a href="https://github.com/single5240" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="/board.html">板子项目</a></nav>
+  <nav aria-label="辅助导航"><a href="/about/index.html">关于与联系</a><a href="/feed.xml">RSS</a><a href="https://github.com/single5240" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="/boards/index.html">板子</a><a href="/board.html">板子项目</a></nav>
 </footer>
-<script src="/assets/js/motion.js?v=20261018" defer></script>
+<script src="/assets/js/motion.js?v=${assetVersion("assets/js/motion.js")}" defer></script>
 <!-- s5-news-footer:end -->`;
 }
 
@@ -215,6 +293,8 @@ export function prepareNewsHtml(html, { date, sources }) {
   if (/^\uFEFF?---\r?\n/.test(html)) {
     throw new Error(`${date}: HTML starts with front matter; leave it as a static page so Liquid is not executed`);
   }
+  const config = siteConfig();
+  const navItems = loadNavigation();
   let next = html;
   const markers = [
     "s5-news-chrome",
@@ -233,7 +313,7 @@ export function prepareNewsHtml(html, { date, sources }) {
 
   const title = pageTitle(next);
   const description = pageSummary(next, title) || title;
-  const canonical = `${siteOrigin()}/ai-news/${date}.html`;
+  const canonical = `${config.origin}/ai-news/${date}.html`;
   const weekId = mondayOf(date);
 
   if (!next.includes("</head>") || !next.includes("<body") || !next.includes("</main>")) {
@@ -241,8 +321,8 @@ export function prepareNewsHtml(html, { date, sources }) {
   }
 
   next = next.replace(/<title>[^<]*<\/title>/i, `<title>${escapeHtml(title)} | single5240</title>`);
-  next = next.replace(/\s*<\/head>/i, `\n${chromeBlock({ title, description, canonical, weekId })}\n</head>`);
-  next = next.replace(/<body([^>]*)>\s*/i, `<body$1>\n${headerBlock()}\n${subbarBlock(weekId, date)}\n`);
+  next = next.replace(/\s*<\/head>/i, `\n${chromeBlock({ title, description, canonical, weekId }, config)}\n</head>`);
+  next = next.replace(/<body([^>]*)>\s*/i, `<body$1>\n${headerBlock(navItems)}\n${subbarBlock(weekId, date)}\n`);
 
   next = next.replace(/<main\s+class="am-sheet"([^>]*)>/i, (match, rest) => {
     if (rest.includes("id=")) return match;
@@ -293,14 +373,14 @@ function htmlInputs(args) {
 function companionMarkdown(htmlPath, rawHtml = "") {
   const markdownPath = htmlPath.replace(/\.html$/, ".md");
   try {
-    return readFileSync(markdownPath, "utf8");
+    return { markdown: readFileSync(markdownPath, "utf8"), fromFile: true };
   } catch {
     const match = rawHtml.match(/<textarea[^>]*\bid=["']am-source["'][^>]*>([\s\S]*?)<\/textarea>/i)
       || rawHtml.match(/<script[^>]*\bid=["']am-source["'][^>]*>([\s\S]*?)<\/script>/i);
     if (match) {
-      return unescapeHtml(match[1]);
+      return { markdown: unescapeHtml(match[1]), fromFile: false };
     }
-    return "";
+    return { markdown: "", fromFile: false };
   }
 }
 
@@ -346,8 +426,9 @@ function importOne(htmlPath) {
   if (!match || !isRealDate(match[1])) throw new Error(`${htmlPath}: filename must be YYYY-MM-DD.html`);
   const date = match[1];
   const rawHtml = readFileSync(htmlPath, "utf8");
-  const markdown = companionMarkdown(htmlPath, rawHtml);
-  const sources = markdown ? extractSources(markdown) : [];
+  const { markdown, fromFile } = companionMarkdown(htmlPath, rawHtml);
+  const extracted = markdown ? extractSources(markdown) : [];
+  const sources = fromFile ? extracted : mergeSources(extractHtmlSources(rawHtml), extracted);
   const prepared = prepareNewsHtml(rawHtml, { date, sources });
   mkdirSync(newsDir, { recursive: true });
   const target = join(newsDir, `${date}.html`);
