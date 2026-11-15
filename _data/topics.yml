@@ -4,6 +4,7 @@
   color: "#1ba3b0"
   color_end: "#0f7b88"
   articles:
+    - lithium-battery-charger-ic-guide
     - battery-management-portable-design
     - nor-flash-powerfail-record-store
     - n32g455-lcd-strip-rendering
