@@ -327,6 +327,13 @@
       terminal: "#141414",
       glow: 0,
     },
+    famicom: {
+      trace: "#b81d24",
+      subTrace: "rgba(168, 116, 20, 0.34)",
+      axis: "rgba(42, 35, 31, 0.16)",
+      terminal: "#8e141a",
+      glow: 0,
+    },
   };
 
   const isArticlePage = Boolean(document.querySelector("#articleRobotCard"));

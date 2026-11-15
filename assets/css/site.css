@@ -2116,3 +2116,206 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
     justify-content: center;
   }
 }
+
+/* ==========================================================================
+   任天堂红白机浅色风格外壳与组件调校 (Nintendo Famicom Light Overrides)
+   ========================================================================== */
+:root[data-theme="famicom"] .site-header {
+  box-shadow: 0 2px 0 rgba(42, 35, 31, 0.1);
+}
+
+:root[data-theme="famicom"] .theme-menu,
+:root[data-theme="famicom"] .robot-speech,
+:root[data-theme="famicom"] .button:not(.primary),
+:root[data-theme="famicom"] .system-status,
+:root[data-theme="famicom"] .search-link,
+:root[data-theme="famicom"] .scope-pause {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="famicom"] .ios-specular {
+  display: none;
+}
+
+:root[data-theme="famicom"] .brand-mark {
+  border-radius: 4px;
+  background: var(--accent);
+  border: 1.5px solid #7d1116;
+  box-shadow: 2px 2px 0 rgba(42, 35, 31, 0.22);
+}
+
+:root[data-theme="famicom"] .brand:hover .brand-mark {
+  transform: translateY(-1px);
+  box-shadow: 2px 3px 0 rgba(42, 35, 31, 0.26);
+}
+
+:root[data-theme="famicom"] .nav-links {
+  background: var(--alt-bg);
+  border-radius: 6px;
+  border-color: var(--glass-edge);
+}
+
+:root[data-theme="famicom"] .nav-links a,
+:root[data-theme="famicom"] .nav-pill-glider {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .nav-pill-glider {
+  background: var(--raised-bg);
+  border: 1px solid var(--glass-edge);
+  box-shadow: 0 1px 0 rgba(42, 35, 31, 0.14);
+}
+
+:root[data-theme="famicom"] .nav-links a[aria-current="page"] {
+  background: var(--raised-bg);
+  color: var(--accent);
+  box-shadow: 0 1px 0 rgba(42, 35, 31, 0.14);
+}
+
+:root[data-theme="famicom"] .nav-links.has-glider a[aria-current="page"],
+:root[data-theme="famicom"] .nav-links.has-glider a:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="famicom"] .search-link {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .workbench-console,
+:root[data-theme="famicom"] .project-mini-card,
+:root[data-theme="famicom"] .project-feature,
+:root[data-theme="famicom"] .deck-articles-list,
+:root[data-theme="famicom"] .aside-card,
+:root[data-theme="famicom"] .archive-tools,
+:root[data-theme="famicom"] .section-articles .archive-tools,
+:root[data-theme="famicom"] .daily-grid > div:first-child,
+:root[data-theme="famicom"] .daily-links a,
+:root[data-theme="famicom"] .daily-archive-grid section,
+:root[data-theme="famicom"] .study,
+:root[data-theme="famicom"] .prose,
+:root[data-theme="famicom"] .skills-arch-card,
+:root[data-theme="famicom"] .explore-links a,
+:root[data-theme="famicom"] .about-guestbook {
+  border-radius: 6px;
+}
+
+:root[data-theme="famicom"] .workbench-console::before {
+  height: 4px;
+  opacity: 1;
+  background: linear-gradient(90deg, #b81d24 0%, #b81d24 72%, #c99738 72%, #c99738 100%);
+}
+
+:root[data-theme="famicom"] .workbench-header,
+:root[data-theme="famicom"] .workbench-channel-bar {
+  background: #ece5d7;
+}
+
+:root[data-theme="famicom"] .text-gradient {
+  background: none;
+  -webkit-background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: var(--accent);
+}
+
+:root[data-theme="famicom"] .workbench-hud-grid,
+:root[data-theme="famicom"] .scope-bay-frame,
+:root[data-theme="famicom"] .scope-bay-body,
+:root[data-theme="famicom"] .project-visual,
+:root[data-theme="famicom"] .feed-item,
+:root[data-theme="famicom"] .aside-tools-list a,
+:root[data-theme="famicom"] .article-item,
+:root[data-theme="famicom"] .skills-code-block,
+:root[data-theme="famicom"] .private-message-form input,
+:root[data-theme="famicom"] .private-message-form textarea {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .button,
+:root[data-theme="famicom"] .load-more-btn,
+:root[data-theme="famicom"] .home-topic-links a,
+:root[data-theme="famicom"] .filter-list button,
+:root[data-theme="famicom"] .scope-pause,
+:root[data-theme="famicom"] .project-mini-cta,
+:root[data-theme="famicom"] .private-message-form .submit-btn,
+:root[data-theme="famicom"] .skills-code-btn {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .workbench-status-badge,
+:root[data-theme="famicom"] .workbench-eyebrow,
+:root[data-theme="famicom"] .workbench-meta-tags .chip,
+:root[data-theme="famicom"] .aside-badge,
+:root[data-theme="famicom"] .item-tags span,
+:root[data-theme="famicom"] .project-mini-chip,
+:root[data-theme="famicom"] .home-topic-links span:not(.topic-dot) {
+  border-radius: 3px;
+}
+
+:root[data-theme="famicom"] .status-pulse-dot,
+:root[data-theme="famicom"] .dot-live {
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: none;
+}
+
+:root[data-theme="famicom"] .project-mini-chip {
+  background: #1e1a18;
+  color: #f4efe6;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="famicom"] .item-arrow,
+:root[data-theme="famicom"] .project-mini-arrow {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .article-item:hover .item-arrow {
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+:root[data-theme="famicom"] .article-item:hover .item-tags span {
+  border-color: var(--raised-border);
+}
+
+:root[data-theme="famicom"] .button.primary,
+:root[data-theme="famicom"] .private-message-form .submit-btn {
+  background: var(--accent);
+  border: 1.5px solid #7d1116;
+  color: var(--on-accent);
+  box-shadow: 0 2px 0 #7d1116;
+}
+
+:root[data-theme="famicom"] .button.primary:hover,
+:root[data-theme="famicom"] .private-message-form .submit-btn:hover:not(:disabled) {
+  background: #9f171d;
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 #7d1116;
+}
+
+:root[data-theme="famicom"] .button.primary:active,
+:root[data-theme="famicom"] .button.primary.is-pressing,
+:root[data-theme="famicom"] .private-message-form .submit-btn:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 0 0 #7d1116;
+}
+
+:root[data-theme="famicom"] .private-message-form input,
+:root[data-theme="famicom"] .private-message-form textarea {
+  background: var(--subtle-bg);
+  border-color: var(--glass-edge);
+}
+
+:root[data-theme="famicom"] .search-input-wrap {
+  background: var(--subtle-bg);
+  border-color: var(--glass-edge);
+  border-radius: 4px;
+  box-shadow: none;
+}

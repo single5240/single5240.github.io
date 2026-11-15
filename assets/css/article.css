@@ -1168,3 +1168,53 @@
 @media (prefers-reduced-motion: reduce) {
   .code-toggle-icon { transition: none !important; }
 }
+
+:root[data-theme="famicom"] .article-header,
+:root[data-theme="famicom"] .reading-main,
+:root[data-theme="famicom"] .toc,
+:root[data-theme="famicom"] .article-navigation a {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 6px;
+}
+
+:root[data-theme="famicom"] .code-block,
+:root[data-theme="famicom"] .content blockquote,
+:root[data-theme="famicom"] .content img,
+:root[data-theme="famicom"] .content .table-scroll {
+  border-radius: 6px;
+}
+
+:root[data-theme="famicom"] .code-toolbar {
+  background: #24201d;
+  color: #cbc2b4;
+  border-radius: 6px 6px 0 0;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+:root[data-theme="famicom"] .code-toolbar::before {
+  border-radius: 2px;
+  background: #b81d24;
+  box-shadow:
+    16px 0 0 #c99738,
+    32px 0 0 #e6dfd1;
+}
+
+:root[data-theme="famicom"] .code-block.is-collapsed .code-toolbar {
+  border-radius: 6px;
+}
+
+:root[data-theme="famicom"] .content pre {
+  border-radius: 0 0 6px 6px;
+  box-shadow: none;
+}
+
+:root[data-theme="famicom"] .article-meta a,
+:root[data-theme="famicom"] .back,
+:root[data-theme="famicom"] .toc a,
+:root[data-theme="famicom"] .copy-code,
+:root[data-theme="famicom"] .code-toggle,
+:root[data-theme="famicom"] .content code {
+  border-radius: 4px;
+}

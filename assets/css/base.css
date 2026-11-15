@@ -382,6 +382,67 @@ html {
   --spectrum-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
+/* 任天堂红白机浅色风格 (Nintendo Famicom Light) */
+:root[data-theme="famicom"] {
+  color-scheme: light;
+  --ink: #1c1816;
+  --muted: #635a51;
+  --line: rgba(42, 35, 31, 0.18);
+  --paper: #f2ece1;
+  --panel: #f6f1e7;
+  --accent: #b81d24;
+  --accent-dark: #8e141a;
+  --warm: #a87414;
+  --soft: rgba(184, 29, 36, 0.09);
+  --deep: #1e1a18;
+  --header-bg: #f2ece1;
+  --header-line: rgba(42, 35, 31, 0.22);
+  --raised-bg: #faf7f0;
+  --popover-bg: #faf7f0;
+  --speech-bg: #faf7f0;
+  --speech-border: rgba(42, 35, 31, 0.32);
+  --glass: none;
+  --glass-edge: rgba(42, 35, 31, 0.25);
+  --raised-border: rgba(184, 29, 36, 0.38);
+  --alt-bg: #eae2d3;
+  --subtle-bg: #ffffff;
+  --body-copy: #292421;
+  --content-copy: #1f1b18;
+  --tag-ink: #474039;
+  --code-bg: #1e1a18;
+  --code-ink: #f4efe6;
+  --inline-code: #8e141a;
+  --contact-copy: #635a51;
+  --note: #b81d24;
+  --on-accent: #ffffff;
+  --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --shadow: 2px 2px 0 rgba(42, 35, 31, 0.14);
+  --shadow-small: 0 2px 0 rgba(42, 35, 31, 0.12);
+  --shadow-heavy: 4px 4px 0 rgba(42, 35, 31, 0.2);
+  --shadow-hover: 3px 3px 0 rgba(184, 29, 36, 0.26);
+  --focus-ring: #b81d24;
+  --topic-mcu-1: #b81d24;
+  --topic-mcu-2: #851218;
+  --topic-mcu-accent: #b81d24;
+  --topic-linux-1: #c47a16;
+  --topic-linux-2: #8f5408;
+  --topic-linux-accent: #a87414;
+  --topic-qt-1: #2d7a47;
+  --topic-qt-2: #1c522e;
+  --topic-qt-accent: #2d7a47;
+  --topic-industrial-1: #c84b31;
+  --topic-industrial-2: #8f2e1a;
+  --topic-industrial-accent: #c84b31;
+  --topic-devops-1: #3b5998;
+  --topic-devops-2: #253a66;
+  --topic-devops-accent: #3b5998;
+  --topic-design-1: #7d4e6d;
+  --topic-design-2: #543048;
+  --topic-design-accent: #7d4e6d;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  --spectrum-shadow: 0 1px 0 rgba(42, 35, 31, 0.16);
+}
+
 .motion-reveal {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale(0.978);
@@ -581,7 +642,7 @@ body {
   right: 0;
   z-index: 100;
   width: 236px;
-  max-height: min(540px, calc(100vh - 100px));
+  max-height: min(620px, calc(100vh - 96px));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px;
@@ -1118,9 +1179,13 @@ time {
   fill: var(--accent-dark);
 }
 
-:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]) .robot-eye,
+:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]) .robot-eye,
 :root[data-theme="light"] .robot-eye {
   fill: #80c7a7;
+}
+
+:root[data-theme="famicom"] .robot-eye {
+  fill: #e34a42;
 }
 
 .robot-eye-glint {
@@ -1469,6 +1534,11 @@ time {
   background: linear-gradient(90deg, #141414, #737373);
 }
 
+:root[data-theme="famicom"] .reading-progress {
+  background: linear-gradient(90deg, #b81d24 0%, #b81d24 85%, #c99738 100%);
+  box-shadow: none;
+}
+
 /* ==========================================================================
    特种底纹与复古电子硬件质感系统（Retro Electronics Skins）
    方案 A: 工程坐标网格 (grid)
@@ -1523,6 +1593,11 @@ time {
     radial-gradient(circle at 25% 20%, rgba(20, 20, 20, 0.08) 0%, transparent 48%),
     radial-gradient(circle at 80% 78%, rgba(80, 80, 80, 0.08) 0%, transparent 48%);
   opacity: 0.9;
+}
+
+:root[data-theme="famicom"] .site-ambience {
+  background-image: none;
+  opacity: 1;
 }
 
 /* --------------------------------------------------------------------------
@@ -1602,6 +1677,16 @@ time {
   opacity: 0.75;
 }
 
+:root[data-skin="grid"][data-theme="famicom"] .site-ambience {
+  background-image:
+    linear-gradient(rgba(184, 29, 36, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 29, 36, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(42, 35, 31, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 35, 31, 0.03) 1px, transparent 1px);
+  background-size: 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.85;
+}
+
 /* --------------------------------------------------------------------------
    方案 B: 洞洞板 / 覆铜板打孔焊接阵列 (matrix)
    -------------------------------------------------------------------------- */
@@ -1633,6 +1718,13 @@ time {
     radial-gradient(circle at 11px 11px, #040b15 1.2px, rgba(82, 216, 232, 0.35) 2.2px, transparent 3.2px);
   background-size: 22px 22px;
   opacity: 1;
+}
+
+:root[data-skin="matrix"][data-theme="famicom"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #f2ece1 1.2px, rgba(42, 35, 31, 0.14) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.88;
 }
 
 /* --------------------------------------------------------------------------
@@ -1676,6 +1768,15 @@ time {
     linear-gradient(90deg, rgba(82, 216, 232, 0.09) 1px, transparent 1px);
   background-size: 100% 100%, 100% 4px, 28px 28px, 28px 28px;
   opacity: 1;
+}
+
+:root[data-skin="chassis"][data-theme="famicom"] .site-ambience {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(42, 35, 31, 0.025) 0px, rgba(42, 35, 31, 0.025) 1px, transparent 1px, transparent 4px),
+    linear-gradient(rgba(42, 35, 31, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 35, 31, 0.045) 1px, transparent 1px);
+  background-size: 100% 4px, 24px 24px, 24px 24px;
+  opacity: 0.9;
 }
 
 /* 方案 C 细节: 面板卡片四角机械定位十字刻度标 */
@@ -1790,9 +1891,14 @@ time {
   }
 }
 
-:root[data-theme="swiss"] .status-pulse {
+:root[data-theme="swiss"] .status-pulse,
+:root[data-theme="famicom"] .status-pulse {
   background: var(--accent);
   animation-name: pulse-glow-swiss;
+}
+
+:root[data-theme="famicom"] .status-pulse {
+  border-radius: 2px;
 }
 
 @keyframes pulse-glow-swiss {
@@ -1862,7 +1968,8 @@ time {
   :root[data-theme="dark"],
   :root[data-theme="swiss"],
   :root[data-theme="hud"],
-  :root[data-theme="mono"] {
+  :root[data-theme="mono"],
+  :root[data-theme="famicom"] {
     --glass: none;
   }
   :root,
@@ -1870,6 +1977,10 @@ time {
   :root[data-theme="mono"] {
     --raised-bg: rgba(255, 255, 255, 0.98);
     --speech-bg: rgba(255, 255, 255, 0.96);
+  }
+  :root[data-theme="famicom"] {
+    --raised-bg: #faf7f0;
+    --speech-bg: #faf7f0;
   }
   :root[data-theme="dark"] {
     --raised-bg: rgba(24, 35, 41, 0.98);
@@ -1879,4 +1990,54 @@ time {
     --raised-bg: rgba(7, 21, 38, 0.98);
     --speech-bg: rgba(7, 21, 38, 0.96);
   }
+}
+
+/* ==========================================================================
+   任天堂红白机浅色风格结构覆盖 (Plain Famicom Hardware Surface & Geometry)
+   ========================================================================== */
+:root[data-theme="famicom"] .theme-menu,
+:root[data-theme="famicom"] .scope-channel,
+:root[data-theme="famicom"] .article-robot-card,
+:root[data-theme="famicom"] .robot-dock.is-docked-float,
+:root[data-theme="famicom"] .back-to-top,
+:root[data-theme="famicom"] .robot-speech {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="famicom"] .theme-menu {
+  border-radius: 6px;
+  border-color: var(--glass-edge);
+  box-shadow: var(--shadow-heavy);
+}
+
+:root[data-theme="famicom"] .theme-toggle,
+:root[data-theme="famicom"] .theme-option,
+:root[data-theme="famicom"] .system-status,
+:root[data-theme="famicom"] .scope-channel {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .article-robot-card,
+:root[data-theme="famicom"] .robot-dock.is-docked-float,
+:root[data-theme="famicom"] .back-to-top {
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="famicom"] .robot-dock.is-docked-float .dock-to-top {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .robot-speech {
+  border-radius: 4px;
+  box-shadow: var(--shadow-small);
+}
+
+:root[data-theme="famicom"] .retro-robot-svg {
+  filter: none;
+}
+
+:root[data-theme="famicom"] .spectrum-item {
+  border-radius: 2px;
 }

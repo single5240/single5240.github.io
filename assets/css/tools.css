@@ -832,3 +832,41 @@
   transform: scale(0.92) !important;
   transition-duration: 80ms !important;
 }
+
+:root[data-theme="famicom"] .kb-tool-entry,
+:root[data-theme="famicom"] .tools-nav,
+:root[data-theme="famicom"] .tool-card,
+:root[data-theme="famicom"] .tools-panel,
+:root[data-theme="famicom"] .bit-cell {
+  border-radius: 6px;
+}
+
+:root[data-theme="famicom"] .tools-tab-btn[aria-current="location"] {
+  background: var(--subtle-bg);
+  box-shadow: 0 1px 0 rgba(42, 35, 31, 0.14);
+}
+
+:root[data-theme="famicom"] .tools-tab-btn,
+:root[data-theme="famicom"] .tool-btn,
+:root[data-theme="famicom"] .tool-input,
+:root[data-theme="famicom"] .tool-select,
+:root[data-theme="famicom"] .tool-textarea {
+  border-radius: 4px;
+}
+
+:root[data-theme="famicom"] .tool-input:focus,
+:root[data-theme="famicom"] .tool-select:focus,
+:root[data-theme="famicom"] .tool-textarea:focus {
+  box-shadow: 0 0 0 3px var(--soft);
+}
+
+:root[data-theme="famicom"] .tool-btn.primary {
+  border-color: #7d1116;
+  box-shadow: 0 2px 0 #7d1116;
+}
+
+:root[data-theme="famicom"] .tool-btn.primary:hover {
+  background: #9f171d;
+  opacity: 1;
+  box-shadow: 0 3px 0 #7d1116;
+}

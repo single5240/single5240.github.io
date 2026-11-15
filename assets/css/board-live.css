@@ -192,3 +192,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+:root[data-theme="famicom"] .board-card {
+  border-radius: 6px;
+}

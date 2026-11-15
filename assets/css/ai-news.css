@@ -60,7 +60,8 @@
 }
 
 :root[data-theme="swiss"],
-:root[data-theme="mono"] {
+:root[data-theme="mono"],
+:root[data-theme="famicom"] {
   --bg: transparent;
   --paper: var(--panel);
   --head-bg: var(--paper);

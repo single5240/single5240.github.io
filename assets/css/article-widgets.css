@@ -3313,6 +3313,10 @@
   border-color: var(--glass-edge);
 }
 
+:root[data-theme="famicom"] .article-interactive-widget {
+  border-radius: 6px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .strip-scan-line,
   .strip-prog-cell,
