@@ -18,6 +18,8 @@ const widgetAssets = {
   "ecat-esm-demo-app": "ecat-esm",
   "w25q-demo-app": "w25q128",
   "spi-dma-demo-app": "spi-dma",
+  "stm32f1-dma-demo-app": "stm32f1-dma",
+  "charger-demo-app": "charger-ic",
 };
 const navUrls = [...readFileSync(resolve("_data/navigation.yml"), "utf8").matchAll(/^\s+url:\s*(\S+)\s*$/gm)].map((m) => m[1]);
 

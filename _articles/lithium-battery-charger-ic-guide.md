@@ -161,6 +161,190 @@ Buck 开关充电 IC（如 `BQ25601`）通过高频开关管、功率电感和�
 - **深度亏电插电即起**：电池彻底放空被保护板锁死时，只要插上外部电源，`OUT` 端就能直接建立系统电压让 MCU 启动，不用等电池先慢慢预充到开机电压。
 - **峰值电流时电池补电（Battery Supplement Mode）**：当射频发射、电机或蜂鸣器出现瞬时大电流，超过了适配器或 USB 口的输入限流上限时，内部连接电池与 `OUT` 的通道会导通，让电池临时和外部电源一起供电，防止系统电压跌落重启。
 
+<div class="article-interactive-widget" id="charger-demo-app" aria-label="单节锂电池充电曲线、热耗与 Power Path 仿真器">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE LAB · 电源路径与热耗仿真</span>
+    <h3 class="aiw-title">CC/CV 充电曲线、热耗与 Power Path 分流模拟器</h3>
+    <p class="aiw-desc">对比“负载与电芯直接并联（AN1149 陷阱）”与“Power Path 路径管理（如 BQ24074）”，实时观测电流采样点位置如何决定 <code>I_TERM</code> 满充截止、Battery Supplement 补电以及线性 vs Buck 拓扑的功率损耗量级。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="chg-top-switches">
+      <div class="chg-switch-box">
+        <span class="chg-switch-label">电源路径架构</span>
+        <div class="chg-seg" role="radiogroup" aria-label="电源路径架构选择">
+          <button type="button" class="chg-arch-btn is-active" role="radio" aria-checked="true" data-arch="parallel">直接并联负载 (AN1149 陷阱)</button>
+          <button type="button" class="chg-arch-btn" role="radio" aria-checked="false" data-arch="powerpath">Power Path (如 BQ24074)</button>
+        </div>
+      </div>
+      <div class="chg-switch-box">
+        <span class="chg-switch-label">降压转换拓扑</span>
+        <div class="chg-seg" role="radiogroup" aria-label="降压拓扑选择">
+          <button type="button" class="chg-topo-btn is-active" role="radio" aria-checked="true" data-topo="linear">线性充电 (TP4056/BQ24074)</button>
+          <button type="button" class="chg-topo-btn" role="radio" aria-checked="false" data-topo="buck">Buck 开关 (如 BQ25601)</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="aiw-section-title">
+        <span>一键切换典型工程工况</span>
+        <span class="aiw-hint">覆盖文内 0.75 W 热耗算例与边充边用典型故障</span>
+      </div>
+      <div class="chg-seg">
+        <button type="button" class="chg-preset-btn" data-preset="an1149">边充边用不转灯 (AN1149)</button>
+        <button type="button" class="chg-preset-btn" data-preset="thermal">0.75 W 热耗算例 (5V→3.5V)</button>
+        <button type="button" class="chg-preset-btn" data-preset="coldstart">深亏电冷启动 (2.60 V)</button>
+        <button type="button" class="chg-preset-btn" data-preset="supplement">突发重载补电 (0.70 A)</button>
+      </div>
+    </div>
+    <div class="aiw-stats" aria-label="实时充电仿真指标">
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">当前阶段与状态</span>
+        <span class="aiw-stat-value accent" id="chg-stat-stage">恒压充电 (CV)</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">IC 采样判断电流</span>
+        <span class="aiw-stat-value" id="chg-stat-sense">0.22 A</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">净入电芯电流 I_chg</span>
+        <span class="aiw-stat-value" id="chg-stat-ichg">0.02 A</span>
+      </div>
+      <div class="aiw-stat-item">
+        <span class="aiw-stat-label">芯片热损耗估算 P_loss</span>
+        <span class="aiw-stat-value" id="chg-stat-loss">0.18 W</span>
+      </div>
+    </div>
+    <div class="chg-visual-grid">
+      <div class="chg-diagram-card">
+        <div class="aiw-section-title">
+          <span>电流路径与采样点拓扑</span>
+          <span class="aiw-hint">注意电流检测位于总输出端还是 BAT 支路</span>
+        </div>
+        <svg class="chg-diagram-svg" id="chg-flow-svg" viewBox="0 0 640 220" role="img" aria-label="充电 IC 与负载、电池的电流分流拓扑图">
+          <rect x="10" y="72" width="138" height="76" rx="10" fill="var(--subtle-bg)" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="79" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">VBUS 输入</text>
+          <text x="79" y="123" text-anchor="middle" font-size="11" fill="var(--muted)" id="chg-svg-vin">5.00V · 限流 1.00A</text>
+          <line x1="148" y1="110" x2="174" y2="110" stroke="var(--accent)" stroke-width="2.5"/>
+          <polygon points="174,110 165,105 165,115" fill="var(--accent)"/>
+          <rect x="176" y="44" width="180" height="132" rx="12" fill="var(--subtle-bg)" stroke="var(--accent)" stroke-width="1.8"/>
+          <text x="266" y="68" text-anchor="middle" font-size="13" font-weight="750" fill="var(--ink)" id="chg-svg-ic-title">普通并联充电 IC</text>
+          <text x="266" y="86" text-anchor="middle" font-size="10.5" fill="var(--muted)" id="chg-svg-ic-sub">线性调整管</text>
+          <g id="chg-svg-parallel-paths">
+            <rect x="186" y="98" width="160" height="28" rx="6" fill="var(--soft)" stroke="var(--accent)" stroke-width="1"/>
+            <text x="266" y="116" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--accent-dark)" id="chg-svg-par-sense">总采样 I_out = 0.22 A</text>
+            <line x1="356" y1="110" x2="372" y2="110" stroke="var(--accent)" stroke-width="2.5"/>
+            <circle cx="372" cy="110" r="4" fill="var(--accent)"/>
+            <polyline points="372,110 372,56 458,56" fill="none" stroke="var(--warm)" stroke-width="2.2"/>
+            <polygon points="458,56 449,51 449,61" fill="var(--warm)"/>
+            <polyline points="372,110 372,164 458,164" fill="none" stroke="var(--accent)" stroke-width="2.2"/>
+            <polygon points="458,164 449,159 449,169" fill="var(--accent)"/>
+            <text x="415" y="150" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)" id="chg-svg-par-bat">I_chg = 0.02 A</text>
+          </g>
+          <g id="chg-svg-pp-paths" style="display:none">
+            <text x="266" y="106" text-anchor="middle" font-size="10.5" fill="var(--ink)" id="chg-svg-pp-vbus-out">I_in = 0.22 A</text>
+            <rect x="186" y="118" width="160" height="26" rx="6" fill="var(--soft)" stroke="var(--accent)" stroke-width="1"/>
+            <text x="266" y="135" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--accent-dark)" id="chg-svg-pp-sense">BAT 独立采样: 0.02 A</text>
+            <line x1="356" y1="56" x2="458" y2="56" stroke="var(--warm)" stroke-width="2.2"/>
+            <polygon points="458,56 449,51 449,61" fill="var(--warm)"/>
+            <line x1="356" y1="164" x2="458" y2="164" stroke="var(--accent)" stroke-width="2.2"/>
+            <polygon points="458,164 449,159 449,169" fill="var(--accent)"/>
+            <text x="407" y="150" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)" id="chg-svg-pp-bat">I_chg = 0.02 A</text>
+            <g id="chg-svg-pp-supp" style="display:none">
+              <line x1="545" y1="130" x2="545" y2="90" stroke="#ef4444" stroke-width="2.4" stroke-dasharray="4 3"/>
+              <polygon points="545,90 540,98 550,98" fill="#ef4444"/>
+              <rect x="498" y="101" width="94" height="18" rx="4" fill="var(--panel)" stroke="rgba(239,68,68,0.45)" stroke-width="1"/>
+              <text x="545" y="114" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ef4444" id="chg-svg-pp-supp-txt">补电 ↑</text>
+            </g>
+          </g>
+          <rect x="460" y="22" width="170" height="68" rx="10" fill="var(--subtle-bg)" stroke="var(--warm)" stroke-width="1.5"/>
+          <text x="545" y="48" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">SYS 系统负载 / MCU</text>
+          <text x="545" y="70" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--warm)" id="chg-svg-isys">I_load = 0.20 A</text>
+          <rect x="460" y="130" width="170" height="72" rx="10" fill="var(--subtle-bg)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="545" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">BAT 单节锂电池</text>
+          <text x="545" y="178" text-anchor="middle" font-size="10.5" fill="var(--muted)" id="chg-svg-bat-sub">Vbat = 4.19 V</text>
+        </svg>
+      </div>
+      <div class="chg-diagram-card">
+        <div class="aiw-section-title">
+          <span>CC/CV 曲线与 I_TERM 截止对照</span>
+          <span class="aiw-hint">蓝线=Vbat · 绿线=I_chg · 橙虚线=IC 采样总电流</span>
+        </div>
+        <svg class="chg-diagram-svg" id="chg-curve-svg" viewBox="0 0 640 220" role="img" aria-label="预充、恒流、恒压与 I_TERM 截止曲线图">
+          <rect x="54" y="24" width="64" height="146" fill="var(--alt-bg)"/>
+          <rect x="388" y="24" width="170" height="146" fill="var(--alt-bg)"/>
+          <text x="86" y="18" text-anchor="middle" font-size="10.5" fill="var(--muted)">预充</text>
+          <text x="253" y="18" text-anchor="middle" font-size="10.5" fill="var(--muted)">CC 恒流</text>
+          <text x="473" y="18" text-anchor="middle" font-size="10.5" fill="var(--muted)">CV 恒压 (4.2 V)</text>
+          <text x="575" y="18" text-anchor="middle" font-size="10.5" fill="var(--muted)">截止</text>
+          <line x1="54" y1="170" x2="594" y2="170" stroke="var(--line)" stroke-width="1.5"/>
+          <line x1="54" y1="24" x2="54" y2="170" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="48" y="34" text-anchor="end" font-size="10" fill="var(--muted)">4.2V</text>
+          <text x="48" y="170" text-anchor="end" font-size="10" fill="var(--muted)">2.5V</text>
+          <line id="chg-line-iterm" x1="54" y1="156" x2="594" y2="156" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="4 3"/>
+          <text id="chg-lbl-iterm" x="590" y="151" text-anchor="end" font-size="10" font-weight="700" fill="#ef4444">I_TERM (0.05 A)</text>
+          <path id="chg-path-vbat" d="" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+          <path id="chg-path-ichg" d="" fill="none" stroke="#10b981" stroke-width="2.4"/>
+          <path id="chg-path-isense" d="" fill="none" stroke="var(--warm)" stroke-width="2.2" stroke-dasharray="6 4"/>
+          <line id="chg-cursor-line" x1="540" y1="24" x2="540" y2="170" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.6"/>
+          <circle id="chg-cursor-v" cx="540" cy="40" r="4.5" fill="var(--accent)" stroke="var(--panel)" stroke-width="1.5"/>
+          <circle id="chg-cursor-i" cx="540" cy="130" r="4.5" fill="var(--warm)" stroke="var(--panel)" stroke-width="1.5"/>
+          <text x="64" y="196" font-size="10.5" fill="var(--accent)">━ Vbat 电压</text>
+          <text x="165" y="196" font-size="10.5" fill="#10b981">━ 真实进电芯 I_chg</text>
+          <text x="305" y="196" font-size="10.5" fill="var(--warm)">┅ IC 采样电流 (并联含 I_load)</text>
+        </svg>
+      </div>
+    </div>
+    <div class="chg-controls-grid">
+      <div class="chg-slider-field">
+        <div class="chg-slider-head">
+          <label for="chg-input-vbat">电芯端电压 Vbat</label>
+          <strong id="chg-val-vbat">4.19 V</strong>
+        </div>
+        <input type="range" id="chg-input-vbat" min="2.60" max="4.20" step="0.01" value="4.19">
+      </div>
+      <div class="chg-slider-field">
+        <div class="chg-slider-head">
+          <label for="chg-input-iload">系统工作负载 I_load</label>
+          <strong id="chg-val-iload">0.20 A</strong>
+        </div>
+        <input type="range" id="chg-input-iload" min="0.00" max="1.00" step="0.05" value="0.20">
+      </div>
+      <div class="chg-slider-field">
+        <div class="chg-slider-head">
+          <label for="chg-input-icc">设定恒流 I_cc (PROG)</label>
+          <strong id="chg-val-icc">0.50 A</strong>
+        </div>
+        <input type="range" id="chg-input-icc" min="0.20" max="1.50" step="0.05" value="0.50">
+      </div>
+      <div class="chg-slider-field">
+        <div class="chg-slider-head">
+          <label for="chg-input-vin">输入电压 Vin</label>
+          <strong id="chg-val-vin">5.00 V</strong>
+        </div>
+        <input type="range" id="chg-input-vin" min="4.50" max="5.50" step="0.05" value="5.00">
+      </div>
+      <div class="chg-slider-field">
+        <div class="chg-slider-head">
+          <label for="chg-input-iterm">截止阈值 I_TERM</label>
+          <strong id="chg-val-iterm">0.05 A</strong>
+        </div>
+        <input type="range" id="chg-input-iterm" min="0.03" max="0.15" step="0.01" value="0.05">
+      </div>
+      <div class="chg-slider-field">
+        <div class="chg-slider-head">
+          <label for="chg-input-iinlim">外部输入限流 I_inlim</label>
+        </div>
+        <select id="chg-input-iinlim" class="chg-select">
+          <option value="0.50">0.50 A (标准 USB 2.0)</option>
+          <option value="1.00" selected>1.00 A (普通适配器)</option>
+          <option value="1.50">1.50 A (大电流口)</option>
+        </select>
+      </div>
+    </div>
+    <div class="chg-diag-box is-danger" id="chg-diag-box" aria-live="polite"></div>
+  </div>
+</div>
+
 ## I²C 可控充电 IC 的固件常见坑
 
 如果方案用了带 I²C 接口的开关充电或路径管理芯片（比如 `BQ25601`），固件写驱动时还要留意三处状态问题：

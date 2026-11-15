@@ -211,6 +211,176 @@ CNDTR4 计数: 3 -> 2   2 -> 1          1 -> 0                   0 (停止搬运
 | 复用或改写 SRAM 发送缓冲区 `tx_buf` | DMA 完成标志（如 `TCIF4 == 1`） | 最后一字节已从 SRAM 读出写入外设缓冲，不再访问内存（带 D-Cache 内核另需处理缓存一致性） |
 | 关外设、进 Stop 休眠、切 RS-485 `DE`、拉高 SPI `CS` | 外设物理空闲标志（串口 `USART_SR.TC == 1`；SPI `BSY == 0`） | 移位寄存器与发送缓冲均已清空，最后 1 bit 停止位或时钟沿已在物理引脚走完 |
 
+<div class="article-interactive-widget" id="stm32f1-dma-demo-app" aria-label="STM32F1 DMA1 与 USART1 双缓冲逐拍时序实验室">
+  <div class="aiw-header">
+    <span class="aiw-badge">INTERACTIVE LAB · 总线与移位器时序仿真</span>
+    <h3 class="aiw-title">STM32F103C8 DMA1 + USART1 3 字节双缓冲与丢尾实验台</h3>
+    <p class="aiw-desc">逐拍跟踪 SRAM <code>tx_buf[3] = {'A','B','C'}</code> 如何经 DMA1 Channel 4 写入 <code>USART1-&gt;DR (TDR)</code> 与物理移位器，对比“<code>TCIF4=1</code> 立刻关输出”为何会截断尾帧，以及 <code>Channel 4</code> 逻辑或门和 <code>BusMatrix</code> 并发规则。</p>
+  </div>
+  <div class="aiw-body">
+    <div class="f1dma-tabs" role="tablist" aria-label="实验视角切换">
+      <button type="button" class="f1dma-tab-btn is-active" role="tab" aria-selected="true" data-tab="pipeline">01 · 3 字节搬运与丢尾时序</button>
+      <button type="button" class="f1dma-tab-btn" role="tab" aria-selected="false" data-tab="arch">02 · 固定请求 OR 门与 BusMatrix</button>
+    </div>
+    <div class="f1dma-view is-active" id="f1dma-view-pipeline" role="tabpanel">
+      <div>
+        <div class="aiw-section-title">
+          <span>收尾策略对比（在 TCIF4=1 中断处分岔）</span>
+          <span class="aiw-hint">先用默认错误做法跑一遍，再切“正确做法”对照</span>
+        </div>
+        <div class="f1dma-seg-group" role="radiogroup" aria-label="收尾策略选择">
+          <button type="button" class="f1dma-policy-btn is-active" role="radio" aria-checked="true" data-policy="bare-dma">错误做法：裸 DMA TCIF4=1 立即拉低 DE / 关串口</button>
+          <button type="button" class="f1dma-policy-btn" role="radio" aria-checked="false" data-policy="hal-tc">正确做法：TCIF4 后开 TCIE，等 USART_SR.TC=1</button>
+        </div>
+      </div>
+      <div class="aiw-stats" aria-label="硬件时序关键寄存器">
+        <div class="aiw-stat-item">
+          <span class="aiw-stat-label">当前时序节拍</span>
+          <span class="aiw-stat-value accent" id="f1dma-stat-step">T0 / 7</span>
+        </div>
+        <div class="aiw-stat-item">
+          <span class="aiw-stat-label">DMA1_CNDTR4</span>
+          <span class="aiw-stat-value" id="f1dma-stat-cndtr">3</span>
+        </div>
+        <div class="aiw-stat-item">
+          <span class="aiw-stat-label">关键标志位</span>
+          <span class="aiw-stat-value" id="f1dma-stat-flags">TXE:1 | TCIF4:0 | TC:0</span>
+        </div>
+        <div class="aiw-stat-item">
+          <span class="aiw-stat-label">物理线实际输出</span>
+          <span class="aiw-stat-value" id="f1dma-stat-wire">空闲</span>
+        </div>
+      </div>
+      <div class="f1dma-pipeline-grid">
+        <div class="f1dma-stage-card">
+          <div class="f1dma-stage-head">
+            <span>① SRAM tx_buf[3]</span>
+            <span class="f1dma-addr">0x2000 0000</span>
+          </div>
+          <div class="f1dma-mem-row">
+            <div class="f1dma-mem-cell is-ready" id="f1dma-sram-0">
+              <strong>'A' 0x41</strong>
+              <small id="f1dma-sram-st-0">待搬运</small>
+            </div>
+            <div class="f1dma-mem-cell is-ready" id="f1dma-sram-1">
+              <strong>'B' 0x42</strong>
+              <small id="f1dma-sram-st-1">待搬运</small>
+            </div>
+            <div class="f1dma-mem-cell is-ready" id="f1dma-sram-2">
+              <strong>'C' 0x43</strong>
+              <small id="f1dma-sram-st-2">待搬运</small>
+            </div>
+          </div>
+          <div class="f1dma-ptr-box">
+            <span>软件读 DMA_CMAR4: <strong>&amp;tx_buf[0] (恒定)</strong></span>
+            <span>内部影子内存指针: <strong id="f1dma-ptr-shadow">&amp;tx_buf[0]</strong></span>
+          </div>
+        </div>
+        <div class="f1dma-stage-card">
+          <div class="f1dma-stage-head">
+            <span>② DMA1 Channel 4</span>
+            <span class="f1dma-addr">0x4002 0000</span>
+          </div>
+          <div class="f1dma-switch-row">
+            <span class="f1dma-mini-pill" id="f1dma-ccr-en">CCR4.EN = 0</span>
+            <span class="f1dma-mini-pill" id="f1dma-cr3-dmat">CR3.DMAT = 0</span>
+          </div>
+          <div class="f1dma-req-banner" id="f1dma-req-status">待命 (开关未合)</div>
+          <div class="f1dma-switch-row">
+            <span class="f1dma-flag-pill is-off" id="f1dma-flag-tcif4">TCIF4 = 0</span>
+            <span class="f1dma-flag-pill is-ok" id="f1dma-flag-txe">TXE = 1</span>
+          </div>
+        </div>
+        <div class="f1dma-stage-card">
+          <div class="f1dma-stage-head">
+            <span>③ USART1 双级缓冲</span>
+            <span class="f1dma-addr">DR: 0x4001 3804</span>
+          </div>
+          <div class="f1dma-reg-stack">
+            <div class="f1dma-reg-box is-idle" id="f1dma-tdr-box">(空)</div>
+            <div class="f1dma-reg-box is-idle" id="f1dma-shift-box">(空)</div>
+          </div>
+          <div class="f1dma-switch-row">
+            <span class="f1dma-flag-pill is-off" id="f1dma-flag-tc">USART_SR.TC = 0</span>
+            <span class="f1dma-flag-pill is-ok" id="f1dma-flag-de">RS-485 DE = 1</span>
+          </div>
+        </div>
+      </div>
+      <div class="f1dma-timeline-box">
+        <div class="aiw-section-title">
+          <span>PA9 引脚三帧时间轴（对照 RM0008 Figure 297）</span>
+          <span class="aiw-hint">注意 TCIF4=1 发生在 Frame 2 开头，早于物理发完近两帧</span>
+        </div>
+        <div class="f1dma-frames-grid">
+          <div class="f1dma-frame-box" id="f1dma-frame-0">
+            <strong>Frame 1 ('A' · 0x41)</strong>
+            <span id="f1dma-frame-lbl-0">等待移位</span>
+          </div>
+          <div class="f1dma-frame-box" id="f1dma-frame-1">
+            <span class="f1dma-frame-marker">▲ 开头即置位 TCIF4 = 1</span>
+            <strong>Frame 2 ('B' · 0x42)</strong>
+            <span id="f1dma-frame-lbl-1">等待移位</span>
+          </div>
+          <div class="f1dma-frame-box" id="f1dma-frame-2">
+            <span class="f1dma-frame-marker">▲ 停止位结束置位 TC = 1</span>
+            <strong>Frame 3 ('C' · 0x43)</strong>
+            <span id="f1dma-frame-lbl-2">等待移位</span>
+          </div>
+        </div>
+      </div>
+      <div class="f1dma-explain" id="f1dma-explain" aria-live="polite"></div>
+      <div class="aiw-controls">
+        <button type="button" class="aiw-btn primary" id="f1dma-btn-step">单步推进 (T1)</button>
+        <button type="button" class="aiw-btn warn" id="f1dma-btn-jump-tcif">直达分岔点 (T4: TCIF4=1)</button>
+        <button type="button" class="aiw-btn" id="f1dma-btn-play">自动演练</button>
+        <button type="button" class="aiw-btn" id="f1dma-btn-reset">复位时序</button>
+      </div>
+      <div class="aiw-log-panel">
+        <div class="aiw-section-title">
+          <span>总线与寄存器状态日志</span>
+          <button type="button" class="aiw-btn copy-mini" id="f1dma-btn-clear-log">清空</button>
+        </div>
+        <div class="aiw-log" id="f1dma-log" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="f1dma-view" id="f1dma-view-arch" role="tabpanel" hidden>
+      <div class="f1dma-arch-card">
+        <div class="aiw-section-title">
+          <span>实验 A：DMA1 Channel 4 固定请求线“逻辑或”门</span>
+          <span class="aiw-hint">勾选多个外设观察请求碰撞</span>
+        </div>
+        <div class="f1dma-or-layout">
+          <div class="f1dma-req-list">
+            <label class="f1dma-req-item is-on"><input type="checkbox" class="f1dma-req-chk" value="USART1_TX" checked> USART1_TX</label>
+            <label class="f1dma-req-item"><input type="checkbox" class="f1dma-req-chk" value="TIM1_CH4/TRIG/COM"> TIM1_CH4/TRIG/COM</label>
+            <label class="f1dma-req-item"><input type="checkbox" class="f1dma-req-chk" value="TIM4_CH2"> TIM4_CH2</label>
+            <label class="f1dma-req-item"><input type="checkbox" class="f1dma-req-chk" value="SPI2/I2S2_RX"> SPI2/I2S2_RX</label>
+            <label class="f1dma-req-item"><input type="checkbox" class="f1dma-req-chk" value="I2C2_TX"> I2C2_TX</label>
+          </div>
+          <div class="f1dma-or-gate is-ok" id="f1dma-or-gate">OR 门 → DMA1 Ch4</div>
+        </div>
+        <div class="f1dma-arch-banner is-ok" id="f1dma-or-result" aria-live="polite"></div>
+      </div>
+      <div class="f1dma-arch-card">
+        <div class="aiw-section-title">
+          <span>实验 B：多层 AHB 总线矩阵 (BusMatrix) 并行与带宽兜底</span>
+          <span class="aiw-hint">对比 DMA1 搬运 SRAM → APB2 时 CPU 的访问路径</span>
+        </div>
+        <div class="f1dma-seg-group" role="group" aria-label="选择 CPU 当前总线访问目标">
+          <button type="button" class="f1dma-cpu-btn is-active" aria-pressed="true" data-cpu-target="flash">CPU 访 Flash (ICode / DCode)</button>
+          <button type="button" class="f1dma-cpu-btn" aria-pressed="false" data-cpu-target="sram">CPU 访 SRAM (System 总线)</button>
+          <button type="button" class="f1dma-cpu-btn" aria-pressed="false" data-cpu-target="apb2">CPU 访 APB2 外设 (System → Bridge 2)</button>
+        </div>
+        <div class="f1dma-bus-paths">
+          <div class="f1dma-bus-path" id="f1dma-path-cpu"></div>
+          <div class="f1dma-bus-path" id="f1dma-path-dma"></div>
+        </div>
+        <div class="f1dma-arch-banner is-ok" id="f1dma-bus-banner" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 ## 扩展到其他 STM32 与站内关联
 
 换到其他 STM32 系列或同类 Cortex-M4 MCU 时，请求映射、通道上下文、双总线读写以及末帧等待外设空闲这几层物理关系不变，主要注意三个差异：
