@@ -4,7 +4,7 @@
   const root = document.documentElement;
   const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  const validThemes = ["system", "light", "dark", "swiss", "hud", "mono", "famicom"];
+  const validThemes = ["system", "light", "dark", "swiss", "hud", "mono", "famicom", "radio"];
   const validSkins = ["grid", "matrix", "chassis", "default"];
 
   const labels = {
@@ -15,6 +15,7 @@
     hud: "深空终端",
     mono: "极简单色",
     famicom: "红白机",
+    radio: "老式收音机",
   };
 
   const skinLabels = {
@@ -32,6 +33,7 @@
     hud: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"></path></svg>',
     mono: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"></path></svg>',
     famicom: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M5.5 12h4M7.5 10v4M11 14h2"></path><circle cx="15.8" cy="13" r="0.9" fill="currentColor"></circle><circle cx="18.6" cy="11" r="0.9" fill="currentColor"></circle></svg>',
+    radio: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="13" rx="2"></rect><path d="M7 7l5-4M6 11h5M6 14h5M6 17h5M14 10.5h5"></path><circle cx="16.5" cy="15.5" r="1.75"></circle></svg>',
   };
 
   const skinIcons = {
@@ -48,6 +50,7 @@
     hud: "#040b15",
     mono: "#faf9f6",
     famicom: "#f2ece1",
+    radio: "#18130f",
   };
 
   const pickers = [];
@@ -101,7 +104,7 @@
     root.dataset.themePreference = preference;
     const current = resolvedTheme();
     if (themeColor) {
-      themeColor.content = themeColors[current] || (current === "dark" || current === "hud" ? "#040b15" : "#f8faf7");
+      themeColor.content = themeColors[current] || (current === "dark" || current === "hud" || current === "radio" ? "#040b15" : "#f8faf7");
     }
     updatePickers();
   };
@@ -168,6 +171,9 @@
           </button>
           <button class="theme-option" type="button" role="menuitemradio" data-theme-value="famicom" aria-checked="false">
             ${icons.famicom}<span class="theme-option-label">红白机</span><span class="theme-option-check" aria-hidden="true">✓</span>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" data-theme-value="radio" aria-checked="false">
+            ${icons.radio}<span class="theme-option-label">老式收音机</span><span class="theme-option-check" aria-hidden="true">✓</span>
           </button>
 
           <div class="theme-menu-divider" role="separator"></div>

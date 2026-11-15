@@ -11,7 +11,7 @@
 - **iOS 18 层次与材料**：采用多层半透明磨砂毛玻璃材料（`backdrop-filter: blur(24px) saturate(190%)`）搭配 1px 细微发丝高光边线（Inner Hairline Bevel），呈现通透且纯净的物理纵深。
 - **连续曲率超椭圆（Squircle）**：摒弃生硬的工业直角或廉价圆角，全面使用 Apple 经典的连续曲率超椭圆（容器 20px–28px，按键与状态徽标采用 9999px 极致胶囊 Pill）。
 - **灵动微交互与弹性触感**：全局配备 iOS 弹性弹簧曲线（`--ease-spring: cubic-bezier(0.25, 1, 0.5, 1)`）与物理触感反馈（按压 `scale(0.96)`），拒绝生硬跳变。
-- **主题与皮肤兼容**：在升级 iOS 18 设计底座的同时，完整向下兼容 6 种色彩主题（iOS 18 Light、OLED Dark、Swiss 瑞士网格、HUD 深空终端、Mono 单色、Famicom 红白机浅色）与 4 种硬件皮肤（Default、Grid、Matrix、Chassis）。
+- **主题与皮肤兼容**：在升级 iOS 18 设计底座的同时，完整向下兼容 7 种色彩主题（iOS 18 Light、OLED Dark、Swiss 瑞士网格、HUD 深空终端、Mono 单色、Famicom 红白机浅色、Vintage Radio 老式收音机）与 4 种硬件皮肤（Default、Grid、Matrix、Chassis）。
 
 ---
 
@@ -124,4 +124,4 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
 - [x] **杜绝千篇一律的生硬大圆角**：采用 Apple 标准连续曲率超椭圆（20px–28px）与 9999px 药丸胶囊，严禁随意出现无规律的各种突兀圆角。
 - [x] **杜绝死白与无脑粗黑阴影**：背景使用 `#e3e6f0`（深色模式 `#06080f`），投影采用多层低不透明度漫反射与 1px 细微发丝高光。
 - [x] **杜绝机械生硬动画**：所有交互必须基于 `--ease-spring` 弹簧曲线并配合 `:active` 触感缩放。
-- [x] **无障碍与多主题兼容**：严格保留 `prefers-reduced-motion` 降级、清晰的 `:focus-visible` 焦点环以及所有 6 种预置色彩主题与硬件皮肤。
+- [x] **无障碍与多主题兼容**：严格保留 `prefers-reduced-motion` 降级、清晰的 `:focus-visible` 焦点环以及所有 7 种预置色彩主题与硬件皮肤。

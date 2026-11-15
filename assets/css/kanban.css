@@ -285,3 +285,42 @@
   background: #9f171d;
   box-shadow: 0 3px 0 #7d1116;
 }
+
+:root[data-theme="radio"] .kb-workspace,
+:root[data-theme="radio"] .kb-column,
+:root[data-theme="radio"] .kb-card,
+:root[data-theme="radio"] .kb-dialog {
+  border-radius: 10px;
+}
+
+:root[data-theme="radio"] .kb-dialog::backdrop {
+  background: rgba(16, 12, 9, 0.65);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="radio"] .kb-btn,
+:root[data-theme="radio"] .kb-app input,
+:root[data-theme="radio"] .kb-app select,
+:root[data-theme="radio"] .kb-app textarea,
+:root[data-theme="radio"] .kb-count,
+:root[data-theme="radio"] .kb-priority-label,
+:root[data-theme="radio"] .kb-tag {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .kb-app input:focus,
+:root[data-theme="radio"] .kb-app select:focus,
+:root[data-theme="radio"] .kb-app textarea:focus {
+  box-shadow: 0 0 0 3px var(--soft);
+}
+
+:root[data-theme="radio"] .kb-primary {
+  border-color: #f5c67e;
+  box-shadow: 0 2px 0 #70430b;
+}
+
+:root[data-theme="radio"] .kb-primary:hover {
+  background: var(--accent-dark);
+  box-shadow: 0 3px 0 #70430b;
+}

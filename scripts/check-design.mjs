@@ -26,7 +26,7 @@ const page = await browser.newPage({ reducedMotion: 'reduce' });
 page.on('pageerror', error => errors.push(error.message));
 try {
   const paths = ['/', '/articles/index.html', '/articles/n32g455-lcd-strip-rendering.html', '/projects/index.html', '/tools/index.html', '/projects/ai-asmr/index.html'];
-  for (const theme of ['light', 'dark', 'famicom']) {
+  for (const theme of ['light', 'dark', 'famicom', 'radio']) {
     await page.goto(base);
     await page.evaluate(theme => localStorage.setItem('single5240-theme', theme), theme);
     for (const width of [360, 390, 768, 1440]) {

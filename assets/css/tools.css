@@ -870,3 +870,41 @@
   opacity: 1;
   box-shadow: 0 3px 0 #7d1116;
 }
+
+:root[data-theme="radio"] .kb-tool-entry,
+:root[data-theme="radio"] .tools-nav,
+:root[data-theme="radio"] .tool-card,
+:root[data-theme="radio"] .tools-panel,
+:root[data-theme="radio"] .bit-cell {
+  border-radius: 10px;
+}
+
+:root[data-theme="radio"] .tools-tab-btn,
+:root[data-theme="radio"] .tool-btn,
+:root[data-theme="radio"] .tool-input,
+:root[data-theme="radio"] .tool-select,
+:root[data-theme="radio"] .tool-textarea {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .tools-tab-btn[aria-current="location"] {
+  background: var(--subtle-bg);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="radio"] .tool-input:focus,
+:root[data-theme="radio"] .tool-select:focus,
+:root[data-theme="radio"] .tool-textarea:focus {
+  box-shadow: 0 0 0 3px var(--soft);
+}
+
+:root[data-theme="radio"] .tool-btn.primary {
+  border-color: #f5c67e;
+  box-shadow: 0 2px 0 #70430b;
+}
+
+:root[data-theme="radio"] .tool-btn.primary:hover {
+  background: var(--accent-dark);
+  opacity: 1;
+  box-shadow: 0 3px 0 #70430b;
+}

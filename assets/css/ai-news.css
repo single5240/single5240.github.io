@@ -50,7 +50,8 @@
   --warn-bg: rgba(241, 166, 90, 0.12);
 }
 
-:root[data-theme="hud"] {
+:root[data-theme="hud"],
+:root[data-theme="radio"] {
   --bg: transparent;
   --paper: var(--panel);
   --head-bg: var(--paper);

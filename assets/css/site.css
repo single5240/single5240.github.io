@@ -2319,3 +2319,212 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   border-radius: 4px;
   box-shadow: none;
 }
+
+/* ==========================================================================
+   老式电子管收音机风格外壳与组件调校 (Vintage Tube Radio Overrides)
+   ========================================================================== */
+:root[data-theme="radio"] .site-header {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="radio"] .theme-menu,
+:root[data-theme="radio"] .robot-speech,
+:root[data-theme="radio"] .button:not(.primary),
+:root[data-theme="radio"] .system-status,
+:root[data-theme="radio"] .search-link,
+:root[data-theme="radio"] .scope-pause {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="radio"] .ios-specular {
+  display: none;
+}
+
+:root[data-theme="radio"] .brand-mark {
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ebb05a 0%, #c97d22 100%);
+  color: #18130f;
+  border: 1px solid rgba(255, 224, 170, 0.45);
+  box-shadow: 0 2px 0 #6e420b, 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-theme="radio"] .brand-mark span {
+  color: #18130f;
+  opacity: 0.78;
+}
+
+:root[data-theme="radio"] .brand:hover .brand-mark {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 #6e420b, 0 6px 14px rgba(224, 147, 54, 0.25);
+}
+
+:root[data-theme="radio"] .nav-links {
+  background: var(--alt-bg);
+  border-radius: 8px;
+  border-color: var(--glass-edge);
+}
+
+:root[data-theme="radio"] .nav-links a,
+:root[data-theme="radio"] .nav-pill-glider {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .nav-pill-glider {
+  background: var(--subtle-bg);
+  border: 1px solid rgba(224, 147, 54, 0.28);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="radio"] .nav-links a[aria-current="page"] {
+  background: var(--subtle-bg);
+  color: var(--accent-dark);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme="radio"] .nav-links.has-glider a[aria-current="page"],
+:root[data-theme="radio"] .nav-links.has-glider a:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="radio"] .search-link {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .workbench-console,
+:root[data-theme="radio"] .project-mini-card,
+:root[data-theme="radio"] .project-feature,
+:root[data-theme="radio"] .deck-articles-list,
+:root[data-theme="radio"] .aside-card,
+:root[data-theme="radio"] .archive-tools,
+:root[data-theme="radio"] .section-articles .archive-tools,
+:root[data-theme="radio"] .daily-grid > div:first-child,
+:root[data-theme="radio"] .daily-links a,
+:root[data-theme="radio"] .daily-archive-grid section,
+:root[data-theme="radio"] .study,
+:root[data-theme="radio"] .prose,
+:root[data-theme="radio"] .skills-arch-card,
+:root[data-theme="radio"] .explore-links a,
+:root[data-theme="radio"] .about-guestbook {
+  border-radius: 10px;
+}
+
+:root[data-theme="radio"] .workbench-console::before {
+  height: 3.5px;
+  opacity: 0.95;
+  background: linear-gradient(90deg, #a66316 0%, #e09336 38%, #d96443 38.4%, #d96443 39.8%, #e09336 40.2%, #5db075 100%);
+}
+
+:root[data-theme="radio"] .workbench-header,
+:root[data-theme="radio"] .workbench-channel-bar {
+  background: #1a1410;
+}
+
+:root[data-theme="radio"] .text-gradient {
+  background: linear-gradient(135deg, #f5c06f 0%, #e09336 58%, #d96443 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="radio"] .workbench-hud-grid,
+:root[data-theme="radio"] .scope-bay-frame,
+:root[data-theme="radio"] .scope-bay-body,
+:root[data-theme="radio"] .project-visual,
+:root[data-theme="radio"] .feed-item,
+:root[data-theme="radio"] .aside-tools-list a,
+:root[data-theme="radio"] .article-item,
+:root[data-theme="radio"] .skills-code-block,
+:root[data-theme="radio"] .private-message-form input,
+:root[data-theme="radio"] .private-message-form textarea {
+  border-radius: 8px;
+}
+
+:root[data-theme="radio"] .button,
+:root[data-theme="radio"] .load-more-btn,
+:root[data-theme="radio"] .home-topic-links a,
+:root[data-theme="radio"] .filter-list button,
+:root[data-theme="radio"] .scope-pause,
+:root[data-theme="radio"] .project-mini-cta,
+:root[data-theme="radio"] .private-message-form .submit-btn,
+:root[data-theme="radio"] .skills-code-btn {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .workbench-status-badge,
+:root[data-theme="radio"] .workbench-eyebrow,
+:root[data-theme="radio"] .workbench-meta-tags .chip,
+:root[data-theme="radio"] .aside-badge,
+:root[data-theme="radio"] .item-tags span,
+:root[data-theme="radio"] .project-mini-chip,
+:root[data-theme="radio"] .home-topic-links span:not(.topic-dot) {
+  border-radius: 4px;
+}
+
+:root[data-theme="radio"] .status-pulse-dot,
+:root[data-theme="radio"] .dot-live {
+  background: #66d189;
+  box-shadow: 0 0 6px rgba(102, 209, 137, 0.55);
+}
+
+:root[data-theme="radio"] .project-mini-chip {
+  background: rgba(20, 16, 12, 0.88);
+  color: #f3e7cf;
+  border-color: rgba(224, 147, 54, 0.35);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="radio"] .item-arrow,
+:root[data-theme="radio"] .project-mini-arrow {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .article-item:hover .item-arrow,
+:root[data-theme="radio"] .project-mini-card:hover .project-mini-arrow,
+:root[data-theme="radio"] .project-mini-card:hover .project-mini-cta {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+:root[data-theme="radio"] .article-item:hover .item-tags span {
+  border-color: var(--raised-border);
+}
+
+:root[data-theme="radio"] .button.primary,
+:root[data-theme="radio"] .private-message-form .submit-btn {
+  background: linear-gradient(180deg, #ebb05a 0%, #cc7e22 100%);
+  border: 1px solid #f5c67e;
+  color: var(--on-accent);
+  box-shadow: 0 2px 0 #70430b, 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="radio"] .button.primary:hover,
+:root[data-theme="radio"] .private-message-form .submit-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #f3be6d 0%, #d88a2b 100%);
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 #70430b, 0 6px 14px rgba(224, 147, 54, 0.25);
+}
+
+:root[data-theme="radio"] .button.primary:active,
+:root[data-theme="radio"] .button.primary.is-pressing,
+:root[data-theme="radio"] .private-message-form .submit-btn:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: 0 0 0 #70430b;
+}
+
+:root[data-theme="radio"] .private-message-form input,
+:root[data-theme="radio"] .private-message-form textarea {
+  background: var(--alt-bg);
+  border-color: var(--glass-edge);
+}
+
+:root[data-theme="radio"] .search-input-wrap {
+  background: var(--alt-bg);
+  border-color: var(--glass-edge);
+  border-radius: 6px;
+  box-shadow: none;
+}

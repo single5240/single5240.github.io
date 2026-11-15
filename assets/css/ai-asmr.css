@@ -213,6 +213,10 @@
   background: radial-gradient(circle at 50% 40%, #f5f0e6 0%, #e5dccb 100%);
 }
 
+:root[data-theme="radio"] .stage-viewport {
+  background: radial-gradient(circle at 50% 42%, #241c15 0%, #100c09 100%);
+}
+
 :root[data-theme="light"] .stage-viewport.mode-radar,
 :root[data-theme="swiss"] .stage-viewport.mode-radar,
 :root[data-theme="mono"] .stage-viewport.mode-radar,
@@ -236,6 +240,16 @@
 :root[data-theme="famicom"] .badge-item,
 :root[data-theme="famicom"] .mode-btn {
   border-radius: 4px;
+}
+
+:root[data-theme="radio"] .asmr-stage-card,
+:root[data-theme="radio"] .cat-tab-btn {
+  border-radius: 10px;
+}
+
+:root[data-theme="radio"] .badge-item,
+:root[data-theme="radio"] .mode-btn {
+  border-radius: 6px;
 }
 
 @media (prefers-color-scheme: light) {

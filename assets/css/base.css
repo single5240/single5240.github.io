@@ -443,6 +443,67 @@ html {
   --spectrum-shadow: 0 1px 0 rgba(42, 35, 31, 0.16);
 }
 
+/* 老式电子管收音机风格 (Vintage Tube Radio — 胡桃木电木机身 + 暖琥珀刻度盘 + 6E2 猫眼绿灯) */
+:root[data-theme="radio"] {
+  color-scheme: dark;
+  --ink: #f3e7cf;
+  --muted: #a8967a;
+  --line: rgba(243, 231, 207, 0.13);
+  --paper: #18130f;
+  --panel: #2a221b;
+  --accent: #e09336;
+  --accent-dark: #f2ae52;
+  --warm: #d96443;
+  --soft: rgba(224, 147, 54, 0.14);
+  --deep: #100c09;
+  --header-bg: #18130f;
+  --header-line: rgba(224, 147, 54, 0.22);
+  --raised-bg: #221b15;
+  --popover-bg: #241d17;
+  --speech-bg: #241d17;
+  --speech-border: rgba(224, 147, 54, 0.34);
+  --glass: none;
+  --glass-edge: rgba(224, 147, 54, 0.24);
+  --raised-border: rgba(224, 147, 54, 0.36);
+  --alt-bg: #14100c;
+  --subtle-bg: #332921;
+  --body-copy: #dfd0b4;
+  --content-copy: #eadcc1;
+  --tag-ink: #d3c2a3;
+  --code-bg: #120e0b;
+  --code-ink: #ede0c7;
+  --inline-code: #f2ae52;
+  --contact-copy: #a8967a;
+  --note: #e57355;
+  --on-accent: #18130f;
+  --panel-bevel: inset 0 1px 0 rgba(255, 224, 170, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  --shadow: 0 2px 0 rgba(0, 0, 0, 0.55), 0 8px 20px rgba(0, 0, 0, 0.42);
+  --shadow-small: 0 2px 0 rgba(0, 0, 0, 0.45), 0 3px 8px rgba(0, 0, 0, 0.32);
+  --shadow-heavy: 0 4px 0 rgba(0, 0, 0, 0.6), 0 18px 36px rgba(0, 0, 0, 0.65);
+  --shadow-hover: 0 2px 0 rgba(224, 147, 54, 0.3), 0 10px 24px rgba(0, 0, 0, 0.55);
+  --focus-ring: #f2ae52;
+  --topic-mcu-1: #e09336;
+  --topic-mcu-2: #a66316;
+  --topic-mcu-accent: #f2ae52;
+  --topic-linux-1: #d96443;
+  --topic-linux-2: #993c22;
+  --topic-linux-accent: #e57355;
+  --topic-qt-1: #5db075;
+  --topic-qt-2: #357348;
+  --topic-qt-accent: #66d189;
+  --topic-industrial-1: #c97b63;
+  --topic-industrial-2: #8a4733;
+  --topic-industrial-accent: #d98d76;
+  --topic-devops-1: #6897bb;
+  --topic-devops-2: #3e6380;
+  --topic-devops-accent: #82b2d6;
+  --topic-design-1: #c48fb4;
+  --topic-design-2: #825575;
+  --topic-design-accent: #d8a7c9;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 224, 170, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  --spectrum-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+
 .motion-reveal {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale(0.978);
@@ -642,7 +703,7 @@ body {
   right: 0;
   z-index: 100;
   width: 236px;
-  max-height: min(620px, calc(100vh - 96px));
+  max-height: min(660px, calc(100vh - 96px));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px;
@@ -1106,7 +1167,8 @@ time {
 }
 
 :root[data-theme="dark"] .retro-robot-svg,
-:root[data-theme="hud"] .retro-robot-svg {
+:root[data-theme="hud"] .retro-robot-svg,
+:root[data-theme="radio"] .retro-robot-svg {
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.48));
 }
 
@@ -1179,13 +1241,17 @@ time {
   fill: var(--accent-dark);
 }
 
-:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]) .robot-eye,
+:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]) .robot-eye,
 :root[data-theme="light"] .robot-eye {
   fill: #80c7a7;
 }
 
 :root[data-theme="famicom"] .robot-eye {
   fill: #e34a42;
+}
+
+:root[data-theme="radio"] .robot-eye {
+  fill: #66d189;
 }
 
 .robot-eye-glint {
@@ -1539,6 +1605,11 @@ time {
   box-shadow: none;
 }
 
+:root[data-theme="radio"] .reading-progress {
+  background: linear-gradient(90deg, #e09336 0%, #f2ae52 72%, #66d189 100%);
+  box-shadow: 0 1px 6px rgba(224, 147, 54, 0.35);
+}
+
 /* ==========================================================================
    特种底纹与复古电子硬件质感系统（Retro Electronics Skins）
    方案 A: 工程坐标网格 (grid)
@@ -1597,6 +1668,13 @@ time {
 
 :root[data-theme="famicom"] .site-ambience {
   background-image: none;
+  opacity: 1;
+}
+
+:root[data-theme="radio"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(224, 147, 54, 0.09) 0%, transparent 58%),
+    radial-gradient(circle at 82% 85%, rgba(102, 209, 137, 0.04) 0%, transparent 45%);
   opacity: 1;
 }
 
@@ -1687,6 +1765,17 @@ time {
   opacity: 0.85;
 }
 
+:root[data-skin="grid"][data-theme="radio"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(224, 147, 54, 0.08) 0%, transparent 56%),
+    linear-gradient(rgba(224, 147, 54, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 147, 54, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(243, 231, 207, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(243, 231, 207, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.92;
+}
+
 /* --------------------------------------------------------------------------
    方案 B: 洞洞板 / 覆铜板打孔焊接阵列 (matrix)
    -------------------------------------------------------------------------- */
@@ -1725,6 +1814,13 @@ time {
     radial-gradient(circle at 11px 11px, #f2ece1 1.2px, rgba(42, 35, 31, 0.14) 2.2px, transparent 3.2px);
   background-size: 22px 22px;
   opacity: 0.88;
+}
+
+:root[data-skin="matrix"][data-theme="radio"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #18130f 1.2px, rgba(224, 147, 54, 0.22) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.9;
 }
 
 /* --------------------------------------------------------------------------
@@ -1777,6 +1873,16 @@ time {
     linear-gradient(90deg, rgba(42, 35, 31, 0.045) 1px, transparent 1px);
   background-size: 100% 4px, 24px 24px, 24px 24px;
   opacity: 0.9;
+}
+
+:root[data-skin="chassis"][data-theme="radio"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(224, 147, 54, 0.1) 0%, transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.24) 0px, rgba(0, 0, 0, 0.24) 1.5px, transparent 1.5px, transparent 4px),
+    linear-gradient(rgba(224, 147, 54, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224, 147, 54, 0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 4px, 28px 28px, 28px 28px;
+  opacity: 0.95;
 }
 
 /* 方案 C 细节: 面板卡片四角机械定位十字刻度标 */
@@ -1901,6 +2007,12 @@ time {
   border-radius: 2px;
 }
 
+:root[data-theme="radio"] .status-pulse {
+  background: #66d189;
+  box-shadow: 0 0 6px rgba(102, 209, 137, 0.5);
+  animation-name: pulse-glow;
+}
+
 @keyframes pulse-glow-swiss {
   0% {
     transform: scale(0.95);
@@ -1969,7 +2081,8 @@ time {
   :root[data-theme="swiss"],
   :root[data-theme="hud"],
   :root[data-theme="mono"],
-  :root[data-theme="famicom"] {
+  :root[data-theme="famicom"],
+  :root[data-theme="radio"] {
     --glass: none;
   }
   :root,
@@ -1981,6 +2094,10 @@ time {
   :root[data-theme="famicom"] {
     --raised-bg: #faf7f0;
     --speech-bg: #faf7f0;
+  }
+  :root[data-theme="radio"] {
+    --raised-bg: #221b15;
+    --speech-bg: #241d17;
   }
   :root[data-theme="dark"] {
     --raised-bg: rgba(24, 35, 41, 0.98);
@@ -2040,4 +2157,50 @@ time {
 
 :root[data-theme="famicom"] .spectrum-item {
   border-radius: 2px;
+}
+
+/* ==========================================================================
+   老式收音机风格结构覆盖 (Vintage Tube Radio Cabinet & Dial Geometry)
+   ========================================================================== */
+:root[data-theme="radio"] .theme-menu,
+:root[data-theme="radio"] .scope-channel,
+:root[data-theme="radio"] .article-robot-card,
+:root[data-theme="radio"] .robot-dock.is-docked-float,
+:root[data-theme="radio"] .back-to-top,
+:root[data-theme="radio"] .robot-speech {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:root[data-theme="radio"] .theme-menu {
+  border-radius: 10px;
+  border-color: var(--glass-edge);
+  box-shadow: var(--shadow-heavy);
+}
+
+:root[data-theme="radio"] .theme-toggle,
+:root[data-theme="radio"] .theme-option,
+:root[data-theme="radio"] .system-status,
+:root[data-theme="radio"] .scope-channel {
+  border-radius: 6px;
+}
+
+:root[data-theme="radio"] .article-robot-card,
+:root[data-theme="radio"] .robot-dock.is-docked-float {
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="radio"] .back-to-top {
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="radio"] .robot-speech {
+  border-radius: 8px;
+  box-shadow: var(--shadow-small);
+}
+
+:root[data-theme="radio"] .spectrum-item {
+  border-radius: 3px;
 }

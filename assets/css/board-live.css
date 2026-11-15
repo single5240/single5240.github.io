@@ -196,3 +196,7 @@
 :root[data-theme="famicom"] .board-card {
   border-radius: 6px;
 }
+
+:root[data-theme="radio"] .board-card {
+  border-radius: 10px;
+}

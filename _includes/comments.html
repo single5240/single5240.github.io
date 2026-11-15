@@ -13,7 +13,7 @@
       el: '#waline',
       serverURL: '{{ site.waline.server_url }}',
       path: window.location.pathname,
-      dark: 'html[data-theme="dark"], html[data-theme="hud"]',
+      dark: 'html[data-theme="dark"], html[data-theme="hud"], html[data-theme="radio"]',
       search: false,
       {% if site.waline.emoji %}
       emoji: {{ site.waline.emoji | jsonify }},
@@ -26,7 +26,7 @@
     const observer = new MutationObserver(() => {
       if (walineInstance && typeof walineInstance.update === 'function') {
         walineInstance.update({
-          dark: 'html[data-theme="dark"], html[data-theme="hud"]'
+          dark: 'html[data-theme="dark"], html[data-theme="hud"], html[data-theme="radio"]'
         });
       }
     });
