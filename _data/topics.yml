@@ -4,6 +4,7 @@
   color: "#1ba3b0"
   color_end: "#0f7b88"
   articles:
+    - mcu-dma-transfer-mechanism-stm32f1
     - lithium-battery-charger-ic-guide
     - battery-management-portable-design
     - nor-flash-powerfail-record-store
