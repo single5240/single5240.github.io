@@ -204,3 +204,7 @@
 :root[data-theme="win7"] .board-card {
   border-radius: 8px;
 }
+
+:root[data-theme="win11"] .board-card {
+  border-radius: 8px;
+}

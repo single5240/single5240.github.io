@@ -358,3 +358,45 @@
   background: linear-gradient(180deg, #2b7dd4 0%, #1e6dc4 48%, #145aab 50%, #1e71ca 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 0 2px rgba(60, 145, 230, 0.25);
 }
+
+:root[data-theme="win11"] .kb-workspace,
+:root[data-theme="win11"] .kb-column,
+:root[data-theme="win11"] .kb-card,
+:root[data-theme="win11"] .kb-dialog {
+  border-radius: 8px;
+}
+
+:root[data-theme="win11"] .kb-btn,
+:root[data-theme="win11"] .kb-app input,
+:root[data-theme="win11"] .kb-app select,
+:root[data-theme="win11"] .kb-app textarea,
+:root[data-theme="win11"] .kb-count,
+:root[data-theme="win11"] .kb-priority-label,
+:root[data-theme="win11"] .kb-tag {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .kb-app input,
+:root[data-theme="win11"] .kb-app select,
+:root[data-theme="win11"] .kb-app textarea {
+  border-bottom-color: rgba(15, 23, 42, 0.32);
+}
+
+:root[data-theme="win11"] .kb-app input:focus,
+:root[data-theme="win11"] .kb-app select:focus,
+:root[data-theme="win11"] .kb-app textarea:focus {
+  border-bottom-color: var(--accent);
+  box-shadow: 0 1px 0 0 var(--accent);
+}
+
+:root[data-theme="win11"] .kb-primary {
+  background: #0067c0;
+  border-color: #0057a3;
+  border-bottom-color: #004582;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 3px rgba(0, 103, 192, 0.22);
+}
+
+:root[data-theme="win11"] .kb-primary:hover {
+  background: #005fb3;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 8px rgba(0, 103, 192, 0.28);
+}

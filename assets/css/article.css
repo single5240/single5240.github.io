@@ -1305,3 +1305,41 @@
 :root[data-theme="win7"] .content code {
   border-radius: 5px;
 }
+
+:root[data-theme="win11"] .article-header,
+:root[data-theme="win11"] .reading-main,
+:root[data-theme="win11"] .toc,
+:root[data-theme="win11"] .article-navigation a {
+  border-radius: 8px;
+}
+
+:root[data-theme="win11"] .code-block,
+:root[data-theme="win11"] .content blockquote,
+:root[data-theme="win11"] .content img,
+:root[data-theme="win11"] .content .table-scroll {
+  border-radius: 6px;
+}
+
+:root[data-theme="win11"] .code-toolbar {
+  background: #232833;
+  color: #dce3ee;
+  border-radius: 6px 6px 0 0;
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+}
+
+:root[data-theme="win11"] .code-block.is-collapsed .code-toolbar {
+  border-radius: 6px;
+}
+
+:root[data-theme="win11"] .content pre {
+  border-radius: 0 0 6px 6px;
+}
+
+:root[data-theme="win11"] .article-meta a,
+:root[data-theme="win11"] .back,
+:root[data-theme="win11"] .toc a,
+:root[data-theme="win11"] .copy-code,
+:root[data-theme="win11"] .code-toggle,
+:root[data-theme="win11"] .content code {
+  border-radius: 4px;
+}

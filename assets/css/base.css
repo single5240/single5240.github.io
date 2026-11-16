@@ -565,6 +565,67 @@ html {
   --spectrum-shadow: 0 1px 3px rgba(17, 45, 76, 0.14);
 }
 
+/* Windows 11 Fluent 风格 (Windows 11 Mica Light — 云母浅灰层 + 0067C0 现代蓝 + 4px/8px Fluent 圆角) */
+:root[data-theme="win11"] {
+  color-scheme: light;
+  --ink: #1a1d24;
+  --muted: #5b6270;
+  --line: rgba(15, 23, 42, 0.085);
+  --paper: #eff4f9;
+  --panel: rgba(255, 255, 255, 0.84);
+  --accent: #0067c0;
+  --accent-dark: #004e96;
+  --warm: #9d5d00;
+  --soft: rgba(0, 103, 192, 0.095);
+  --deep: #1b1f27;
+  --header-bg: rgba(243, 246, 251, 0.82);
+  --header-line: rgba(15, 23, 42, 0.09);
+  --raised-bg: rgba(255, 255, 255, 0.92);
+  --popover-bg: rgba(252, 253, 255, 0.97);
+  --speech-bg: rgba(255, 255, 255, 0.94);
+  --speech-border: rgba(15, 23, 42, 0.12);
+  --glass: blur(22px) saturate(140%);
+  --glass-edge: rgba(15, 23, 42, 0.11);
+  --raised-border: rgba(0, 103, 192, 0.28);
+  --alt-bg: #e5ebf3;
+  --subtle-bg: #f6f8fb;
+  --body-copy: #2c313b;
+  --content-copy: #1f232b;
+  --tag-ink: #3c424f;
+  --code-bg: #1b1f27;
+  --code-ink: #eef2f8;
+  --inline-code: #005fb8;
+  --contact-copy: #5b6270;
+  --note: #9d5d00;
+  --on-accent: #ffffff;
+  --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --shadow: 0 2px 6px rgba(15, 23, 42, 0.045), 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+  --shadow-small: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-heavy: 0 16px 40px -8px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 0 0 1px rgba(0, 103, 192, 0.24), 0 8px 24px -4px rgba(0, 103, 192, 0.12);
+  --focus-ring: #0067c0;
+  --topic-mcu-1: #0067c0;
+  --topic-mcu-2: #004e96;
+  --topic-mcu-accent: #0067c0;
+  --topic-linux-1: #c56a00;
+  --topic-linux-2: #8f4b00;
+  --topic-linux-accent: #9d5d00;
+  --topic-qt-1: #107c41;
+  --topic-qt-2: #0a572d;
+  --topic-qt-accent: #107c41;
+  --topic-industrial-1: #c42b1c;
+  --topic-industrial-2: #8e1e13;
+  --topic-industrial-accent: #c42b1c;
+  --topic-devops-1: #5c5fc7;
+  --topic-devops-2: #3d4099;
+  --topic-devops-accent: #4f52b2;
+  --topic-design-1: #00788c;
+  --topic-design-2: #005463;
+  --topic-design-accent: #00788c;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  --spectrum-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
 .motion-reveal {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale(0.978);
@@ -764,7 +825,7 @@ body {
   right: 0;
   z-index: 100;
   width: 236px;
-  max-height: min(660px, calc(100vh - 96px));
+  max-height: min(760px, calc(100vh - 80px));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px;
@@ -1302,7 +1363,7 @@ time {
   fill: var(--accent-dark);
 }
 
-:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]):not([data-theme="win7"]) .robot-eye,
+:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]):not([data-theme="win7"]):not([data-theme="win11"]) .robot-eye,
 :root[data-theme="light"] .robot-eye {
   fill: #80c7a7;
 }
@@ -1317,6 +1378,10 @@ time {
 
 :root[data-theme="win7"] .robot-eye {
   fill: #47b8ff;
+}
+
+:root[data-theme="win11"] .robot-eye {
+  fill: #60cdff;
 }
 
 .robot-eye-glint {
@@ -1680,6 +1745,11 @@ time {
   box-shadow: 0 1px 6px rgba(34, 177, 76, 0.4);
 }
 
+:root[data-theme="win11"] .reading-progress {
+  background: linear-gradient(90deg, #0067c0 0%, #2899f5 100%);
+  box-shadow: 0 1px 4px rgba(0, 103, 192, 0.25);
+}
+
 /* ==========================================================================
    特种底纹与复古电子硬件质感系统（Retro Electronics Skins）
    方案 A: 工程坐标网格 (grid)
@@ -1754,6 +1824,14 @@ time {
     radial-gradient(circle at 76% 24%, rgba(56, 152, 236, 0.28) 0%, transparent 48%),
     radial-gradient(circle at 26% 80%, rgba(44, 176, 156, 0.18) 0%, transparent 48%),
     radial-gradient(circle at 82% 84%, rgba(114, 198, 255, 0.24) 0%, transparent 46%);
+  opacity: 1;
+}
+
+:root[data-theme="win11"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 68% 22%, rgba(0, 120, 212, 0.14) 0%, transparent 46%),
+    radial-gradient(circle at 36% 68%, rgba(96, 205, 255, 0.16) 0%, transparent 48%),
+    radial-gradient(circle at 82% 78%, rgba(135, 100, 184, 0.08) 0%, transparent 44%);
   opacity: 1;
 }
 
@@ -1868,6 +1946,18 @@ time {
   opacity: 0.96;
 }
 
+:root[data-skin="grid"][data-theme="win11"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 68% 22%, rgba(0, 120, 212, 0.12) 0%, transparent 46%),
+    radial-gradient(circle at 36% 68%, rgba(96, 205, 255, 0.14) 0%, transparent 48%),
+    linear-gradient(rgba(0, 103, 192, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 103, 192, 0.045) 1px, transparent 1px),
+    linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.92;
+}
+
 /* --------------------------------------------------------------------------
    方案 B: 洞洞板 / 覆铜板打孔焊接阵列 (matrix)
    -------------------------------------------------------------------------- */
@@ -1920,6 +2010,13 @@ time {
     radial-gradient(circle at 11px 11px, #d6e7f5 1.2px, rgba(27, 110, 194, 0.2) 2.2px, transparent 3.2px);
   background-size: 22px 22px;
   opacity: 0.9;
+}
+
+:root[data-skin="matrix"][data-theme="win11"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #eff4f9 1.2px, rgba(0, 103, 192, 0.14) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.88;
 }
 
 /* --------------------------------------------------------------------------
@@ -1992,6 +2089,16 @@ time {
     linear-gradient(90deg, rgba(27, 110, 194, 0.075) 1px, transparent 1px);
   background-size: 100% 100%, 100% 4px, 24px 24px, 24px 24px;
   opacity: 0.94;
+}
+
+:root[data-skin="chassis"][data-theme="win11"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 68% 22%, rgba(0, 120, 212, 0.1) 0%, transparent 50%),
+    repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.02) 0px, rgba(15, 23, 42, 0.02) 1px, transparent 1px, transparent 4px),
+    linear-gradient(rgba(0, 103, 192, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 103, 192, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 4px, 24px 24px, 24px 24px;
+  opacity: 0.92;
 }
 
 /* 方案 C 细节: 面板卡片四角机械定位十字刻度标 */
@@ -2192,7 +2299,8 @@ time {
   :root[data-theme="mono"],
   :root[data-theme="famicom"],
   :root[data-theme="radio"],
-  :root[data-theme="win7"] {
+  :root[data-theme="win7"],
+  :root[data-theme="win11"] {
     --glass: none;
   }
   :root,
@@ -2206,6 +2314,12 @@ time {
     --header-bg: rgba(214, 232, 248, 0.98);
     --raised-bg: #f6faff;
     --speech-bg: #f6faff;
+  }
+  :root[data-theme="win11"] {
+    --panel: #ffffff;
+    --header-bg: #f3f6fb;
+    --raised-bg: #ffffff;
+    --speech-bg: #ffffff;
   }
   :root[data-theme="famicom"] {
     --raised-bg: #faf7f0;
@@ -2351,4 +2465,36 @@ time {
 
 :root[data-theme="win7"] .spectrum-item {
   border-radius: 3px;
+}
+
+/* ==========================================================================
+   Windows 11 Fluent 风格结构覆盖 (Windows 11 Mica Surface & 4px/8px Radii)
+   ========================================================================== */
+:root[data-theme="win11"] .theme-menu {
+  border-radius: 8px;
+  border-color: var(--glass-edge);
+  box-shadow: var(--shadow-heavy);
+}
+
+:root[data-theme="win11"] .theme-toggle,
+:root[data-theme="win11"] .theme-option,
+:root[data-theme="win11"] .system-status,
+:root[data-theme="win11"] .scope-channel {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .article-robot-card,
+:root[data-theme="win11"] .robot-dock.is-docked-float,
+:root[data-theme="win11"] .back-to-top {
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="win11"] .robot-speech {
+  border-radius: 8px;
+  box-shadow: var(--shadow-small);
+}
+
+:root[data-theme="win11"] .spectrum-item {
+  border-radius: 4px;
 }

@@ -3325,6 +3325,10 @@
   border-radius: 8px;
 }
 
+:root[data-theme="win11"] .article-interactive-widget {
+  border-radius: 8px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .strip-scan-line,
   .strip-prog-cell,

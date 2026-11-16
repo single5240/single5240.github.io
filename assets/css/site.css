@@ -2729,3 +2729,213 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   border-radius: 5px;
   box-shadow: inset 0 1px 2px rgba(17, 45, 76, 0.08);
 }
+
+/* ==========================================================================
+   Windows 11 Fluent 风格外壳与组件调校 (Windows 11 Fluent Mica Overrides)
+   ========================================================================== */
+:root[data-theme="win11"] .site-header {
+  box-shadow: 0 1px 0 var(--header-line), 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+:root[data-theme="win11"] .ios-specular {
+  display: none;
+}
+
+:root[data-theme="win11"] .brand-mark {
+  border-radius: 6px;
+  background: linear-gradient(135deg, #0078d4 0%, #005fb8 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 2px 6px rgba(0, 103, 192, 0.24);
+}
+
+:root[data-theme="win11"] .brand-mark span {
+  color: #ffffff;
+  opacity: 0.92;
+}
+
+:root[data-theme="win11"] .brand:hover .brand-mark {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 103, 192, 0.28);
+}
+
+:root[data-theme="win11"] .nav-links {
+  background: rgba(255, 255, 255, 0.52);
+  border-radius: 6px;
+  border-color: var(--glass-edge);
+}
+
+:root[data-theme="win11"] .nav-links a,
+:root[data-theme="win11"] .nav-pill-glider {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .nav-pill-glider {
+  background: #ffffff;
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 -2px 0 var(--accent), 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+:root[data-theme="win11"] .nav-links a[aria-current="page"] {
+  background: #ffffff;
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+:root[data-theme="win11"] .nav-links.has-glider a[aria-current="page"],
+:root[data-theme="win11"] .nav-links.has-glider a:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="win11"] .search-link {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .workbench-console,
+:root[data-theme="win11"] .project-mini-card,
+:root[data-theme="win11"] .project-feature,
+:root[data-theme="win11"] .deck-articles-list,
+:root[data-theme="win11"] .aside-card,
+:root[data-theme="win11"] .archive-tools,
+:root[data-theme="win11"] .section-articles .archive-tools,
+:root[data-theme="win11"] .daily-grid > div:first-child,
+:root[data-theme="win11"] .daily-links a,
+:root[data-theme="win11"] .daily-archive-grid section,
+:root[data-theme="win11"] .study,
+:root[data-theme="win11"] .prose,
+:root[data-theme="win11"] .skills-arch-card,
+:root[data-theme="win11"] .explore-links a,
+:root[data-theme="win11"] .about-guestbook {
+  border-radius: 8px;
+}
+
+:root[data-theme="win11"] .workbench-console::before {
+  height: 3px;
+  opacity: 0.96;
+  background: linear-gradient(90deg, #0067c0 0%, #2794e6 55%, #0099bc 100%);
+}
+
+:root[data-theme="win11"] .workbench-header,
+:root[data-theme="win11"] .workbench-channel-bar {
+  background: rgba(246, 248, 252, 0.9);
+}
+
+:root[data-theme="win11"] .text-gradient {
+  background: linear-gradient(135deg, #004e96 0%, #0067c0 55%, #00788c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="win11"] .workbench-hud-grid,
+:root[data-theme="win11"] .scope-bay-frame,
+:root[data-theme="win11"] .scope-bay-body,
+:root[data-theme="win11"] .project-visual,
+:root[data-theme="win11"] .feed-item,
+:root[data-theme="win11"] .aside-tools-list a,
+:root[data-theme="win11"] .article-item,
+:root[data-theme="win11"] .skills-code-block {
+  border-radius: 6px;
+}
+
+:root[data-theme="win11"] .button,
+:root[data-theme="win11"] .load-more-btn,
+:root[data-theme="win11"] .home-topic-links a,
+:root[data-theme="win11"] .filter-list button,
+:root[data-theme="win11"] .scope-pause,
+:root[data-theme="win11"] .project-mini-cta,
+:root[data-theme="win11"] .private-message-form .submit-btn,
+:root[data-theme="win11"] .skills-code-btn {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .button:not(.primary),
+:root[data-theme="win11"] .load-more-btn,
+:root[data-theme="win11"] .filter-list button:not([aria-pressed="true"]):not(.is-active),
+:root[data-theme="win11"] .scope-pause,
+:root[data-theme="win11"] .skills-code-btn {
+  background: #fbfcfd;
+  border-color: rgba(15, 23, 42, 0.1);
+  border-bottom-color: rgba(15, 23, 42, 0.2);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+:root[data-theme="win11"] .button:not(.primary):hover,
+:root[data-theme="win11"] .load-more-btn:hover,
+:root[data-theme="win11"] .filter-list button:not([aria-pressed="true"]):not(.is-active):hover,
+:root[data-theme="win11"] .scope-pause:hover,
+:root[data-theme="win11"] .skills-code-btn:hover {
+  background: #f4f6fa;
+  border-color: rgba(15, 23, 42, 0.14);
+  border-bottom-color: rgba(0, 103, 192, 0.45);
+  color: var(--ink);
+}
+
+:root[data-theme="win11"] .workbench-status-badge,
+:root[data-theme="win11"] .workbench-eyebrow,
+:root[data-theme="win11"] .workbench-meta-tags .chip,
+:root[data-theme="win11"] .aside-badge,
+:root[data-theme="win11"] .item-tags span,
+:root[data-theme="win11"] .project-mini-chip,
+:root[data-theme="win11"] .home-topic-links span:not(.topic-dot) {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .status-pulse-dot,
+:root[data-theme="win11"] .dot-live {
+  background: #107c41;
+  box-shadow: 0 0 6px rgba(16, 124, 65, 0.45);
+}
+
+:root[data-theme="win11"] .project-mini-chip {
+  background: rgba(255, 255, 255, 0.94);
+  color: #1a1d24;
+  border-color: var(--glass-edge);
+  box-shadow: var(--shadow-small);
+}
+
+:root[data-theme="win11"] .item-arrow,
+:root[data-theme="win11"] .project-mini-arrow {
+  border-radius: 4px;
+}
+
+:root[data-theme="win11"] .article-item:hover .item-arrow,
+:root[data-theme="win11"] .project-mini-card:hover .project-mini-arrow,
+:root[data-theme="win11"] .project-mini-card:hover .project-mini-cta {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+:root[data-theme="win11"] .button.primary,
+:root[data-theme="win11"] .private-message-form .submit-btn {
+  background: #0067c0;
+  border: 1px solid #0057a3;
+  border-bottom-color: #004582;
+  color: var(--on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 3px rgba(0, 103, 192, 0.22);
+}
+
+:root[data-theme="win11"] .button.primary:hover,
+:root[data-theme="win11"] .private-message-form .submit-btn:hover:not(:disabled) {
+  background: #005fb3;
+  opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 8px rgba(0, 103, 192, 0.28);
+}
+
+:root[data-theme="win11"] .private-message-form input,
+:root[data-theme="win11"] .private-message-form textarea,
+:root[data-theme="win11"] .search-input-wrap {
+  background: #ffffff;
+  border-color: var(--glass-edge);
+  border-bottom-color: rgba(15, 23, 42, 0.34);
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+:root[data-theme="win11"] .private-message-form input:focus,
+:root[data-theme="win11"] .private-message-form textarea:focus {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--accent);
+}
