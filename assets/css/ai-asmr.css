@@ -205,7 +205,8 @@
 
 :root[data-theme="light"] .stage-viewport,
 :root[data-theme="swiss"] .stage-viewport,
-:root[data-theme="mono"] .stage-viewport {
+:root[data-theme="mono"] .stage-viewport,
+:root[data-theme="win7"] .stage-viewport {
   background: radial-gradient(circle at 50% 40%, #edf5f6 0%, #d5e5e8 100%);
 }
 
@@ -220,7 +221,8 @@
 :root[data-theme="light"] .stage-viewport.mode-radar,
 :root[data-theme="swiss"] .stage-viewport.mode-radar,
 :root[data-theme="mono"] .stage-viewport.mode-radar,
-:root[data-theme="famicom"] .stage-viewport.mode-radar {
+:root[data-theme="famicom"] .stage-viewport.mode-radar,
+:root[data-theme="win7"] .stage-viewport.mode-radar {
   background: radial-gradient(circle at 50% 45%, #0b1e29 0%, #03080d 100%) !important;
   box-shadow: inset 0 0 60px rgba(14, 116, 144, 0.45);
 }
@@ -228,7 +230,8 @@
 :root[data-theme="light"] .stage-viewport.mode-minimal,
 :root[data-theme="swiss"] .stage-viewport.mode-minimal,
 :root[data-theme="mono"] .stage-viewport.mode-minimal,
-:root[data-theme="famicom"] .stage-viewport.mode-minimal {
+:root[data-theme="famicom"] .stage-viewport.mode-minimal,
+:root[data-theme="win7"] .stage-viewport.mode-minimal {
   background: #030608 !important;
 }
 
@@ -250,6 +253,16 @@
 :root[data-theme="radio"] .badge-item,
 :root[data-theme="radio"] .mode-btn {
   border-radius: 6px;
+}
+
+:root[data-theme="win7"] .asmr-stage-card,
+:root[data-theme="win7"] .cat-tab-btn {
+  border-radius: 8px;
+}
+
+:root[data-theme="win7"] .badge-item,
+:root[data-theme="win7"] .mode-btn {
+  border-radius: 5px;
 }
 
 @media (prefers-color-scheme: light) {

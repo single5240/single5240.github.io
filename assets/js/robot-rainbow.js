@@ -341,6 +341,13 @@
       terminal: "#66d189",
       glow: 4,
     },
+    win7: {
+      trace: "#1b6ec2",
+      subTrace: "rgba(22, 139, 114, 0.34)",
+      axis: "rgba(17, 32, 48, 0.14)",
+      terminal: "#16833c",
+      glow: 2,
+    },
   };
 
   const isArticlePage = Boolean(document.querySelector("#articleRobotCard"));

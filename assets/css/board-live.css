@@ -200,3 +200,7 @@
 :root[data-theme="radio"] .board-card {
   border-radius: 10px;
 }
+
+:root[data-theme="win7"] .board-card {
+  border-radius: 8px;
+}

@@ -908,3 +908,43 @@
   opacity: 1;
   box-shadow: 0 3px 0 #70430b;
 }
+
+:root[data-theme="win7"] .kb-tool-entry,
+:root[data-theme="win7"] .tools-nav,
+:root[data-theme="win7"] .tool-card,
+:root[data-theme="win7"] .tools-panel,
+:root[data-theme="win7"] .bit-cell {
+  border-radius: 8px;
+}
+
+:root[data-theme="win7"] .tools-tab-btn,
+:root[data-theme="win7"] .tool-btn,
+:root[data-theme="win7"] .tool-input,
+:root[data-theme="win7"] .tool-select,
+:root[data-theme="win7"] .tool-textarea {
+  border-radius: 5px;
+}
+
+:root[data-theme="win7"] .tools-tab-btn[aria-current="location"] {
+  background: linear-gradient(180deg, #ffffff 0%, #eef5fc 48%, #dceafa 50%, #edf4fc 100%);
+  border-color: rgba(60, 127, 177, 0.45);
+  box-shadow: inset 0 1px 0 #ffffff, 0 1px 3px rgba(17, 45, 76, 0.1);
+}
+
+:root[data-theme="win7"] .tool-input:focus,
+:root[data-theme="win7"] .tool-select:focus,
+:root[data-theme="win7"] .tool-textarea:focus {
+  box-shadow: 0 0 0 3px var(--soft);
+}
+
+:root[data-theme="win7"] .tool-btn.primary {
+  background: linear-gradient(180deg, #2675c8 0%, #1b65b8 48%, #11539e 50%, #1968bc 100%);
+  border-color: #0f4a8a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 3px rgba(15, 74, 138, 0.25);
+}
+
+:root[data-theme="win7"] .tool-btn.primary:hover {
+  background: linear-gradient(180deg, #2b7dd4 0%, #1e6dc4 48%, #145aab 50%, #1e71ca 100%);
+  opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 0 2px rgba(60, 145, 230, 0.25);
+}

@@ -4,7 +4,7 @@
   const root = document.documentElement;
   const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  const validThemes = ["system", "light", "dark", "swiss", "hud", "mono", "famicom", "radio"];
+  const validThemes = ["system", "light", "dark", "swiss", "hud", "mono", "famicom", "radio", "win7"];
   const validSkins = ["grid", "matrix", "chassis", "default"];
 
   const labels = {
@@ -16,6 +16,7 @@
     mono: "极简单色",
     famicom: "红白机",
     radio: "老式收音机",
+    win7: "Windows 7",
   };
 
   const skinLabels = {
@@ -34,6 +35,7 @@
     mono: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"></path></svg>',
     famicom: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><path d="M5.5 12h4M7.5 10v4M11 14h2"></path><circle cx="15.8" cy="13" r="0.9" fill="currentColor"></circle><circle cx="18.6" cy="11" r="0.9" fill="currentColor"></circle></svg>',
     radio: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="13" rx="2"></rect><path d="M7 7l5-4M6 11h5M6 14h5M6 17h5M14 10.5h5"></path><circle cx="16.5" cy="15.5" r="1.75"></circle></svg>',
+    win7: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.6c2.6-.9 5.1-.8 7.5.2v5.3c-2.4-.9-4.9-1-7.5-.2Z"></path><path d="M13 6.2c2.5.9 5 .8 7.5-.2v5.3c-2.5 1-5 1.1-7.5.2Z"></path><path d="M3.5 12.9c2.6-.8 5.1-.7 7.5.2v5.3c-2.4-.9-4.9-1-7.5-.1Z"></path><path d="M13 13.5c2.5.9 5 .8 7.5-.1v5.3c-2.5.9-5 1-7.5.1Z"></path></svg>',
   };
 
   const skinIcons = {
@@ -51,6 +53,7 @@
     mono: "#faf9f6",
     famicom: "#f2ece1",
     radio: "#18130f",
+    win7: "#d6e7f5",
   };
 
   const pickers = [];
@@ -174,6 +177,9 @@
           </button>
           <button class="theme-option" type="button" role="menuitemradio" data-theme-value="radio" aria-checked="false">
             ${icons.radio}<span class="theme-option-label">老式收音机</span><span class="theme-option-check" aria-hidden="true">✓</span>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" data-theme-value="win7" aria-checked="false">
+            ${icons.win7}<span class="theme-option-label">Windows 7</span><span class="theme-option-check" aria-hidden="true">✓</span>
           </button>
 
           <div class="theme-menu-divider" role="separator"></div>

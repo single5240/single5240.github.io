@@ -324,3 +324,37 @@
   background: var(--accent-dark);
   box-shadow: 0 3px 0 #70430b;
 }
+
+:root[data-theme="win7"] .kb-workspace,
+:root[data-theme="win7"] .kb-column,
+:root[data-theme="win7"] .kb-card,
+:root[data-theme="win7"] .kb-dialog {
+  border-radius: 8px;
+}
+
+:root[data-theme="win7"] .kb-btn,
+:root[data-theme="win7"] .kb-app input,
+:root[data-theme="win7"] .kb-app select,
+:root[data-theme="win7"] .kb-app textarea,
+:root[data-theme="win7"] .kb-count,
+:root[data-theme="win7"] .kb-priority-label,
+:root[data-theme="win7"] .kb-tag {
+  border-radius: 5px;
+}
+
+:root[data-theme="win7"] .kb-app input:focus,
+:root[data-theme="win7"] .kb-app select:focus,
+:root[data-theme="win7"] .kb-app textarea:focus {
+  box-shadow: 0 0 0 3px var(--soft);
+}
+
+:root[data-theme="win7"] .kb-primary {
+  background: linear-gradient(180deg, #2675c8 0%, #1b65b8 48%, #11539e 50%, #1968bc 100%);
+  border-color: #0f4a8a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 1px 3px rgba(15, 74, 138, 0.25);
+}
+
+:root[data-theme="win7"] .kb-primary:hover {
+  background: linear-gradient(180deg, #2b7dd4 0%, #1e6dc4 48%, #145aab 50%, #1e71ca 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 0 0 2px rgba(60, 145, 230, 0.25);
+}

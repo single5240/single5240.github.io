@@ -504,6 +504,67 @@ html {
   --spectrum-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
 }
 
+/* Windows 7 Aero 风格 (Windows 7 Aero Glass — 天青磨砂玻璃窗口 + 高光按钮 + 翡翠进度条) */
+:root[data-theme="win7"] {
+  color-scheme: light;
+  --ink: #112030;
+  --muted: #4a6075;
+  --line: rgba(43, 88, 132, 0.22);
+  --paper: #d6e7f5;
+  --panel: rgba(244, 249, 255, 0.82);
+  --accent: #1b6ec2;
+  --accent-dark: #0f4f94;
+  --warm: #b85c00;
+  --soft: rgba(27, 110, 194, 0.13);
+  --deep: #152536;
+  --header-bg: rgba(214, 232, 248, 0.78);
+  --header-line: rgba(43, 88, 132, 0.3);
+  --raised-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(232, 242, 252, 0.8) 100%);
+  --popover-bg: linear-gradient(180deg, rgba(252, 254, 255, 0.97) 0%, rgba(235, 244, 252, 0.95) 100%);
+  --speech-bg: rgba(250, 253, 255, 0.9);
+  --speech-border: rgba(43, 88, 132, 0.36);
+  --glass: blur(18px) saturate(165%);
+  --glass-edge: rgba(54, 102, 148, 0.36);
+  --raised-border: rgba(27, 110, 194, 0.42);
+  --alt-bg: #dfeaf6;
+  --subtle-bg: #eef5fc;
+  --body-copy: #1e3145;
+  --content-copy: #132232;
+  --tag-ink: #294159;
+  --code-bg: #142230;
+  --code-ink: #eef5fc;
+  --inline-code: #0f4f94;
+  --contact-copy: #4a6075;
+  --note: #b85c00;
+  --on-accent: #ffffff;
+  --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.96), inset 0 0 0 1px rgba(255, 255, 255, 0.56);
+  --shadow: 0 0 0 1px rgba(255, 255, 255, 0.55) inset, 0 8px 24px -4px rgba(17, 45, 76, 0.16), 0 2px 6px rgba(17, 45, 76, 0.1);
+  --shadow-small: 0 0 0 1px rgba(255, 255, 255, 0.6) inset, 0 2px 6px rgba(17, 45, 76, 0.1);
+  --shadow-heavy: 0 0 0 1px rgba(255, 255, 255, 0.65) inset, 0 18px 42px -6px rgba(14, 38, 66, 0.28), 0 4px 12px rgba(14, 38, 66, 0.14);
+  --shadow-hover: 0 0 0 1px rgba(27, 110, 194, 0.34), 0 10px 26px -4px rgba(27, 110, 194, 0.22);
+  --focus-ring: #1b6ec2;
+  --topic-mcu-1: #2675c8;
+  --topic-mcu-2: #0f4f94;
+  --topic-mcu-accent: #1b6ec2;
+  --topic-linux-1: #d4821a;
+  --topic-linux-2: #9c5a08;
+  --topic-linux-accent: #b85c00;
+  --topic-qt-1: #249c4b;
+  --topic-qt-2: #156e32;
+  --topic-qt-accent: #16833c;
+  --topic-industrial-1: #d44646;
+  --topic-industrial-2: #9b2626;
+  --topic-industrial-accent: #c23030;
+  --topic-devops-1: #5a72c8;
+  --topic-devops-2: #384d96;
+  --topic-devops-accent: #445eb5;
+  --topic-design-1: #1d909e;
+  --topic-design-2: #11626d;
+  --topic-design-accent: #157784;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.68), inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  --spectrum-shadow: 0 1px 3px rgba(17, 45, 76, 0.14);
+}
+
 .motion-reveal {
   opacity: 0;
   transform: translate3d(0, 20px, 0) scale(0.978);
@@ -1241,7 +1302,7 @@ time {
   fill: var(--accent-dark);
 }
 
-:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]) .robot-eye,
+:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]):not([data-theme="win7"]) .robot-eye,
 :root[data-theme="light"] .robot-eye {
   fill: #80c7a7;
 }
@@ -1252,6 +1313,10 @@ time {
 
 :root[data-theme="radio"] .robot-eye {
   fill: #66d189;
+}
+
+:root[data-theme="win7"] .robot-eye {
+  fill: #47b8ff;
 }
 
 .robot-eye-glint {
@@ -1610,6 +1675,11 @@ time {
   box-shadow: 0 1px 6px rgba(224, 147, 54, 0.35);
 }
 
+:root[data-theme="win7"] .reading-progress {
+  background: linear-gradient(90deg, #1b8c3b 0%, #2fc459 75%, #68e38a 100%);
+  box-shadow: 0 1px 6px rgba(34, 177, 76, 0.4);
+}
+
 /* ==========================================================================
    特种底纹与复古电子硬件质感系统（Retro Electronics Skins）
    方案 A: 工程坐标网格 (grid)
@@ -1675,6 +1745,15 @@ time {
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(224, 147, 54, 0.09) 0%, transparent 58%),
     radial-gradient(circle at 82% 85%, rgba(102, 209, 137, 0.04) 0%, transparent 45%);
+  opacity: 1;
+}
+
+:root[data-theme="win7"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 22% 14%, rgba(255, 255, 255, 0.62) 0%, transparent 50%),
+    radial-gradient(circle at 76% 24%, rgba(56, 152, 236, 0.28) 0%, transparent 48%),
+    radial-gradient(circle at 26% 80%, rgba(44, 176, 156, 0.18) 0%, transparent 48%),
+    radial-gradient(circle at 82% 84%, rgba(114, 198, 255, 0.24) 0%, transparent 46%);
   opacity: 1;
 }
 
@@ -1776,6 +1855,19 @@ time {
   opacity: 0.92;
 }
 
+:root[data-skin="grid"][data-theme="win7"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 22% 14%, rgba(255, 255, 255, 0.58) 0%, transparent 52%),
+    radial-gradient(circle at 78% 26%, rgba(56, 152, 236, 0.24) 0%, transparent 48%),
+    radial-gradient(circle at 28% 82%, rgba(44, 176, 156, 0.16) 0%, transparent 48%),
+    linear-gradient(rgba(27, 110, 194, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 110, 194, 0.065) 1px, transparent 1px),
+    linear-gradient(rgba(27, 110, 194, 0.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 110, 194, 0.024) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 96px 96px, 96px 96px, 24px 24px, 24px 24px;
+  opacity: 0.96;
+}
+
 /* --------------------------------------------------------------------------
    方案 B: 洞洞板 / 覆铜板打孔焊接阵列 (matrix)
    -------------------------------------------------------------------------- */
@@ -1819,6 +1911,13 @@ time {
 :root[data-skin="matrix"][data-theme="radio"] .site-ambience {
   background-image:
     radial-gradient(circle at 11px 11px, #18130f 1.2px, rgba(224, 147, 54, 0.22) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.9;
+}
+
+:root[data-skin="matrix"][data-theme="win7"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #d6e7f5 1.2px, rgba(27, 110, 194, 0.2) 2.2px, transparent 3.2px);
   background-size: 22px 22px;
   opacity: 0.9;
 }
@@ -1883,6 +1982,16 @@ time {
     linear-gradient(90deg, rgba(224, 147, 54, 0.06) 1px, transparent 1px);
   background-size: 100% 100%, 100% 4px, 28px 28px, 28px 28px;
   opacity: 0.95;
+}
+
+:root[data-skin="chassis"][data-theme="win7"] .site-ambience {
+  background-image:
+    radial-gradient(ellipse at 24% 16%, rgba(255, 255, 255, 0.5) 0%, transparent 55%),
+    repeating-linear-gradient(0deg, rgba(27, 110, 194, 0.03) 0px, rgba(27, 110, 194, 0.03) 1px, transparent 1px, transparent 4px),
+    linear-gradient(rgba(27, 110, 194, 0.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 110, 194, 0.075) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 4px, 24px 24px, 24px 24px;
+  opacity: 0.94;
 }
 
 /* 方案 C 细节: 面板卡片四角机械定位十字刻度标 */
@@ -2082,7 +2191,8 @@ time {
   :root[data-theme="hud"],
   :root[data-theme="mono"],
   :root[data-theme="famicom"],
-  :root[data-theme="radio"] {
+  :root[data-theme="radio"],
+  :root[data-theme="win7"] {
     --glass: none;
   }
   :root,
@@ -2090,6 +2200,12 @@ time {
   :root[data-theme="mono"] {
     --raised-bg: rgba(255, 255, 255, 0.98);
     --speech-bg: rgba(255, 255, 255, 0.96);
+  }
+  :root[data-theme="win7"] {
+    --panel: rgba(244, 249, 255, 0.98);
+    --header-bg: rgba(214, 232, 248, 0.98);
+    --raised-bg: #f6faff;
+    --speech-bg: #f6faff;
   }
   :root[data-theme="famicom"] {
     --raised-bg: #faf7f0;
@@ -2202,5 +2318,37 @@ time {
 }
 
 :root[data-theme="radio"] .spectrum-item {
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   Windows 7 Aero 风格结构覆盖 (Windows 7 Aero Window & Control Geometry)
+   ========================================================================== */
+:root[data-theme="win7"] .theme-menu {
+  border-radius: 8px;
+  border-color: var(--glass-edge);
+  box-shadow: var(--shadow-heavy);
+}
+
+:root[data-theme="win7"] .theme-toggle,
+:root[data-theme="win7"] .theme-option,
+:root[data-theme="win7"] .system-status,
+:root[data-theme="win7"] .scope-channel {
+  border-radius: 5px;
+}
+
+:root[data-theme="win7"] .article-robot-card,
+:root[data-theme="win7"] .robot-dock.is-docked-float,
+:root[data-theme="win7"] .back-to-top {
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="win7"] .robot-speech {
+  border-radius: 6px;
+  box-shadow: var(--shadow-small);
+}
+
+:root[data-theme="win7"] .spectrum-item {
   border-radius: 3px;
 }
