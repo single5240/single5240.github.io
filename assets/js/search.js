@@ -32,23 +32,13 @@
   const normalize = text => String(text || '').normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
   let texts = items.map(item => normalize(item.querySelector('.item-body').textContent));
   input.value = params.get('q') || '';
-  const render = (animate = false) => {
+  const render = () => {
     const words = normalize(input.value).split(' ').filter(Boolean);
     let count = 0;
     items.forEach((item, i) => {
       const matches = (!topic || item.dataset.topic.split(' ').includes(topic)) && words.every(word => texts[i].includes(word));
       item.hidden = !matches;
-      if (matches) {
-        if (animate === true) {
-          item.classList.remove('is-filtering-in');
-          item.style.setProperty('--filter-idx', String(Math.min(count, 8)));
-          void item.offsetWidth;
-          item.classList.add('is-filtering-in');
-        }
-        count += 1;
-      } else {
-        item.classList.remove('is-filtering-in');
-      }
+      if (matches) count += 1;
     });
     highlight(words);
     clearTopic.hidden = !topic;
@@ -62,28 +52,28 @@
   };
   root.querySelector('.search-controls').hidden = false;
   root.querySelector('.filter-controls').hidden = false;
-  input.addEventListener('input', () => render(true));
+  input.addEventListener('input', () => render());
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       input.value = '';
-      render(true);
+      render();
     }
   });
-  root.querySelector('.clear-search').addEventListener('click', () => { input.value = ''; render(true); input.focus(); });
-  clearTopic.addEventListener('click', () => { topic = ''; render(true); buttons[0].focus(); });
+  root.querySelector('.clear-search').addEventListener('click', () => { input.value = ''; render(); input.focus(); });
+  clearTopic.addEventListener('click', () => { topic = ''; render(); buttons[0].focus(); });
   addEventListener('popstate', () => {
     params = new URLSearchParams(location.search);
     input.value = params.get('q') || '';
     topic = buttons.some(button => button.dataset.topicFilter === params.get('topic')) ? params.get('topic') : '';
-    render(false);
+    render();
   });
-  addEventListener('pageshow', () => render(false));
+  addEventListener('pageshow', () => render());
   root.closest('main').addEventListener('click', (event) => {
     if (!event.target.closest('[data-search-item] h3 a')) return;
     try { sessionStorage.setItem('article-archive-return', location.pathname + location.search + '#search'); } catch { /* Optional convenience. */ }
   });
-  buttons.forEach(button => button.addEventListener('click', () => { topic = (topic === button.dataset.topicFilter && topic !== '') ? '' : button.dataset.topicFilter; render(true); }));
-  render(false);
+  buttons.forEach(button => button.addEventListener('click', () => { topic = (topic === button.dataset.topicFilter && topic !== '') ? '' : button.dataset.topicFilter; render(); }));
+  render();
   fetch(root.dataset.indexUrl).then(response => {
     if (!response.ok) throw new Error('Search index unavailable');
     return response.json();

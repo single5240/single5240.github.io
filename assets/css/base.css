@@ -626,33 +626,16 @@ html {
   --spectrum-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
-.motion-reveal {
-  opacity: 0;
-  transform: translate3d(0, 20px, 0) scale(0.978);
-  transition:
-    opacity 520ms var(--ease-spring),
-    transform 600ms var(--ease-spring);
-  transition-delay: calc(var(--stagger-idx, 0) * 48ms);
-}
-
-.motion-reveal.is-visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  will-change: opacity, transform;
-}
-
-.motion-reveal.is-settled {
-  transform: none;
-  transition-delay: 0ms;
-  will-change: auto;
-}
-
-@media (max-width: 620px) {
-  .motion-reveal {
-    transform: translate3d(0, 12px, 0) scale(0.986);
-    transition-duration: 380ms, 420ms;
-    transition-delay: calc(var(--stagger-idx, 0) * 32ms);
+/* 首页主面板只淡入一次；其余内容直接显示。 */
+@media (prefers-reduced-motion: no-preference) {
+  .section-home .workbench-console {
+    animation: home-fade-in 180ms ease-out;
   }
+}
+
+@keyframes home-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .back-to-top {
@@ -1012,11 +995,6 @@ time {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .motion-reveal {
-    opacity: 1;
-    transform: none;
   }
 
   .spectrum-item {

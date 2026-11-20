@@ -1868,7 +1868,7 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   }
 }
 
-/* 5. 卡片按压触感与毛玻璃动态追光 (Specular Glass Spotlight & Card Squish) */
+/* 5. 卡片按压与边框、背景反馈 */
 .project-mini-card,
 .project-feature,
 .aside-card,
@@ -1896,49 +1896,7 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   transition-duration: 90ms !important;
 }
 
-.ios-specular {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.ios-specular::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.28) 0%,
-    transparent 68%
-  );
-  transform: translate3d(calc(var(--spot-x, 0px) - 180px), calc(var(--spot-y, 0px) - 180px), 0);
-  will-change: transform;
-}
-
-:root[data-theme="dark"] .ios-specular::before {
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.09) 0%,
-    transparent 68%
-  );
-}
-
-@media (hover: hover) and (pointer: fine) {
-  *:hover > .ios-specular {
-    opacity: 1;
-  }
-}
-
-/* 6. 折叠详情面板 (Accordion Details) 与搜索筛选流体动画 */
+/* 6. 折叠详情面板 (Accordion Details) */
 .project-notes summary {
   transition: color 0.2s ease, transform 0.28s var(--ease-spring-bounce);
 }
@@ -1955,22 +1913,6 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   from {
     opacity: 0;
     transform: translateY(-6px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.article-item.is-filtering-in {
-  animation: ios-filter-pop 0.38s var(--ease-spring) both;
-  animation-delay: calc(var(--filter-idx, 0) * 32ms);
-}
-
-@keyframes ios-filter-pop {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -2132,10 +2074,6 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
 :root[data-theme="famicom"] .scope-pause {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-}
-
-:root[data-theme="famicom"] .ios-specular {
-  display: none;
 }
 
 :root[data-theme="famicom"] .brand-mark {
@@ -2337,10 +2275,6 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   -webkit-backdrop-filter: none;
 }
 
-:root[data-theme="radio"] .ios-specular {
-  display: none;
-}
-
 :root[data-theme="radio"] .brand-mark {
   border-radius: 8px;
   background: linear-gradient(180deg, #ebb05a 0%, #c97d22 100%);
@@ -2534,10 +2468,6 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
    ========================================================================== */
 :root[data-theme="win7"] .site-header {
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.65), 0 4px 16px rgba(17, 45, 76, 0.12);
-}
-
-:root[data-theme="win7"] .ios-specular {
-  opacity: 0.45;
 }
 
 :root[data-theme="win7"] .brand-mark {
@@ -2735,10 +2665,6 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
    ========================================================================== */
 :root[data-theme="win11"] .site-header {
   box-shadow: 0 1px 0 var(--header-line), 0 4px 16px rgba(15, 23, 42, 0.04);
-}
-
-:root[data-theme="win11"] .ios-specular {
-  display: none;
 }
 
 :root[data-theme="win11"] .brand-mark {
