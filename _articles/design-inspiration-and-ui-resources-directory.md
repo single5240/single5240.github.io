@@ -1,11 +1,12 @@
 ---
 layout: article
 title: "UI/UX 与视觉设计资源整理：网页画廊、组件系统、动效与品牌规范"
-description: "整理 88 个常用 UI/UX 与视觉设计参考站点，按网页画廊、页面区块与组件系统、App 交互录屏、品牌规范与演示文稿、日常灵感订阅以及渐变字体素材六类归档。"
-date: 2026-11-15
+description: "整理 100 个常用 UI/UX、Vibe Coding 与视觉设计参考站点，按网页画廊、页面区块与组件系统、App 交互录屏、品牌规范与演示文稿、日常灵感订阅以及渐变字体素材六类归档。"
+date: 2026-11-20
 category: UI 与设计资源
 tags:
   - UI/UX
+  - Vibe Coding
   - 设计灵感
   - 设计系统
   - 品牌规范
@@ -13,9 +14,9 @@ tags:
   - 前端素材
 ---
 
-做页面或改版时，在综合大图库里漫无目的地翻瀑布流往往很耗时间：概念稿很多，真到需要查导航栏折叠方式、首屏信息比例、设计系统里下拉组件怎么命名，或者品牌手册怎么搭目录时，反而不好找可直接对照的真实样本。
+做页面、改版，或者做 Vibe Coding（AI 辅助前端开发）想摆脱千篇一律的默认样式时，在综合大图库里漫无目的地翻瀑布流往往很耗时间：概念稿很多，真到需要查导航栏折叠方式、首屏信息比例、设计系统里下拉组件怎么命名、某个微动效怎么调参数，或者品牌手册怎么搭目录时，反而不好找可直接对照的真实样本。
 
-更省事的做法是用垂直站点按环节查：只收导航栏的画廊、录真实 App 60fps 动效的视频库、收企业官方品牌规范的目录，各管一摊。下面整理了 88 个设计参考与前端素材站点，分成六大类；每类第一小节是平时最常打开的 15 个基础书签，后面接着按场景补充的同类资源。
+更省事的做法是用垂直站点按环节查：只收导航栏的画廊、可直接复制源码与参数的动效组件库、录真实 App 60fps 动效的视频库、收企业官方品牌规范的目录，各管一摊。下面整理了 100 个设计参考与前端素材站点，分成六大类；每类第一小节是平时最常打开的 15 个基础书签，后面接着按场景补充的同类资源。
 
 ## 快速分类索引表
 
@@ -23,10 +24,10 @@ tags:
 
 | 当前需求 | 常用基础站 | 同类补充 |
 | :--- | :--- | :--- |
-| 定网页整体基调与版式 | Minimal Gallery、A1 Gallery、One Page Love | Curated.design、Land-book、Saaspo、Dark.design |
+| 定网页整体基调与版式 | Minimal Gallery、A1 Gallery、One Page Love | Curated.design、Land-book、Saaspo、Godly、Websitevice、Dark.design |
 | 拆解首屏、导航、页脚等区块 | Supahero、Navbar Gallery | Footer.design、BentoGrids、CTA.gallery、Landingfolio |
-| 查组件规范与前端实现 | Component Gallery | Design Systems Surf、shadcn/ui、Radix UI、21st.dev |
-| 看移动端/Web 交互流与动效 | 60fps.design | Mobbin、Page Flows、Refero、Design Spells、Codrops |
+| 查组件规范与前端实现 | Component Gallery | Design Systems Surf、shadcn/ui、Radix UI、21st.dev、React Bits、Vue Bits、Animate UI、OriginKit |
+| 看移动端/Web 交互流与动效 | 60fps.design | Mobbin、Page Flows、Refero、Design Spells、Designeer、Codrops |
 | 做品牌升级、Logo 与汇报 Deck | Rebrand Gallery、Brand Guidelines、Logobook、Deck Gallery | Branding Style Guides、Brand Archive、Brand New、LogoArchive |
 | 看日常设计动态与社媒图文 | Recent Design、Posts Design | Layers.to、Savee、Cosmos、Are.na、Sidebar |
 | 找动态渐变、字体、图标与买断素材 | Grainient、YouWorkForThem | ShaderGradient、Fontshare、UNCUT.wtf、SVGL、Lucide |
@@ -48,9 +49,12 @@ tags:
 - **[Saaspo](https://www.saaspo.com/)**：专攻 SaaS 与科技产品官网，最大特点是按子页面类型归类，除了首页，还能单独翻定价页（Pricing）、功能页（Product）、集成页（Integrations）和关于页（About）。
 - **[Dead Simple Sites](https://deadsimplesites.com/)**：比 Minimal Gallery 更克制，专收彻底去掉滚动劫持和装饰动画、只用排版和留白表达信息的网页，页面做得太满时适合翻一翻减减负。
 - **[Dark.design](https://www.dark.design/)**：只收暗色模式网页的垂直画廊。做开发者工具、AI 基础设施或硬件产品页面时，用它参考深灰层级与边框高光处理比综合站快得多。
-- **[Lapa Ninja](https://www.lapa.ninja/)**：长期维护的落地页长截图库，每条案例直接展示整页纵向结构，方便顺着看页面从头到尾的节奏，站内也附带免费图标和配色整理。
-- **[SiteInspire](https://www.siteinspire.com/)** 与 **[Seesaw](https://seesaw.website/)**：SiteInspire 运营多年，偏出版物和设计工作室调性，交叉筛选维度多；Seesaw 每日更新数字体验案例，支持按网页使用的字体反查站点。
-- **[Awwwards](https://www.awwwards.com/)** 与 **[The FWA](https://thefwa.com/)**：偏向创意与交互上限的评审榜单，用来了解 WebGL、3D 渲染和品牌互动站的做法很合适，做常规工具官网时注意控制工程复杂度。
+- **[Lapa Ninja](https://www.lapa.ninja/)**：长期维护的落地页长截图与视频预览库，每条案例直接展示整页纵向结构，方便顺着看清内容顺序与叙事节奏，站内也附带免费图标和配色整理。
+- **[SiteInspire](https://www.siteinspire.com/)** 与 **[Seesaw](https://seesaw.website/)**：SiteInspire 运营多年，偏出版物和设计工作室调性，支持按版式、字体、网格风格多维筛选（也能顺便积累设计分类名词）；Seesaw 每日更新数字体验案例，支持按网页使用的字体反查站点。
+- **[Godly](https://godly.website/)**：以强视觉表现力和流畅动效见长的网页画廊，支持桌面端与手机端对照查看同一套设计（同团队后续也推出了每日社媒精选站 Recent Design）。
+- **[Websitevice](https://websitevice.com/)**：按细分实体与服务行业（如咖啡店、牙科、酒店等）归类的网页案例库，给传统或线下业务做官网时，比纯科技产品画廊更贴合真实场景。
+- **[Httpster](https://httpster.net/)** 与 **[Brutalist Websites](https://brutalistwebsites.com/)**：想跳出常规 SaaS 模板、寻找差异化气质时可以翻这两个站；Httpster 专门发掘不循常规的另类独立设计，Brutalist Websites 则聚焦高对比、反常规排版的粗野主义（Brutalist）风格网页。
+- **[Awwwards](https://www.awwwards.com/)**、**[CSS Design Awards](https://www.cssdesignawards.com/)** 与 **[The FWA](https://thefwa.com/)**：偏向创意与交互上限的评审榜单；Awwwards 与 The FWA 适合了解 WebGL、3D 渲染和品牌互动站的做法，CSS Design Awards 则把作品拆成 UI、UX 与创新分项评分，做常规工具官网时注意控制工程复杂度。
 
 ## 页面区块与 UI 组件系统
 
@@ -71,9 +75,13 @@ tags:
 - **[Design Systems Surf](https://designsystems.surf/)** 与 **[Design Systems Repo](https://designsystemsrepo.com/)**：想从整体了解各家设计系统的 Design Token 分层、色阶命名和文档组织方式，可以和 Component Gallery 搭着用。
 - **可直接落地的代码组件库**：
   - **[Radix UI](https://www.radix-ui.com/)**：无样式的底层 React 交互原语（Dialog、Popover、Dropdown 等），键盘导航和 WAI-ARIA 无障碍处理做得很完整。
-  - **[shadcn/ui](https://ui.shadcn.com/)**：基于 Radix UI 和 Tailwind CSS 的源码复制式组件集合，不用受制于黑盒 npm 依赖，目前很多 React 项目直接拿它当起点。
+  - **[shadcn/ui](https://ui.shadcn.com/)**：基于 Radix UI 和 Tailwind CSS 的源码复制式组件集合，不用受制于黑盒 npm 依赖，目前很多 React 项目和 AI 生成前端直接拿它当起点。
   - **[21st.dev](https://21st.dev/)**：面向 React / Next.js / Tailwind 的开源区块与交互组件注册表，支持按 Hero、Bento、Carousel 等直接复制或用 CLI 接入。
-  - **[Aceternity UI](https://ui.aceternity.com/)**、**[Magic UI](https://magicui.design/)**、**[React Bits](https://reactbits.dev/)** 与 **[Uiverse](https://uiverse.io/)**：前三个偏动效区块和背景效果（粒子、光束、文字动画、Shader 等），Uiverse 则是社区整理的纯 CSS / Tailwind 按钮、加载态和开关零件库。
+  - **[React Bits](https://reactbits.dev/)** 与 **[Vue Bits](https://vue-bits.dev/)**：分别面向 React 与 Vue 项目的动效组件库，支持在线调参预览；其中 React Bits 提供 `Copy for AI` 能力，在 Vibe Coding 流程里直接交给模型集成很省事。
+  - **[Aceternity UI](https://ui.aceternity.com/)** 与 **[Magic UI](https://magicui.design/)**：基于 Tailwind 与 Motion 的动效区块和视觉氛围组件；Aceternity UI 擅长发光边框、光束背景与落地页模板，Magic UI 则适合数字滚动等点到为止的细节增强。
+  - **[Animate UI](https://animate-ui.com/)**、**[Cult UI](https://cult-ui.com/)** 与 **[Animata](https://animata.design/)**：偏重交互状态与可控动效细节的开源组件集合；Animate UI 专注折叠面板、标签、弹窗等状态切换反馈，Cult UI 提供基于 shadcn 的可展开卡片与交互区块，Animata 则用清晰参数拆解打字机等常见动画效果。
+  - **[OriginKit](https://www.originkit.dev/)**：支持可视化调参的交互动效组件库，并提供 Framer 与 MCP 接入能力（使用时注意区分免费与付费范围）。
+  - **[Uiverse](https://uiverse.io/)** 与 **[Hover.css](https://ianlunn.github.io/Hover/)**：偏轻量的纯 CSS / Tailwind 零件与悬停效果参考；Uiverse 汇总社区提交的按钮、开关、输入框与加载态源码，Hover.css 则是经典的纯 CSS3 悬停效果词典（商业项目使用前需确认对应授权条款）。
 
 ## App 交互流与微动效
 
@@ -90,7 +98,8 @@ tags:
 - **[Refero](https://refero.design/)**：偏重 Web 应用与 SaaS 界面的参考库，筛选粒度细，能直接搜 404 页面、定价表、侧边栏、空状态和表格过滤条。
 - **[ScreensDesign](https://screensdesign.com/)**：主打高营收 iOS 应用的界面与订阅流拆解，每款应用旁会附带大致营收量级，研究付费墙（Paywall）和订阅转化流程时很有参考价值。
 - **[Design Spells](https://designspells.com/)**：专门收集产品里的微交互反馈、物理回弹、有意思的加载动画和 404 彩蛋，全用短 GIF 或视频展示，缺交互点子时适合翻一翻。
-- **[Codrops](https://tympanus.net/codrops/)**：老牌前端实验动效阵地，大部分页面滚动、Shader 扭曲和 WebGL 转场文章都附带可运行的开源代码仓库。
+- **[Designeer](https://designeer.xyz/)**：偏独特实验风格的微动效与交互零件集合站，收录像素风（Pixel Daisy）、ASCII 字符效果、加载进度条与「Add to bag」等趣味按钮交互，适合给页面补一点辨识度高的细节。
+- **[Codrops](https://tympanus.net/codrops/)**：老牌前端实验动效阵地，大部分页面滚动、Shader 扭曲和 WebGL 转场文章都附带可运行的开源教程与代码仓库。
 - **[Eyecandy](https://eyecannndy.com/)**：做产品宣传视频或动态视觉时用得上，把大量成片按运镜手法（Match Cut、Snorricam、Datamosh 等）和动画风格切成了短片段。
 - **常用动效落地工具**：Web 代码侧可以用 **[Motion（motion.dev）](https://motion.dev/)** 写声明式弹簧交互；需要跨端状态机驱动的矢量交互（如开关动画、交互插画）可以用 **[Rive](https://rive.app/)**；把 Figma 稿快速做成演示短片或轻量 Lottie，可以用 **[Jitter](https://jitter.video/)** 和 **[Lottielab](https://www.lottielab.com/)**。
 
@@ -176,3 +185,5 @@ tags:
    用 `Rebrand Gallery` 和 `Brand New` 看改版思路，对照 `Brand Guidelines` 和 `Branding Style Guides` 搭规范大纲；图形抽象期翻一翻 `Logobook`、`LogoArchive` 和 `Logggos`；做 PPT 前看 `Deck Gallery` 借鉴信息密度和版式；需要独特字体或 Y2K 矢量图形时，去 `YouWorkForThem` 按单次买断采购。
 4. **日常几分钟保持输入**：
    早上扫一眼 `Recent Design`（设计师实时发出的新作）和 `Sidebar`（5 篇筛选阅读），碰到适合以后参考的画面顺手存进 `Savee` 或 `Cosmos` 的对应看板，真要动工时直接回翻。
+5. **Vibe Coding / AI 辅助前端美化**：
+   先在 `SiteInspire`、`Minimal Gallery`、`Godly` 或 `Brutalist Websites` 定好视觉风格与设计术语（写 Prompt 时能说清版式与气质），再用 `Navbar Gallery`、`Footer.design` 敲定局部结构；动效与交互尽量不要全让模型凭空手写，优先从 `shadcn/ui`、`React Bits`（支持 `Copy for AI`）、`Vue Bits`、`Animate UI`、`Cult UI`、`Magic UI`、`OriginKit`（支持 MCP）或 `Animata` 挑好带参数与源码的组件，再交给 AI 集成微调。
