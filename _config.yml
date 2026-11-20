@@ -53,6 +53,7 @@ exclude:
   - vercel.json
   - .vercel
   - scripts
+  - server
   - vendor
   - docs
 

@@ -4,6 +4,7 @@ title: 复古示波器伴读小机器人交互实验台
 description: Canvas 与 SVG 绘制的示波器和小机器人，支持 18 种模拟波形、参数调节、鼠标跟随和预设对话。
 section: projects
 wide: true
+bot_chat: true
 permalink: /projects/retro-robot/index.html
 ---
 
@@ -125,6 +126,36 @@ permalink: /projects/retro-robot/index.html
         </div>
       </div>
     </aside>
+  </section>
+
+  <!-- ========================================================================
+       1.5 S5·BOT AI 角色卡与实时对话（服务器版可用，静态版降级为角色展示）
+       ======================================================================== -->
+  <section class="lab-section bot-persona-section" aria-label="S5·BOT AI 主理人角色卡与对话">
+    <div class="section-title-wrap">
+      <h2>认识一下工坊主理人</h2>
+      <p>
+        这是 S5·BOT 的 AI 角色卡与实时对话。人设、语气与知识边界由
+        <code>bot-persona.json</code> 统一定义，前端展示与后端模型共用同一份设定。
+        本站部署在静态镜像时对话入口会自动降级；完整 AI 对话请在启用了 <code>/api/</code> 服务的站点使用。
+      </p>
+    </div>
+    <div class="bot-persona-layout">
+      <div class="bot-chat-stage" data-bot-chat="panel">
+        <!-- JS 注入角色卡 + 对话面板 -->
+        <noscript><p class="bot-noscript">启用 JavaScript 后可查看 S5·BOT 的角色卡与 AI 对话。</p></noscript>
+      </div>
+      <aside class="bot-persona-notes">
+        <h3>它怎么工作？</h3>
+        <ul>
+          <li><strong>同一份人设</strong>：角色卡的 <code>systemPrompt</code> 只在 <code>assets/data/bot-persona.json</code> 维护一处。</li>
+          <li><strong>密钥不进前端</strong>：浏览器只请求本站 <code>/api/chat</code>，模型密钥留在服务器环境变量里。</li>
+          <li><strong>流式输出</strong>：回复逐字呈现，可随时停止；网络或额度异常会给出明确提示。</li>
+          <li><strong>静态降级</strong>：GitHub Pages 等静态镜像上只展示角色卡，不做静默伪装。</li>
+        </ul>
+        <a class="bot-persona-doc-link" href="{{ '/projects/retro-robot/ai-chat-setup.html' | relative_url }}">部署与配置说明 ↗</a>
+      </aside>
+    </div>
   </section>
 
   <!-- ========================================================================
@@ -1071,8 +1102,75 @@ permalink: /projects/retro-robot/index.html
   color: var(--accent-dark);
 }
 
+/* AI 主理人角色卡区 */
+.bot-persona-section {
+  margin: 54px 0;
+}
+
+.bot-persona-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.bot-chat-stage .s5-chat-panel {
+  min-height: 360px;
+}
+
+.bot-noscript {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bot-persona-notes {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-small);
+}
+
+.bot-persona-notes h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.bot-persona-notes ul {
+  margin: 0 0 16px;
+  padding-left: 18px;
+}
+
+.bot-persona-notes li {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--body-copy);
+  margin-bottom: 8px;
+}
+
+.bot-persona-notes code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--accent-dark);
+}
+
+.bot-persona-doc-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  text-decoration: none;
+}
+
+.bot-persona-doc-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 900px) {
-  .lab-stage-container {
+  .lab-stage-container,
+  .bot-persona-layout {
     grid-template-columns: 1fr;
   }
 }

@@ -1,0 +1,17 @@
+[Unit]
+Description=S5·BOT chat proxy
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/var/www/s5bot
+EnvironmentFile=/var/www/s5bot/.env
+ExecStart=/usr/bin/python3 /var/www/s5bot/s5bot_proxy.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

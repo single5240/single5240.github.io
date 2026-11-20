@@ -1,0 +1,346 @@
+/* S5·BOT AI 角色卡与对话面板 —— 依赖 base.css 主题变量 */
+
+.s5-chat-panel {
+  --s5-accent: var(--accent);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow-small);
+  color: var(--ink);
+}
+
+/* ---------- 角色卡头部 ---------- */
+.s5-persona-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.s5-persona-avatar {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--soft), var(--accent));
+  color: var(--on-accent, #fff);
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 16px -4px var(--accent);
+}
+
+.s5-persona-info {
+  min-width: 0;
+}
+
+.s5-persona-name {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.s5-persona-title {
+  font-size: 11px;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--accent-dark);
+  margin-top: 2px;
+}
+
+.s5-persona-tagline {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.s5-persona-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.s5-chip {
+  font-size: 10.5px;
+  line-height: 1.4;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--alt-bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.s5-persona-meta {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--muted);
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+}
+
+.s5-persona-meta p {
+  margin: 0 0 2px;
+}
+
+/* ---------- 对话记录 ---------- */
+.s5-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--subtle-bg);
+  border: 1px solid var(--line);
+  scrollbar-width: thin;
+}
+
+.s5-chat-compact .s5-chat-log {
+  max-height: 260px;
+  min-height: 96px;
+}
+
+.s5-msg-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.s5-msg-user {
+  flex-direction: row-reverse;
+}
+
+.s5-msg-avatar {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: ui-monospace, Consolas, monospace;
+  background: var(--soft);
+  color: var(--accent-dark);
+  border: 1px solid var(--line);
+}
+
+.s5-msg-user .s5-msg-avatar {
+  background: var(--alt-bg);
+  color: var(--muted);
+}
+
+.s5-msg-bubble {
+  max-width: 86%;
+  padding: 8px 11px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.s5-msg-assistant .s5-msg-bubble {
+  border-top-left-radius: 2px;
+}
+
+.s5-msg-user .s5-msg-bubble {
+  border-top-right-radius: 2px;
+  background: var(--soft);
+  color: var(--ink);
+}
+
+/* ---------- 建议问题 ---------- */
+.s5-suggests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.s5-suggest-btn {
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: left;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent-dark);
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.s5-suggest-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+
+/* ---------- 状态与降级 ---------- */
+.s5-chat-status {
+  font-size: 11px;
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--muted);
+  min-height: 14px;
+}
+
+.s5-chat-status.is-info { color: var(--accent-dark); }
+.s5-chat-status.is-warn { color: #d0831a; }
+
+.s5-offline-note {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--alt-bg);
+}
+
+/* ---------- 输入区 ---------- */
+.s5-chat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.s5-ask-input {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 52px;
+  padding: 9px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--subtle-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.s5-ask-input::placeholder { color: var(--muted); opacity: 0.8; }
+
+.s5-ask-input:focus-visible,
+.s5-send-btn:focus-visible,
+.s5-stop-btn:focus-visible,
+.s5-suggest-btn:focus-visible,
+.s5-chat-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.s5-chat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.s5-send-btn,
+.s5-stop-btn {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--accent);
+  transition: filter 0.18s, background 0.18s;
+}
+
+.s5-send-btn {
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+}
+
+.s5-send-btn:hover:not(:disabled) { filter: brightness(1.08); }
+
+.s5-stop-btn {
+  background: var(--panel);
+  color: var(--muted);
+  border-color: var(--line);
+}
+
+.s5-send-btn:disabled,
+.s5-stop-btn:disabled,
+.s5-ask-input:disabled,
+.s5-suggest-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- 全站伴读：按钮 + 浮层 ---------- */
+.s5-chat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--soft);
+  color: var(--accent-dark);
+  cursor: pointer;
+  transition: filter 0.18s;
+  white-space: nowrap;
+}
+
+.s5-chat-toggle:hover { filter: brightness(1.08); }
+
+/* 挂载点在 #robot-dock 内，随其相对/固定定位自然跟随停靠 */
+.s5-dock-host {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  z-index: 60;
+  width: min(340px, calc(100vw - 32px));
+  display: none;
+}
+
+.s5-dock-host.is-open {
+  display: block;
+  animation: s5-pop 0.2s ease-out;
+}
+
+@keyframes s5-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 600px) {
+  .s5-dock-host {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 84px;
+    width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s5-dock-host.is-open { animation: none; }
+  .s5-send-btn,
+  .s5-stop-btn,
+  .s5-suggest-btn,
+  .s5-chat-toggle { transition: none; }
+}
+
+/* ---------- 特殊皮肤：保证对比度 ---------- */
+:root[data-skin="matrix"] .s5-persona-avatar,
+:root[data-theme="hud"] .s5-persona-avatar {
+  color: #04120e;
+}
