@@ -12,7 +12,10 @@
   let persona = null;
   let personaOk = false;
   let apiAvailable = true;
+  let models = [];
+  let selectedModel = "";
   const mounted = [];
+  const MODEL_KEY = "s5-bot-model";
 
   function escapeHtml(value) {
     return String(value)
@@ -325,11 +328,42 @@
     return history;
   }
 
-  async function streamChat({ messages, onDelta, signal }) {
+  function readSavedModel() {
+    try {
+      return localStorage.getItem(MODEL_KEY) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function rememberModel(id) {
+    try {
+      localStorage.setItem(MODEL_KEY, id);
+    } catch (error) {
+      console.warn(TAG, "模型选择未能写入本地缓存", error);
+    }
+  }
+
+  function applyModelList(list) {
+    models = Array.isArray(list)
+      ? list.filter((item) => item && typeof item.id === "string" && item.id && typeof item.label === "string" && item.label)
+      : [];
+    const saved = readSavedModel();
+    selectedModel = models.some((item) => item.id === saved) ? saved : (models[0]?.id || "");
+    if (selectedModel) rememberModel(selectedModel);
+  }
+
+  function selectedModelLabel() {
+    return models.find((item) => item.id === selectedModel)?.label || "";
+  }
+
+  async function streamChat({ messages, model, onDelta, signal }) {
+    const body = { messages };
+    if (model) body.model = model;
     const res = await fetch(apiBase + "/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify(body),
       signal,
     });
 
@@ -379,7 +413,7 @@
     if (!panel || panel.dataset.s5Offline === "1") return;
     panel.dataset.s5Offline = "1";
     panel.classList.add("is-offline");
-    panel.querySelectorAll(".s5-ask-input, .s5-send-btn, .s5-suggest-btn").forEach((el) => {
+    panel.querySelectorAll(".s5-ask-input, .s5-send-btn, .s5-suggest-btn, .s5-model-select").forEach((el) => {
       el.disabled = true;
     });
     const hint = persona?.staticNotice ||
@@ -577,6 +611,27 @@
     input.maxLength = 1200;
     const actions = document.createElement("div");
     actions.className = "s5-chat-actions";
+    let modelSelect = null;
+    if (models.length) {
+      modelSelect = document.createElement("select");
+      modelSelect.className = "s5-model-select";
+      modelSelect.setAttribute("aria-label", "选择模型");
+      models.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.label;
+        modelSelect.appendChild(option);
+      });
+      modelSelect.value = selectedModel;
+      modelSelect.addEventListener("change", () => {
+        selectedModel = modelSelect.value;
+        rememberModel(selectedModel);
+        mounted.forEach((entry) => {
+          const other = entry.panel.querySelector(".s5-model-select");
+          if (other && other !== modelSelect) other.value = selectedModel;
+        });
+      });
+    }
     const send = document.createElement("button");
     send.type = "submit";
     send.className = "s5-send-btn";
@@ -588,6 +643,7 @@
     stop.textContent = page ? "停" : "停止";
     if (page) stop.setAttribute("aria-label", "停止生成");
     stop.hidden = true;
+    if (modelSelect) actions.appendChild(modelSelect);
     actions.append(stop, send);
     if (!page) {
       const openPage = document.createElement("a");
@@ -689,6 +745,7 @@
     function setBusy(state) {
       busy = state;
       send.disabled = state || !apiAvailable;
+      if (modelSelect) modelSelect.disabled = state || !apiAvailable;
       stop.hidden = !state;
       input.setAttribute("aria-busy", String(state));
     }
@@ -709,7 +766,8 @@
       appendBubble(list, "user", text, true);
       commitThread();
       setBusy(true);
-      setStatus(panel, "S5·BOT 正在思考…", "info");
+      const modelLabel = selectedModelLabel();
+      setStatus(panel, modelLabel ? "正在用 " + modelLabel + " 思考…" : "S5·BOT 正在思考…", "info");
 
       const history = collectHistory(list, 12).slice(0, -1);
       const messages = [...history, { role: "user", content: text }];
@@ -721,6 +779,7 @@
       try {
         await streamChat({
           messages,
+          model: selectedModel,
           signal: controller.signal,
           onDelta(delta) {
             if (turn !== generation) return;
@@ -800,7 +859,12 @@
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 2500);
     return fetch(apiBase + "/health", { signal: controller.signal, cache: "no-store" })
-      .then((res) => res.ok)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data || data.ok === false) return false;
+        applyModelList(data.models);
+        return true;
+      })
       .catch(() => false)
       .finally(() => clearTimeout(timer));
   }

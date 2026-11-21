@@ -14,11 +14,14 @@ Environment variables:
   S5BOT_API_KEY         Primary upstream API key. Never commit it.
   S5BOT_MODEL           Primary model id.
   S5BOT_API             Primary protocol: responses (default) or chat.
-  S5BOT_POOL_1 .. _20   Optional backups, each "base|api_key|model" or
+  S5BOT_POOL_1 .. _20   Optional entries, each "base|api_key|model" or
                         "base|api_key|model|chat". The fourth field selects
-                        chat completions; omitted means responses. Tried in
-                        order when the current upstream errors before any text
-                        is sent to the browser.
+                        chat completions; omitted means responses. Use model
+                        "*" to read that API's /models list at startup and
+                        publish each chat model as its own choice. Distinct
+                        model ids become choices on the site. Entries that
+                        share a model id stay backups for that choice and are
+                        tried in order when it errors before any text is sent.
   S5BOT_POOL_COOLDOWN   Seconds to deprioritize a failed upstream (default 45).
   S5BOT_PERSONA_PATH    Path to bot-persona.json (shared with the frontend).
   S5BOT_ALLOWED_ORIGIN  Allowed Origin, or a comma-separated list.
@@ -206,15 +209,148 @@ def read_until_content(upstream, api):
     raise ValueError("upstream produced no text")
 
 
+SKIP_ENDPOINT_TYPES = {"video-generation", "image-generation", "image-edit"}
+CHAT_ENDPOINT_TYPES = {"openai", "openai-response", "anthropic"}
+SKIP_MODEL_WORDS = ("image", "video", "vidu", "seedance", "wan", "banana", "claude", "astra")
+BLOCKED_MODEL_IDS = {"gemini-4-carbon", "glm-5.3"}
+
+
+def is_chat_catalog_model(item):
+    """Keep text chat models. Image and video catalogs stay off the selector."""
+    if not isinstance(item, dict):
+        return False
+    model_id = item.get("id")
+    if not isinstance(model_id, str):
+        return False
+    model_id = model_id.strip()
+    if not model_id or model_id == "*" or len(model_id) > 160:
+        return False
+    types = item.get("supported_endpoint_types") or []
+    if not isinstance(types, list):
+        types = []
+    kinds = {str(kind) for kind in types}
+    if kinds & SKIP_ENDPOINT_TYPES:
+        return False
+    if kinds and not (kinds & CHAT_ENDPOINT_TYPES):
+        return False
+    lowered = model_id.lower()
+    if lowered in BLOCKED_MODEL_IDS:
+        return False
+    if any(word in lowered for word in SKIP_MODEL_WORDS):
+        return False
+    return True
+
+
+def catalog_model_ids(payload):
+    items = payload.get("data") if isinstance(payload, dict) else None
+    if not isinstance(items, list):
+        return []
+    found = []
+    seen = set()
+    for item in items:
+        if not is_chat_catalog_model(item):
+            continue
+        model_id = item["id"].strip()
+        if model_id in seen:
+            continue
+        seen.add(model_id)
+        found.append(model_id)
+    return found
+
+
+def fetch_catalog_models(entry):
+    request = urllib.request.Request(
+        entry.base + "/models",
+        headers={
+            "Authorization": "Bearer " + entry.key,
+            "Accept": "application/json",
+            "User-Agent": USER_AGENT,
+        },
+    )
+    with urllib.request.urlopen(request, timeout=20) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    return catalog_model_ids(payload)
+
+
+def expand_catalog(entries, fetch=None):
+    """Turn a model id of * into one upstream per chat model. Keys stay put."""
+    fetch = fetch_catalog_models if fetch is None else fetch
+    expanded = []
+    for entry in entries:
+        if entry.model != "*":
+            expanded.append(entry)
+            continue
+        try:
+            model_ids = fetch(entry)
+        except Exception as exc:  # noqa: BLE001 - a dead catalog must not drop the other pools
+            print(f"[s5bot] {entry.name} model list unavailable ({exc.__class__.__name__})", file=sys.stderr)
+            continue
+        if not model_ids:
+            print(f"[s5bot] {entry.name} model list was empty", file=sys.stderr)
+            continue
+        for model_id in model_ids:
+            expanded.append(Upstream(
+                f"{entry.name}:{model_id}",
+                entry.base,
+                entry.key,
+                model_id,
+                entry.api,
+            ))
+    return expanded
+
+
+def build_model_groups(entries):
+    """One public choice per model id and protocol. Keys stay server-side."""
+    grouped = []
+    by_key = {}
+    for index, entry in enumerate(entries):
+        key = (entry.model, entry.api)
+        group = by_key.get(key)
+        if group is None:
+            group = {"model": entry.model, "api": entry.api, "indices": []}
+            by_key[key] = group
+            grouped.append(group)
+        group["indices"].append(index)
+    used = set()
+    for group in grouped:
+        shared = sum(1 for item in grouped if item["model"] == group["model"]) > 1
+        ident = group["model"] + ("|" + group["api"] if shared else "")
+        suffix = 2
+        while ident in used:
+            ident = group["model"] + "|" + group["api"] + "-" + str(suffix)
+            suffix += 1
+        used.add(ident)
+        group["id"] = ident
+        group["label"] = group["model"] if ident == group["model"] else group["model"] + " · " + group["api"]
+    return grouped
+
+
 UPSTREAMS = []
 POOL = None
+MODEL_GROUPS = []
+MODEL_BY_ID = {}
 
 
 def configure(environ=None):
-    global UPSTREAMS, POOL
-    UPSTREAMS = load_upstreams(os.environ if environ is None else environ)
+    global UPSTREAMS, POOL, MODEL_GROUPS, MODEL_BY_ID
+    loaded = load_upstreams(os.environ if environ is None else environ)
+    UPSTREAMS = expand_catalog(loaded)
     POOL = PoolOrder(UPSTREAMS, POOL_COOLDOWN)
+    MODEL_GROUPS = build_model_groups(UPSTREAMS)
+    MODEL_BY_ID = {group["id"]: group for group in MODEL_GROUPS}
     return UPSTREAMS
+
+
+def requested_model(raw):
+    """Return a public model id, or None when the client asked for an unknown one."""
+    if not MODEL_GROUPS:
+        return None
+    if not isinstance(raw, dict) or raw.get("model") in (None, ""):
+        return MODEL_GROUPS[0]["id"]
+    value = raw.get("model")
+    if not isinstance(value, str) or len(value) > 160 or value not in MODEL_BY_ID:
+        return None
+    return value
 
 # ----- naive per-IP sliding-window rate limit -----
 _rate_lock = threading.Lock()
@@ -353,6 +489,10 @@ class ChatHandler(BaseHTTPRequestHandler):
                 "ok": True,
                 "modelConfigured": bool(UPSTREAMS),
                 "poolCount": len(UPSTREAMS),
+                "models": [
+                    {"id": group["id"], "label": group["label"]}
+                    for group in MODEL_GROUPS
+                ],
             })
         else:
             self._send_json(404, {"error": "not_found"})
@@ -394,12 +534,19 @@ class ChatHandler(BaseHTTPRequestHandler):
         if messages is None:
             self._send_json(400, {"error": "invalid_messages"})
             return
+        model_id = requested_model(raw)
+        if model_id is None:
+            self._send_json(400, {"error": "invalid_model"})
+            return
+        allowed = set(MODEL_BY_ID[model_id]["indices"])
 
         upstream = None
         pending = None
         chosen = None
         failures = []
         for index in POOL.order():
+            if index not in allowed:
+                continue
             entry = UPSTREAMS[index]
             opened = None
             try:
@@ -457,7 +604,10 @@ class ChatHandler(BaseHTTPRequestHandler):
         finally:
             upstream.close()
             if chosen is not None:
-                print(f"[s5bot] replied via {UPSTREAMS[chosen].name}", file=sys.stderr)
+                print(
+                    f"[s5bot] replied via {UPSTREAMS[chosen].name} model={model_id}",
+                    file=sys.stderr,
+                )
 
 
 def open_upstream(entry, messages):
