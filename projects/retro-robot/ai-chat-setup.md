@@ -48,9 +48,12 @@ sudo -u deploy nano /var/www/s5bot/.env
 
 至少填写三项：
 
-- `S5BOT_UPSTREAM`：与 OpenAI 兼容的接口地址，不含末尾 `/chat/completions`。
+- `S5BOT_UPSTREAM`：接口根地址，不含末尾 `/responses` 或 `/chat/completions`。
+- `S5BOT_API`：主接口协议。`responses`（默认）会把角色卡放进 `instructions`，并把 Responses 流转换成前端现有的对话片段。`chat` 则走 Chat Completions，角色卡作为 system 消息。
 - `S5BOT_API_KEY`：模型密钥。
 - `S5BOT_MODEL`：模型 id。
+
+备用池用 `S5BOT_POOL_1` 到 `S5BOT_POOL_20`。三项 `根地址|密钥|模型id` 按 Responses API 调用；四项再加 `|chat` 则按 Chat Completions 调用。主接口在返回任何文字之前失败时，代理按编号改试下一个；已经开始输出的回复不会中途换池。失败的池子会在 `S5BOT_POOL_COOLDOWN` 秒（默认 45）内被排到后面。`/api/health` 里的 `poolCount` 是主接口加备用的总数，不包含地址和密钥。
 
 并设置：
 
