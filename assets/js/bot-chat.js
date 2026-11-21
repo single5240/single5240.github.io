@@ -233,7 +233,58 @@
       });
   }
 
-  function appendBubble(list, role, text) {
+  const THREAD_KEY = "s5-bot-threads";
+  const THREAD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const THREAD_LIMIT = 20;
+  const THREAD_MESSAGE_LIMIT = 40;
+
+  function emptyStore() {
+    return { version: 1, activeId: "", threads: [] };
+  }
+
+  function readStore() {
+    try {
+      const raw = localStorage.getItem(THREAD_KEY);
+      if (!raw) return emptyStore();
+      const data = JSON.parse(raw);
+      if (!data || !Array.isArray(data.threads)) return emptyStore();
+      const now = Date.now();
+      const threads = [];
+      for (const thread of data.threads) {
+        if (!thread || typeof thread.id !== "string") continue;
+        if (now - Number(thread.updatedAt) >= THREAD_TTL_MS) continue;
+        if (!Array.isArray(thread.messages)) continue;
+        const messages = [];
+        for (const item of thread.messages) {
+          if (!item || (item.role !== "user" && item.role !== "assistant")) continue;
+          if (typeof item.content !== "string" || !item.content) continue;
+          messages.push({ role: item.role, content: item.content });
+        }
+        if (!messages.length) continue;
+        threads.push({
+          id: thread.id,
+          title: String(thread.title || "对话").replace(/\s+/g, " ").slice(0, 24),
+          updatedAt: Number(thread.updatedAt) || now,
+          messages: messages.slice(-THREAD_MESSAGE_LIMIT),
+        });
+        if (threads.length >= THREAD_LIMIT) break;
+      }
+      const activeId = threads.some((thread) => thread.id === data.activeId) ? data.activeId : "";
+      return { version: 1, activeId, threads };
+    } catch {
+      return emptyStore();
+    }
+  }
+
+  function writeStore(store) {
+    try {
+      localStorage.setItem(THREAD_KEY, JSON.stringify(store));
+    } catch (error) {
+      console.warn(TAG, "对话未能写入本地缓存", error);
+    }
+  }
+
+  function appendBubble(list, role, text, persist) {
     const row = document.createElement("div");
     row.className = "s5-msg-row s5-msg-" + role;
 
@@ -244,6 +295,7 @@
 
     const bubble = document.createElement("div");
     bubble.className = "s5-msg-bubble";
+    if (persist) bubble.dataset.persist = "1";
     setBubbleContent(bubble, role, text);
 
     row.appendChild(avatar);
@@ -408,6 +460,10 @@
 
     let hero = null;
     let composer = null;
+    let historyNav = null;
+    const memory = readStore();
+    let activeId = memory.activeId;
+    const savedMessages = memory.threads.find((thread) => thread.id === activeId)?.messages || [];
 
     if (page) {
       const side = document.createElement("aside");
@@ -432,6 +488,15 @@
       fresh.textContent = "新对话";
       fresh.addEventListener("click", () => resetThread());
 
+      historyNav = document.createElement("div");
+      historyNav.className = "s5-page-history";
+      historyNav.setAttribute("role", "list");
+      historyNav.setAttribute("aria-label", "最近对话");
+
+      const keep = document.createElement("p");
+      keep.className = "s5-page-keep";
+      keep.textContent = "保存在这台浏览器，7 天内可继续";
+
       const note = document.createElement("p");
       note.className = "s5-page-side-note";
       note.textContent = persona?.display?.tagline || "";
@@ -440,7 +505,7 @@
       back.className = "s5-page-back";
       back.href = "/";
       back.textContent = "返回首页";
-      side.append(brand, fresh, note, back);
+      side.append(brand, fresh, historyNav, keep, note, back);
 
       const main = document.createElement("div");
       main.className = "s5-page-main";
@@ -469,7 +534,7 @@
     }
 
     if (persona) {
-      if (!page) appendBubble(list, "assistant", persona.greeting || "你好，我是 S5·BOT。");
+      if (!page && !savedMessages.length) appendBubble(list, "assistant", persona.greeting || "你好，我是 S5·BOT。");
 
       const suggests = document.createElement("div");
       suggests.className = page ? "s5-page-suggestions" : "s5-suggests";
@@ -542,6 +607,84 @@
 
     let controller = null;
     let busy = false;
+    let generation = 0;
+
+    function persistedMessages() {
+      const messages = [];
+      for (const row of list.querySelectorAll(".s5-msg-row")) {
+        const bubble = row.querySelector(".s5-msg-bubble");
+        if (!bubble || bubble.dataset.persist !== "1") continue;
+        const content = bubble.dataset.raw || "";
+        if (!content) continue;
+        messages.push({
+          role: row.classList.contains("s5-msg-user") ? "user" : "assistant",
+          content,
+        });
+      }
+      return messages.slice(-THREAD_MESSAGE_LIMIT);
+    }
+
+    function paintHistory() {
+      if (!historyNav) return;
+      historyNav.replaceChildren();
+      for (const thread of memory.threads) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "s5-thread" + (thread.id === activeId ? " is-active" : "");
+        btn.title = thread.title;
+        btn.textContent = thread.title;
+        if (thread.id === activeId) btn.setAttribute("aria-current", "true");
+        btn.addEventListener("click", () => openThread(thread.id));
+        historyNav.appendChild(btn);
+      }
+    }
+
+    function showMessages(messages) {
+      list.replaceChildren();
+      messages.forEach((item) => appendBubble(list, item.role, item.content, true));
+      if (!messages.length) return;
+      if (hero) {
+        hero.hidden = true;
+        list.hidden = false;
+      }
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function commitThread() {
+      const messages = persistedMessages();
+      if (!messages.length) return;
+      if (!activeId || !memory.threads.some((thread) => thread.id === activeId)) {
+        const firstUser = messages.find((item) => item.role === "user");
+        activeId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        memory.threads.unshift({
+          id: activeId,
+          title: (firstUser?.content || "新对话").replace(/\s+/g, " ").slice(0, 24),
+          updatedAt: Date.now(),
+          messages: [],
+        });
+      }
+      const thread = memory.threads.find((item) => item.id === activeId);
+      thread.messages = messages;
+      thread.updatedAt = Date.now();
+      memory.threads = memory.threads.filter((item) => item.id !== activeId);
+      memory.threads.unshift(thread);
+      memory.threads = memory.threads.slice(0, THREAD_LIMIT);
+      memory.activeId = activeId;
+      writeStore(memory);
+      paintHistory();
+    }
+
+    function openThread(id) {
+      if (busy || id === activeId) return;
+      const thread = memory.threads.find((item) => item.id === id);
+      if (!thread) return;
+      activeId = id;
+      memory.activeId = id;
+      writeStore(memory);
+      showMessages(thread.messages);
+      paintHistory();
+      input.focus();
+    }
 
     function setBusy(state) {
       busy = state;
@@ -563,12 +706,14 @@
         hero.hidden = true;
         list.hidden = false;
       }
-      appendBubble(list, "user", text);
+      appendBubble(list, "user", text, true);
+      commitThread();
       setBusy(true);
       setStatus(panel, "S5·BOT 正在思考…", "info");
 
       const history = collectHistory(list, 12).slice(0, -1);
       const messages = [...history, { role: "user", content: text }];
+      const turn = generation;
       controller = new AbortController();
       let answerBubble = null;
       let answer = "";
@@ -578,17 +723,19 @@
           messages,
           signal: controller.signal,
           onDelta(delta) {
+            if (turn !== generation) return;
             if (!answerBubble) {
-              answerBubble = appendBubble(list, "assistant", "");
+              answerBubble = appendBubble(list, "assistant", "", true);
             }
             answer += delta;
             setBubbleContent(answerBubble, "assistant", answer);
             list.scrollTop = list.scrollHeight;
           },
         });
-        if (!answerBubble) answerBubble = appendBubble(list, "assistant", "（无输出）");
-        setStatus(panel, "", "");
+        if (turn === generation && !answerBubble) answerBubble = appendBubble(list, "assistant", "（无输出）", true);
+        if (turn === generation) setStatus(panel, "", "");
       } catch (error) {
+        if (turn !== generation) return;
         if (error && error.name === "AbortError") {
           if (answerBubble && !answer) setBubbleContent(answerBubble, "assistant", "（已停止）");
           setStatus(panel, "", "");
@@ -598,13 +745,22 @@
           degrade(panel, list);
         }
       } finally {
+        if (turn !== generation) return;
         controller = null;
         setBusy(false);
+        commitThread();
       }
     }
 
     function resetThread() {
+      generation += 1;
       if (controller) controller.abort();
+      controller = null;
+      commitThread();
+      activeId = "";
+      memory.activeId = "";
+      writeStore(memory);
+      setBusy(false);
       list.replaceChildren();
       input.value = "";
       fitInput();
@@ -615,6 +771,7 @@
       } else if (persona) {
         appendBubble(list, "assistant", persona.greeting || "你好，我是 S5·BOT。");
       }
+      paintHistory();
       input.focus();
     }
 
@@ -632,6 +789,9 @@
     stop.addEventListener("click", () => {
       if (controller) controller.abort();
     });
+
+    if (savedMessages.length) showMessages(savedMessages);
+    paintHistory();
 
     return { panel, submit, setBusy };
   }
