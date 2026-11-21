@@ -332,14 +332,16 @@
     });
     const hint = persona?.staticNotice ||
       "当前站点未启用在线对话。角色卡可正常查看；完整 AI 对话请访问主站 single5240.cn。";
-    if (list) {
+    const emptyPage = panel.classList.contains("s5-chat-page") && list && list.childElementCount === 0;
+    if (list && !emptyPage) {
+      list.hidden = false;
       const note = document.createElement("div");
       note.className = "s5-offline-note";
       note.textContent = hint;
       list.appendChild(note);
       list.scrollTop = list.scrollHeight;
     }
-    setStatus(panel, "静态模式", "warn");
+    setStatus(panel, emptyPage ? hint : "静态模式", "warn");
   }
 
   function renderCardHead(panel) {
@@ -393,25 +395,84 @@
   }
 
   function buildPanel(mode) {
+    const page = mode === "page";
     const panel = document.createElement("section");
     panel.className = "s5-chat-panel s5-chat-" + mode;
     panel.setAttribute("aria-label", "S5·BOT AI 对话");
-
-    if (persona) renderCardHead(panel);
 
     const list = document.createElement("div");
     list.className = "s5-chat-log";
     list.setAttribute("role", "log");
     list.setAttribute("aria-live", "polite");
     list.setAttribute("aria-label", "对话记录");
-    panel.appendChild(list);
+
+    let hero = null;
+    let composer = null;
+
+    if (page) {
+      const side = document.createElement("aside");
+      side.className = "s5-page-side";
+      const brand = document.createElement("div");
+      brand.className = "s5-page-brand";
+      const mark = document.createElement("span");
+      mark.className = "s5-page-mark";
+      mark.setAttribute("aria-hidden", "true");
+      mark.textContent = persona?.display?.avatarGlyph || "S5";
+      const brandText = document.createElement("div");
+      const brandName = document.createElement("strong");
+      brandName.textContent = persona?.display?.name || "S5·BOT";
+      const brandTitle = document.createElement("span");
+      brandTitle.textContent = persona?.display?.title || "";
+      brandText.append(brandName, brandTitle);
+      brand.append(mark, brandText);
+
+      const fresh = document.createElement("button");
+      fresh.type = "button";
+      fresh.className = "s5-page-new";
+      fresh.textContent = "新对话";
+      fresh.addEventListener("click", () => resetThread());
+
+      const note = document.createElement("p");
+      note.className = "s5-page-side-note";
+      note.textContent = persona?.display?.tagline || "";
+
+      const back = document.createElement("a");
+      back.className = "s5-page-back";
+      back.href = "/";
+      back.textContent = "返回首页";
+      side.append(brand, fresh, note, back);
+
+      const main = document.createElement("div");
+      main.className = "s5-page-main";
+      const stage = document.createElement("div");
+      stage.className = "s5-page-stage";
+      composer = document.createElement("div");
+      composer.className = "s5-page-composer";
+      hero = document.createElement("div");
+      hero.className = "s5-page-hero";
+      const hello = document.createElement("p");
+      hello.className = "s5-page-hello";
+      hello.textContent = persona?.display?.name || "S5·BOT";
+      const lead = document.createElement("p");
+      lead.className = "s5-page-lead";
+      lead.textContent = persona?.greeting || "你好，我是 S5·BOT。";
+      hero.append(hello, lead);
+      stage.append(hero, list);
+      main.append(stage, composer);
+      panel.append(side, main);
+      list.hidden = true;
+    } else if (persona) {
+      renderCardHead(panel);
+      panel.appendChild(list);
+    } else {
+      panel.appendChild(list);
+    }
 
     if (persona) {
-      const initial = persona.greeting || "你好，我是 S5·BOT。";
-      appendBubble(list, "assistant", initial);
+      if (!page) appendBubble(list, "assistant", persona.greeting || "你好，我是 S5·BOT。");
 
       const suggests = document.createElement("div");
-      suggests.className = "s5-suggests";
+      suggests.className = page ? "s5-page-suggestions" : "s5-suggests";
       (persona.suggestions || []).forEach((text) => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -426,8 +487,11 @@
         });
         suggests.appendChild(btn);
       });
-      panel.appendChild(suggests);
+      if (page && hero) hero.appendChild(suggests);
+      else panel.appendChild(suggests);
     } else {
+      if (hero) hero.hidden = true;
+      list.hidden = false;
       appendBubble(list, "assistant", "角色卡暂时无法加载，AI 对话不可用。");
       apiAvailable = false;
     }
@@ -436,30 +500,45 @@
     status.className = "s5-chat-status";
     status.setAttribute("role", "status");
     status.hidden = true;
-    panel.appendChild(status);
+    (composer || panel).appendChild(status);
 
     const form = document.createElement("form");
     form.className = "s5-chat-form";
     const input = document.createElement("textarea");
     input.className = "s5-ask-input";
     input.setAttribute("aria-label", "输入给 S5·BOT 的消息");
-    input.setAttribute("placeholder", "问点嵌入式 / 调试的问题…");
-    input.rows = 2;
+    input.setAttribute("placeholder", page ? "给 S5·BOT 发消息" : "问点嵌入式 / 调试的问题…");
+    input.rows = page ? 1 : 2;
     input.maxLength = 1200;
     const actions = document.createElement("div");
     actions.className = "s5-chat-actions";
     const send = document.createElement("button");
     send.type = "submit";
     send.className = "s5-send-btn";
-    send.textContent = "发送";
+    send.textContent = page ? "↑" : "发送";
+    if (page) send.setAttribute("aria-label", "发送");
     const stop = document.createElement("button");
     stop.type = "button";
     stop.className = "s5-stop-btn";
-    stop.textContent = "停止";
+    stop.textContent = page ? "停" : "停止";
+    if (page) stop.setAttribute("aria-label", "停止生成");
     stop.hidden = true;
     actions.append(stop, send);
+    if (!page) {
+      const openPage = document.createElement("a");
+      openPage.className = "s5-open-page";
+      openPage.href = "/chat/index.html";
+      openPage.textContent = "完整对话";
+      actions.insertBefore(openPage, actions.firstChild);
+    }
     form.append(input, actions);
-    panel.appendChild(form);
+    (composer || panel).appendChild(form);
+
+    function fitInput() {
+      if (!page) return;
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 168) + "px";
+    }
 
     let controller = null;
     let busy = false;
@@ -479,6 +558,11 @@
         return;
       }
       input.value = "";
+      fitInput();
+      if (hero) {
+        hero.hidden = true;
+        list.hidden = false;
+      }
       appendBubble(list, "user", text);
       setBusy(true);
       setStatus(panel, "S5·BOT 正在思考…", "info");
@@ -519,10 +603,26 @@
       }
     }
 
+    function resetThread() {
+      if (controller) controller.abort();
+      list.replaceChildren();
+      input.value = "";
+      fitInput();
+      setStatus(panel, "", "");
+      if (hero) {
+        hero.hidden = false;
+        list.hidden = true;
+      } else if (persona) {
+        appendBubble(list, "assistant", persona.greeting || "你好，我是 S5·BOT。");
+      }
+      input.focus();
+    }
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       submit();
     });
+    input.addEventListener("input", fitInput);
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -614,6 +714,10 @@
       const head = built.panel.querySelector(".s5-persona-head");
       if (head) head.appendChild(close);
       else built.panel.insertBefore(close, built.panel.firstChild);
+    }
+
+    if (mode === "page") {
+      built.panel.querySelector(".s5-ask-input")?.focus();
     }
 
     if (mode === "dock") {
