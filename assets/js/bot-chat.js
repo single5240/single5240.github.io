@@ -345,11 +345,76 @@
       .finally(() => clearTimeout(timer));
   }
 
+  const HOME_SLOT_ID = "homeBotChat";
+
+  function homeSlot() {
+    return document.getElementById(HOME_SLOT_ID);
+  }
+
+  function setHomeChatOpen(open, toggle) {
+    const slot = homeSlot();
+    if (!slot) return;
+    slot.hidden = !open;
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "收起 S5·BOT AI 对话" : "打开 S5·BOT AI 对话");
+      toggle.textContent = open ? "✕ 收起对话" : "✦ AI 对话";
+    }
+    if (open) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      slot.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
+      slot.querySelector(".s5-ask-input")?.focus();
+    }
+  }
+
+  function mountLauncher(host) {
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "s5-chat-toggle";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", HOME_SLOT_ID);
+    toggle.setAttribute("aria-label", "打开 S5·BOT AI 对话");
+    toggle.textContent = "✦ AI 对话";
+    host.parentElement?.insertBefore(toggle, host);
+
+    toggle.addEventListener("click", () => {
+      const slot = homeSlot();
+      setHomeChatOpen(!slot || slot.hidden, toggle);
+    });
+    document.addEventListener("keydown", (e) => {
+      const slot = homeSlot();
+      if (e.key === "Escape" && slot && !slot.hidden) {
+        setHomeChatOpen(false, toggle);
+        toggle.focus();
+      }
+    });
+  }
+
   function mountPanel(host) {
     const mode = host.getAttribute("data-bot-chat") || "panel";
+    if (mode === "launcher") {
+      mountLauncher(host);
+      return;
+    }
+
     const built = buildPanel(mode);
     host.appendChild(built.panel);
     mounted.push({ host, ...built });
+
+    if (mode === "home") {
+      const close = document.createElement("button");
+      close.type = "button";
+      close.className = "s5-chat-close";
+      close.textContent = "收起";
+      close.addEventListener("click", () => {
+        const toggle = document.querySelector(".s5-chat-toggle");
+        setHomeChatOpen(false, toggle);
+        toggle?.focus();
+      });
+      const head = built.panel.querySelector(".s5-persona-head");
+      if (head) head.appendChild(close);
+      else built.panel.insertBefore(close, built.panel.firstChild);
+    }
 
     if (mode === "dock") {
       const toggle = document.createElement("button");

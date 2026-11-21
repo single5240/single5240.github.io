@@ -889,6 +889,16 @@ h3 { font-size: 20px; line-height: 1.5; font-weight: 700; }
   transform: scale(1.35);
 }
 
+/* 主页 AI 对话：插在控制台和精选项目之间，默认收起 */
+.home-bot-slot {
+  margin-bottom: 28px;
+  scroll-margin-top: 96px;
+}
+
+.workbench-home:has(#homeBotChat:not([hidden])) .workbench-console {
+  margin-bottom: 16px;
+}
+
 /* ==========================================================================
    工程交互项目展台 (快速预览小卡片矩阵)
    ========================================================================== */

@@ -109,6 +109,44 @@
   min-height: 96px;
 }
 
+.s5-chat-home .s5-persona-head {
+  align-items: flex-start;
+}
+
+.s5-chat-home .s5-persona-chips,
+.s5-chat-home .s5-persona-meta {
+  display: none;
+}
+
+.s5-chat-home .s5-chat-log {
+  min-height: 200px;
+  max-height: min(420px, 48vh);
+}
+
+.s5-chat-close {
+  margin-left: auto;
+  flex: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.s5-chat-close:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+}
+
+.s5-chat-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .s5-msg-row {
   display: flex;
   gap: 8px;
@@ -336,7 +374,8 @@
   .s5-send-btn,
   .s5-stop-btn,
   .s5-suggest-btn,
-  .s5-chat-toggle { transition: none; }
+  .s5-chat-toggle,
+  .s5-chat-close { transition: none; }
 }
 
 /* ---------- 特殊皮肤：保证对比度 ---------- */
