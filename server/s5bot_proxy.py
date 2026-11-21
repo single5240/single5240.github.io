@@ -58,9 +58,10 @@ HOST = os.environ.get("S5BOT_HOST", "127.0.0.1")
 PORT = int(os.environ.get("S5BOT_PORT", "8765"))
 MAX_POOLS = 20
 
-MAX_BODY_BYTES = 16 * 1024
+MAX_BODY_BYTES = 192 * 1024
 MAX_MESSAGES = 14
-MAX_CONTENT_CHARS = 2000
+MAX_CONTENT_CHARS = 72000
+MAX_TOTAL_CHARS = 96000
 
 # ----- load shared persona system prompt at startup -----
 def load_system_prompt():
@@ -447,6 +448,7 @@ def sanitize_messages(raw):
     if not isinstance(raw, list) or not (1 <= len(raw) <= MAX_MESSAGES):
         return None
     clean = []
+    total = 0
     for item in raw:
         if not isinstance(item, dict):
             return None
@@ -456,6 +458,9 @@ def sanitize_messages(raw):
             return None
         content = content.strip()
         if not content or len(content) > MAX_CONTENT_CHARS:
+            return None
+        total += len(content)
+        if total > MAX_TOTAL_CHARS:
             return None
         clean.append({"role": role, "content": content})
     return clean or None

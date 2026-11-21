@@ -14,7 +14,7 @@ permalink: /projects/retro-robot/ai-chat-setup.html
 ## 一、它由哪几部分组成
 
 - `assets/data/bot-persona.json`：角色卡的**唯一数据源**。前端读取它来渲染角色卡，后端读取它的 `systemPrompt` 作为模型人设。改人设只改这一处。
-- `assets/js/bot-chat.js`：零依赖前端模块，负责角色卡渲染、助手回复的安全 Markdown、SSE 流式输出、停止生成、键盘可达与静态降级。用户消息仍按纯文本显示。整页入口是 `/chat/index.html`。对话记录保存在浏览器本地，7 天内可从侧边栏继续，过期后自动清除。
+- `assets/js/bot-chat.js`：零依赖前端模块，负责角色卡渲染、助手回复的安全 Markdown、SSE 流式输出、停止生成、键盘可达与静态降级。用户消息按纯文本显示，代码和文本附件以可折叠源码卡展示，不作为 HTML 执行。整页入口是 `/chat/index.html`。对话记录保存在浏览器本地，7 天内可从侧边栏继续，过期后自动清除。
 - `assets/css/bot-chat.css`：对话面板样式，复用站点主题变量。
 - `server/s5bot_proxy.py`：Python 3 标准库写的代理（无需 pip 安装），做同源校验、按 IP 限流、注入人设、转发流式响应。
 - `server/s5bot.service` / `server/nginx-location.conf` / `server/.env.example`：部署三件套。
@@ -106,7 +106,7 @@ GitHub Pages 等纯静态环境没有 `/api/` 服务。此时前端会加载角�
 - 密钥只存在于服务器 `.env`，前端与仓库里都没有。
 - 代理校验 `Origin`，只接受配置的主站域名，避免被当作开放代理刷额度。
 - 每次请求强制把角色卡 `systemPrompt` 放在消息首位，用户输入无法覆盖人设。
-- 请求体大小、消息条数与单条长度都有上限；按 IP 做滑动窗口限流。
+- 请求体上限 192 KiB，最多 14 条消息。单条最多 72000 字，整段对话合计最多 96000 字，用来容纳代码和文本附件；按 IP 做滑动窗口限流。前端另限制最多 4 个附件，单个约 32 KB、合计约 64 KB，且必须是 UTF-8 的代码或文本。
 - 模型输出按纯文本渲染，不会作为 HTML 或代码执行。
 
 ## 五、改人设

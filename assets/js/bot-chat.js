@@ -206,16 +206,149 @@
     return blocks.join("");
   }
 
+  const FILE_LIMIT = 4;
+  const FILE_CHARS = 32000;
+  const FILE_TOTAL_CHARS = 64000;
+  const MESSAGE_CHARS = 72000;
+  const HISTORY_CHARS = 90000;
+  const EXT_LANG = {
+    c: "c", h: "c", cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp", hh: "cpp", ino: "cpp",
+    py: "python", pyi: "python", js: "javascript", mjs: "javascript", cjs: "javascript",
+    ts: "typescript", tsx: "tsx", jsx: "jsx", json: "json", md: "markdown", markdown: "markdown",
+    txt: "text", log: "text", csv: "csv", env: "text", gitignore: "text", editorconfig: "ini", css: "css", scss: "scss", html: "html", htm: "html",
+    xml: "xml", svg: "xml", yml: "yaml", yaml: "yaml", toml: "toml", ini: "ini", cfg: "ini", conf: "ini",
+    sh: "bash", bash: "bash", zsh: "bash", ps1: "powershell", bat: "bat", cmd: "bat",
+    rs: "rust", go: "go", java: "java", kt: "kotlin", kts: "kotlin", rb: "ruby", php: "php",
+    lua: "lua", sql: "sql", vue: "vue", s: "asm", asm: "asm", inc: "asm", ld: "ld",
+    cmake: "cmake", mk: "makefile", gradle: "groovy", properties: "properties",
+    v: "verilog", sv: "systemverilog", vhd: "vhdl", vhdl: "vhdl",
+  };
+  const BARE_NAMES = {
+    makefile: "makefile", dockerfile: "dockerfile", readme: "text", license: "text",
+    copying: "text", "cmakelists.txt": "cmake", gemfile: "ruby", rakefile: "ruby",
+  };
+
+  function fileExt(name) {
+    const base = String(name || "").split(/[/\\]/).pop().toLowerCase();
+    if (BARE_NAMES[base]) return { ext: base, lang: BARE_NAMES[base] };
+    const dot = base.lastIndexOf(".");
+    if (dot <= 0) return null;
+    const ext = base.slice(dot + 1);
+    if (!EXT_LANG[ext]) return null;
+    return { ext, lang: EXT_LANG[ext] };
+  }
+
+  function safeFileName(name) {
+    const base = String(name || "file").split(/[/\\]/).pop().replace(/[【】\r\n`]/g, "_").trim();
+    return (base || "file").slice(0, 80);
+  }
+
+  function formatBytes(chars) {
+    if (chars < 1024) return chars + " B";
+    return (chars / 1024).toFixed(chars < 10240 ? 1 : 0) + " KB";
+  }
+
+  function composeMessage(note, files) {
+    const blocks = [];
+    if (note) blocks.push(note);
+    files.forEach((file) => {
+      let fence = "```";
+      const body = String(file.text || "").replace(/\r\n/g, "\n").replace(/\s+$/g, "");
+      while (body.includes(fence)) fence += "`";
+      const shown = body || "（文件为空）";
+      blocks.push("【附件 " + file.name + "】\n" + fence + file.lang + "\n" + shown + "\n" + fence);
+    });
+    return blocks.join("\n\n");
+  }
+
+  function splitUserMessage(raw) {
+    const text = String(raw || "");
+    const start = text.startsWith("【附件 ") ? 0 : text.indexOf("\n\n【附件 ");
+    if (start < 0) return { note: text, files: [] };
+    const note = text.slice(0, start).trim();
+    let i = start === 0 ? 0 : start + 2;
+    const files = [];
+    while (i < text.length && text.startsWith("【附件 ", i)) {
+      const nameEnd = text.indexOf("】\n", i + 4);
+      if (nameEnd < 0) break;
+      const name = text.slice(i + 4, nameEnd);
+      const fenceMatch = /^`{3,}/.exec(text.slice(nameEnd + 2));
+      if (!fenceMatch) break;
+      const fence = fenceMatch[0];
+      const langEnd = text.indexOf("\n", nameEnd + 2 + fence.length);
+      if (langEnd < 0) break;
+      const lang = text.slice(nameEnd + 2 + fence.length, langEnd);
+      const closeAt = text.indexOf("\n" + fence, langEnd + 1);
+      if (closeAt < 0) break;
+      files.push({ name, lang, body: text.slice(langEnd + 1, closeAt) });
+      i = closeAt + 1 + fence.length;
+      if (text.startsWith("\n\n", i)) i += 2;
+      else break;
+    }
+    if (!files.length || i < text.length) return { note: text, files: [] };
+    return { note, files };
+  }
+
+  function omitOldFiles(content) {
+    const split = splitUserMessage(content);
+    if (!split.files.length) {
+      return content.length > 4000 ? content.slice(0, 4000) + "\n…（较早内容已截断）" : content;
+    }
+    const names = split.files.map((file) => "【附件 " + file.name + "】（正文已省略）").join("\n");
+    return (split.note ? split.note + "\n\n" : "") + names;
+  }
+
+  function packForApi(messages) {
+    const packed = messages.map((item) => ({ role: item.role, content: item.content }));
+    let total = packed.reduce((sum, item) => sum + item.content.length, 0);
+    for (let i = 0; i < packed.length - 1 && total > HISTORY_CHARS; i += 1) {
+      const next = omitOldFiles(packed[i].content);
+      total -= packed[i].content.length - next.length;
+      packed[i].content = next;
+    }
+    for (let i = 0; i < packed.length - 1 && total > HISTORY_CHARS; i += 1) {
+      if (packed[i].content.length <= 800) continue;
+      const next = packed[i].content.slice(0, 800) + "\n…（较早内容已截断）";
+      total -= packed[i].content.length - next.length;
+      packed[i].content = next;
+    }
+    return packed;
+  }
+
   function setBubbleContent(bubble, role, text) {
     const value = String(text == null ? "" : text);
     bubble.dataset.raw = value;
     if (role === "assistant") {
       bubble.classList.add("is-md");
       bubble.innerHTML = renderMarkdown(value);
-    } else {
-      bubble.classList.remove("is-md");
-      bubble.textContent = value;
+      return;
     }
+    bubble.classList.remove("is-md");
+    const split = splitUserMessage(value);
+    bubble.classList.toggle("has-files", split.files.length > 0);
+    if (!split.files.length) {
+      bubble.textContent = value;
+      return;
+    }
+    bubble.replaceChildren();
+    if (split.note) {
+      const note = document.createElement("p");
+      note.className = "s5-user-note";
+      note.textContent = split.note;
+      bubble.appendChild(note);
+    }
+    split.files.forEach((file) => {
+      const card = document.createElement("details");
+      card.className = "s5-file-card";
+      const summary = document.createElement("summary");
+      summary.textContent = file.name + " · " + formatBytes(file.body.length);
+      const pre = document.createElement("pre");
+      const code = document.createElement("code");
+      code.textContent = file.body;
+      pre.appendChild(code);
+      card.append(summary, pre);
+      bubble.appendChild(card);
+    });
   }
 
   function loadPersona() {
@@ -413,7 +546,7 @@
     if (!panel || panel.dataset.s5Offline === "1") return;
     panel.dataset.s5Offline = "1";
     panel.classList.add("is-offline");
-    panel.querySelectorAll(".s5-ask-input, .s5-send-btn, .s5-suggest-btn, .s5-model-select").forEach((el) => {
+    panel.querySelectorAll(".s5-ask-input, .s5-send-btn, .s5-suggest-btn, .s5-model-select, .s5-attach-btn").forEach((el) => {
       el.disabled = true;
     });
     const hint = persona?.staticNotice ||
@@ -529,17 +662,17 @@
 
       const keep = document.createElement("p");
       keep.className = "s5-page-keep";
-      keep.textContent = "保存在这台浏览器，7 天内可继续";
+      keep.textContent = "本地保存，7 天内可继续";
 
-      const note = document.createElement("p");
-      note.className = "s5-page-side-note";
-      note.textContent = persona?.display?.tagline || "";
+      const historyLabel = document.createElement("p");
+      historyLabel.className = "s5-page-label";
+      historyLabel.textContent = "最近";
 
       const back = document.createElement("a");
       back.className = "s5-page-back";
       back.href = "/";
       back.textContent = "返回首页";
-      side.append(brand, fresh, historyNav, keep, note, back);
+      side.append(brand, fresh, historyLabel, historyNav, keep, back);
 
       const main = document.createElement("div");
       main.className = "s5-page-main";
@@ -549,13 +682,17 @@
       composer.className = "s5-page-composer";
       hero = document.createElement("div");
       hero.className = "s5-page-hero";
+      const heroMark = document.createElement("span");
+      heroMark.className = "s5-page-mark s5-page-hero-mark";
+      heroMark.setAttribute("aria-hidden", "true");
+      heroMark.textContent = persona?.display?.avatarGlyph || "S5";
       const hello = document.createElement("p");
       hello.className = "s5-page-hello";
       hello.textContent = persona?.display?.name || "S5·BOT";
       const lead = document.createElement("p");
       lead.className = "s5-page-lead";
       lead.textContent = persona?.greeting || "你好，我是 S5·BOT。";
-      hero.append(hello, lead);
+      hero.append(heroMark, hello, lead);
       stage.append(hero, list);
       main.append(stage, composer);
       panel.append(side, main);
@@ -603,12 +740,23 @@
 
     const form = document.createElement("form");
     form.className = "s5-chat-form";
+    const tray = document.createElement("div");
+    tray.className = "s5-attach-tray";
+    tray.hidden = true;
+    const attachments = [];
     const input = document.createElement("textarea");
     input.className = "s5-ask-input";
     input.setAttribute("aria-label", "输入给 S5·BOT 的消息");
-    input.setAttribute("placeholder", page ? "给 S5·BOT 发消息" : "问点嵌入式 / 调试的问题…");
+    input.setAttribute("placeholder", page ? "给 S5·BOT 发消息，或附上代码 / 文本" : "问点嵌入式 / 调试的问题，也可附上代码…");
     input.rows = page ? 1 : 2;
     input.maxLength = 1200;
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.className = "s5-file-input";
+    fileInput.multiple = true;
+    fileInput.tabIndex = -1;
+    fileInput.setAttribute("aria-hidden", "true");
+    fileInput.accept = Object.keys(EXT_LANG).map((ext) => "." + ext).join(",") + ",.makefile,.dockerfile,text/plain,text/markdown,application/json";
     const actions = document.createElement("div");
     actions.className = "s5-chat-actions";
     let modelSelect = null;
@@ -632,19 +780,36 @@
         });
       });
     }
+    const attach = document.createElement("button");
+    attach.type = "button";
+    attach.className = "s5-attach-btn";
+    attach.setAttribute("aria-label", "上传代码或文本文件");
+    if (page) {
+      attach.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8.2 12.4 14.4 6.2a3 3 0 1 1 4.2 4.2l-7.6 7.6a4.4 4.4 0 0 1-6.2-6.2l7.3-7.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else {
+      attach.textContent = "附件";
+    }
     const send = document.createElement("button");
     send.type = "submit";
     send.className = "s5-send-btn";
-    send.textContent = page ? "↑" : "发送";
-    if (page) send.setAttribute("aria-label", "发送");
+    if (page) {
+      send.setAttribute("aria-label", "发送");
+      send.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else {
+      send.textContent = "发送";
+    }
     const stop = document.createElement("button");
     stop.type = "button";
     stop.className = "s5-stop-btn";
-    stop.textContent = page ? "停" : "停止";
-    if (page) stop.setAttribute("aria-label", "停止生成");
+    if (page) {
+      stop.setAttribute("aria-label", "停止生成");
+      stop.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="7.5" y="7.5" width="9" height="9" rx="1.6" fill="currentColor"/></svg>';
+    } else {
+      stop.textContent = "停止";
+    }
     stop.hidden = true;
     if (modelSelect) actions.appendChild(modelSelect);
-    actions.append(stop, send);
+    actions.append(attach, stop, send);
     if (!page) {
       const openPage = document.createElement("a");
       openPage.className = "s5-open-page";
@@ -652,8 +817,95 @@
       openPage.textContent = "完整对话";
       actions.insertBefore(openPage, actions.firstChild);
     }
-    form.append(input, actions);
+    form.append(tray, input, actions, fileInput);
     (composer || panel).appendChild(form);
+    if (page && composer) {
+      const hint = document.createElement("p");
+      hint.className = "s5-page-hint";
+      hint.textContent = "Enter 发送，Shift+Enter 换行，可附最多 4 个代码或文本文件";
+      composer.appendChild(hint);
+    }
+
+    function paintAttachments() {
+      tray.replaceChildren();
+      tray.hidden = attachments.length === 0;
+      attachments.forEach((file, index) => {
+        const chip = document.createElement("span");
+        chip.className = "s5-attach-chip";
+        const name = document.createElement("span");
+        name.className = "s5-attach-name";
+        name.textContent = file.name;
+        const size = document.createElement("span");
+        size.className = "s5-attach-size";
+        size.textContent = formatBytes(file.text.length);
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "s5-attach-remove";
+        remove.setAttribute("aria-label", "移除 " + file.name);
+        remove.textContent = "×";
+        remove.addEventListener("click", () => {
+          attachments.splice(index, 1);
+          paintAttachments();
+        });
+        chip.append(name, size, remove);
+        tray.appendChild(chip);
+      });
+    }
+
+    function attachmentChars() {
+      return attachments.reduce((sum, file) => sum + file.text.length, 0);
+    }
+
+    async function readTextFile(file) {
+      if (file.size > 96 * 1024) return { error: file.name + " 超过 32 KB 文本上限" };
+      const known = fileExt(file.name);
+      const mimeOk = !file.type || file.type.startsWith("text/") || file.type === "application/json" || file.type === "application/xml";
+      if (!known && !mimeOk) return { error: file.name + " 不是代码或文本文件" };
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (bytes.includes(0)) return { error: file.name + " 看起来是二进制文件" };
+      const text = new TextDecoder("utf-8", { fatal: false }).decode(bytes).replace(/^\uFEFF/, "");
+      const bad = (text.match(/\uFFFD/g) || []).length;
+      if (bad > 8 && bad * 40 > text.length) return { error: file.name + " 请另存为 UTF-8 后再上传" };
+      if (text.length > FILE_CHARS) return { error: file.name + " 超过 32 KB 文本上限" };
+      return {
+        name: safeFileName(file.name),
+        lang: known ? known.lang : "text",
+        text,
+      };
+    }
+
+    async function addFiles(fileList) {
+      const incoming = [...fileList];
+      if (!incoming.length || busy || !apiAvailable) return;
+      const errors = [];
+      for (const file of incoming) {
+        if (attachments.length >= FILE_LIMIT) {
+          errors.push("最多附上 " + FILE_LIMIT + " 个文件");
+          break;
+        }
+        let parsed;
+        try {
+          parsed = await readTextFile(file);
+        } catch (error) {
+          console.warn(TAG, "读取附件失败", error);
+          errors.push(file.name + " 读取失败");
+          continue;
+        }
+        if (parsed.error) {
+          errors.push(parsed.error);
+          continue;
+        }
+        if (attachmentChars() + parsed.text.length > FILE_TOTAL_CHARS) {
+          errors.push("附件合计不能超过 64 KB");
+          break;
+        }
+        attachments.push(parsed);
+      }
+      paintAttachments();
+      if (errors.length) setStatus(panel, errors[0], "warn");
+      else setStatus(panel, "", "");
+      fileInput.value = "";
+    }
 
     function fitInput() {
       if (!page) return;
@@ -680,15 +932,41 @@
       return messages.slice(-THREAD_MESSAGE_LIMIT);
     }
 
+    function threadWhen(ts) {
+      const delta = Date.now() - Number(ts || 0);
+      if (delta < 60000) return "刚刚";
+      if (delta < 3600000) return Math.floor(delta / 60000) + " 分钟前";
+      const date = new Date(ts);
+      const now = new Date();
+      if (date.toDateString() === now.toDateString()) return "今天";
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      if (date.toDateString() === yesterday.toDateString()) return "昨天";
+      return (date.getMonth() + 1) + "月" + date.getDate() + "日";
+    }
+
     function paintHistory() {
       if (!historyNav) return;
       historyNav.replaceChildren();
+      if (!memory.threads.length) {
+        const empty = document.createElement("p");
+        empty.className = "s5-page-empty";
+        empty.textContent = "最近的对话会留在这里";
+        historyNav.appendChild(empty);
+        return;
+      }
       for (const thread of memory.threads) {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "s5-thread" + (thread.id === activeId ? " is-active" : "");
         btn.title = thread.title;
-        btn.textContent = thread.title;
+        const title = document.createElement("span");
+        title.className = "s5-thread-title";
+        title.textContent = thread.title;
+        const when = document.createElement("span");
+        when.className = "s5-thread-time";
+        when.textContent = threadWhen(thread.updatedAt);
+        btn.append(title, when);
         if (thread.id === activeId) btn.setAttribute("aria-current", "true");
         btn.addEventListener("click", () => openThread(thread.id));
         historyNav.appendChild(btn);
@@ -714,7 +992,7 @@
         activeId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
         memory.threads.unshift({
           id: activeId,
-          title: (firstUser?.content || "新对话").replace(/\s+/g, " ").slice(0, 24),
+          title: (splitUserMessage(firstUser?.content || "").note || splitUserMessage(firstUser?.content || "").files[0]?.name || "新对话").replace(/\s+/g, " ").slice(0, 24),
           updatedAt: Date.now(),
           messages: [],
         });
@@ -740,11 +1018,14 @@
       showMessages(thread.messages);
       paintHistory();
       input.focus();
+      attachments.splice(0, attachments.length);
+      paintAttachments();
     }
 
     function setBusy(state) {
       busy = state;
       send.disabled = state || !apiAvailable;
+      attach.disabled = state || !apiAvailable;
       if (modelSelect) modelSelect.disabled = state || !apiAvailable;
       stop.hidden = !state;
       input.setAttribute("aria-busy", String(state));
@@ -752,25 +1033,32 @@
 
     async function submit() {
       const text = input.value.trim();
-      if (!text || busy) return;
+      if ((!text && !attachments.length) || busy) return;
       if (!apiAvailable) {
         degrade(panel, list);
         return;
       }
+      const content = composeMessage(text, attachments);
+      if (content.length > MESSAGE_CHARS) {
+        setStatus(panel, "这条消息连同附件太长了，请删掉一部分再发", "warn");
+        return;
+      }
       input.value = "";
+      attachments.splice(0, attachments.length);
+      paintAttachments();
       fitInput();
       if (hero) {
         hero.hidden = true;
         list.hidden = false;
       }
-      appendBubble(list, "user", text, true);
+      appendBubble(list, "user", content, true);
       commitThread();
       setBusy(true);
       const modelLabel = selectedModelLabel();
       setStatus(panel, modelLabel ? "正在用 " + modelLabel + " 思考…" : "S5·BOT 正在思考…", "info");
 
       const history = collectHistory(list, 12).slice(0, -1);
-      const messages = [...history, { role: "user", content: text }];
+      const messages = packForApi([...history, { role: "user", content }]);
       const turn = generation;
       controller = new AbortController();
       let answerBubble = null;
@@ -822,6 +1110,8 @@
       setBusy(false);
       list.replaceChildren();
       input.value = "";
+      attachments.splice(0, attachments.length);
+      paintAttachments();
       fitInput();
       setStatus(panel, "", "");
       if (hero) {
@@ -837,6 +1127,26 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       submit();
+    });
+    attach.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => addFiles(fileInput.files));
+    form.addEventListener("dragover", (event) => {
+      if (![...event.dataTransfer?.items || []].some((item) => item.kind === "file")) return;
+      event.preventDefault();
+      form.classList.add("is-drag");
+    });
+    form.addEventListener("dragleave", () => form.classList.remove("is-drag"));
+    form.addEventListener("drop", (event) => {
+      if (!event.dataTransfer?.files?.length) return;
+      event.preventDefault();
+      form.classList.remove("is-drag");
+      addFiles(event.dataTransfer.files);
+    });
+    input.addEventListener("paste", (event) => {
+      const files = [...event.clipboardData?.files || []];
+      if (!files.length) return;
+      event.preventDefault();
+      addFiles(files);
     });
     input.addEventListener("input", fitInput);
     input.addEventListener("keydown", (e) => {
