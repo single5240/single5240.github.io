@@ -14,7 +14,7 @@ permalink: /projects/retro-robot/ai-chat-setup.html
 ## 一、它由哪几部分组成
 
 - `assets/data/bot-persona.json`：角色卡的**唯一数据源**。前端读取它来渲染角色卡，后端读取它的 `systemPrompt` 作为模型人设。改人设只改这一处。
-- `assets/js/bot-chat.js`：零依赖前端模块，负责角色卡渲染、SSE 流式输出、停止生成、键盘可达与静态降级。
+- `assets/js/bot-chat.js`：零依赖前端模块，负责角色卡渲染、助手回复的安全 Markdown、SSE 流式输出、停止生成、键盘可达与静态降级。用户消息仍按纯文本显示。
 - `assets/css/bot-chat.css`：对话面板样式，复用站点主题变量。
 - `server/s5bot_proxy.py`：Python 3 标准库写的代理（无需 pip 安装），做同源校验、按 IP 限流、注入人设、转发流式响应。
 - `server/s5bot.service` / `server/nginx-location.conf` / `server/.env.example`：部署三件套。

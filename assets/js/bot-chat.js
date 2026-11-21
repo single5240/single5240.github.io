@@ -14,7 +14,206 @@
   let apiAvailable = true;
   const mounted = [];
 
-  const escapeText = (value) => String(value == null ? "" : value);
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderInline(raw) {
+    const src = String(raw);
+    let html = "";
+    let i = 0;
+    while (i < src.length) {
+      if (src[i] === "`") {
+        const end = src.indexOf("`", i + 1);
+        if (end > i + 1 && !src.slice(i + 1, end).includes("\n")) {
+          html += "<code>" + escapeHtml(src.slice(i + 1, end)) + "</code>";
+          i = end + 1;
+          continue;
+        }
+      }
+      if (src[i] === "!" || src[i] === "[") {
+        const mark = src[i] === "!" ? i + 1 : i;
+        if (src[mark] === "[") {
+          const labelEnd = src.indexOf("]", mark + 1);
+          if (labelEnd > mark && src[labelEnd + 1] === "(") {
+            const urlEnd = src.indexOf(")", labelEnd + 2);
+            if (urlEnd > labelEnd) {
+              const label = src.slice(mark + 1, labelEnd);
+              const url = src.slice(labelEnd + 2, urlEnd).trim();
+              if (/^https?:\/\/[A-Za-z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+$/.test(url)) {
+                html += '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + renderInline(label) + "</a>";
+                i = urlEnd + 1;
+                continue;
+              }
+            }
+          }
+        }
+      }
+      if (src.startsWith("***", i)) {
+        const end = src.indexOf("***", i + 3);
+        if (end > i + 3) {
+          html += "<strong><em>" + renderInline(src.slice(i + 3, end)) + "</em></strong>";
+          i = end + 3;
+          continue;
+        }
+      }
+      if (src.startsWith("**", i)) {
+        const end = src.indexOf("**", i + 2);
+        if (end > i + 2) {
+          html += "<strong>" + renderInline(src.slice(i + 2, end)) + "</strong>";
+          i = end + 2;
+          continue;
+        }
+      }
+      if (src[i] === "*" && src[i + 1] !== " " && src[i + 1] !== "*") {
+        const end = src.indexOf("*", i + 1);
+        if (end > i + 1 && !src.slice(i + 1, end).includes("\n")) {
+          html += "<em>" + renderInline(src.slice(i + 1, end)) + "</em>";
+          i = end + 1;
+          continue;
+        }
+      }
+      if (src.startsWith("~~", i)) {
+        const end = src.indexOf("~~", i + 2);
+        if (end > i + 2) {
+          html += "<s>" + renderInline(src.slice(i + 2, end)) + "</s>";
+          i = end + 2;
+          continue;
+        }
+      }
+      html += escapeHtml(src[i]);
+      i += 1;
+    }
+    return html;
+  }
+
+  function renderMarkdown(source) {
+    const lines = String(source == null ? "" : source).replace(/\r\n/g, "\n").split("\n");
+    const blocks = [];
+    let i = 0;
+    const isUnordered = (line) => /^[-*]\s+/.test(line);
+    const isOrdered = (line) => /^\d+\.\s+/.test(line);
+    const isQuote = (line) => /^>\s?/.test(line);
+    const isHeading = (line) => /^#{1,6}\s+\S/.test(line);
+    const isRule = (line) => /^(?:---|\*\*\*|___)\s*$/.test(line);
+    const isTableRow = (line) => /^\s*\|.+\|\s*$/.test(line);
+    const isTableSep = (line) => {
+      if (!line.includes("-")) return false;
+      const cells = line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|");
+      return cells.length > 0 && cells.every((cell) => /^\s*:?-{3,}:?\s*$/.test(cell));
+    };
+    const splitCells = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+    const isTable = (index) => isTableRow(lines[index] || "") && isTableSep(lines[index + 1] || "");
+
+    while (i < lines.length) {
+      const line = lines[i];
+      if (line.trim() === "") {
+        i += 1;
+        continue;
+      }
+      if (line.startsWith("```")) {
+        const langMatch = /^```([A-Za-z0-9_+#.-]{0,24})/.exec(line);
+        const lang = langMatch ? langMatch[1] : "";
+        const buf = [];
+        i += 1;
+        while (i < lines.length && !lines[i].startsWith("```")) {
+          buf.push(lines[i]);
+          i += 1;
+        }
+        if (i < lines.length) i += 1;
+        const langAttr = lang ? ' data-lang="' + escapeHtml(lang) + '"' : "";
+        blocks.push('<pre class="s5-md-pre"><code' + langAttr + ">" + escapeHtml(buf.join("\n")) + "</code></pre>");
+        continue;
+      }
+      if (isRule(line)) {
+        blocks.push('<hr class="s5-md-hr">');
+        i += 1;
+        continue;
+      }
+      if (isHeading(line)) {
+        const level = Math.min(line.match(/^#{1,6}/)[0].length, 4);
+        blocks.push("<h" + level + ' class="s5-md-h s5-md-h' + level + '">' + renderInline(line.replace(/^#{1,6}\s+/, "")) + "</h" + level + ">");
+        i += 1;
+        continue;
+      }
+      if (isQuote(line)) {
+        const buf = [];
+        while (i < lines.length && isQuote(lines[i])) {
+          buf.push(lines[i].replace(/^>\s?/, ""));
+          i += 1;
+        }
+        blocks.push('<blockquote class="s5-md-quote">' + buf.map((part) => renderInline(part)).join("<br>") + "</blockquote>");
+        continue;
+      }
+      if (isUnordered(line) || isOrdered(line)) {
+        const ordered = isOrdered(line);
+        const items = [];
+        const test = ordered ? isOrdered : isUnordered;
+        while (i < lines.length && test(lines[i])) {
+          let body = lines[i].replace(ordered ? /^\d+\.\s+/ : /^[-*]\s+/, "");
+          let check = "";
+          const task = !ordered && /^\[([ xX])\]\s+([\s\S]*)$/.exec(body);
+          if (task) {
+            check = task[1].toLowerCase() === "x" ? "☑ " : "☐ ";
+            body = task[2];
+          }
+          items.push("<li>" + check + renderInline(body) + "</li>");
+          i += 1;
+        }
+        const tag = ordered ? "ol" : "ul";
+        blocks.push("<" + tag + ' class="s5-md-list">' + items.join("") + "</" + tag + ">");
+        continue;
+      }
+      if (isTable(i)) {
+        const header = splitCells(line);
+        i += 2;
+        const rows = [];
+        while (i < lines.length && isTableRow(lines[i])) {
+          rows.push(splitCells(lines[i]));
+          i += 1;
+        }
+        const head = "<tr>" + header.map((cell) => "<th>" + renderInline(cell) + "</th>").join("") + "</tr>";
+        const body = rows.map((row) => {
+          return "<tr>" + header.map((_, idx) => "<td>" + renderInline(row[idx] || "") + "</td>").join("") + "</tr>";
+        }).join("");
+        blocks.push('<div class="s5-md-table-wrap"><table class="s5-md-table"><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div>");
+        continue;
+      }
+      const buf = [];
+      while (
+        i < lines.length &&
+        lines[i].trim() !== "" &&
+        !lines[i].startsWith("```") &&
+        !isRule(lines[i]) &&
+        !isHeading(lines[i]) &&
+        !isQuote(lines[i]) &&
+        !isUnordered(lines[i]) &&
+        !isOrdered(lines[i]) &&
+        !isTable(i)
+      ) {
+        buf.push(lines[i]);
+        i += 1;
+      }
+      blocks.push('<p class="s5-md-p">' + buf.map((part) => renderInline(part)).join("<br>") + "</p>");
+    }
+    return blocks.join("");
+  }
+
+  function setBubbleContent(bubble, role, text) {
+    const value = String(text == null ? "" : text);
+    bubble.dataset.raw = value;
+    if (role === "assistant") {
+      bubble.classList.add("is-md");
+      bubble.innerHTML = renderMarkdown(value);
+    } else {
+      bubble.classList.remove("is-md");
+      bubble.textContent = value;
+    }
+  }
 
   function loadPersona() {
     return fetch(personaUrl, { cache: "no-cache" })
@@ -45,7 +244,7 @@
 
     const bubble = document.createElement("div");
     bubble.className = "s5-msg-bubble";
-    bubble.textContent = escapeText(text);
+    setBubbleContent(bubble, role, text);
 
     row.appendChild(avatar);
     row.appendChild(bubble);
@@ -67,7 +266,8 @@
     const history = [];
     for (const row of rows) {
       const isUser = row.classList.contains("s5-msg-user");
-      const text = row.querySelector(".s5-msg-bubble")?.textContent || "";
+      const bubble = row.querySelector(".s5-msg-bubble");
+      const text = bubble?.dataset.raw || bubble?.textContent || "";
       if (text) history.push({ role: isUser ? "user" : "assistant", content: text });
     }
     return history;
@@ -298,7 +498,7 @@
               answerBubble = appendBubble(list, "assistant", "");
             }
             answer += delta;
-            answerBubble.textContent = answer;
+            setBubbleContent(answerBubble, "assistant", answer);
             list.scrollTop = list.scrollHeight;
           },
         });
@@ -306,11 +506,11 @@
         setStatus(panel, "", "");
       } catch (error) {
         if (error && error.name === "AbortError") {
-          if (answerBubble && !answer) answerBubble.textContent = "（已停止）";
+          if (answerBubble && !answer) setBubbleContent(answerBubble, "assistant", "（已停止）");
           setStatus(panel, "", "");
         } else {
           console.warn(TAG, "对话失败", error);
-          if (answerBubble) answerBubble.textContent += "\n\n（回复中断，可重试）";
+          if (answerBubble) setBubbleContent(answerBubble, "assistant", answer + "\n\n（回复中断，可重试）");
           degrade(panel, list);
         }
       } finally {
