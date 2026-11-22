@@ -63,7 +63,7 @@ permalink: /projects/my-skills/index.html
         <p>{{ skill.description | escape }}</p>
         <div class="item-tags">{% for tag in skill.tags %}<span>{{ tag }}</span>{% endfor %}</div>
       </div>
-      <a class="item-arrow" href="{{ skill.url | relative_url }}" aria-label="查看 {{ skill.title | escape }}">↗</a>
+      <span class="item-arrow" aria-hidden="true">↗</span>
     </article>
     {% endfor %}
   </section>
@@ -87,7 +87,7 @@ permalink: /projects/my-skills/index.html
         <p>{{ skill.description | escape }}</p>
         <div class="item-tags">{% for tag in skill.tags %}<span>{{ tag }}</span>{% endfor %}</div>
       </div>
-      <a class="item-arrow" href="{{ skill.url | relative_url }}" aria-label="查看 {{ skill.title | escape }}">↗</a>
+      <span class="item-arrow" aria-hidden="true">↗</span>
     </article>
     {% endfor %}
   </section>
@@ -111,7 +111,7 @@ permalink: /projects/my-skills/index.html
         <p>{{ skill.description | escape }}</p>
         <div class="item-tags">{% for tag in skill.tags %}<span>{{ tag }}</span>{% endfor %}</div>
       </div>
-      <a class="item-arrow" href="{{ skill.url | relative_url }}" aria-label="查看 {{ skill.title | escape }}">↗</a>
+      <span class="item-arrow" aria-hidden="true">↗</span>
     </article>
     {% endfor %}
   </section>
