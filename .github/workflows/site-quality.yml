@@ -105,6 +105,53 @@ jobs:
             -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
           scp "${options[@]}" "$RUNNER_TEMP/aliyun-artifact/artifact.tar" "$destination:$archive"
           ssh "${options[@]}" "$destination" "bash -s -- '$archive' '$release_id'" < scripts/deploy-static-site.sh
+      - name: Sync S5·BOT proxy
+        shell: bash
+        run: |
+          set -euo pipefail
+          destination="${ALIYUN_USER}@${ALIYUN_HOST}"
+          options=(-i "$HOME/.ssh/aliyun_deploy" -o IdentitiesOnly=yes
+            -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
+          test -f server/s5bot_proxy.py
+          scp "${options[@]}" server/s5bot_proxy.py "$destination:/var/www/s5bot/s5bot_proxy.py.new"
+          ssh "${options[@]}" "$destination" 'bash -s' <<'EOF'
+          set -euo pipefail
+          cd /var/www/s5bot
+          python3 -m py_compile s5bot_proxy.py.new
+          mv -f s5bot_proxy.py.new s5bot_proxy.py
+          if sudo -n systemctl restart s5bot >/dev/null 2>&1; then
+            echo "s5bot restarted via sudo -n"
+          else
+            # Restart=on-failure 会对 SIGKILL 拉起新进程并加载刚换上的脚本。
+            pids=$(pgrep -f '/var/www/s5bot/s5bot_proxy.py' || true)
+            if [[ -n "${pids}" ]]; then
+              kill -9 ${pids}
+              echo "s5bot old pid(s) killed: ${pids}"
+            else
+              echo "s5bot process not found; waiting for systemd or manual start" >&2
+            fi
+          fi
+          ok=0
+          for _ in 1 2 3 4 5 6 7 8; do
+            if curl -fsS --max-time 3 http://127.0.0.1:8765/api/health >/tmp/s5bot-health.json; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ok" != 1 ]]; then
+            echo "s5bot health check failed after sync" >&2
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json
+          data = json.load(open("/tmp/s5bot-health.json", encoding="utf-8"))
+          models = data.get("models") or []
+          print(f"s5bot ok={data.get('ok')} poolCount={data.get('poolCount')} models={len(models)}")
+          for item in models:
+              print(" -", item.get("id"))
+          PY
+          EOF
       - name: Remove temporary SSH credentials
         if: always()
         shell: bash
