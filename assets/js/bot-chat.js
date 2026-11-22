@@ -16,6 +16,20 @@
   let selectedModel = "";
   const mounted = [];
   const MODEL_KEY = "s5-bot-model";
+  // Live probe 2026-11-22: keep working choices only until the proxy hide list is redeployed.
+  const HIDDEN_MODELS = new Set([
+    "gpt-6.1-sol|responses",
+    "gpt-5.6-sol",
+    "gpt-6-sol",
+    "gpt-6.1-terra",
+    "gemini-3.8-flash",
+    "gemini-4-hydrogen",
+    "gemini-4-neon",
+    "grok-4.5",
+    "grok-4.7",
+    "deepseek-v4-pro-0813",
+    "deepseek-v4.1-flash-1017",
+  ]);
 
   function escapeHtml(value) {
     return String(value)
@@ -479,7 +493,14 @@
 
   function applyModelList(list) {
     models = Array.isArray(list)
-      ? list.filter((item) => item && typeof item.id === "string" && item.id && typeof item.label === "string" && item.label)
+      ? list.filter((item) => (
+        item
+        && typeof item.id === "string"
+        && item.id
+        && typeof item.label === "string"
+        && item.label
+        && !HIDDEN_MODELS.has(item.id)
+      ))
       : [];
     const saved = readSavedModel();
     selectedModel = models.some((item) => item.id === saved) ? saved : (models[0]?.id || "");

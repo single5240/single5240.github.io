@@ -23,6 +23,9 @@ Environment variables:
                         share a model id stay backups for that choice and are
                         tried in order when it errors before any text is sent.
   S5BOT_POOL_COOLDOWN   Seconds to deprioritize a failed upstream (default 45).
+  S5BOT_HIDE_MODELS     Comma-separated public model ids (or bare model names)
+                        to hide from /api/health and reject on /api/chat.
+                        Merged with the temporary probe hide list in code.
   S5BOT_PERSONA_PATH    Path to bot-persona.json (shared with the frontend).
   S5BOT_ALLOWED_ORIGIN  Allowed Origin, or a comma-separated list.
                         If unset, requests without an Origin header are allowed
@@ -213,7 +216,37 @@ def read_until_content(upstream, api):
 SKIP_ENDPOINT_TYPES = {"video-generation", "image-generation", "image-edit"}
 CHAT_ENDPOINT_TYPES = {"openai", "openai-response", "anthropic"}
 SKIP_MODEL_WORDS = ("image", "video", "vidu", "seedance", "wan", "banana", "claude", "astra")
-BLOCKED_MODEL_IDS = {"gemini-4-carbon", "glm-5.3"}
+BLOCKED_MODEL_IDS = {
+    "gemini-4-carbon",
+    "glm-5.3",
+    # Live probe 2026-11-22: catalog entries that timed out / returned 502.
+    "gpt-5.6-sol",
+    "gpt-6-sol",
+    "gpt-6.1-terra",
+    "gemini-3.8-flash",
+    "gemini-4-hydrogen",
+    "gemini-4-neon",
+    "grok-4.5",
+    "grok-4.7",
+    "deepseek-v4-pro-0813",
+    "deepseek-v4.1-flash-1017",
+}
+
+# Temporary hide list for the model selector (group id or bare model name).
+# Extend or override at runtime with S5BOT_HIDE_MODELS without editing code.
+TEMP_HIDDEN_MODEL_IDS = {
+    "gpt-6.1-sol|responses",
+    "gpt-5.6-sol",
+    "gpt-6-sol",
+    "gpt-6.1-terra",
+    "gemini-3.8-flash",
+    "gemini-4-hydrogen",
+    "gemini-4-neon",
+    "grok-4.5",
+    "grok-4.7",
+    "deepseek-v4-pro-0813",
+    "deepseek-v4.1-flash-1017",
+}
 
 
 def is_chat_catalog_model(item):
@@ -326,19 +359,51 @@ def build_model_groups(entries):
     return grouped
 
 
+def load_hidden_models(environ=None):
+    """Merge the temporary probe hide list with S5BOT_HIDE_MODELS."""
+    env = os.environ if environ is None else environ
+    hidden = set(TEMP_HIDDEN_MODEL_IDS)
+    for item in env.get("S5BOT_HIDE_MODELS", "").split(","):
+        item = item.strip()
+        if item:
+            hidden.add(item)
+    return hidden
+
+
+def filter_visible_groups(groups, hidden):
+    """Drop temporarily shielded choices from the public selector."""
+    if not hidden:
+        return groups
+    visible = []
+    for group in groups:
+        if group["id"] in hidden or group["model"] in hidden:
+            continue
+        visible.append(group)
+    return visible
+
+
 UPSTREAMS = []
 POOL = None
 MODEL_GROUPS = []
 MODEL_BY_ID = {}
+HIDDEN_MODELS = set()
 
 
 def configure(environ=None):
-    global UPSTREAMS, POOL, MODEL_GROUPS, MODEL_BY_ID
-    loaded = load_upstreams(os.environ if environ is None else environ)
+    global UPSTREAMS, POOL, MODEL_GROUPS, MODEL_BY_ID, HIDDEN_MODELS
+    env = os.environ if environ is None else environ
+    loaded = load_upstreams(env)
     UPSTREAMS = expand_catalog(loaded)
     POOL = PoolOrder(UPSTREAMS, POOL_COOLDOWN)
-    MODEL_GROUPS = build_model_groups(UPSTREAMS)
+    HIDDEN_MODELS = load_hidden_models(env)
+    MODEL_GROUPS = filter_visible_groups(build_model_groups(UPSTREAMS), HIDDEN_MODELS)
     MODEL_BY_ID = {group["id"]: group for group in MODEL_GROUPS}
+    if HIDDEN_MODELS:
+        print(
+            f"[s5bot] hiding {len(HIDDEN_MODELS)} model id(s); "
+            f"{len(MODEL_GROUPS)} choice(s) visible",
+            file=sys.stderr,
+        )
     return UPSTREAMS
 
 
