@@ -122,6 +122,7 @@ jobs:
           if sudo -n systemctl restart s5bot >/dev/null 2>&1; then
             echo "s5bot restarted via sudo -n"
           else
+            # 启动时 configure() 会先拉上游 /models，端口稍后才监听。
             # Restart=on-failure 会对 SIGKILL 拉起新进程并加载刚换上的脚本。
             pids=$(pgrep -f '/var/www/s5bot/s5bot_proxy.py' || true)
             if [[ -n "${pids}" ]]; then
@@ -132,7 +133,7 @@ jobs:
             fi
           fi
           ok=0
-          for _ in 1 2 3 4 5 6 7 8; do
+          for _ in $(seq 1 60); do
             if curl -fsS --max-time 3 http://127.0.0.1:8765/api/health >/tmp/s5bot-health.json; then
               ok=1
               break
@@ -141,6 +142,7 @@ jobs:
           done
           if [[ "$ok" != 1 ]]; then
             echo "s5bot health check failed after sync" >&2
+            systemctl --no-pager --full status s5bot || true
             exit 1
           fi
           python3 - <<'PY'
