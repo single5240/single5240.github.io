@@ -80,7 +80,7 @@ section: home
     </div>
   </section>
 
-  <!-- 1.5 主页 AI 对话：展开后位于舷窗留言之上，再下面才是精选项目 -->
+  <!-- 1.5 主页 AI 对话：展开后位于留言板之上，再下面才是精选项目 -->
   <div class="home-bot-slot" id="homeBotChat" hidden>
     <div data-bot-chat="home"></div>
   </div>
@@ -88,9 +88,9 @@ section: home
   <section class="porthole-board" id="portholeBoard" aria-labelledby="porthole-title" data-server-url="{{ site.waline.server_url }}">
     <div class="section-heading">
       <div>
-        <div class="eyebrow">OBSERVATION PORT</div>
-        <h2 id="porthole-title">舷窗留言</h2>
-        <p class="porthole-lead">一句话变成一块小铁片。可以拖动，碰上会弹开，不会叠在一起。</p>
+        <div class="eyebrow">GUESTBOOK</div>
+        <h2 id="porthole-title">留言</h2>
+        <p class="porthole-lead">写成一张小卡片。可以拖动，碰上会弹开，不会叠在一起。</p>
       </div>
     </div>
     <div class="porthole-layout">
@@ -98,24 +98,57 @@ section: home
         <div class="porthole-glass" id="portholeGlass"></div>
       </div>
       <form class="porthole-console" id="portholeForm">
-        <p class="porthole-console-kicker">RIVET A PLATE</p>
+        <p class="porthole-console-kicker">LEAVE A NOTE</p>
         <div class="porthole-field">
-          <label for="porthole-nick">称呼</label>
-          <input id="porthole-nick" name="nick" type="text" maxlength="12" required autocomplete="nickname" placeholder="例如：过路的">
+          <label for="porthole-nick">称呼 <span>可选</span></label>
+          <input id="porthole-nick" name="nick" type="text" maxlength="12" autocomplete="nickname" placeholder="不填就显示为访客">
         </div>
         <div class="porthole-field">
-          <label for="porthole-mail">邮箱 <span>不公开</span></label>
-          <input id="porthole-mail" name="mail" type="email" maxlength="80" required autocomplete="email" placeholder="用于送达，不显示在铁片上">
+          <label for="porthole-mail">邮箱 <span>可选，不公开</span></label>
+          <input id="porthole-mail" name="mail" type="email" maxlength="80" autocomplete="email" placeholder="不填也可以留下">
         </div>
         <div class="porthole-field">
           <label for="porthole-text">一句话</label>
-          <textarea id="porthole-text" name="comment" rows="3" maxlength="42" required placeholder="短一点，才能铆得下"></textarea>
+          <textarea id="porthole-text" name="comment" rows="3" maxlength="42" required placeholder="写一句短的"></textarea>
         </div>
+        <fieldset class="porthole-colors">
+          <legend>卡片颜色</legend>
+          <div class="porthole-swatches">
+            <label class="porthole-swatch" style="--swatch: var(--panel)">
+              <input type="radio" name="porthole-color" value="" checked>
+              <span class="visually-hidden">默认</span>
+            </label>
+            <label class="porthole-swatch" style="--swatch: #007aff">
+              <input type="radio" name="porthole-color" value="#007aff">
+              <span class="visually-hidden">蓝色</span>
+            </label>
+            <label class="porthole-swatch" style="--swatch: #34c759">
+              <input type="radio" name="porthole-color" value="#34c759">
+              <span class="visually-hidden">绿色</span>
+            </label>
+            <label class="porthole-swatch" style="--swatch: #ff9500">
+              <input type="radio" name="porthole-color" value="#ff9500">
+              <span class="visually-hidden">橙色</span>
+            </label>
+            <label class="porthole-swatch" style="--swatch: #ff2d55">
+              <input type="radio" name="porthole-color" value="#ff2d55">
+              <span class="visually-hidden">粉色</span>
+            </label>
+            <label class="porthole-swatch" style="--swatch: #af52de">
+              <input type="radio" name="porthole-color" value="#af52de">
+              <span class="visually-hidden">紫色</span>
+            </label>
+            <label class="porthole-swatch" style="--swatch: #5ac8fa">
+              <input type="radio" name="porthole-color" value="#5ac8fa">
+              <span class="visually-hidden">青色</span>
+            </label>
+          </div>
+        </fieldset>
         <div class="porthole-actions">
-          <button type="submit" class="button primary" id="portholeSubmit">铆上舷窗</button>
+          <button type="submit" class="button primary" id="portholeSubmit">留下</button>
           <span class="porthole-status" id="portholeStatus" role="status" aria-live="polite"></span>
         </div>
-        <p class="porthole-note">留言会公开出现在这扇舷窗上。拖动铁片时用方向键也可以微调。</p>
+        <p class="porthole-note">留言会公开出现在这里。方向键也可以微调位置。</p>
       </form>
     </div>
   </section>

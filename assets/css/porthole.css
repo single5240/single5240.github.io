@@ -84,6 +84,70 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-small);
 }
 
+.porthole-plate[data-color] {
+  background: var(--plate);
+  border-color: color-mix(in srgb, var(--plate) 72%, #000);
+  color: #fff;
+}
+
+.porthole-plate[data-color] .porthole-plate-nick,
+.porthole-plate[data-color] .porthole-plate-text {
+  color: inherit;
+}
+
+.porthole-plate[data-color="#ff9500"],
+.porthole-plate[data-color="#5ac8fa"],
+.porthole-plate[data-color="#34c759"] {
+  color: #1d1d1f;
+}
+
+.porthole-colors {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.porthole-colors legend {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.porthole-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.porthole-swatch {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--swatch);
+  box-shadow: var(--shadow-small);
+  cursor: pointer;
+}
+
+.porthole-swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.porthole-swatch:has(input:checked) {
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--swatch, var(--accent));
+}
+
+.porthole-swatch:has(input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
 .porthole-plate-nick {
   font-family: ui-monospace, Consolas, monospace;
   font-size: 10px;

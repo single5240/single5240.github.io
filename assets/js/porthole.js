@@ -3,7 +3,7 @@
   const STORE_LAYOUT = "s5-porthole-layout-v2";
   const STORE_LOCAL = "s5-porthole-local";
   const STORE_NICK = "s5-porthole-nick";
-  const PATH = "/porthole";
+  const COLORS = ["#007aff", "#34c759", "#ff9500", "#ff2d55", "#af52de", "#5ac8fa"];
 
   function overlap(a, b) {
     const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
@@ -162,6 +162,20 @@
   };
 
   if (typeof document === "undefined") return;
+
+  function noteColor(value) {
+    const color = String(value || "").toLowerCase();
+    return COLORS.indexOf(color) >= 0 ? color : "";
+  }
+
+  function readNote(raw) {
+    const cleaned = plain(raw);
+    const match = cleaned.match(/ %%#([0-9a-f]{6})$/i);
+    if (!match) return { text: cleaned.slice(0, 42), color: "" };
+    const color = noteColor("#" + match[1]);
+    if (!color) return { text: cleaned.slice(0, 42), color: "" };
+    return { text: cleaned.slice(0, match.index).trim().slice(0, 42), color: color };
+  }
 
   function plain(value) {
     return String(value || "")
@@ -334,6 +348,10 @@
     function createPlate(data, spot) {
       const el = document.createElement("article");
       el.className = "porthole-plate" + (data.fixture ? " is-fixture" : "");
+      if (data.color) {
+        el.dataset.color = data.color;
+        el.style.setProperty("--plate", data.color);
+      }
       el.tabIndex = 0;
       el.setAttribute("role", "group");
       el.setAttribute("aria-label", data.nick + "：" + data.text + "。方向键可移动");
@@ -380,7 +398,7 @@
     function rememberLocal(item) {
       const list = readJson(STORE_LOCAL, []);
       const next = (Array.isArray(list) ? list : []).filter((entry) => entry && entry.id !== item.id);
-      next.push({ id: item.id, nick: item.nick, text: item.text });
+      next.push({ id: item.id, nick: item.nick, text: item.text, color: item.color || "" });
       writeJson(STORE_LOCAL, next.slice(-24));
     }
 
@@ -402,14 +420,16 @@
       saveLayout();
     });
 
-    createPlate({ id: "fixture-port", nick: "PORT", text: "拖一拖这些铁片", fixture: true }, null);
+    createPlate({ id: "fixture-port", nick: "提示", text: "拖一拖这些卡片", fixture: true }, null);
     const locals = readJson(STORE_LOCAL, []);
     (Array.isArray(locals) ? locals : []).forEach((item) => {
       if (!item || !item.id || !item.text) return;
+      const note = readNote(item.text);
       createPlate({
         id: String(item.id),
         nick: plain(item.nick).slice(0, 12) || "访客",
-        text: plain(item.text).slice(0, 42)
+        text: note.text,
+        color: noteColor(item.color) || note.color
       }, null);
     });
     relayout(null);
@@ -443,13 +463,14 @@
       const known = new Set(plates.map((plate) => plate.id));
       rows.forEach((row) => {
         const id = String(row.objectId || row.id || "");
-        const text = plain(row.comment).slice(0, 42);
+        const note = readNote(row.comment);
+        const text = note.text;
         const nick = plain(row.nick).slice(0, 12) || "访客";
         if (!id || !text || known.has(id) || plates.some((plate) => plate.nick === nick && plate.text === text)) return;
         const size = measureText(nick, text);
         const spot = occupy(size.w, size.h);
         if (!spot) return;
-        createPlate({ id: id, nick: nick, text: text }, spot);
+        createPlate({ id: id, nick: nick, text: text, color: note.color }, spot);
         known.add(id);
       });
       relayout(null);
@@ -463,32 +484,37 @@
       const nick = plain(nickInput.value).slice(0, 12);
       const mail = mailInput.value.trim();
       const text = plain(textInput.value).slice(0, 42);
-      if (!nick || !mail || !text) {
-        setStatus("请填写称呼、邮箱和一句话。", "error");
+      const shownNick = nick || "访客";
+      const color = noteColor((form.querySelector('input[name="porthole-color"]:checked') || {}).value);
+      if (!text) {
+        setStatus("写一句话就可以。", "error");
         return;
       }
-      const size = measureText(nick, text);
+      const size = measureText(shownNick, text);
       const spot = occupy(size.w, size.h);
       if (!spot) {
-        setStatus("舷窗已经排满，拖开一些铁片再试。", "error");
+        setStatus("这里已经排满了，拖开一些再试。", "error");
         return;
       }
 
-      writeJson(STORE_NICK, nick);
+      if (nick) writeJson(STORE_NICK, nick);
       submitBtn.disabled = true;
-      setStatus("正在把铁片铆上去…");
+      setStatus("正在留下…");
+      const comment = color ? text + " %%#" + color.slice(1) : text;
       let remoteId = "";
       try {
         if (!serverUrl) throw new Error("offline");
+        const body = { nick: shownNick, comment: comment, url: PATH };
+        if (mail) body.mail = mail;
         const response = await fetch(serverUrl + "/api/comment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nick: nick, mail: mail, comment: text, url: PATH })
+          body: JSON.stringify(body)
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
           if (payload && payload.errmsg === "Comment too fast!") {
-            setStatus("铆得太快了，稍等一下再试。", "error");
+            setStatus("写得太快了，稍等一下再试。", "error");
             submitBtn.disabled = false;
             return;
           }
@@ -500,13 +526,13 @@
       }
 
       const id = remoteId || ("local-" + Date.now());
-      createPlate({ id: id, nick: nick, text: text }, spot);
-      rememberLocal({ id: id, nick: nick, text: text });
+      createPlate({ id: id, nick: shownNick, text: text, color: color }, spot);
+      rememberLocal({ id: id, nick: shownNick, text: text, color: color });
       relayout(null);
       saveLayout();
       textInput.value = "";
       submitBtn.disabled = false;
-      setStatus(remoteId ? "已经铆在舷窗上。" : "已留在这扇舷窗上，别人暂时还看不到。", remoteId ? "ok" : "error");
+      setStatus(remoteId ? "已经留在这里。" : "先留在这台浏览器里，别人暂时还看不到。", remoteId ? "ok" : "error");
     });
 
     window.addEventListener("resize", () => {
