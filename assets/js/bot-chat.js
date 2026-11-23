@@ -769,7 +769,7 @@
     input.className = "s5-ask-input";
     input.setAttribute("aria-label", "输入给 S5·BOT 的消息");
     input.setAttribute("placeholder", page ? "给 S5·BOT 发消息，或附上代码 / 文本" : "问点嵌入式 / 调试的问题，也可附上代码…");
-    input.rows = page ? 1 : 2;
+    input.rows = page || mode === "dock" ? 1 : 2;
     input.maxLength = 1200;
     const fileInput = document.createElement("input");
     fileInput.type = "file";

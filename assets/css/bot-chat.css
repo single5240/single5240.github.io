@@ -123,6 +123,29 @@
   max-height: min(640px, 68vh);
 }
 
+@media (max-width: 620px) {
+  .home-bot-slot {
+    margin-bottom: 16px;
+    scroll-margin-top: 72px;
+  }
+  .s5-chat-home {
+    padding: 12px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+  .s5-chat-home .s5-persona-tagline {
+    display: none;
+  }
+  .s5-chat-home .s5-chat-log {
+    min-height: 160px;
+    max-height: min(420px, 52vh);
+  }
+  .s5-chat-home .s5-ask-input,
+  .s5-chat-home .s5-model-select {
+    font-size: 16px;
+  }
+}
+
 .s5-chat-close {
   margin-left: auto;
   flex: none;
@@ -436,11 +459,18 @@
   padding: 6px 8px;
   border-radius: 8px;
   border: 1px solid var(--line);
-  background: var(--subtle-bg, var(--panel));
+  background-color: var(--paper);
   color: var(--ink);
+  color-scheme: inherit;
   font: inherit;
   font-size: 12px;
   line-height: 1.3;
+}
+
+.s5-model-select option,
+.s5-model-select optgroup {
+  background-color: var(--paper);
+  color: var(--ink);
 }
 
 .s5-model-select:disabled {
@@ -637,6 +667,78 @@
     width: auto;
     max-height: 70vh;
     overflow-y: auto;
+  }
+}
+
+/* 文章侧栏：对话贴在小机器人下面，占文档流，不再向上浮出 */
+.article-bot-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0 2px 8px;
+}
+
+.article-bot-slot .s5-chat-toggle {
+  margin: 0;
+}
+
+.article-robot-card .s5-dock-host {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+}
+
+.article-robot-card .s5-chat-dock {
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.article-robot-card .s5-chat-dock .s5-persona-head,
+.article-robot-card .s5-chat-dock .s5-persona-chips,
+.article-robot-card .s5-chat-dock .s5-persona-meta,
+.article-robot-card .s5-chat-dock .s5-suggests {
+  display: none;
+}
+
+.article-robot-card .s5-chat-dock .s5-chat-log {
+  max-height: 168px;
+  min-height: 72px;
+  padding: 8px;
+}
+
+.article-robot-card .s5-chat-dock .s5-ask-input {
+  min-height: 34px;
+  height: 34px;
+  resize: none;
+  padding: 6px 8px;
+}
+
+.article-robot-card .s5-chat-dock .s5-chat-actions {
+  gap: 6px;
+}
+
+.article-robot-card .s5-chat-dock .s5-send-btn,
+.article-robot-card .s5-chat-dock .s5-stop-btn,
+.article-robot-card .s5-chat-dock .s5-attach-btn {
+  padding: 5px 10px;
+}
+
+@media (max-width: 600px) {
+  .article-robot-card .s5-dock-host {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
   }
 }
 
@@ -1142,12 +1244,12 @@ body.section-chat .nav {
   padding: 6px 26px 6px 12px;
   border: 0;
   border-radius: 999px;
-  background-color: var(--alt-bg);
+  background-color: var(--paper);
+  color: var(--ink);
   background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position: calc(100% - 14px) 55%, calc(100% - 9px) 55%;
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
-  color: var(--muted);
   font-size: 12px;
   appearance: none;
 }

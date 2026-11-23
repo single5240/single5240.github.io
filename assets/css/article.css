@@ -1027,6 +1027,7 @@
 .toc .toc-sub { font-size: 12px; }
 .toc summary { font-size: 14px; }
 .reading-sidebar > .article-robot-card { flex: 0 0 auto; box-shadow: none; overflow: visible; }
+.reading-sidebar > .toc { flex: 1 1 auto; min-height: 0; }
 .robot-stage-article { height: 104px; overflow: visible; }
 .robot-stage-article .robot-speech {
   top: auto;
@@ -1041,6 +1042,7 @@
 .robot-stage-article .robot-speech::after { display: block; }
 @media (min-width: 1001px) {
   .reading-sidebar:has(> .article-robot-card) > .toc { max-height: calc(100vh - 240px); }
+  .reading-sidebar:has(.s5-dock-host.is-open) > .toc { max-height: none; }
 }
 @media (max-width: 1000px) {
   .reading-grid { display: flex; }

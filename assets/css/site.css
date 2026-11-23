@@ -1417,10 +1417,38 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
     flex-wrap: wrap;
     gap: 8px;
   }
-  .workbench-scope-bay,
   .workbench-meta-tags,
   .workbench-eyebrow {
     display: none;
+  }
+  .workbench-scope-bay {
+    display: block;
+    width: 100%;
+  }
+  .scope-bay-frame {
+    padding: 8px 10px 10px;
+    border-radius: 16px;
+  }
+  .scope-bay-header,
+  .scope-bay-body .theme-spectrum,
+  .scope-bay-body .scope-pause {
+    display: none;
+  }
+  .scope-bay-body {
+    padding: 2px 6px 8px;
+  }
+  .scope-bay-body .robot-stage {
+    height: auto;
+    min-height: 96px;
+    align-items: center;
+  }
+  .scope-bay-body .retro-robot-svg {
+    width: 108px;
+    height: 93px;
+  }
+  .scope-bay-body .s5-chat-toggle {
+    min-height: 44px;
+    margin-top: 2px;
   }
   .workbench-main-title {
     font-size: clamp(23px, 6.8vw, 27px);
