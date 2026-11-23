@@ -16,85 +16,33 @@
 
 .porthole-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 520px) minmax(240px, 1fr);
-  gap: 28px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.8fr);
+  gap: 18px;
+  align-items: stretch;
 }
 
 .porthole-ring {
-  position: relative;
-  width: min(520px, 100%);
-  aspect-ratio: 1;
-  margin: 0 auto;
-  border-radius: 50%;
-  padding: 28px;
-  background:
-    radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--paper) 72%, #c5ccd4) 0%, color-mix(in srgb, var(--ink) 28%, #8b939c) 46%, color-mix(in srgb, var(--ink) 78%, #1a1e24) 100%);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 45%, transparent),
-    inset 0 0 0 2px color-mix(in srgb, var(--ink) 35%, transparent),
-    0 16px 36px color-mix(in srgb, var(--ink) 16%, transparent);
-}
-
-.porthole-bolt {
-  position: absolute;
-  left: var(--bolt-x);
-  top: var(--bolt-y);
-  width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--paper) 80%, white), color-mix(in srgb, var(--ink) 45%, #6d737b) 70%);
-  box-shadow:
-    inset 0 1px 1px color-mix(in srgb, white 55%, transparent),
-    0 1px 1px color-mix(in srgb, black 35%, transparent);
-}
-
-.porthole-bolt::after {
-  content: "";
-  position: absolute;
-  left: 3px;
-  right: 3px;
-  top: 6px;
-  height: 1px;
-  background: color-mix(in srgb, var(--ink) 55%, transparent);
-  transform: rotate(42deg);
+  display: flex;
+  min-height: 360px;
+  border-radius: 22px;
+  padding: 12px;
+  background: var(--raised-bg);
+  border: 1px solid var(--line);
+  box-shadow: var(--panel-bevel), var(--shadow-small);
+  backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
 }
 
 .porthole-glass {
   position: relative;
+  flex: 1;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  min-height: 336px;
+  border-radius: 16px;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--accent) 22%, var(--paper)) 0%, color-mix(in srgb, var(--ink) 55%, #0c1218) 72%, color-mix(in srgb, var(--ink) 88%, #05070b) 100%);
-  box-shadow:
-    inset 0 0 0 10px color-mix(in srgb, black 28%, transparent),
-    inset 0 0 40px color-mix(in srgb, var(--accent) 16%, transparent);
-}
-
-.porthole-stars {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--paper) 82%, white) 0 1.2px, transparent 1.8px),
-    radial-gradient(circle at 72% 22%, color-mix(in srgb, var(--accent) 70%, white) 0 1.2px, transparent 1.8px),
-    radial-gradient(circle at 40% 70%, color-mix(in srgb, var(--paper) 70%, white) 0 1px, transparent 1.6px),
-    radial-gradient(circle at 78% 64%, color-mix(in srgb, var(--paper) 70%, white) 0 1.2px, transparent 1.8px),
-    radial-gradient(circle at 26% 58%, color-mix(in srgb, var(--accent) 55%, white) 0 1px, transparent 1.6px);
-  opacity: 0.8;
-}
-
-.porthole-glare {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: linear-gradient(128deg, color-mix(in srgb, white 38%, transparent) 0%, transparent 36%);
-  opacity: 0.35;
+  background: var(--alt-bg);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--ink) 10%, transparent);
 }
 
 .porthole-plate {
@@ -104,27 +52,17 @@
   flex-direction: column;
   gap: 2px;
   width: max-content;
-  max-width: 148px;
+  max-width: 168px;
   margin: 0;
-  padding: 8px 10px 7px;
-  border: 1px solid color-mix(in srgb, var(--ink) 32%, #9aa1a8);
-  border-radius: 3px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--paper) 78%, #f7f4ee) 0%, color-mix(in srgb, var(--ink) 14%, #c8ccd1) 100%);
+  padding: 10px 12px 9px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--subtle-bg);
   color: var(--ink);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 70%, transparent),
-    inset 0 -1px 0 color-mix(in srgb, black 18%, transparent),
-    0 1px 0 color-mix(in srgb, black 22%, transparent);
+  box-shadow: var(--shadow-small);
   cursor: grab;
   touch-action: none;
   user-select: none;
-  background-image:
-    radial-gradient(circle at 6px 6px, color-mix(in srgb, var(--ink) 55%, #5c636b) 0 1.5px, transparent 2px),
-    radial-gradient(circle at calc(100% - 6px) 6px, color-mix(in srgb, var(--ink) 55%, #5c636b) 0 1.5px, transparent 2px),
-    radial-gradient(circle at 6px calc(100% - 6px), color-mix(in srgb, var(--ink) 55%, #5c636b) 0 1.5px, transparent 2px),
-    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), color-mix(in srgb, var(--ink) 55%, #5c636b) 0 1.5px, transparent 2px),
-    linear-gradient(180deg, color-mix(in srgb, var(--paper) 78%, #f7f4ee) 0%, color-mix(in srgb, var(--ink) 14%, #c8ccd1) 100%);
 }
 
 .porthole-plate:active {
@@ -137,19 +75,13 @@
 }
 
 .porthole-plate.is-fixture {
-  background-image:
-    radial-gradient(circle at 6px 6px, color-mix(in srgb, var(--accent) 80%, black) 0 1.5px, transparent 2px),
-    radial-gradient(circle at calc(100% - 6px) 6px, color-mix(in srgb, var(--accent) 80%, black) 0 1.5px, transparent 2px),
-    radial-gradient(circle at 6px calc(100% - 6px), color-mix(in srgb, var(--accent) 80%, black) 0 1.5px, transparent 2px),
-    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), color-mix(in srgb, var(--accent) 80%, black) 0 1.5px, transparent 2px),
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, var(--paper)) 0%, color-mix(in srgb, var(--ink) 18%, #b7bdc4) 100%);
+  background: var(--panel);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
 }
 
 .porthole-plate.is-bump {
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 70%, transparent),
-    0 0 0 2px var(--accent),
-    0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-small);
 }
 
 .porthole-plate-nick {

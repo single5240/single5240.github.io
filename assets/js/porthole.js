@@ -1,6 +1,6 @@
 (function (root) {
   const GAP = 6;
-  const STORE_LAYOUT = "s5-porthole-layout";
+  const STORE_LAYOUT = "s5-porthole-layout-v2";
   const STORE_LOCAL = "s5-porthole-local";
   const STORE_NICK = "s5-porthole-nick";
   const PATH = "/porthole";
@@ -12,34 +12,23 @@
     return { ox: ox, oy: oy };
   }
 
-  function cornerExcess(plate, cx, cy, r) {
-    const points = [
-      [plate.x, plate.y],
-      [plate.x + plate.w, plate.y],
-      [plate.x, plate.y + plate.h],
-      [plate.x + plate.w, plate.y + plate.h]
-    ];
-    let excess = 0;
-    for (let i = 0; i < points.length; i++) {
-      const over = Math.hypot(points[i][0] - cx, points[i][1] - cy) - r;
-      if (over > excess) excess = over;
-    }
-    return excess;
+  function outsideRect(plate, bounds) {
+    const pad = bounds.pad || 0;
+    return plate.x < pad - 1
+      || plate.y < pad - 1
+      || plate.x + plate.w > bounds.width - pad + 1
+      || plate.y + plate.h > bounds.height - pad + 1;
   }
 
-  function clampIntoCircle(plate, cx, cy, r) {
-    let changed = false;
-    for (let i = 0; i < 24; i++) {
-      const excess = cornerExcess(plate, cx, cy, r);
-      if (excess <= 0.4) break;
-      changed = true;
-      const dx = plate.x + plate.w / 2 - cx;
-      const dy = plate.y + plate.h / 2 - cy;
-      const len = Math.hypot(dx, dy) || 1;
-      const step = Math.max(1, excess * 0.85);
-      plate.x -= (dx / len) * step;
-      plate.y -= (dy / len) * step;
-    }
+  function clampIntoRect(plate, bounds) {
+    const pad = bounds.pad || 0;
+    const maxX = Math.max(pad, bounds.width - plate.w - pad);
+    const maxY = Math.max(pad, bounds.height - plate.h - pad);
+    const x = Math.min(Math.max(plate.x, pad), maxX);
+    const y = Math.min(Math.max(plate.y, pad), maxY);
+    const changed = Math.abs(x - plate.x) > 0.4 || Math.abs(y - plate.y) > 0.4;
+    plate.x = x;
+    plate.y = y;
     return changed;
   }
 
@@ -97,11 +86,11 @@
       }
       for (let i = 0; i < plates.length; i++) {
         if (plates[i].id === pinnedId) continue;
-        if (clampIntoCircle(plates[i], bounds.cx, bounds.cy, bounds.r)) moved = true;
+        if (clampIntoRect(plates[i], bounds)) moved = true;
       }
       if (pinnedId) {
         const pin = plates.find((plate) => plate.id === pinnedId);
-        if (pin) clampIntoCircle(pin, bounds.cx, bounds.cy, bounds.r);
+        if (pin) clampIntoRect(pin, bounds);
       }
       if (!moved) break;
     }
@@ -116,15 +105,38 @@
             if (!hit) continue;
             blocked = true;
             if (hit.ox < hit.oy) {
-              const dir = (pin.x + pin.w / 2) <= (plates[i].x + plates[i].w / 2) ? -1 : 1;
-              pin.x += dir * (hit.ox + GAP);
+              const dir = (pin.x + pin.w / 2) <= (plates[i].x + plates[i].w / 2) ? 1 : -1;
+              plates[i].x += dir * (hit.ox + GAP);
             } else {
-              const dir = (pin.y + pin.h / 2) <= (plates[i].y + plates[i].h / 2) ? -1 : 1;
-              pin.y += dir * (hit.oy + GAP);
+              const dir = (pin.y + pin.h / 2) <= (plates[i].y + plates[i].h / 2) ? 1 : -1;
+              plates[i].y += dir * (hit.oy + GAP);
+            }
+            clampIntoRect(plates[i], bounds);
+            const still = overlap(pin, plates[i]);
+            if (!still) continue;
+            if (still.ox < still.oy) {
+              const back = (pin.x + pin.w / 2) <= (plates[i].x + plates[i].w / 2) ? -1 : 1;
+              pin.x += back * (still.ox + GAP);
+            } else {
+              const back = (pin.y + pin.h / 2) <= (plates[i].y + plates[i].h / 2) ? -1 : 1;
+              pin.y += back * (still.oy + GAP);
+            }
+            clampIntoRect(pin, bounds);
+          }
+          if (!blocked) break;
+        }
+        for (let n = 0; n < 16; n++) {
+          let moved = false;
+          for (let i = 0; i < plates.length; i++) {
+            for (let j = i + 1; j < plates.length; j++) {
+              if (pushPair(plates[i], plates[j], pinnedId)) moved = true;
             }
           }
-          clampIntoCircle(pin, bounds.cx, bounds.cy, bounds.r);
-          if (!blocked) break;
+          for (let i = 0; i < plates.length; i++) {
+            if (plates[i].id === pinnedId) continue;
+            if (clampIntoRect(plates[i], bounds)) moved = true;
+          }
+          if (!moved) break;
         }
       }
     }
@@ -133,7 +145,7 @@
 
   function fits(plates, bounds) {
     for (let i = 0; i < plates.length; i++) {
-      if (cornerExcess(plates[i], bounds.cx, bounds.cy, bounds.r) > 1) return false;
+      if (outsideRect(plates[i], bounds)) return false;
       for (let j = i + 1; j < plates.length; j++) {
         if (overlap(plates[i], plates[j])) return false;
       }
@@ -144,9 +156,9 @@
   root.PortholePhysics = {
     overlap: overlap,
     separate: separate,
-    clampIntoCircle: clampIntoCircle,
+    clampIntoRect: clampIntoRect,
     fits: fits,
-    cornerExcess: cornerExcess
+    outsideRect: outsideRect
   };
 
   if (typeof document === "undefined") return;
@@ -186,7 +198,7 @@
     const statusEl = document.getElementById("portholeStatus");
     const submitBtn = document.getElementById("portholeSubmit");
     if (!board || !glass || !form || !statusEl || !submitBtn) return;
-    if (glass.clientWidth < 40) {
+    if (glass.clientWidth < 40 || glass.clientHeight < 40) {
       window.requestAnimationFrame(boot);
       return;
     }
@@ -206,8 +218,11 @@
     if (nickInput && !nickInput.value) nickInput.value = readJson(STORE_NICK, "");
 
     function bounds() {
-      const size = glass.clientWidth;
-      return { cx: size / 2, cy: size / 2, r: size / 2 - 10, size: size };
+      return {
+        width: glass.clientWidth,
+        height: glass.clientHeight,
+        pad: 12
+      };
     }
 
     function setStatus(text, kind) {
@@ -219,9 +234,9 @@
       plate.el.style.left = plate.x + "px";
       plate.el.style.top = plate.y + "px";
       const box = bounds();
-      if (box.size) {
-        plate.fx = plate.x / box.size;
-        plate.fy = plate.y / box.size;
+      if (box.width && box.height) {
+        plate.fx = plate.x / box.width;
+        plate.fy = plate.y / box.height;
       }
     }
 
@@ -267,15 +282,15 @@
     function spotFor(index, width, height) {
       const box = bounds();
       const angle = index * 2.399963;
-      const radius = 28 + Math.sqrt(index + 1) * 36;
+      const spread = Math.sqrt(index + 1) / 7;
       const plate = {
         id: "spot",
-        x: box.cx + Math.cos(angle) * radius - width / 2,
-        y: box.cy + Math.sin(angle) * radius - height / 2,
+        x: box.width / 2 + Math.cos(angle) * spread * box.width * 0.42 - width / 2,
+        y: box.height / 2 + Math.sin(angle) * spread * box.height * 0.42 - height / 2,
         w: width,
         h: height
       };
-      clampIntoCircle(plate, box.cx, box.cy, box.r);
+      clampIntoRect(plate, box);
       return plate;
     }
 
@@ -283,7 +298,7 @@
       for (let i = 0; i < 56; i++) {
         const trial = spotFor(i, width, height);
         const box = bounds();
-        if (cornerExcess(trial, box.cx, box.cy, box.r) > 1) continue;
+        if (outsideRect(trial, box)) continue;
         if (!plates.some((plate) => overlap(trial, plate))) return trial;
       }
       return null;
@@ -348,8 +363,8 @@
         const at = saved[plate.id];
         if (at && Number.isFinite(at[0]) && Number.isFinite(at[1])) {
           const box = bounds();
-          plate.x = at[0] * box.size;
-          plate.y = at[1] * box.size;
+          plate.x = at[0] * box.width;
+          plate.y = at[1] * box.height;
         } else {
           const fresh = spotFor(plates.length, plate.w, plate.h);
           plate.x = fresh.x;
@@ -499,8 +514,8 @@
       plates.forEach((plate) => {
         plate.w = plate.el.offsetWidth;
         plate.h = plate.el.offsetHeight;
-        plate.x = plate.fx * box.size;
-        plate.y = plate.fy * box.size;
+        plate.x = plate.fx * box.width;
+        plate.y = plate.fy * box.height;
       });
       relayout(null);
       saveLayout();
