@@ -247,6 +247,8 @@
     function paint(plate) {
       plate.el.style.left = plate.x + "px";
       plate.el.style.top = plate.y + "px";
+      const tilt = reduceMotion ? 0 : Math.max(-5.5, Math.min(5.5, plate.vx * 0.007));
+      plate.el.style.transform = tilt ? "rotate(" + tilt.toFixed(2) + "deg)" : "";
       const box = bounds();
       if (box.width && box.height) {
         plate.fx = plate.x / box.width;
@@ -318,14 +320,46 @@
       return null;
     }
 
+    function track(plate, x, y) {
+      const now = performance.now();
+      plate.trail.push({ x: x, y: y, t: now });
+      const cutoff = now - 90;
+      while (plate.trail.length > 1 && plate.trail[0].t < cutoff) plate.trail.shift();
+      const first = plate.trail[0];
+      const last = plate.trail[plate.trail.length - 1];
+      const dt = Math.max(0.016, (last.t - first.t) / 1000);
+      plate.vx = (last.x - first.x) / dt;
+      plate.vy = (last.y - first.y) / dt;
+    }
+
+    function settleVelocity(plate) {
+      const last = plate.trail[plate.trail.length - 1];
+      if (!last || performance.now() - last.t > 48) {
+        plate.vx = 0;
+        plate.vy = 0;
+        return;
+      }
+      const speed = Math.hypot(plate.vx, plate.vy);
+      const max = 860;
+      if (speed > max) {
+        plate.vx *= max / speed;
+        plate.vy *= max / speed;
+      }
+    }
+
     function wire(plate) {
       plate.el.addEventListener("pointerdown", (event) => {
         if (event.button !== 0) return;
         const rect = glass.getBoundingClientRect();
         dragging = plate;
+        plate.vx = 0;
+        plate.vy = 0;
+        plate.trail = [{ x: plate.x, y: plate.y, t: performance.now() }];
+        plate.el.classList.add("is-held");
+        plate.el.classList.remove("is-glide");
         pointerOffsetX = event.clientX - rect.left - plate.x;
         pointerOffsetY = event.clientY - rect.top - plate.y;
-        plate.el.setPointerCapture(event.pointerId);
+        try { plate.el.setPointerCapture(event.pointerId); } catch (error) { /* Synthetic events have no capture. */ }
         event.preventDefault();
       });
       plate.el.addEventListener("keydown", (event) => {
@@ -374,7 +408,10 @@
         w: el.offsetWidth,
         h: el.offsetHeight,
         fx: 0,
-        fy: 0
+        fy: 0,
+        vx: 0,
+        vy: 0,
+        trail: []
       };
       if (!spot) {
         const saved = readJson(STORE_LAYOUT, { items: {} }).items || {};
@@ -402,25 +439,107 @@
       writeJson(STORE_LOCAL, next.slice(-24));
     }
 
+    let coastFrame = 0;
+    let coastStamp = 0;
+
+    function armCoast() {
+      if (coastFrame || reduceMotion) return;
+      coastStamp = performance.now();
+      coastFrame = window.requestAnimationFrame(coast);
+    }
+
+    function coast(now) {
+      coastFrame = 0;
+      const dt = Math.min(0.034, Math.max(0.001, (now - coastStamp) / 1000));
+      coastStamp = now;
+      const box = bounds();
+      const pad = box.pad;
+      let alive = false;
+      plates.forEach((plate) => {
+        if (plate === dragging) return;
+        if (Math.hypot(plate.vx, plate.vy) < 36) {
+          if (plate.vx || plate.vy) {
+            plate.vx = 0;
+            plate.vy = 0;
+            plate.el.classList.remove("is-glide");
+          }
+          return;
+        }
+        alive = true;
+        plate.el.classList.add("is-glide");
+        plate.x += plate.vx * dt;
+        plate.y += plate.vy * dt;
+        const maxX = Math.max(pad, box.width - plate.w - pad);
+        const maxY = Math.max(pad, box.height - plate.h - pad);
+        if (plate.x < pad) {
+          plate.x = pad;
+          plate.vx = Math.abs(plate.vx) * 0.34;
+        } else if (plate.x > maxX) {
+          plate.x = maxX;
+          plate.vx = -Math.abs(plate.vx) * 0.34;
+        }
+        if (plate.y < pad) {
+          plate.y = pad;
+          plate.vy = Math.abs(plate.vy) * 0.34;
+        } else if (plate.y > maxY) {
+          plate.y = maxY;
+          plate.vy = -Math.abs(plate.vy) * 0.34;
+        }
+        const damp = Math.exp(-3.15 * dt);
+        plate.vx *= damp;
+        plate.vy *= damp;
+      });
+      const snapshot = plates.map((plate) => ({ x: plate.x, y: plate.y }));
+      relayout(dragging ? dragging.id : null);
+      plates.forEach((plate, index) => {
+        if (plate === dragging) return;
+        const dx = plate.x - snapshot[index].x;
+        const dy = plate.y - snapshot[index].y;
+        const shove = Math.hypot(dx, dy);
+        if (shove < 0.4) return;
+        const gain = Math.min(680, shove / dt);
+        plate.vx = plate.vx * 0.22 + (dx / shove) * gain * 0.58;
+        plate.vy = plate.vy * 0.22 + (dy / shove) * gain * 0.58;
+        plate.el.classList.add("is-glide");
+        alive = true;
+      });
+      if (alive) {
+        coastFrame = window.requestAnimationFrame(coast);
+      } else {
+        plates.forEach((plate) => plate.el.classList.remove("is-glide"));
+        saveLayout();
+      }
+    }
+
+    function releaseDrag() {
+      if (!dragging) return;
+      const plate = dragging;
+      plate.el.classList.remove("is-held");
+      settleVelocity(plate);
+      dragging = null;
+      if (reduceMotion || Math.hypot(plate.vx, plate.vy) < 140) {
+        plate.vx = 0;
+        plate.vy = 0;
+        plate.el.classList.remove("is-glide");
+        paint(plate);
+        saveLayout();
+        return;
+      }
+      plate.el.classList.add("is-glide");
+      armCoast();
+    }
+
     window.addEventListener("pointermove", (event) => {
       if (!dragging) return;
       const rect = glass.getBoundingClientRect();
       dragging.x = event.clientX - rect.left - pointerOffsetX;
       dragging.y = event.clientY - rect.top - pointerOffsetY;
+      track(dragging, dragging.x, dragging.y);
       relayout(dragging.id);
     });
-    window.addEventListener("pointerup", () => {
-      if (!dragging) return;
-      dragging = null;
-      saveLayout();
-    });
-    window.addEventListener("pointercancel", () => {
-      if (!dragging) return;
-      dragging = null;
-      saveLayout();
-    });
+    window.addEventListener("pointerup", releaseDrag);
+    window.addEventListener("pointercancel", releaseDrag);
 
-    createPlate({ id: "fixture-port", nick: "提示", text: "拖一拖这些卡片", fixture: true }, null);
     const locals = readJson(STORE_LOCAL, []);
     (Array.isArray(locals) ? locals : []).forEach((item) => {
       if (!item || !item.id || !item.text) return;

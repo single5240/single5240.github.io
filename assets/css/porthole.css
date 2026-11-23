@@ -15,18 +15,17 @@
 }
 
 .porthole-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.8fr);
-  gap: 18px;
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .porthole-ring {
   display: flex;
-  min-height: 360px;
+  width: 100%;
   border-radius: 22px;
-  padding: 12px;
-  background: var(--raised-bg);
+  padding: 10px;
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
   border: 1px solid var(--line);
   box-shadow: var(--panel-bevel), var(--shadow-small);
   backdrop-filter: var(--glass);
@@ -37,12 +36,18 @@
   position: relative;
   flex: 1;
   width: 100%;
-  height: 100%;
-  min-height: 336px;
+  height: 320px;
+  min-height: 320px;
   border-radius: 16px;
   overflow: hidden;
-  background: var(--alt-bg);
+  background-color: color-mix(in srgb, var(--paper) 46%, transparent);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ink) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 8%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
   box-shadow: inset 0 1px 2px color-mix(in srgb, var(--ink) 10%, transparent);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
 }
 
 .porthole-plate {
@@ -57,12 +62,49 @@
   padding: 10px 12px 9px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--subtle-bg);
+  background:
+    linear-gradient(165deg, color-mix(in srgb, var(--glass-edge) 70%, transparent), transparent 46%),
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--panel) 62%, transparent) 0%,
+      color-mix(in srgb, var(--paper) 28%, transparent) 100%
+    );
   color: var(--ink);
-  box-shadow: var(--shadow-small);
+  box-shadow: var(--shadow-small), inset 0 1px 0 color-mix(in srgb, var(--glass-edge) 80%, transparent);
   cursor: grab;
   touch-action: none;
   user-select: none;
+  transform-origin: center;
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  transition:
+    background 0.45s var(--ease-spring),
+    border-color 0.45s var(--ease-spring),
+    color 0.45s var(--ease-spring),
+    box-shadow 0.18s var(--ease-spring);
+}
+
+.porthole-plate::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(165deg, var(--glass-edge), transparent 42%);
+  opacity: 0.55;
+}
+
+.porthole-plate.is-held {
+  z-index: 3;
+  cursor: grabbing;
+  box-shadow: var(--shadow-hover);
+  scale: 1.035;
+}
+
+.porthole-plate.is-glide {
+  z-index: 2;
+  box-shadow: var(--shadow);
 }
 
 .porthole-plate:active {
@@ -82,11 +124,18 @@
 .porthole-plate.is-bump {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-small);
+  animation: porthole-knock 320ms var(--ease-spring);
 }
 
 .porthole-plate[data-color] {
-  background: var(--plate);
-  border-color: color-mix(in srgb, var(--plate) 72%, #000);
+  background:
+    linear-gradient(165deg, color-mix(in srgb, white 58%, transparent), transparent 42%),
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--plate) 78%, transparent) 0%,
+      color-mix(in srgb, var(--plate) 34%, transparent) 100%
+    );
+  border-color: color-mix(in srgb, var(--plate) 48%, white);
   color: #fff;
 }
 
@@ -178,14 +227,22 @@
 }
 
 .porthole-console {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 22px 22px 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 0.9fr) minmax(0, 1.5fr);
+  gap: 12px 16px;
+  align-items: end;
+  padding: 18px 18px 16px;
   border: 1px solid var(--line);
   border-radius: 22px;
   background: var(--raised-bg);
   box-shadow: var(--panel-bevel), var(--shadow-small);
+}
+
+.porthole-console-kicker,
+.porthole-colors,
+.porthole-actions,
+.porthole-note {
+  grid-column: 1 / -1;
 }
 
 .porthole-console-kicker {
@@ -267,7 +324,12 @@
 }
 
 @media (max-width: 860px) {
-  .porthole-layout {
+  .porthole-glass {
+    height: 260px;
+    min-height: 260px;
+  }
+
+  .porthole-console {
     grid-template-columns: 1fr;
   }
 
@@ -278,8 +340,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .porthole-plate,
+  .porthole-plate.is-bump,
   .porthole-spark {
     animation: none;
+    transition: none;
+  }
+
+  .porthole-spark {
     opacity: 0;
   }
 }
@@ -287,4 +355,9 @@
 @keyframes porthole-spark {
   from { transform: scale(0.4); opacity: 1; }
   to { transform: scale(1.8); opacity: 0; }
+}
+
+@keyframes porthole-knock {
+  0% { filter: brightness(1.2); }
+  100% { filter: brightness(1); }
 }
