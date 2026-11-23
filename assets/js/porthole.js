@@ -3,6 +3,11 @@
   const STORE_LAYOUT = "s5-porthole-layout-v2";
   const STORE_LOCAL = "s5-porthole-local";
   const STORE_NICK = "s5-porthole-nick";
+  const STORE_POSTS = "s5-porthole-posts";
+  const PATH = "/porthole";
+  const HOUR_MS = 60 * 60 * 1000;
+  const MINUTE_MS = 60 * 1000;
+  const HOUR_LIMIT = 10;
   const COLORS = ["#007aff", "#34c759", "#ff9500", "#ff2d55", "#af52de", "#5ac8fa"];
 
   function overlap(a, b) {
@@ -575,7 +580,7 @@
 
     async function loadRemote() {
       if (!serverUrl) return;
-      const response = await fetch(serverUrl + "/api/comment?path=" + encodeURIComponent(PATH) + "&page=1&pageSize=24&sortBy=insertedAt_asc", { cache: "no-store" });
+      const response = await fetch(serverUrl + "/api/comment?path=" + encodeURIComponent(PATH) + "&page=1&pageSize=24&sortBy=insertedAt_desc", { cache: "no-store" });
       if (!response.ok) return;
       const payload = await response.json();
       const rows = payload && payload.data && Array.isArray(payload.data.data) ? payload.data.data : [];
@@ -598,6 +603,24 @@
 
     loadRemote().catch(() => {});
 
+    function recentPosts() {
+      const now = Date.now();
+      const list = readJson(STORE_POSTS, []);
+      return (Array.isArray(list) ? list : []).filter((stamp) => now - stamp < HOUR_MS);
+    }
+
+    function postGate() {
+      const stamps = recentPosts();
+      const now = Date.now();
+      if (stamps.some((stamp) => now - stamp < MINUTE_MS)) return "minute";
+      if (stamps.length >= HOUR_LIMIT) return "hour";
+      return "";
+    }
+
+    function markPost() {
+      writeJson(STORE_POSTS, recentPosts().concat(Date.now()).slice(-HOUR_LIMIT));
+    }
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const nick = plain(nickInput.value).slice(0, 12);
@@ -607,6 +630,15 @@
       const color = noteColor((form.querySelector('input[name="porthole-color"]:checked') || {}).value);
       if (!text) {
         setStatus("写一句话就可以。", "error");
+        return;
+      }
+      const gate = postGate();
+      if (gate === "minute") {
+        setStatus("一分钟内只能留一条。", "error");
+        return;
+      }
+      if (gate === "hour") {
+        setStatus("一小时内最多留 10 条。", "error");
         return;
       }
       const size = measureText(shownNick, text);
@@ -632,26 +664,33 @@
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          if (payload && payload.errmsg === "Comment too fast!") {
-            setStatus("写得太快了，稍等一下再试。", "error");
-            submitBtn.disabled = false;
-            return;
+          const errmsg = payload && payload.errmsg;
+          if (errmsg === "Comment too fast!") {
+            markPost();
+            setStatus("同一网络一分钟只能留一条。", "error");
+          } else {
+            setStatus(errmsg ? "没能留下：" + errmsg : "没能同步出去，请稍后再试。", "error");
           }
-          throw new Error("failed");
+          submitBtn.disabled = false;
+          return;
         }
-        remoteId = String((payload.data && (payload.data.objectId || payload.data.id)) || payload.objectId || payload.id || "");
+        const data = payload && payload.data;
+        remoteId = String((data && (data.objectId || data.id)) || payload.objectId || payload.id || "");
+        if (!remoteId) throw new Error("missing id");
       } catch (error) {
-        remoteId = "";
+        setStatus("没能同步出去，请稍后再试。", "error");
+        submitBtn.disabled = false;
+        return;
       }
 
-      const id = remoteId || ("local-" + Date.now());
-      createPlate({ id: id, nick: shownNick, text: text, color: color }, spot);
-      rememberLocal({ id: id, nick: shownNick, text: text, color: color });
+      markPost();
+      createPlate({ id: remoteId, nick: shownNick, text: text, color: color }, spot);
+      rememberLocal({ id: remoteId, nick: shownNick, text: text, color: color });
       relayout(null);
       saveLayout();
       textInput.value = "";
       submitBtn.disabled = false;
-      setStatus(remoteId ? "已经留在这里。" : "先留在这台浏览器里，别人暂时还看不到。", remoteId ? "ok" : "error");
+      setStatus("已经留在这里，其他人也能看到。", "ok");
     });
 
     window.addEventListener("resize", () => {

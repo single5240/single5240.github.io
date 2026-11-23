@@ -272,24 +272,18 @@
   font-weight: 500;
 }
 
-.porthole-field input,
-.porthole-field textarea {
+.porthole-field input {
   width: 100%;
+  height: 42px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 0 12px;
   background: var(--panel);
   color: var(--ink);
   font: inherit;
-  resize: vertical;
 }
 
-.porthole-field textarea {
-  min-height: 72px;
-}
-
-.porthole-field input:focus-visible,
-.porthole-field textarea:focus-visible {
+.porthole-field input:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }

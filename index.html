@@ -109,7 +109,7 @@ section: home
         </div>
         <div class="porthole-field">
           <label for="porthole-text">一句话</label>
-          <textarea id="porthole-text" name="comment" rows="3" maxlength="42" required placeholder="写一句短的"></textarea>
+          <input id="porthole-text" name="comment" type="text" maxlength="42" required placeholder="写一句短的" autocomplete="off">
         </div>
         <fieldset class="porthole-colors">
           <legend>卡片颜色</legend>
@@ -148,7 +148,7 @@ section: home
           <button type="submit" class="button primary" id="portholeSubmit">留下</button>
           <span class="porthole-status" id="portholeStatus" role="status" aria-live="polite"></span>
         </div>
-        <p class="porthole-note">留言会公开出现在这里。方向键也可以微调位置。</p>
+        <p class="porthole-note">留言会公开出现在这里，卡片位置只记在你的浏览器里。同一网络一分钟一条，这台浏览器一小时最多十条。方向键也可以微调位置。</p>
       </form>
     </div>
   </section>
