@@ -80,10 +80,53 @@ section: home
     </div>
   </section>
 
-  <!-- 1.5 主页 AI 对话：由控制台里的「AI 对话」按钮展开，插在控制台与精选项目之间 -->
+  <!-- 1.5 主页 AI 对话：展开后位于舷窗留言之上，再下面才是精选项目 -->
   <div class="home-bot-slot" id="homeBotChat" hidden>
     <div data-bot-chat="home"></div>
   </div>
+
+  <section class="porthole-board" id="portholeBoard" aria-labelledby="porthole-title" data-server-url="{{ site.waline.server_url }}">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">OBSERVATION PORT</div>
+        <h2 id="porthole-title">舷窗留言</h2>
+        <p class="porthole-lead">一句话变成一块小铁片。可以拖动，碰上会弹开，不会叠在一起。</p>
+      </div>
+    </div>
+    <div class="porthole-layout">
+      <div class="porthole-ring">
+        <span class="porthole-bolt" style="--bolt-x: 18%; --bolt-y: 14%" aria-hidden="true"></span>
+        <span class="porthole-bolt" style="--bolt-x: 82%; --bolt-y: 14%" aria-hidden="true"></span>
+        <span class="porthole-bolt" style="--bolt-x: 18%; --bolt-y: 86%" aria-hidden="true"></span>
+        <span class="porthole-bolt" style="--bolt-x: 82%; --bolt-y: 86%" aria-hidden="true"></span>
+        <div class="porthole-glass" id="portholeGlass">
+          <div class="porthole-stars" aria-hidden="true"></div>
+          <div class="porthole-glare" aria-hidden="true"></div>
+        </div>
+      </div>
+      <form class="porthole-console" id="portholeForm">
+        <p class="porthole-console-kicker">RIVET A PLATE</p>
+        <div class="porthole-field">
+          <label for="porthole-nick">称呼</label>
+          <input id="porthole-nick" name="nick" type="text" maxlength="12" required autocomplete="nickname" placeholder="例如：过路的">
+        </div>
+        <div class="porthole-field">
+          <label for="porthole-mail">邮箱 <span>不公开</span></label>
+          <input id="porthole-mail" name="mail" type="email" maxlength="80" required autocomplete="email" placeholder="用于送达，不显示在铁片上">
+        </div>
+        <div class="porthole-field">
+          <label for="porthole-text">一句话</label>
+          <textarea id="porthole-text" name="comment" rows="3" maxlength="42" required placeholder="短一点，才能铆得下"></textarea>
+        </div>
+        <div class="porthole-actions">
+          <button type="submit" class="button primary" id="portholeSubmit">铆上舷窗</button>
+          <span class="porthole-status" id="portholeStatus" role="status" aria-live="polite"></span>
+        </div>
+        <p class="porthole-note">留言会公开出现在这扇舷窗上。拖动铁片时用方向键也可以微调。</p>
+      </form>
+    </div>
+  </section>
+  <script src="{{ '/assets/js/porthole.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 
   <!-- 2. 交互实验项目展台 (Interactive Bench Demos) -->
   <section class="home-section workbench-demos-section" aria-labelledby="demos-title">

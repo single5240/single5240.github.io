@@ -900,8 +900,10 @@ h3 { font-size: 20px; line-height: 1.5; font-weight: 700; }
   transform: scale(1.35);
 }
 
-/* 主页 AI 对话：插在控制台和精选项目之间，默认收起 */
+/* 主页 AI 对话：在舷窗留言之上展开，层级也盖过留言板 */
 .home-bot-slot {
+  position: relative;
+  z-index: 6;
   margin-bottom: 28px;
   scroll-margin-top: 96px;
 }
