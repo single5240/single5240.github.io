@@ -240,8 +240,7 @@
 
 .porthole-console-kicker,
 .porthole-colors,
-.porthole-actions,
-.porthole-note {
+.porthole-actions {
   grid-column: 1 / -1;
 }
 
@@ -308,13 +307,6 @@
 
 .porthole-status.is-ok {
   color: var(--accent-dark);
-}
-
-.porthole-note {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
 }
 
 @media (max-width: 860px) {

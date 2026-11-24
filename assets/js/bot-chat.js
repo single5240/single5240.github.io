@@ -16,7 +16,7 @@
   let selectedModel = "";
   const mounted = [];
   const MODEL_KEY = "s5-bot-model";
-  // Live probe 2026-11-22: keep working choices only until the proxy hide list is redeployed.
+  // Live probe 2026-11-24: keep working choices only until the proxy hide list is redeployed.
   const HIDDEN_MODELS = new Set([
     "gpt-6.1-sol|responses",
     "gpt-5.6-sol",
@@ -29,6 +29,13 @@
     "grok-4.7",
     "deepseek-v4-pro-0813",
     "deepseek-v4.1-flash-1017",
+    "deepseek-v4.1-flash",
+    "deepseek-v4-pro",
+    "deepseek-flash",
+    "deepseek-v4.1-flash:1017",
+    "glm-5.3-flash",
+    "gpt-5.6-luna",
+    "gpt-6-luna",
   ]);
 
   function escapeHtml(value) {
@@ -523,8 +530,16 @@
 
     const contentType = res.headers.get("content-type") || "";
     if (!res.ok || !contentType.includes("text/event-stream")) {
+      let code = "bad_response";
+      try {
+        const data = await res.json();
+        if (data && typeof data.error === "string" && data.error) code = data.error;
+      } catch {
+        /* HTML or empty error pages have no JSON code */
+      }
+      if (res.status === 404) code = "not_found";
       const error = new Error("chat unavailable");
-      error.code = res.status === 404 ? "not_found" : "bad_response";
+      error.code = code;
       throw error;
     }
 
@@ -551,7 +566,11 @@
         } catch {
           continue;
         }
-        if (chunk.error) throw new Error("upstream error");
+        if (chunk.error) {
+          const error = new Error("upstream error");
+          error.code = "upstream_error";
+          throw error;
+        }
         const delta = chunk.choices?.[0]?.delta?.content;
         if (delta) {
           received = true;
@@ -559,7 +578,50 @@
         }
       }
     }
-    if (!received) throw new Error("empty stream");
+    if (!received) {
+      const error = new Error("empty stream");
+      error.code = "empty_stream";
+      throw error;
+    }
+  }
+
+  function staticSiteNotice() {
+    return persona?.staticNotice ||
+      "当前站点未启用在线对话。角色卡可正常查看；完整 AI 对话请访问主站 single5240.cn。";
+  }
+
+  function failureNotice(error) {
+    switch (error && error.code) {
+      case "rate_limited":
+        return "发送太频繁，请稍等一会儿再试。";
+      case "upstream_unavailable":
+      case "upstream_error":
+      case "empty_stream":
+        return "模型这次没有回应，请再发一次。";
+      case "origin_not_allowed":
+        return "当前页面来源不允许对话，请从主站 single5240.cn 打开。";
+      case "server_not_configured":
+        return "对话服务还没配好模型，暂时不能回复。";
+      case "body_too_large":
+        return "这条消息太长了，删掉一部分再发。";
+      case "invalid_model":
+        return "当前选的模型不可用，换一个再发。";
+      default:
+        return "这次没能完成回复，请再发一次。";
+    }
+  }
+
+  function showTurnFailure(panel, list, message) {
+    if (list) {
+      list.querySelectorAll(".s5-fail-note").forEach((node) => node.remove());
+      list.hidden = false;
+      const note = document.createElement("div");
+      note.className = "s5-offline-note s5-fail-note";
+      note.textContent = message;
+      list.appendChild(note);
+      list.scrollTop = list.scrollHeight;
+    }
+    setStatus(panel, message, "warn");
   }
 
   function degrade(panel, list) {
@@ -570,8 +632,7 @@
     panel.querySelectorAll(".s5-ask-input, .s5-send-btn, .s5-suggest-btn, .s5-model-select, .s5-attach-btn").forEach((el) => {
       el.disabled = true;
     });
-    const hint = persona?.staticNotice ||
-      "当前站点未启用在线对话。角色卡可正常查看；完整 AI 对话请访问主站 single5240.cn。";
+    const hint = staticSiteNotice();
     const emptyPage = panel.classList.contains("s5-chat-page") && list && list.childElementCount === 0;
     if (list && !emptyPage) {
       list.hidden = false;
@@ -1067,6 +1128,7 @@
       input.value = "";
       attachments.splice(0, attachments.length);
       paintAttachments();
+      list.querySelectorAll(".s5-fail-note").forEach((node) => node.remove());
       fitInput();
       if (hero) {
         hero.hidden = true;
@@ -1110,7 +1172,8 @@
         } else {
           console.warn(TAG, "对话失败", error);
           if (answerBubble) setBubbleContent(answerBubble, "assistant", answer + "\n\n（回复中断，可重试）");
-          degrade(panel, list);
+          if (error && error.code === "not_found") degrade(panel, list);
+          else showTurnFailure(panel, list, failureNotice(error));
         }
       } finally {
         if (turn !== generation) return;

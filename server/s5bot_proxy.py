@@ -230,6 +230,14 @@ BLOCKED_MODEL_IDS = {
     "grok-4.7",
     "deepseek-v4-pro-0813",
     "deepseek-v4.1-flash-1017",
+    # Live probe 2026-11-24: no text within 45s, or 502 before any token.
+    "deepseek-v4.1-flash",
+    "deepseek-v4-pro",
+    "deepseek-flash",
+    "deepseek-v4.1-flash:1017",
+    "glm-5.3-flash",
+    "gpt-5.6-luna",
+    "gpt-6-luna",
 }
 
 # Temporary hide list for the model selector (group id or bare model name).
@@ -246,6 +254,13 @@ TEMP_HIDDEN_MODEL_IDS = {
     "grok-4.7",
     "deepseek-v4-pro-0813",
     "deepseek-v4.1-flash-1017",
+    "deepseek-v4.1-flash",
+    "deepseek-v4-pro",
+    "deepseek-flash",
+    "deepseek-v4.1-flash:1017",
+    "glm-5.3-flash",
+    "gpt-5.6-luna",
+    "gpt-6-luna",
 }
 
 

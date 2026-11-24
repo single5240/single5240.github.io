@@ -655,8 +655,7 @@
       let remoteId = "";
       try {
         if (!serverUrl) throw new Error("offline");
-        const body = { nick: shownNick, comment: comment, url: PATH };
-        if (mail) body.mail = mail;
+        const body = { nick: shownNick, mail: mail, comment: comment, url: PATH };
         const response = await fetch(serverUrl + "/api/comment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
