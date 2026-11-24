@@ -29,7 +29,6 @@
     "grok-4.7",
     "deepseek-v4-pro-0813",
     "deepseek-v4.1-flash-1017",
-    "deepseek-v4.1-flash",
     "deepseek-v4-pro",
     "deepseek-flash",
     "deepseek-v4.1-flash:1017",

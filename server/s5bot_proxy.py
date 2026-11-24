@@ -14,7 +14,7 @@ Environment variables:
   S5BOT_API_KEY         Primary upstream API key. Never commit it.
   S5BOT_MODEL           Primary model id.
   S5BOT_API             Primary protocol: responses (default) or chat.
-  S5BOT_POOL_1 .. _20   Optional entries, each "base|api_key|model" or
+  S5BOT_POOL_1 .. _24   Optional entries, each "base|api_key|model" or
                         "base|api_key|model|chat". The fourth field selects
                         chat completions; omitted means responses. Use model
                         "*" to read that API's /models list at startup and
@@ -59,7 +59,7 @@ RATE_PER_MIN = int(os.environ.get("S5BOT_RATE_PER_MIN", "12"))
 POOL_COOLDOWN = int(os.environ.get("S5BOT_POOL_COOLDOWN", "45"))
 HOST = os.environ.get("S5BOT_HOST", "127.0.0.1")
 PORT = int(os.environ.get("S5BOT_PORT", "8765"))
-MAX_POOLS = 20
+MAX_POOLS = 24
 
 MAX_BODY_BYTES = 192 * 1024
 MAX_MESSAGES = 14
@@ -231,6 +231,7 @@ BLOCKED_MODEL_IDS = {
     "deepseek-v4-pro-0813",
     "deepseek-v4.1-flash-1017",
     # Live probe 2026-11-24: no text within 45s, or 502 before any token.
+    # Keep this id out of * catalogs. Explicit pool keys are selected separately.
     "deepseek-v4.1-flash",
     "deepseek-v4-pro",
     "deepseek-flash",
@@ -254,7 +255,6 @@ TEMP_HIDDEN_MODEL_IDS = {
     "grok-4.7",
     "deepseek-v4-pro-0813",
     "deepseek-v4.1-flash-1017",
-    "deepseek-v4.1-flash",
     "deepseek-v4-pro",
     "deepseek-flash",
     "deepseek-v4.1-flash:1017",

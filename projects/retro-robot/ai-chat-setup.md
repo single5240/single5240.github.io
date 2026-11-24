@@ -53,7 +53,7 @@ sudo -u deploy nano /var/www/s5bot/.env
 - `S5BOT_API_KEY`：模型密钥。
 - `S5BOT_MODEL`：模型 id。
 
-备用池用 `S5BOT_POOL_1` 到 `S5BOT_POOL_20`。三项 `根地址|密钥|模型id` 按 Responses API 调用；四项再加 `|chat` 则按 Chat Completions 调用。模型 id 写成 `*` 时，代理在启动时请求该地址的 `/models`，只把对话模型放进网页选项。图像、视频，以及 Claude、名称里带 astra 的模型、`gemini-4-carbon` 和 `glm-5.3` 不进入列表。模型 id 不同的条目会成为网页上的可选项，对话页和嵌入面板都能选，选择保存在这台浏览器。模型 id 相同的多条钥匙仍属于同一个选项：该模型在返回任何文字之前失败时，代理只在这些钥匙里改试下一个，不会悄悄换成另一个模型。未带 `model` 的旧客户端使用配置里的第一个模型。已经开始输出的回复不会中途换池。失败的池子会在 `S5BOT_POOL_COOLDOWN` 秒（默认 45）内被排到后面。`/api/health` 里的 `poolCount` 是钥匙总数，`models` 是去重后的可选项（只有 `id` 和 `label`，不含地址和密钥）。
+备用池用 `S5BOT_POOL_1` 到 `S5BOT_POOL_24`。三项 `根地址|密钥|模型id` 按 Responses API 调用；四项再加 `|chat` 则按 Chat Completions 调用。模型 id 写成 `*` 时，代理在启动时请求该地址的 `/models`，只把对话模型放进网页选项。图像、视频，以及 Claude、名称里带 astra 的模型、`gemini-4-carbon` 和 `glm-5.3` 不进入列表。模型 id 不同的条目会成为网页上的可选项，对话页和嵌入面板都能选，选择保存在这台浏览器。模型 id 相同的多条钥匙仍属于同一个选项：该模型在返回任何文字之前失败时，代理只在这些钥匙里改试下一个，不会悄悄换成另一个模型。未带 `model` 的旧客户端使用配置里的第一个模型。已经开始输出的回复不会中途换池。失败的池子会在 `S5BOT_POOL_COOLDOWN` 秒（默认 45）内被排到后面。`/api/health` 里的 `poolCount` 是钥匙总数，`models` 是去重后的可选项（只有 `id` 和 `label`，不含地址和密钥）。
 
 并设置：
 
