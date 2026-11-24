@@ -1,10 +1,11 @@
 (function (root) {
   const GAP = 6;
   const STORE_LAYOUT = "s5-porthole-layout-v2";
-  const STORE_LOCAL = "s5-porthole-local";
   const STORE_NICK = "s5-porthole-nick";
   const STORE_POSTS = "s5-porthole-posts";
   const PATH = "/porthole";
+  const PAGE_SIZE = 12;
+  const REQUEST_TIMEOUT_MS = 12_000;
   const HOUR_MS = 60 * 60 * 1000;
   const MINUTE_MS = 60 * 1000;
   const HOUR_LIMIT = 10;
@@ -225,6 +226,11 @@
     const nickInput = document.getElementById("porthole-nick");
     const mailInput = document.getElementById("porthole-mail");
     const textInput = document.getElementById("porthole-text");
+    const overflow = document.getElementById("portholeOverflow");
+    const readStatus = document.getElementById("portholeReadStatus");
+    const previous = document.getElementById("portholePrev");
+    const next = document.getElementById("portholeNext");
+    const refresh = document.getElementById("portholeRefresh");
     const serverUrl = (board.dataset.serverUrl || "").replace(/\/$/, "");
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const plates = [];
@@ -233,6 +239,12 @@
     let pointerOffsetY = 0;
     let knownPairs = new Set();
     let layoutReady = false;
+    let currentPage = 1;
+    let totalPages = 1;
+    let loadSequence = 0;
+    let loading = false;
+    let notes = [];
+    let posting = false;
 
     if (nickInput && !nickInput.value) nickInput.value = readJson(STORE_NICK, "");
 
@@ -293,11 +305,14 @@
     }
 
     function saveLayout() {
-      const items = {};
+      const items = { ...readJson(STORE_LAYOUT, null)?.items };
       plates.forEach((plate) => {
         items[plate.id] = [Number(plate.fx.toFixed(4)), Number(plate.fy.toFixed(4))];
       });
-      writeJson(STORE_LAYOUT, { v: 1, items: items });
+      const displayed = new Set(plates.map((plate) => plate.id));
+      const recent = Object.entries(items).filter(([id]) => !displayed.has(id)).slice(-120);
+      displayed.forEach((id) => recent.push([id, items[id]]));
+      writeJson(STORE_LAYOUT, { v: 1, items: Object.fromEntries(recent) });
     }
 
     function spotFor(index, width, height) {
@@ -386,7 +401,7 @@
 
     function createPlate(data, spot) {
       const el = document.createElement("article");
-      el.className = "porthole-plate" + (data.fixture ? " is-fixture" : "");
+      el.className = "porthole-plate";
       if (data.color) {
         el.dataset.color = data.color;
         el.style.setProperty("--plate", data.color);
@@ -408,8 +423,8 @@
         nick: data.nick,
         text: data.text,
         el: el,
-        x: spot ? spot.x : 0,
-        y: spot ? spot.y : 0,
+        x: spot.x,
+        y: spot.y,
         w: el.offsetWidth,
         h: el.offsetHeight,
         fx: 0,
@@ -418,30 +433,10 @@
         vy: 0,
         trail: []
       };
-      if (!spot) {
-        const saved = readJson(STORE_LAYOUT, { items: {} }).items || {};
-        const at = saved[plate.id];
-        if (at && Number.isFinite(at[0]) && Number.isFinite(at[1])) {
-          const box = bounds();
-          plate.x = at[0] * box.width;
-          plate.y = at[1] * box.height;
-        } else {
-          const fresh = spotFor(plates.length, plate.w, plate.h);
-          plate.x = fresh.x;
-          plate.y = fresh.y;
-        }
-      }
       plates.push(plate);
       wire(plate);
       paint(plate);
       return plate;
-    }
-
-    function rememberLocal(item) {
-      const list = readJson(STORE_LOCAL, []);
-      const next = (Array.isArray(list) ? list : []).filter((entry) => entry && entry.id !== item.id);
-      next.push({ id: item.id, nick: item.nick, text: item.text, color: item.color || "" });
-      writeJson(STORE_LOCAL, next.slice(-24));
     }
 
     let coastFrame = 0;
@@ -545,21 +540,6 @@
     window.addEventListener("pointerup", releaseDrag);
     window.addEventListener("pointercancel", releaseDrag);
 
-    const locals = readJson(STORE_LOCAL, []);
-    (Array.isArray(locals) ? locals : []).forEach((item) => {
-      if (!item || !item.id || !item.text) return;
-      const note = readNote(item.text);
-      createPlate({
-        id: String(item.id),
-        nick: plain(item.nick).slice(0, 12) || "访客",
-        text: note.text,
-        color: noteColor(item.color) || note.color
-      }, null);
-    });
-    relayout(null);
-    layoutReady = true;
-    saveLayout();
-
     function measureText(nick, text) {
       const probe = document.createElement("article");
       probe.className = "porthole-plate";
@@ -578,30 +558,116 @@
       return size;
     }
 
-    async function loadRemote() {
-      if (!serverUrl) return;
-      const response = await fetch(serverUrl + "/api/comment?path=" + encodeURIComponent(PATH) + "&page=1&pageSize=24&sortBy=insertedAt_desc", { cache: "no-store" });
-      if (!response.ok) return;
-      const payload = await response.json();
-      const rows = payload && payload.data && Array.isArray(payload.data.data) ? payload.data.data : [];
-      const known = new Set(plates.map((plate) => plate.id));
-      rows.forEach((row) => {
-        const id = String(row.objectId || row.id || "");
-        const note = readNote(row.comment);
-        const text = note.text;
-        const nick = plain(row.nick).slice(0, 12) || "访客";
-        if (!id || !text || known.has(id) || plates.some((plate) => plate.nick === nick && plate.text === text)) return;
-        const size = measureText(nick, text);
-        const spot = occupy(size.w, size.h);
-        if (!spot) return;
-        createPlate({ id: id, nick: nick, text: text, color: note.color }, spot);
-        known.add(id);
+    function renderNotes() {
+      if (dragging) releaseDrag();
+      window.cancelAnimationFrame(coastFrame);
+      coastFrame = 0;
+      saveLayout();
+      plates.splice(0).forEach((plate) => plate.el.remove());
+      overflow.replaceChildren();
+      layoutReady = false;
+      const saved = readJson(STORE_LAYOUT, null)?.items || {};
+
+      notes.forEach((note) => {
+        const size = measureText(note.nick, note.text);
+        const position = saved[note.id];
+        const box = bounds();
+        const preferred = Array.isArray(position) && position.every(Number.isFinite)
+          ? { x: position[0] * box.width, y: position[1] * box.height, ...size }
+          : null;
+        const spot = preferred && !outsideRect(preferred, box) && !plates.some((plate) => overlap(preferred, plate))
+          ? preferred
+          : occupy(size.w, size.h);
+        if (spot) {
+          createPlate(note, spot);
+          return;
+        }
+        const item = document.createElement("li");
+        if (note.color) {
+          item.dataset.color = note.color;
+          item.style.setProperty("--plate", note.color);
+        }
+        item.textContent = note.nick + "：" + note.text;
+        overflow.appendChild(item);
       });
+
+      overflow.hidden = !overflow.childElementCount;
       relayout(null);
+      layoutReady = true;
       saveLayout();
     }
 
-    loadRemote().catch(() => {});
+    async function fetchComments(query, options) {
+      if (!serverUrl) throw new Error("missing comments server");
+      const response = await fetch(serverUrl + "/api/comment" + query, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+        ...options
+      });
+      const payload = await response.json();
+      if (!response.ok || Number(payload?.errno) !== 0) {
+        throw new Error(payload?.errmsg || "comment request failed");
+      }
+      return payload.data;
+    }
+
+    function readRow(row) {
+      if (!row || row.status !== "approved") return null;
+      const id = String(row.objectId ?? row.id ?? "");
+      const note = readNote(row.comment);
+      if (!id || !note.text) return null;
+      return { ...note, id, nick: plain(row.nick).slice(0, 12) || "访客" };
+    }
+
+    async function loadRemote(page) {
+      const sequence = ++loadSequence;
+      loading = true;
+      if (!notes.length) readStatus.textContent = "正在读取留言…";
+      const query = new URLSearchParams({ path: PATH, page, pageSize: PAGE_SIZE, sortBy: "insertedAt_desc" });
+      try {
+        const data = await fetchComments("?" + query);
+        if (!Array.isArray(data?.data) || !Number.isInteger(data.totalPages) || data.totalPages < 0
+          || !Number.isInteger(data.count) || data.count < 0) {
+          throw new Error("invalid comments list");
+        }
+        if (sequence !== loadSequence) return;
+        totalPages = Math.max(1, data.totalPages);
+        if (page > totalPages) return loadRemote(totalPages);
+        const received = new Map();
+        data.data.map(readRow).forEach((note) => {
+          if (note) received.set(note.id, note);
+        });
+        const updated = Array.from(received.values());
+        if (page !== currentPage || JSON.stringify(updated) !== JSON.stringify(notes)) {
+          notes = updated;
+          renderNotes();
+        }
+        currentPage = page;
+        previous.hidden = currentPage <= 1;
+        next.hidden = currentPage >= totalPages;
+        readStatus.textContent = notes.length
+          ? "第 " + currentPage + " / " + totalPages + " 页 · 共 " + data.count + " 条留言"
+          : "还没有公开留言。";
+      } catch {
+        if (sequence === loadSequence) readStatus.textContent = "读取留言失败，请刷新留言后重试。";
+      } finally {
+        if (sequence === loadSequence) loading = false;
+      }
+    }
+
+    function refreshVisible() {
+      if (!document.hidden && !dragging && !posting && !loading && !glass.contains(document.activeElement)) {
+        void loadRemote(currentPage);
+      }
+    }
+
+    previous.addEventListener("click", () => void loadRemote(currentPage - 1));
+    next.addEventListener("click", () => void loadRemote(currentPage + 1));
+    refresh.addEventListener("click", () => void loadRemote(currentPage));
+    document.addEventListener("visibilitychange", refreshVisible);
+    window.setInterval(refreshVisible, MINUTE_MS);
+    refresh.disabled = false;
+    void loadRemote(currentPage);
 
     function recentPosts() {
       const now = Date.now();
@@ -623,10 +689,10 @@
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const nick = plain(nickInput.value).slice(0, 12);
+      if (posting) return;
+      const nick = nickInput.value.trim().slice(0, 12);
       const mail = mailInput.value.trim();
-      const text = plain(textInput.value).slice(0, 42);
-      const shownNick = nick || "访客";
+      const text = textInput.value.trim().slice(0, 42);
       const color = noteColor((form.querySelector('input[name="porthole-color"]:checked') || {}).value);
       if (!text) {
         setStatus("写一句话就可以。", "error");
@@ -641,56 +707,43 @@
         setStatus("一小时内最多留 10 条。", "error");
         return;
       }
-      const size = measureText(shownNick, text);
-      const spot = occupy(size.w, size.h);
-      if (!spot) {
-        setStatus("这里已经排满了，拖开一些再试。", "error");
-        return;
-      }
-
       if (nick) writeJson(STORE_NICK, nick);
+      posting = true;
       submitBtn.disabled = true;
-      setStatus("正在留下…");
+      setStatus("正在提交…");
       const comment = color ? text + " %%#" + color.slice(1) : text;
-      let remoteId = "";
+
       try {
-        if (!serverUrl) throw new Error("offline");
-        const body = { nick: shownNick, mail: mail, comment: comment, url: PATH };
-        const response = await fetch(serverUrl + "/api/comment", {
+        const record = await fetchComments("", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
+          body: JSON.stringify({ nick: nick || "访客", mail, comment, url: PATH })
         });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          const errmsg = payload && payload.errmsg;
-          if (errmsg === "Comment too fast!") {
-            markPost();
-            setStatus("同一网络一分钟只能留一条。", "error");
-          } else {
-            setStatus(errmsg ? "没能留下：" + errmsg : "没能同步出去，请稍后再试。", "error");
-          }
-          submitBtn.disabled = false;
-          return;
-        }
-        const data = payload && payload.data;
-        remoteId = String((data && (data.objectId || data.id)) || payload.objectId || payload.id || "");
-        if (!remoteId) throw new Error("missing id");
-      } catch (error) {
-        setStatus("没能同步出去，请稍后再试。", "error");
-        submitBtn.disabled = false;
-        return;
-      }
+        if (!(record?.objectId ?? record?.id)) throw new Error("missing comment id");
 
-      markPost();
-      createPlate({ id: remoteId, nick: shownNick, text: text, color: color }, spot);
-      rememberLocal({ id: remoteId, nick: shownNick, text: text, color: color });
-      relayout(null);
-      saveLayout();
-      textInput.value = "";
-      submitBtn.disabled = false;
-      setStatus("已经留在这里，其他人也能看到。", "ok");
+        markPost();
+        if (textInput.value.trim() === text) textInput.value = "";
+        if (record.status === "approved") {
+          setStatus("留言已公开。", "ok");
+          void loadRemote(1);
+        } else {
+          setStatus(record.status === "waiting" ? "留言已提交，审核通过后公开。" : "留言已提交，暂未公开。", "ok");
+        }
+      } catch (error) {
+        if (error.message === "Comment too fast!") {
+          setStatus("同一网络提交过快，请稍后再试。", "error");
+        } else if (error.message === "Duplicate Content") {
+          setStatus("这条留言已提交过。", "error");
+          void loadRemote(1);
+        } else {
+          setStatus("未能确认提交结果。请先刷新留言，再决定是否重试。", "error");
+        }
+      } finally {
+        posting = false;
+        submitBtn.disabled = false;
+      }
     });
+    submitBtn.disabled = false;
 
     window.addEventListener("resize", () => {
       const box = bounds();
@@ -701,7 +754,8 @@
         plate.y = plate.fy * box.height;
       });
       relayout(null);
-      saveLayout();
+      if (!fits(plates, box) || overflow.childElementCount) renderNotes();
+      else saveLayout();
     });
   }
 

@@ -85,7 +85,7 @@ section: home
     <div data-bot-chat="home"></div>
   </div>
 
-  <section class="porthole-board" id="portholeBoard" aria-labelledby="porthole-title" data-server-url="{{ site.waline.server_url }}">
+  <section class="porthole-board" id="portholeBoard" aria-labelledby="porthole-title" data-server-url="{{ site.waline.server_url | escape }}">
     <div class="section-heading">
       <div>
         <div class="eyebrow">GUESTBOOK</div>
@@ -94,11 +94,21 @@ section: home
       </div>
     </div>
     <div class="porthole-layout">
-      <div class="porthole-ring">
-        <div class="porthole-glass" id="portholeGlass"></div>
+      <div>
+        <div class="porthole-ring">
+          <div class="porthole-glass" id="portholeGlass"></div>
+        </div>
+        <ul class="porthole-overflow" id="portholeOverflow" aria-label="其余留言" hidden></ul>
+        <div class="porthole-navigation">
+          <p class="porthole-status" id="portholeReadStatus" role="status"></p>
+          <button type="button" class="button" id="portholePrev" hidden>上一页</button>
+          <button type="button" class="button" id="portholeNext" hidden>下一页</button>
+          <button type="button" class="button" id="portholeRefresh" disabled>刷新留言</button>
+        </div>
       </div>
-      <form class="porthole-console" id="portholeForm">
+      <form class="porthole-console" id="portholeForm" method="post">
         <p class="porthole-console-kicker">LEAVE A NOTE</p>
+        <noscript><p>启用 JavaScript 后可查看和发表留言。</p></noscript>
         <div class="porthole-field">
           <label for="porthole-nick">称呼 <span>可选</span></label>
           <input id="porthole-nick" name="nick" type="text" maxlength="12" autocomplete="nickname">
@@ -145,7 +155,7 @@ section: home
           </div>
         </fieldset>
         <div class="porthole-actions">
-          <button type="submit" class="button primary" id="portholeSubmit">留下</button>
+          <button type="submit" class="button primary" id="portholeSubmit" disabled>留下</button>
           <span class="porthole-status" id="portholeStatus" role="status" aria-live="polite"></span>
         </div>
       </form>
