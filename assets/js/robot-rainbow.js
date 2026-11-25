@@ -355,6 +355,13 @@
       terminal: "#005a9e",
       glow: 1,
     },
+    y2k: {
+      trace: "#be185d",
+      subTrace: "rgba(12, 107, 134, 0.4)",
+      axis: "rgba(36, 18, 46, 0.14)",
+      terminal: "#0c6b86",
+      glow: 2,
+    },
   };
 
   const isArticlePage = Boolean(document.querySelector("#articleRobotCard"));

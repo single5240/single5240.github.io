@@ -208,3 +208,7 @@
 :root[data-theme="win11"] .board-card {
   border-radius: 8px;
 }
+
+:root[data-theme="y2k"] .board-card {
+  border-radius: 22px;
+}

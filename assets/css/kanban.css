@@ -400,3 +400,40 @@
   background: #005fb3;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 8px rgba(0, 103, 192, 0.28);
 }
+
+:root[data-theme="y2k"] .kb-workspace,
+:root[data-theme="y2k"] .kb-column,
+:root[data-theme="y2k"] .kb-card,
+:root[data-theme="y2k"] .kb-dialog {
+  border-radius: 22px;
+}
+
+:root[data-theme="y2k"] .kb-btn,
+:root[data-theme="y2k"] .kb-count,
+:root[data-theme="y2k"] .kb-priority-label,
+:root[data-theme="y2k"] .kb-tag {
+  border-radius: 999px;
+}
+
+:root[data-theme="y2k"] .kb-app input,
+:root[data-theme="y2k"] .kb-app select,
+:root[data-theme="y2k"] .kb-app textarea {
+  border-radius: 16px;
+}
+
+:root[data-theme="y2k"] .kb-app input:focus,
+:root[data-theme="y2k"] .kb-app select:focus,
+:root[data-theme="y2k"] .kb-app textarea:focus {
+  box-shadow: 0 0 0 3px var(--soft);
+}
+
+:root[data-theme="y2k"] .kb-primary {
+  background: var(--y2k-gel);
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 0 #6d103f;
+}
+
+:root[data-theme="y2k"] .kb-primary:hover {
+  background: var(--y2k-gel-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 3px 0 #6d103f;
+}

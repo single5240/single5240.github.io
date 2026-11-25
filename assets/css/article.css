@@ -1345,3 +1345,48 @@
 :root[data-theme="win11"] .content code {
   border-radius: 4px;
 }
+
+:root[data-theme="y2k"] .article-header,
+:root[data-theme="y2k"] .reading-main,
+:root[data-theme="y2k"] .toc,
+:root[data-theme="y2k"] .article-navigation a {
+  border-radius: 22px;
+}
+
+:root[data-theme="y2k"] .code-block,
+:root[data-theme="y2k"] .content blockquote,
+:root[data-theme="y2k"] .content img,
+:root[data-theme="y2k"] .content .table-scroll {
+  border-radius: 16px;
+}
+
+:root[data-theme="y2k"] .code-toolbar {
+  background: linear-gradient(180deg, #2a1636 0%, #1a1024 100%);
+  color: #f8eef6;
+  border-radius: 16px 16px 0 0;
+  border-bottom-color: rgba(255, 79, 163, 0.22);
+}
+
+:root[data-theme="y2k"] .code-toolbar::before {
+  background: #be185d;
+  box-shadow:
+    16px 0 0 #0c6b86,
+    32px 0 0 #4d7c0f;
+}
+
+:root[data-theme="y2k"] .code-block.is-collapsed .code-toolbar {
+  border-radius: 16px;
+}
+
+:root[data-theme="y2k"] .content pre {
+  border-radius: 0 0 16px 16px;
+}
+
+:root[data-theme="y2k"] .article-meta a,
+:root[data-theme="y2k"] .back,
+:root[data-theme="y2k"] .toc a,
+:root[data-theme="y2k"] .copy-code,
+:root[data-theme="y2k"] .code-toggle,
+:root[data-theme="y2k"] .content code {
+  border-radius: 999px;
+}

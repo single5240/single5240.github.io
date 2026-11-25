@@ -25,11 +25,13 @@ const errors = [];
 const page = await browser.newPage({ reducedMotion: 'reduce' });
 page.on('pageerror', error => errors.push(error.message));
 try {
+  const themes = ['light', 'dark', 'famicom', 'radio', 'win7', 'win11', 'y2k'];
+  const widths = [360, 390, 768, 1440];
   const paths = ['/', '/articles/index.html', '/articles/n32g455-lcd-strip-rendering.html', '/projects/index.html', '/tools/index.html', '/projects/ai-asmr/index.html'];
-  for (const theme of ['light', 'dark', 'famicom', 'radio', 'win7', 'win11']) {
+  for (const theme of themes) {
     await page.goto(base);
     await page.evaluate(theme => localStorage.setItem('single5240-theme', theme), theme);
-    for (const width of [360, 390, 768, 1440]) {
+    for (const width of widths) {
       await page.setViewportSize({ width, height: 900 });
       for (const path of paths) {
         await page.goto(base + path);
@@ -88,7 +90,7 @@ try {
   await page.locator('.lab-disclosure summary').first().click();
   assert(await page.locator('#rangeLowpass').isVisible());
   assert.deepEqual(errors, [], 'No browser script errors');
-  console.log('Design checks passed: 48 page/theme/viewport combinations, search, return, anchors, disclosures and motion control.');
+  console.log(`Design checks passed: ${themes.length * widths.length * paths.length} page/theme/viewport combinations, search, return, anchors, disclosures and motion control.`);
 } finally {
   await browser.close();
   await new Promise(done => server.close(done));

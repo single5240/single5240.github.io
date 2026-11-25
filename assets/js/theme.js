@@ -4,7 +4,7 @@
   const root = document.documentElement;
   const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  const validThemes = ["system", "light", "dark", "swiss", "hud", "mono", "famicom", "radio", "win7", "win11"];
+  const validThemes = ["system", "light", "dark", "swiss", "hud", "mono", "famicom", "radio", "win7", "win11", "y2k"];
   const validSkins = ["grid", "matrix", "chassis", "default"];
 
   const labels = {
@@ -18,6 +18,7 @@
     radio: "老式收音机",
     win7: "Windows 7",
     win11: "Windows 11",
+    y2k: "千禧铬银",
   };
 
   const skinLabels = {
@@ -38,6 +39,7 @@
     radio: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="13" rx="2"></rect><path d="M7 7l5-4M6 11h5M6 14h5M6 17h5M14 10.5h5"></path><circle cx="16.5" cy="15.5" r="1.75"></circle></svg>',
     win7: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5.6c2.6-.9 5.1-.8 7.5.2v5.3c-2.4-.9-4.9-1-7.5-.2Z"></path><path d="M13 6.2c2.5.9 5 .8 7.5-.2v5.3c-2.5 1-5 1.1-7.5.2Z"></path><path d="M3.5 12.9c2.6-.8 5.1-.7 7.5.2v5.3c-2.4-.9-4.9-1-7.5-.1Z"></path><path d="M13 13.5c2.5.9 5 .8 7.5-.1v5.3c-2.5.9-5 1-7.5.1Z"></path></svg>',
     win11: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" stroke="none"></rect><rect x="13" y="3" width="8" height="8" rx="1" fill="currentColor" stroke="none"></rect><rect x="3" y="13" width="8" height="8" rx="1" fill="currentColor" stroke="none"></rect><rect x="13" y="13" width="8" height="8" rx="1" fill="currentColor" stroke="none"></rect></svg>',
+    y2k: '<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.2"></circle><path d="M12 4.2A7.8 7.8 0 0 1 18.4 7.5"></path></svg>',
   };
 
   const skinIcons = {
@@ -57,6 +59,7 @@
     radio: "#18130f",
     win7: "#d6e7f5",
     win11: "#eff4f9",
+    y2k: "#f6e9f8",
   };
 
   const pickers = [];
@@ -186,6 +189,9 @@
           </button>
           <button class="theme-option" type="button" role="menuitemradio" data-theme-value="win11" aria-checked="false">
             ${icons.win11}<span class="theme-option-label">Windows 11</span><span class="theme-option-check" aria-hidden="true">✓</span>
+          </button>
+          <button class="theme-option" type="button" role="menuitemradio" data-theme-value="y2k" aria-checked="false">
+            ${icons.y2k}<span class="theme-option-label">千禧铬银</span><span class="theme-option-check" aria-hidden="true">✓</span>
           </button>
 
           <div class="theme-menu-divider" role="separator"></div>

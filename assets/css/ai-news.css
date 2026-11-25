@@ -64,7 +64,8 @@
 :root[data-theme="mono"],
 :root[data-theme="famicom"],
 :root[data-theme="win7"],
-:root[data-theme="win11"] {
+:root[data-theme="win11"],
+:root[data-theme="y2k"] {
   --bg: transparent;
   --paper: var(--panel);
   --head-bg: var(--paper);

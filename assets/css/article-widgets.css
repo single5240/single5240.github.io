@@ -3329,6 +3329,10 @@
   border-radius: 8px;
 }
 
+:root[data-theme="y2k"] .article-interactive-widget {
+  border-radius: 22px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .strip-scan-line,
   .strip-prog-cell,

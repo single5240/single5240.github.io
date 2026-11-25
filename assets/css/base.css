@@ -626,6 +626,70 @@ html {
   --spectrum-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
 }
 
+/* 千禧铬银 (Y2K Chrome — 丁香银底 + 品红凝胶 + 电青高光，正文保持深梅色) */
+:root[data-theme="y2k"] {
+  color-scheme: light;
+  --ink: #24122e;
+  --muted: #65486f;
+  --line: rgba(90, 30, 110, 0.16);
+  --paper: #f6e9f8;
+  --panel: rgba(255, 248, 253, 0.78);
+  --accent: #be185d;
+  --accent-dark: #9d174d;
+  --warm: #0c6b86;
+  --soft: rgba(190, 24, 93, 0.12);
+  --deep: #1a1024;
+  --header-bg: rgba(246, 233, 248, 0.78);
+  --header-line: rgba(190, 24, 93, 0.18);
+  --raised-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 244, 252, 0.78) 100%);
+  --popover-bg: linear-gradient(165deg, rgba(255, 252, 255, 0.97) 0%, rgba(248, 236, 252, 0.95) 100%);
+  --speech-bg: rgba(255, 248, 253, 0.92);
+  --speech-border: rgba(190, 24, 93, 0.28);
+  --glass: blur(16px) saturate(160%);
+  --glass-edge: rgba(255, 255, 255, 0.82);
+  --raised-border: rgba(190, 24, 93, 0.36);
+  --alt-bg: #f3dff2;
+  --subtle-bg: #fff8fd;
+  --body-copy: #2c1834;
+  --content-copy: #24122e;
+  --tag-ink: #4a3054;
+  --code-bg: #1a1024;
+  --code-ink: #f8eef6;
+  --inline-code: #9d174d;
+  --contact-copy: #65486f;
+  --note: #9a3412;
+  --on-accent: #ffffff;
+  --y2k-gel: linear-gradient(180deg, #c0266e 0%, #be185d 42%, #9d174d 100%);
+  --y2k-gel-hover: linear-gradient(180deg, #cc2f78 0%, #c41b66 42%, #a31354 100%);
+  --y2k-chrome: linear-gradient(180deg, #ffffff 0%, #f8eef8 45%, #ead8f0 47%, #fffafd 100%);
+  --panel-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(160, 60, 140, 0.1);
+  --shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 10px 24px -8px rgba(120, 30, 110, 0.2), 0 2px 0 rgba(150, 50, 130, 0.08);
+  --shadow-small: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 0 rgba(150, 50, 130, 0.1);
+  --shadow-heavy: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 40px -10px rgba(120, 30, 110, 0.28);
+  --shadow-hover: 0 0 0 1px rgba(190, 24, 93, 0.28), 0 10px 24px -6px rgba(190, 24, 93, 0.22);
+  --focus-ring: #0c6b86;
+  --topic-mcu-1: #0e7490;
+  --topic-mcu-2: #155e75;
+  --topic-mcu-accent: #0c6b86;
+  --topic-linux-1: #4d7c0f;
+  --topic-linux-2: #3f6212;
+  --topic-linux-accent: #4d7c0f;
+  --topic-qt-1: #be185d;
+  --topic-qt-2: #9d174d;
+  --topic-qt-accent: #be185d;
+  --topic-industrial-1: #c2410c;
+  --topic-industrial-2: #9a3412;
+  --topic-industrial-accent: #c2410c;
+  --topic-devops-1: #7c3aed;
+  --topic-devops-2: #6d28d9;
+  --topic-devops-accent: #7c3aed;
+  --topic-design-1: #db2777;
+  --topic-design-2: #be185d;
+  --topic-design-accent: #db2777;
+  --spectrum-bevel: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(80, 10, 50, 0.18);
+  --spectrum-shadow: 0 2px 0 rgba(120, 30, 90, 0.12);
+}
+
 /* 首页主面板只淡入一次；其余内容直接显示。 */
 @media (prefers-reduced-motion: no-preference) {
   .section-home .workbench-console {
@@ -1341,7 +1405,7 @@ time {
   fill: var(--accent-dark);
 }
 
-:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]):not([data-theme="win7"]):not([data-theme="win11"]) .robot-eye,
+:root:not([data-theme="dark"]):not([data-theme="hud"]):not([data-theme="swiss"]):not([data-theme="mono"]):not([data-theme="famicom"]):not([data-theme="radio"]):not([data-theme="win7"]):not([data-theme="win11"]):not([data-theme="y2k"]) .robot-eye,
 :root[data-theme="light"] .robot-eye {
   fill: #80c7a7;
 }
@@ -1360,6 +1424,10 @@ time {
 
 :root[data-theme="win11"] .robot-eye {
   fill: #60cdff;
+}
+
+:root[data-theme="y2k"] .robot-eye {
+  fill: #67e8f9;
 }
 
 .robot-eye-glint {
@@ -1728,6 +1796,11 @@ time {
   box-shadow: 0 1px 4px rgba(0, 103, 192, 0.25);
 }
 
+:root[data-theme="y2k"] .reading-progress {
+  background: linear-gradient(90deg, #be185d 0%, #7c3aed 48%, #0c6b86 100%);
+  box-shadow: 0 1px 6px rgba(190, 24, 93, 0.35);
+}
+
 /* ==========================================================================
    特种底纹与复古电子硬件质感系统（Retro Electronics Skins）
    方案 A: 工程坐标网格 (grid)
@@ -1810,6 +1883,16 @@ time {
     radial-gradient(circle at 68% 22%, rgba(0, 120, 212, 0.14) 0%, transparent 46%),
     radial-gradient(circle at 36% 68%, rgba(96, 205, 255, 0.16) 0%, transparent 48%),
     radial-gradient(circle at 82% 78%, rgba(135, 100, 184, 0.08) 0%, transparent 44%);
+  opacity: 1;
+}
+
+:root[data-theme="y2k"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 79, 163, 0.34) 0%, transparent 42%),
+    radial-gradient(circle at 84% 14%, rgba(34, 211, 238, 0.32) 0%, transparent 40%),
+    radial-gradient(circle at 72% 80%, rgba(190, 242, 100, 0.28) 0%, transparent 42%),
+    radial-gradient(circle at 24% 84%, rgba(167, 139, 250, 0.3) 0%, transparent 44%),
+    radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.55) 0%, transparent 55%);
   opacity: 1;
 }
 
@@ -1936,6 +2019,18 @@ time {
   opacity: 0.92;
 }
 
+:root[data-skin="grid"][data-theme="y2k"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 79, 163, 0.3) 0%, transparent 42%),
+    radial-gradient(circle at 84% 14%, rgba(34, 211, 238, 0.28) 0%, transparent 40%),
+    radial-gradient(circle at 72% 80%, rgba(190, 242, 100, 0.24) 0%, transparent 42%),
+    radial-gradient(circle at 24% 84%, rgba(167, 139, 250, 0.26) 0%, transparent 44%),
+    linear-gradient(rgba(190, 24, 93, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 107, 134, 0.07) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+  opacity: 0.96;
+}
+
 /* --------------------------------------------------------------------------
    方案 B: 洞洞板 / 覆铜板打孔焊接阵列 (matrix)
    -------------------------------------------------------------------------- */
@@ -1995,6 +2090,13 @@ time {
     radial-gradient(circle at 11px 11px, #eff4f9 1.2px, rgba(0, 103, 192, 0.14) 2.2px, transparent 3.2px);
   background-size: 22px 22px;
   opacity: 0.88;
+}
+
+:root[data-skin="matrix"][data-theme="y2k"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 11px 11px, #f6e9f8 1.2px, rgba(190, 24, 93, 0.22) 2.2px, transparent 3.2px);
+  background-size: 22px 22px;
+  opacity: 0.9;
 }
 
 /* --------------------------------------------------------------------------
@@ -2077,6 +2179,16 @@ time {
     linear-gradient(90deg, rgba(0, 103, 192, 0.05) 1px, transparent 1px);
   background-size: 100% 100%, 100% 4px, 24px 24px, 24px 24px;
   opacity: 0.92;
+}
+
+:root[data-skin="chassis"][data-theme="y2k"] .site-ambience {
+  background-image:
+    radial-gradient(circle at 18% 16%, rgba(255, 79, 163, 0.22) 0%, transparent 48%),
+    repeating-linear-gradient(0deg, rgba(190, 24, 93, 0.035) 0px, rgba(190, 24, 93, 0.035) 1px, transparent 1px, transparent 4px),
+    linear-gradient(rgba(12, 107, 134, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12, 107, 134, 0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 4px, 24px 24px, 24px 24px;
+  opacity: 0.94;
 }
 
 /* 方案 C 细节: 面板卡片四角机械定位十字刻度标 */
@@ -2207,6 +2319,26 @@ time {
   animation-name: pulse-glow;
 }
 
+:root[data-theme="y2k"] .status-pulse {
+  background: #0c6b86;
+  animation-name: pulse-glow-y2k;
+}
+
+@keyframes pulse-glow-y2k {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(12, 107, 134, 0.7);
+  }
+  65% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(12, 107, 134, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(12, 107, 134, 0);
+  }
+}
+
 @keyframes pulse-glow-swiss {
   0% {
     transform: scale(0.95);
@@ -2278,7 +2410,8 @@ time {
   :root[data-theme="famicom"],
   :root[data-theme="radio"],
   :root[data-theme="win7"],
-  :root[data-theme="win11"] {
+  :root[data-theme="win11"],
+  :root[data-theme="y2k"] {
     --glass: none;
   }
   :root,
@@ -2298,6 +2431,12 @@ time {
     --header-bg: #f3f6fb;
     --raised-bg: #ffffff;
     --speech-bg: #ffffff;
+  }
+  :root[data-theme="y2k"] {
+    --panel: #fff8fd;
+    --header-bg: #f6e9f8;
+    --raised-bg: #fff8fd;
+    --speech-bg: #fff8fd;
   }
   :root[data-theme="famicom"] {
     --raised-bg: #faf7f0;
@@ -2475,4 +2614,36 @@ time {
 
 :root[data-theme="win11"] .spectrum-item {
   border-radius: 4px;
+}
+
+/* ==========================================================================
+   千禧铬银结构覆盖 (Y2K Chrome Bubble & Gel Geometry)
+   ========================================================================== */
+:root[data-theme="y2k"] .theme-menu {
+  border-radius: 22px;
+  border-color: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-heavy);
+}
+
+:root[data-theme="y2k"] .theme-toggle,
+:root[data-theme="y2k"] .theme-option,
+:root[data-theme="y2k"] .system-status,
+:root[data-theme="y2k"] .scope-channel {
+  border-radius: 999px;
+}
+
+:root[data-theme="y2k"] .article-robot-card,
+:root[data-theme="y2k"] .robot-dock.is-docked-float,
+:root[data-theme="y2k"] .back-to-top {
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+
+:root[data-theme="y2k"] .robot-speech {
+  border-radius: 16px;
+  box-shadow: var(--shadow-small);
+}
+
+:root[data-theme="y2k"] .spectrum-item {
+  border-radius: 999px;
 }

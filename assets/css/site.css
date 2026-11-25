@@ -2916,3 +2916,200 @@ mark { background: var(--soft); color: var(--accent); border-radius: 4px; paddin
   border-bottom-width: 2px;
   border-bottom-color: var(--accent);
 }
+
+/* ==========================================================================
+   千禧铬银外壳与组件调校 (Y2K Chrome Gel & Bubble Overrides)
+   ========================================================================== */
+:root[data-theme="y2k"] .site-header {
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.8), 0 6px 18px rgba(120, 30, 110, 0.08);
+}
+
+:root[data-theme="y2k"] .brand-mark {
+  border-radius: 50%;
+  background: var(--y2k-gel);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 0 #6d103f, 0 4px 10px rgba(190, 24, 93, 0.32);
+}
+
+:root[data-theme="y2k"] .brand-mark span {
+  color: #ffffff;
+  opacity: 0.92;
+}
+
+:root[data-theme="y2k"] .brand:hover .brand-mark {
+  transform: translateY(-1px) scale(1.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 3px 0 #6d103f, 0 8px 16px rgba(190, 24, 93, 0.28);
+}
+
+:root[data-theme="y2k"] .nav-links {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+:root[data-theme="y2k"] .nav-pill-glider {
+  background: var(--y2k-chrome);
+  border: 1px solid rgba(190, 24, 93, 0.28);
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(120, 40, 130, 0.14);
+}
+
+:root[data-theme="y2k"] .nav-links a[aria-current="page"] {
+  background: var(--y2k-chrome);
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(120, 40, 130, 0.14);
+}
+
+:root[data-theme="y2k"] .nav-links.has-glider a[aria-current="page"],
+:root[data-theme="y2k"] .nav-links.has-glider a:hover {
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="y2k"] .workbench-console,
+:root[data-theme="y2k"] .project-mini-card,
+:root[data-theme="y2k"] .project-feature,
+:root[data-theme="y2k"] .deck-articles-list,
+:root[data-theme="y2k"] .aside-card,
+:root[data-theme="y2k"] .archive-tools,
+:root[data-theme="y2k"] .section-articles .archive-tools,
+:root[data-theme="y2k"] .daily-grid > div:first-child,
+:root[data-theme="y2k"] .daily-links a,
+:root[data-theme="y2k"] .daily-archive-grid section,
+:root[data-theme="y2k"] .study,
+:root[data-theme="y2k"] .prose,
+:root[data-theme="y2k"] .skills-arch-card,
+:root[data-theme="y2k"] .explore-links a,
+:root[data-theme="y2k"] .about-guestbook {
+  border-radius: 22px;
+}
+
+:root[data-theme="y2k"] .workbench-console::before {
+  height: 4px;
+  opacity: 1;
+  background: linear-gradient(90deg, #be185d 0%, #7c3aed 38%, #0c6b86 70%, #4d7c0f 100%);
+}
+
+:root[data-theme="y2k"] .workbench-header,
+:root[data-theme="y2k"] .workbench-channel-bar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(248, 232, 250, 0.7) 100%);
+}
+
+:root[data-theme="y2k"] .text-gradient {
+  background: linear-gradient(100deg, #9d174d 0%, #6d28d9 46%, #0c6b86 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="y2k"] .workbench-hud-grid,
+:root[data-theme="y2k"] .scope-bay-frame,
+:root[data-theme="y2k"] .scope-bay-body,
+:root[data-theme="y2k"] .project-visual,
+:root[data-theme="y2k"] .feed-item,
+:root[data-theme="y2k"] .aside-tools-list a,
+:root[data-theme="y2k"] .article-item,
+:root[data-theme="y2k"] .skills-code-block,
+:root[data-theme="y2k"] .private-message-form input,
+:root[data-theme="y2k"] .private-message-form textarea {
+  border-radius: 16px;
+}
+
+:root[data-theme="y2k"] .button,
+:root[data-theme="y2k"] .load-more-btn,
+:root[data-theme="y2k"] .home-topic-links a,
+:root[data-theme="y2k"] .filter-list button,
+:root[data-theme="y2k"] .scope-pause,
+:root[data-theme="y2k"] .project-mini-cta,
+:root[data-theme="y2k"] .private-message-form .submit-btn,
+:root[data-theme="y2k"] .skills-code-btn {
+  border-radius: 999px;
+}
+
+:root[data-theme="y2k"] .button:not(.primary),
+:root[data-theme="y2k"] .load-more-btn,
+:root[data-theme="y2k"] .filter-list button:not([aria-pressed="true"]):not(.is-active),
+:root[data-theme="y2k"] .scope-pause,
+:root[data-theme="y2k"] .skills-code-btn {
+  background: var(--y2k-chrome);
+  border-color: rgba(150, 70, 160, 0.38);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(120, 40, 130, 0.14);
+}
+
+:root[data-theme="y2k"] .button:not(.primary):hover,
+:root[data-theme="y2k"] .load-more-btn:hover,
+:root[data-theme="y2k"] .filter-list button:not([aria-pressed="true"]):not(.is-active):hover,
+:root[data-theme="y2k"] .scope-pause:hover,
+:root[data-theme="y2k"] .skills-code-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #fde7f6 46%, #f3d4ee 48%, #fff 100%);
+  border-color: rgba(190, 24, 93, 0.45);
+  color: var(--accent-dark);
+}
+
+:root[data-theme="y2k"] .workbench-status-badge,
+:root[data-theme="y2k"] .workbench-eyebrow,
+:root[data-theme="y2k"] .workbench-meta-tags .chip,
+:root[data-theme="y2k"] .aside-badge,
+:root[data-theme="y2k"] .item-tags span,
+:root[data-theme="y2k"] .project-mini-chip,
+:root[data-theme="y2k"] .home-topic-links span:not(.topic-dot) {
+  border-radius: 999px;
+}
+
+:root[data-theme="y2k"] .status-pulse-dot,
+:root[data-theme="y2k"] .dot-live {
+  background: #0c6b86;
+  box-shadow: 0 0 6px rgba(12, 107, 134, 0.45);
+}
+
+:root[data-theme="y2k"] .project-mini-chip {
+  background: rgba(255, 248, 253, 0.94);
+  color: #24122e;
+  border-color: rgba(190, 24, 93, 0.28);
+  box-shadow: inset 0 1px 0 #ffffff;
+}
+
+:root[data-theme="y2k"] .item-arrow,
+:root[data-theme="y2k"] .project-mini-arrow {
+  border-radius: 999px;
+}
+
+:root[data-theme="y2k"] .article-item:hover .item-arrow,
+:root[data-theme="y2k"] .project-mini-card:hover .project-mini-arrow,
+:root[data-theme="y2k"] .project-mini-card:hover .project-mini-cta {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+:root[data-theme="y2k"] .button.primary,
+:root[data-theme="y2k"] .private-message-form .submit-btn {
+  background: var(--y2k-gel);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  color: var(--on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 0 #6d103f;
+}
+
+:root[data-theme="y2k"] .button.primary:hover,
+:root[data-theme="y2k"] .private-message-form .submit-btn:hover:not(:disabled) {
+  background: var(--y2k-gel-hover);
+  opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 3px 0 #6d103f, 0 8px 16px rgba(190, 24, 93, 0.24);
+}
+
+:root[data-theme="y2k"] .button.primary:active,
+:root[data-theme="y2k"] .button.primary.is-pressing,
+:root[data-theme="y2k"] .private-message-form .submit-btn:active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 0 0 #6d103f;
+}
+
+:root[data-theme="y2k"] .private-message-form input,
+:root[data-theme="y2k"] .private-message-form textarea,
+:root[data-theme="y2k"] .search-input-wrap {
+  background: #fff8fd;
+  border-color: rgba(190, 24, 93, 0.28);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 #ffffff, inset 0 1px 2px rgba(120, 30, 90, 0.06);
+}
