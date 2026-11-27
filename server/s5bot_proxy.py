@@ -254,7 +254,6 @@ TEMP_HIDDEN_MODEL_IDS = {
     "grok-4.5",
     "grok-4.7",
     "deepseek-v4-pro-0813",
-    "deepseek-v4.1-flash-1017",
     "deepseek-v4-pro",
     "deepseek-flash",
     "deepseek-v4.1-flash:1017",
@@ -695,18 +694,25 @@ class ChatHandler(BaseHTTPRequestHandler):
                 )
 
 
+def upstream_model_id(entry):
+    """Official DeepSeek accepts deepseek-flash, not the site's 1017 id."""
+    if entry.model == "deepseek-v4.1-flash-1017" and "api.deepseek.com" in entry.base:
+        return "deepseek-flash"
+    return entry.model
+
+
 def open_upstream(entry, messages):
     if entry.api == "chat":
         path = "/chat/completions"
         payload = {
-            "model": entry.model,
+            "model": upstream_model_id(entry),
             "stream": True,
             "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + messages,
         }
     else:
         path = "/responses"
         payload = {
-            "model": entry.model,
+            "model": upstream_model_id(entry),
             "stream": True,
             "store": False,
             "instructions": SYSTEM_PROMPT,
