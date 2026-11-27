@@ -373,7 +373,8 @@ Buck 开关充电 IC（如 `BQ25601`）通过高频开关管、功率电感和�
 
 ## 关联阅读
 
-电池放电侧的库仑计账本、OCV 标定、脉冲负载电压失真与跨复位恢复，可以参考配套笔记：[电量管理可迁移技术详解：架构、库仑账本、状态机与工程难点]({{ '/articles/battery-management-portable-design.html' | relative_url }})。
+- 板级稳压拓扑（LDO、Buck、Boost 与四开关 Buck-Boost 选型与实时波形仿真）：[嵌入式电源拓扑一次理清：LDO、Buck、Boost 与四开关 Buck-Boost]({{ '/articles/ldo-and-dcdc-power-supply-guide.html' | relative_url }})
+- 电池放电侧的库仑计账本、OCV 标定、脉冲负载电压失真与跨复位恢复：[电量管理可迁移技术详解：架构、库仑账本、状态机与工程难点]({{ '/articles/battery-management-portable-design.html' | relative_url }})
 
 ## 参考资料
 

@@ -20,6 +20,7 @@ const widgetAssets = {
   "spi-dma-demo-app": "spi-dma",
   "stm32f1-dma-demo-app": "stm32f1-dma",
   "charger-demo-app": "charger-ic",
+  "power-topo-demo-app": "power-topo",
 };
 const navUrls = [...readFileSync(resolve("_data/navigation.yml"), "utf8").matchAll(/^\s+url:\s*(\S+)\s*$/gm)].map((m) => m[1]);
 
