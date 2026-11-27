@@ -209,44 +209,61 @@ Vout / Vin = D / (1 - D)
 
 下面的仿真器把 LDO、Buck、Boost 与四开关 Buck-Boost 放进同一个工作台。你可以一键载入文内算例，切换 **拍① 充能 / 拍② 释能** 观察开关通断与电感极性反转，也可以实时拖动输入电压、目标输出、负载电流、电感值与开关频率，直接看到热耗暴涨、电感三角波斜率变化与 `I_sat` 饱和余量告警。
 
-<div class="article-interactive-widget" id="power-topo-demo-app" aria-label="LDO、Buck、Boost 与四开关 Buck-Boost 电源拓扑仿真器">
+<div class="article-interactive-widget" id="power-topo-demo-app" aria-label="LDO、Buck、Boost、四开关 Buck-Boost 与 Buck+LDO 黄金搭档实时电源实验台">
   <div class="aiw-header">
-    <span class="aiw-badge">INTERACTIVE LAB · 电源四件套实时仿真</span>
-    <h3 class="aiw-title">LDO / Buck / Boost / 四开关 Buck-Boost 拓扑、热耗与电感波形实验台</h3>
-    <p class="aiw-desc">对比线性压差散热与开关两拍储能：切换拓扑和开关拍态，观察 <code>Q1~Q4</code> 通断、电感磁场极性翻转、实时 <code>V_SW</code> / <code>I_L</code> 示波器波形与 <code>I_sat</code> 饱和电流安全红线。</p>
+    <span class="aiw-badge">INTERACTIVE LAB · 高精度电源四件套与黄金搭档实验台</span>
+    <h3 class="aiw-title">LDO / Buck / Boost / 四开关 Buck-Boost 实时拓扑、热耗与三通道示波器</h3>
+    <p class="aiw-desc">支持五种供电拓扑、<strong>锂电 4.2V→2.8V 放电巡航</strong>、<strong>磁饱和 / 缺退耦 / 关断直通故障注入</strong>与 <strong>三通道可测游标示波器</strong>。静止零后台轮询，切屏或滚出视口自动休眠。</p>
   </div>
   <div class="aiw-body">
     <div class="pwr-top-bar">
       <div class="pwr-switch-box">
         <span class="pwr-switch-label">电源拓扑架构</span>
         <div class="pwr-seg" role="radiogroup" aria-label="电源拓扑选择">
-          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="ldo">LDO 线性降压</button>
-          <button type="button" class="pwr-topo-btn is-active" role="radio" aria-checked="true" data-topo="buck">Buck 开关降压</button>
-          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="boost">Boost 开关升压</button>
-          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="buckboost">Buck-Boost 四开关</button>
+          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="ldo">LDO 线性</button>
+          <button type="button" class="pwr-topo-btn is-active" role="radio" aria-checked="true" data-topo="buck">Buck 降压</button>
+          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="boost">Boost 升压</button>
+          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="buckboost">四开关升降压</button>
+          <button type="button" class="pwr-topo-btn" role="radio" aria-checked="false" data-topo="combo">Buck+LDO 搭档</button>
         </div>
       </div>
       <div class="pwr-switch-box">
-        <span class="pwr-switch-label">开关拍态观测</span>
-        <div class="pwr-seg" role="group" aria-label="开关拍态切换">
-          <button type="button" class="pwr-phase-btn is-active" data-phase="1" aria-pressed="true">拍① 充能 (Ton)</button>
-          <button type="button" class="pwr-phase-btn" data-phase="2" aria-pressed="false">拍② 释能 (Toff)</button>
-          <button type="button" class="pwr-phase-btn" id="pwr-btn-auto" data-auto="toggle" aria-pressed="false">慢放循环</button>
+        <span class="pwr-switch-label">开关拍态与扫描控制</span>
+        <div class="pwr-seg" role="group" aria-label="拍态与巡航控制">
+          <button type="button" class="pwr-phase-btn is-active" data-phase="1" aria-pressed="true">拍① 充能</button>
+          <button type="button" class="pwr-phase-btn" data-phase="2" aria-pressed="false">拍② 释能</button>
+          <button type="button" class="pwr-phase-btn" id="pwr-btn-auto" data-auto="toggle" aria-pressed="false">慢放</button>
+          <button type="button" class="pwr-phase-btn pwr-sweep-btn" id="pwr-btn-sweep" aria-pressed="false">锂电巡航 4.2→2.8V</button>
         </div>
       </div>
     </div>
 
-    <div>
-      <div class="aiw-section-title">
-        <span>一键载入文内典型工程工况</span>
-        <span class="aiw-hint">直接复现 8.7W 热关断、充电宝 1.5A 升压与 3.3V 拐点水桶模式</span>
+    <div class="pwr-action-row">
+      <div class="pwr-action-group">
+        <div class="aiw-section-title">
+          <span>典型工程工况预设</span>
+          <span class="aiw-hint">一键对照文内核心算例</span>
+        </div>
+        <div class="pwr-seg">
+          <button type="button" class="pwr-preset-btn" data-preset="ldo-hot">LDO 12→3.3V (8.7W 过热)</button>
+          <button type="button" class="pwr-preset-btn" data-preset="buck-cool">Buck 12→3.3V (0.37W)</button>
+          <button type="button" class="pwr-preset-btn" data-preset="combo-clean">Buck+LDO 黄金搭档</button>
+          <button type="button" class="pwr-preset-btn" data-preset="boost-5v">Boost 3.7→5V (1.5A)</button>
+          <button type="button" class="pwr-preset-btn" data-preset="bb-cross">四开关 3.3V 拐点水桶</button>
+          <button type="button" class="pwr-preset-btn" data-preset="bb-low">四开关 3.0V 自动升压</button>
+        </div>
       </div>
-      <div class="pwr-seg">
-        <button type="button" class="pwr-preset-btn" data-preset="ldo-hot">LDO 12V→3.3V·1A (8.7W 过热)</button>
-        <button type="button" class="pwr-preset-btn" data-preset="buck-cool">Buck 12V→3.3V·1A (0.37W 凉快)</button>
-        <button type="button" class="pwr-preset-btn" data-preset="boost-5v">Boost 3.7V→5V·1A (1.5A 输入)</button>
-        <button type="button" class="pwr-preset-btn" data-preset="bb-cross">四开关 3.3V→3.3V (拐点水桶)</button>
-        <button type="button" class="pwr-preset-btn" data-preset="bb-low">四开关 3.0V→3.3V (低电抬压)</button>
+
+      <div class="pwr-action-group">
+        <div class="aiw-section-title">
+          <span>硬件排坑故障注入</span>
+          <span class="aiw-hint">实测真实炸机与掉压诱因</span>
+        </div>
+        <div class="pwr-seg" role="group" aria-label="故障注入实验开关">
+          <button type="button" class="pwr-fault-btn" id="pwr-fault-sat" aria-pressed="false">小电感磁饱和 (I_sat=1.5A)</button>
+          <button type="button" class="pwr-fault-btn" id="pwr-fault-cap" aria-pressed="false">拔掉 100nF / 长走线</button>
+          <button type="button" class="pwr-fault-btn" id="pwr-fault-en" aria-pressed="false">拉低 EN 关机 (测直通)</button>
+        </div>
       </div>
     </div>
 
@@ -256,34 +273,57 @@ Vout / Vin = D / (1 - D)
         <span class="aiw-stat-value accent" id="pwr-stat-mode">Buck CCM · D = 27.5%</span>
       </div>
       <div class="aiw-stat-item">
-        <span class="aiw-stat-label">输入平均电流 / 效率</span>
+        <span class="aiw-stat-label">输入电流 / 转换效率</span>
         <span class="aiw-stat-value" id="pwr-stat-iin">0.31 A · η 90.0%</span>
       </div>
       <div class="aiw-stat-item">
-        <span class="aiw-stat-label">热损耗估算 P_loss</span>
-        <span class="aiw-stat-value" id="pwr-stat-loss">0.37 W</span>
+        <span class="aiw-stat-label">热损耗 / 估算结温 Tj</span>
+        <span class="aiw-stat-value" id="pwr-stat-loss">0.37 W · ~42 °C</span>
       </div>
       <div class="aiw-stat-item">
-        <span class="aiw-stat-label">电感峰值 / 建议 I_sat</span>
-        <span class="aiw-stat-value" id="pwr-stat-peak">1.24 A / ≥1.61 A</span>
+        <span class="aiw-stat-label">电感峰值 / 输出纹波</span>
+        <span class="aiw-stat-value" id="pwr-stat-peak">1.24 A / 14 mVpp</span>
+      </div>
+    </div>
+
+    <div class="pwr-energy-card" aria-label="输入功率去向与温升比例">
+      <div class="pwr-energy-head">
+        <span id="pwr-energy-title">能量账本：P_in = 3.67 W → 有效输出 3.30 W (90.0%) + 发热损耗 0.37 W (10.0%)</span>
+        <span class="pwr-thermal-pill is-ok" id="pwr-thermal-pill">温升安全 · Tj ≈ 42 °C</span>
+      </div>
+      <div class="pwr-energy-track" role="img" aria-label="有效输出与热损耗占比条">
+        <div class="pwr-energy-out" id="pwr-bar-out" style="width:90%"></div>
+        <div class="pwr-energy-loss" id="pwr-bar-loss" style="width:10%"></div>
+      </div>
+      <div class="pwr-energy-foot">
+        <span id="pwr-compare-hint">同工况若改用 LDO：热耗将飙升至 8.70 W（约 23.5× 发热）</span>
+        <span id="pwr-isat-hint">推荐电感 I_sat ≥ 1.61 A</span>
       </div>
     </div>
 
     <div class="pwr-visual-grid">
       <div class="pwr-diagram-card">
         <div class="aiw-section-title">
-          <span id="pwr-topo-heading">电路拓扑与当前拍态电流路径</span>
-          <span class="aiw-hint" id="pwr-topo-hint">实线高亮 = 当前导通回路 · 虚线 = 关断隔离</span>
+          <span id="pwr-topo-heading">电路拓扑与当前拍态电流回路</span>
+          <span class="aiw-hint" id="pwr-topo-hint">流动实线 = 当前导通回路 · 虚线 = 关断隔离</span>
         </div>
         <svg class="pwr-diagram-svg" id="pwr-topo-svg" viewBox="0 0 680 236" role="img" aria-label="电源拓扑与开关拍态实时示意图"></svg>
       </div>
 
       <div class="pwr-diagram-card">
         <div class="aiw-section-title">
-          <span id="pwr-scope-heading">双通道示波器：V_SW 与 I_L</span>
-          <span class="aiw-hint" id="pwr-scope-hint">蓝=V_SW 方波 · 绿=I_L 三角波 · 红虚线=1.3× I_sat 下限</span>
+          <span id="pwr-scope-heading">三通道示波器：V_SW · I_L · V_out 纹波</span>
+          <span class="aiw-hint" id="pwr-scope-hint">悬停或拖动波形可读取瞬时游标数值</span>
         </div>
-        <svg class="pwr-diagram-svg" id="pwr-scope-svg" viewBox="0 0 680 236" role="img" aria-label="开关节点电压与电感电流锯齿波形图"></svg>
+        <div class="pwr-scope-readout" id="pwr-scope-readout" aria-live="off">
+          <span class="pwr-ch-pill ch1" id="pwr-ro-ch1">CH1 V_SW: 12.0 V</span>
+          <span class="pwr-ch-pill ch2" id="pwr-ro-ch2">CH2 I_L: 1.00 A (Δ 0.48 A)</span>
+          <span class="pwr-ch-pill ch3" id="pwr-ro-ch3">CH3 V_out AC: ±7.0 mV</span>
+          <span class="pwr-ch-pill ch-t" id="pwr-ro-time">周期 T = 2.00 μs</span>
+        </div>
+        <div class="pwr-canvas-wrap">
+          <canvas id="pwr-scope-canvas" width="680" height="252" aria-label="实时三通道数字示波器波形画布"></canvas>
+        </div>
       </div>
     </div>
 
@@ -311,7 +351,7 @@ Vout / Vin = D / (1 - D)
       </div>
       <div class="pwr-slider-field" id="pwr-field-ind">
         <div class="pwr-slider-head">
-          <label for="pwr-input-ind">功率电感感值 L</label>
+          <label for="pwr-input-ind">功率电感 L</label>
           <strong id="pwr-val-ind">10.0 μH</strong>
         </div>
         <input type="range" id="pwr-input-ind" min="1.0" max="47.0" step="0.5" value="10.0">
@@ -325,7 +365,7 @@ Vout / Vin = D / (1 - D)
       </div>
       <div class="pwr-slider-field">
         <div class="pwr-slider-head">
-          <label for="pwr-input-grade">器件特性假设</label>
+          <label for="pwr-input-grade">器件特性与工艺</label>
         </div>
         <select id="pwr-input-grade" class="pwr-select">
           <option value="sync90" selected>同步开关 (~90%) / CMOS LDO (0.25V 压差)</option>
